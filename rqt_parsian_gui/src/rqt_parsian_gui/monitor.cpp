@@ -332,7 +332,7 @@ namespace rqt_parsian_gui
 //        fieldWidget->drawerBuffer->draw(Circle2D(ballpos, radius), 0, 360, QColor("orange"), true);
 
             fieldWidget->update();
-        if(isReplayMode) {
+        if(isReplayMode && mywm!= nullptr) {
             logwmCb(mywm);
         }
 
