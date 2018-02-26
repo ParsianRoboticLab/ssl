@@ -38,6 +38,7 @@
 #include "parsian_util/geom/ray_2d.h"
 #include "parsian_util/geom/line_2d.h"
 #include "parsian_util/geom/segment_2d.h"
+#include "parsian_util/geom/vector_2d.h"
 
 #include <iostream>
 #include <cmath>
@@ -110,6 +111,19 @@ const double Circle2D::EPSILOON = 1.0e-5;
 /*!
 
  */
+int Circle2D::tangent(Vector2D p, Vector2D * sol1, Vector2D * sol2)
+{
+    double s = p.dist2(M_center);
+    double r = M_radius*M_radius;
+    if (s<r) return 0;
+    if (s==r)
+    {
+        sol1->assign(p.x, p.y);
+        return 1;
+    }
+    return intersection(Circle2D(p, sqrt(s-r)), sol1, sol2);
+}
+
 int
 Circle2D::intersection( const Line2D & line,
                         Vector2D * sol1,

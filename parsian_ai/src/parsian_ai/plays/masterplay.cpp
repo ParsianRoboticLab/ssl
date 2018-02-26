@@ -19,7 +19,7 @@ void CMasterPlay::initMaster(){
     blockAgent = nullptr;
     playMakeAgent = nullptr;
     positionAgents.clear();
-    if(gameState->isPlayOn())
+    if(gameState->isStart())
         markAgents.clear();
     stopAgents.clear();
     masterStaticPoints.clear();
@@ -294,7 +294,7 @@ void CMasterPlay::execPlay(){
         markPlan.execute();
     }
 
-    if( gameState->isPlayOff() )
+    if( gameState->isStop() )
     {
         if(!positionAgents.empty()){
             ///////// added to prevent Segmentatino fault! //////////

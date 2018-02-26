@@ -248,7 +248,7 @@ void CPlayOff::staticExecute() {
 
             }
 
-            if(isPlanEnd()) {
+            if(isPlanEnd() && false) {
                 playOnFlag = true;
                 ROS_INFO("Ends");
 

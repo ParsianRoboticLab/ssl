@@ -12,6 +12,7 @@
 #include <QString>
 #include <QIcon>
 #include <QTimer>
+#include <ros/package.h>
 #include <pluginlib/class_list_macros.h>
 #include <rqt_parsian_gui/ui_handycontroller.h>
 #include <parsian_msgs/parsian_robot_command.h>
@@ -57,6 +58,8 @@ namespace rqt_parsian_gui
         ros::Publisher publisher;
         ros::Publisher wmpublisher;
         parsian_msgs::parsian_robot_commandPtr cmd;
+
+        QString pkgPath;
 
 
     public slots:

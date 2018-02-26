@@ -83,18 +83,18 @@ void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
 
     ROS_INFO_STREAM("refff count : "<< _ref->command_counter);
 
-    if(gameState->isPlayOff()) {
-        ROS_INFO_STREAM("ref play off");
+    if(gameState->isStop()) {
+        ROS_INFO_STREAM("ref stop");
     }
-    if(gameState->isPlayOn()) {
-        ROS_INFO_STREAM("ref play on");
+    if(gameState->isStart()) {
+        ROS_INFO_STREAM("ref start");
     }
     if(gameState->ourDirectKick()) {
         ROS_INFO_STREAM("ref our Direct");
     }
 
-    if(gameState->canMove()) {
-        ROS_INFO_STREAM("ref !halt");
+    if(!gameState->canMove()) {
+        ROS_INFO_STREAM("ref halt");
     }
 
 

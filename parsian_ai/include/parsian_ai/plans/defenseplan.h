@@ -62,11 +62,21 @@ protected:
     Segment2D getBisectorSegment(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
     void manToManMarkBlockShotInPlayOff(int _markAgentSize);
-    void agentsStuckTogether(QList<Vector2D> agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
-    bool isPermissionTargetToChip(Vector2D aPoint);
-    bool isAgentsStuckTogether(QList<Vector2D> agentsPosition);
+    void agentsStuckTogether(QList<Vector2D> agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);    
+    bool areAgentsStuckTogether(QList<Vector2D> agentsPosition);
     bool isInIndirectArea(Vector2D);
     void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition,QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);            
+    int findNeededDefense();
+    int defenseNumber();
+    double findBestOffsetForPenaltyArea(Line2D bestLineWithTalles, double downLimit , double upLimit);
+    Line2D getBestLineWithTalles(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
+    Segment2D getBestSegmentWithTalles(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
+    QList<Segment2D> getLinesOfBallTriangle();
+    QList<Vector2D> defenseFormation(int neededDefenseAgents , int allOfDefenseAgents , double downLimit, double upLimit);
+    QList<Vector2D> twoDefenseFormation(double downLimit , double upLimit);
+    QList<Vector2D> threeDefenseFormation(double downLimit , double upLimit);
+    Vector2D oneDefenseFormation(double downLimit , double upLimit);
+
     //atousa
     Vector2D getGoaliePositionInOneDef(Vector2D _ballPos, double _limit1, double _limit2);
     double goalieThr;
@@ -100,6 +110,7 @@ protected:
     Vector2D oppNearestToBallPossition;
     Vector2D tempAHZ;    
     QString lastStateForGoalKeeper;
+    QList<Vector2D> AHZDefPoints;
     ///////////////////////////////////////////////////
     void executeGoalKeeper();    
     Vector2D strictFollowBall(Vector2D _ballPos);    
@@ -169,8 +180,7 @@ private:
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();   
     bool isInTheIndirectAreaShoot(Vector2D);
-    bool isInTheIndirectAreaPass(Vector2D);
-    bool checkOverdef();
+    bool isInTheIndirectAreaPass(Vector2D);    
     QList<Vector2D> ShootBlockRatio(double, Vector2D);
     QList<Vector2D> PassBlockRatio(double,Vector2D);
     QList<Vector2D> indirectAvoidShoot(Vector2D);

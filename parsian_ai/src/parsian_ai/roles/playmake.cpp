@@ -45,7 +45,7 @@ void CRolePlayMake::stopBehindBall(bool penalty)
 {
     if( penalty)
     {
-        if( gameState->isPlayOff() ){
+        if( gameState->isStop() ){
             debugger->debug("stop, reset changeDirPenaltyStriker flag", D_FATEME);
 
         }
@@ -107,7 +107,7 @@ void CRolePlayMake::executeOurKickOff()
 
     if( kickMode == FixedShoot )
         chipToOppGoal = true;
-    if(gameState->isPlayOff()){
+    if(gameState->isStop()){
         stopBehindBall(false);
     }
     else{
@@ -291,7 +291,7 @@ void CRolePlayMake::executeOurPenaltyShootout(){
         firstKick=true;
 
 
-    if (gameState->isPlayOff()/*knowledge->getGameMode()==CKnowledge::Stop*/)
+    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop*/)
     {//stop behind ball
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));
@@ -327,7 +327,7 @@ void CRolePlayMake::executeOurPenalty() {
     Vector2D shift;
     Vector2D position;
 
-    if (gameState->isPlayOff()/*knowledge->getGameMode()==CKnowledge::Stop || knowledge->getGameState()==CKnowledge::Stop*/)
+    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop || knowledge->getGameState()==CKnowledge::Stop*/)
     {
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));

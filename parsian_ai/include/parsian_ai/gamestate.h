@@ -10,8 +10,8 @@
 
 enum class States{
     Halt = 0,
-    PlayOff = 1,
-    PlayOn = 2,
+    Stop = 1,
+    Start = 2,
 
     HalfTime = 3,
     PostGame = 4,
@@ -51,11 +51,11 @@ public:
     GameState();
     bool ready();
     void setRefree(ssl_refree_wrapperConstPtr ref_wrapper);
-    bool isPlayOn();
-    bool isPlayOff();
-    bool restart();
-    bool ourRestart();
-    bool theirRestart();
+    bool isStart();
+    bool isStop();
+    bool playOffKick();
+    bool ourPlayOffKick();
+    bool theirPlayOffKick();
     bool kickoff();
     bool ourKickoff();
     bool theirKickoff();

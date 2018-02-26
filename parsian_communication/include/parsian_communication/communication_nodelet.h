@@ -54,7 +54,7 @@ namespace parsian_communication {
         bool sim_handle_flag;
         parsian_msgs::parsian_packetsPtr modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet);
         parsian_msgs::parsian_packetsPtr modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet);
-        parsian_msgs::parsian_packetsPtr packet_{new parsian_msgs::parsian_packets};
+
 
 
 

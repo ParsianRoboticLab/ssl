@@ -1,0 +1,3 @@
+[submodule "parsian_bag"]
+	path = parsian_bag
+	url = https://github.com/ParsianRoboticLab/rqt_bag.git

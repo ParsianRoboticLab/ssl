@@ -32,7 +32,7 @@ enum class GameMode {
     REAL = 1
 };
 
-#define FILE_PATH "/config/team_config.txt"
+#define FILE_PATH "/config/team.config"
 namespace rqt_parsian_gui
 {
 

@@ -190,7 +190,7 @@ void PositioningPlan::execute()
             else{
                 gpa[dynamicPositioners.at(i)]->setAvoidcentercircle(false);
             }
-            if( gameState->isPlayOff() )
+            if( gameState->isStop() )
                 gpa[dynamicPositioners.at(i)]->setBallobstacleradius(.1);
             else
                 gpa[dynamicPositioners.at(i)]->setBallobstacleradius(0);
@@ -251,7 +251,7 @@ void PositioningPlan::execute()
             else{
                 gpa[curID]->setAvoidcentercircle(false);
             }
-            if( gameState->isPlayOff() )
+            if( gameState->isStop() )
                 gpa[curID]->setBallobstacleradius(.1);
             else
                 gpa[curID]->setBallobstacleradius(0);
@@ -265,7 +265,7 @@ void PositioningPlan::reset()
     dynamicPositioners.clear();
     staticPositioners.clear();
     agents.clear();
-  if( gameState->isPlayOff() ){
+  if( gameState->isStop() ){
     positionStaticPoints.clear();
     for( int i=0 ; i<_MAX_NUM_PLAYERS ; i++ ){
       staticStateNo[i] = 0;

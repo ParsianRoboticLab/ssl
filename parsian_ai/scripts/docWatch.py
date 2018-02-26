@@ -140,7 +140,7 @@ class Handler(FileSystemEventHandler):
                     bad_files.append(f)
                     print("not json: " + str(f) + " --> removed!")
 
-        file_list2 = [f for f in file_list if not f in bad_files]
+        file_list2 = [f for f in file_list if f not in bad_files]
 
         # printfile_list2
 
@@ -198,7 +198,7 @@ class Handler(FileSystemEventHandler):
         for fil in new_file_list2:
             str_list = str(fil).split("/plans")
             if len(str_list) > 0:
-                print("\t" + [1])
+                print("\t" + str(fil).split("/plans")[1])
 
         last = [term for term in new_file_list if not term in new_file_list2]
 

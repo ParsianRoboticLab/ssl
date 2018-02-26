@@ -57,6 +57,9 @@ msg/_*.py
 /cfg/cpp/
 /cfg/*.py
 
+# config files
+*.config
+
 # Ignore generated docs
 *.dox
 *.wikidoc

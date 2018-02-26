@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>545</width>
-    <height>406</height>
+    <width>300</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,8 +18,8 @@
     <rect>
      <x>40</x>
      <y>230</y>
-     <width>376</width>
-     <height>101</height>
+     <width>331</width>
+     <height>141</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -28,7 +28,7 @@
       <item>
        <widget class="QPushButton" name="Angle1">
         <property name="text">
-         <string>Angle</string>
+         <string/>
         </property>
         <property name="checkable">
          <bool>false</bool>
@@ -38,14 +38,14 @@
       <item>
        <widget class="QPushButton" name="Up">
         <property name="text">
-         <string>Up</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Angle2">
         <property name="text">
-         <string>Angle</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -56,21 +56,21 @@
       <item>
        <widget class="QPushButton" name="Left">
         <property name="text">
-         <string>Left</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Down">
         <property name="text">
-         <string>Down</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Right">
         <property name="text">
-         <string>Right</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -81,28 +81,28 @@
       <item>
        <widget class="QPushButton" name="Kick">
         <property name="text">
-         <string>Kick</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Chip">
         <property name="text">
-         <string>Chip</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Roller">
         <property name="text">
-         <string>Roller</string>
+         <string/>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="Halt">
         <property name="text">
-         <string>Halt</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -240,13 +240,13 @@
     <item row="1" column="2">
      <widget class="QSlider" name="Speed_slide">
       <property name="maximum">
-       <number>5</number>
+       <number>30</number>
       </property>
       <property name="value">
-       <number>1</number>
+       <number>15</number>
       </property>
       <property name="sliderPosition">
-       <number>1</number>
+       <number>15</number>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -256,7 +256,7 @@
     <item row="1" column="3">
      <widget class="QLabel" name="Speed_show">
       <property name="text">
-       <string>1</string>
+       <string>15</string>
       </property>
      </widget>
     </item>

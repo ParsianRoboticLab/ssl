@@ -1104,7 +1104,7 @@ void CMarkPlan::findOppAgentsToMark()
 
     oppAgentsToMarkPos.clear();
 
-    if(gameState->isPlayOn())
+    if(gameState->isStart())
     {
         for(int i = 0; i < oppAgentsToMark.count(); i++)
         {
@@ -1167,7 +1167,7 @@ void CMarkPlan::findOppAgentsToMark()
     //setting the positions
     for(int i=0; i < oppAgentsToMark.count(); i++)
     {
-        if(gameState->isPlayOn())
+        if(gameState->isStart())
         {
             oppAgentsToMarkPos.append(oppAgentsToMark[i]->pos);
         }
@@ -1392,7 +1392,7 @@ void CMarkPlan::execute()
     //////----------HMD Play on Mark-------------////
 
 
-    if(gameState->isPlayOn() )
+    if(gameState->isStart() )
     {
         if(conf.PlayOnManToMan){
             manToManMarkInPlayOnBlockPass(oppAgentsToMarkPos , agents.count() , conf.PassRatioBlock / 100);
