@@ -99,7 +99,9 @@ namespace rqt_parsian_gui
 //                QDir().mkdir("logs/"+baseFileName);
 //                suggestionName="logs/"+baseFileName+"/"+suggestionName+".bag";
 //            }
-            bag.open("logs/"+suggestionName.toStdString()+".bag", rosbag::bagmode::Write);
+            std::string s;
+            s = ros::package::getPath("rqt_parsian_gui");
+            bag.open(s+"/logs/"+suggestionName.toStdString()+".bag", rosbag::bagmode::Write);
 
         }
 
