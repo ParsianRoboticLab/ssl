@@ -15,6 +15,7 @@
 #include <parsian_util/geom/polygon_2d.h>
 
 #define LOOP_TIME_BYKK 0.016
+#define MIN_ROBOTS_DIST 0.02
 struct velAndAccByKK {
     double vel;
     double acc;
@@ -62,10 +63,12 @@ protected:
     Segment2D getBisectorSegment(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
     void manToManMarkBlockShotInPlayOff(int _markAgentSize);
-    void agentsStuckTogether(QList<Vector2D> agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
-    bool areAgentsStuckTogether(QList<Vector2D> agentsPosition);
-    bool isInIndirectArea(Vector2D);
+
+    bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
+    void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
     void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
+
+    bool isInIndirectArea(Vector2D);
     int findNeededDefense();
     int defenseNumber();
     double findBestOffsetForPenaltyArea(Line2D bestLineWithTalles, double downLimit , double upLimit);

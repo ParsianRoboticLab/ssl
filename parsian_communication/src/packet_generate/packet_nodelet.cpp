@@ -114,7 +114,7 @@ void PacketNodelet::callBack(const parsian_msgs::parsian_robot_commandConstPtr &
 
 
     outputBuffer[11] = visionCounter & 0x07;
-    outputBuffer[12] = 0;
+    outputBuffer[12] = 0x3F & _packet->roller_speed;
     outputBuffer[13] = 0;
 
     for (int k = 0 ; k < _ROBOT_PACKET_SIZE ; k++) {

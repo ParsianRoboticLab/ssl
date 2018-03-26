@@ -50,7 +50,6 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
     qSort(IDOfOpponentsInPolygon.begin() , IDOfOpponentsInPolygon.end());
     return IDOfOpponentsInPolygon;
 }
-
 int DefensePlan::defenseNumber(){
     if (conf.StrictFormation){
         if (conf.Defense > 3){
@@ -377,34 +376,31 @@ int DefensePlan::findNeededDefense() {
     return neededDefense;
 }
 
-bool DefensePlan::areAgentsStuckTogether(QList<Vector2D> agentsPosition) {
+bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition) {
     //// If defense agents stuck together , this function
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
-        for (int j = 0 ; j < agentsPosition.size() ; j++) {
-            if (i != j) {
+        for (int j = i+1 ; j < agentsPosition.size() ; j++) {
                 if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new) {
                     return true;
                 }
-            }
         }
     }
     return false;
 }
 
-void DefensePlan::agentsStuckTogether(QList<Vector2D> agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs) {
+void DefensePlan::agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs) {
     //// If defense agents stuck together , this function
     stuckPositions.clear();
     stuckIndexs.clear();
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
         for (int j = 0 ; j < i ; j++) {
-            if (i != j) {
-                if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new) {
-                    stuckPositions.append(agentsPosition.at(i));
-                    stuckPositions.append(agentsPosition.at(j));
-                }
+            if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new + MIN_ROBOTS_DIST) {
+                stuckPositions.append(agentsPosition.at(i));
+                stuckPositions.append(agentsPosition.at(j));
             }
         }
     }
+
     for (auto stuckPosition : stuckPositions) {
         for (int j = 0 ; j < agentsPosition.size() ; j++) {
             if (stuckPosition == agentsPosition.at(j)) {
@@ -426,7 +422,6 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
     QList<Vector2D> solvedPositionsAreNotInThePenaltyArea;
     QList<Vector2D> nonRepetitiveFinalSolvedPosition;
     Vector2D tempPoint = Vector2D(0, 0);
-    bool isRepeated = false;
     QList<Vector2D> tempVectors;
     ///////////////////// Update the state /////////////////////////////////////
     solvedPosition.clear();
@@ -442,13 +437,8 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
         }
     }
     DBUG(QString("center : %1").arg(centerToCenter.size()) , D_AHZ);
-    for (int i = 0 ; i < stuckPositions.size() ; i++) {
-        if (stuckPositions.size() == 2) {
-            solvedPosition.append(stuckPositions.at(i) + (1.1 * Robot::robot_radius_new - centerToCenter.at(i).length() / 2) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
-        } else {
-            solvedPosition.append(stuckPositions.at(i) + (1.4 * Robot::robot_radius_new - centerToCenter.at(i).length() / 2) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
-        }
-    }
+    for (int i = 0 ; i < stuckPositions.size() ; i++)
+            solvedPosition.append(stuckPositions.at(i) + (1.2 * (Robot::robot_radius_new - centerToCenter.at(i).length() / 2) + MIN_ROBOTS_DIST) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
     ///////////// Check the resulted points, don't be in the PArea /////////////
     for (int i = 0 ; i < solvedPosition.size() ; i++) {
         if (wm->field->isInOurPenaltyArea(solvedPosition.at(i))) {
@@ -470,13 +460,12 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
     for (int i = 0 ; i < stuckPositions.size() && i < stuckIndexs.size() && i < solvedPositionsAreNotInThePenaltyArea.size() ; i++) {
         for (int j = 0 ; j < stuckIndexs.size() ; j++) {
             if (stuckIndexs.at(i) == stuckIndexs.at(j) && i != j) {
-                isRepeated = true;
                 tempIndexs.append(j);
                 DBUG(QString("temp Index : %1").arg(j) , D_AHZ);
             }
         }
-        if (isRepeated) {
-            tempIndexs.append(i);
+        tempIndexs.append(i);
+        if (tempIndexs.size() > 1) {
             tempPoint = stuckPositions.at(i);
             for (int k = 0 ; k < solvedPositionsAreNotInThePenaltyArea.size() ; k++) {
                 for (int tempIndex : tempIndexs) {
@@ -492,12 +481,9 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
                 tempPoint += tempVector;
             }
             finalSolvedPosition.append(tempPoint);
-            isRepeated = false;
-        } else {
-            tempIndexs.append(i);
+        } else{
             finalSolvedPosition.append(solvedPositionsAreNotInThePenaltyArea.at(i));
         }
-        isRepeated = false;
         tempIndexs.clear();
         tempVectors.clear();
         temp.clear();

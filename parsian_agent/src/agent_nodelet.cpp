@@ -44,12 +44,16 @@ void AgentNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cn
 void AgentNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
     wm->update(_wm);
     watchdog++;
-    if (watchdog >= conf->watchdog) {
+    if (watchdog >= 2*conf->watchdog) {
+        agent->skill = nullptr;
+        watchdog = 2*conf->watchdog;
+    } else if (watchdog >= conf->watchdog) {
         agent->waitHere();
         agent->skill = nullptr;
         parsian_robot_command_pub.publish(agent->getCommand());
 
-    } else if (agent->skill != nullptr && finished) {
+    } else
+    if (agent->skill != nullptr && finished) {
         finished = false;
         agent->execute();
         parsian_robot_command_pub.publish(agent->getCommand());

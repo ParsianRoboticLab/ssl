@@ -263,7 +263,7 @@ void CCoach::decidePreferredDefenseAgentsCountAndGoalieAgent() {
     lastPreferredDefenseCounts = preferedDefenseCounts;
 }
 
-void CCoach::calcDesiredMarkCounts() {
+void CCoach::calcDesiredMarkCounts(){
 
     int agentsCount = wm->our.data->activeAgents.count();
     if (goalieAgent != nullptr) {
