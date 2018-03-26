@@ -9,8 +9,7 @@
 #include <parsian_util/action/autogenerate/gotopointaction.h>
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 
-class CSkillGotoPointAvoid : public CSkill, public GotopointavoidAction
-{
+class CSkillGotoPointAvoid : public CSkill, public GotopointavoidAction {
 private:
     CNewBangBang *bangBang;
 

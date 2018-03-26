@@ -30,7 +30,6 @@ class MotionProfilerNode:
 
             self.task_pub.append(rospy.Publisher('/agent_' + str(i) + '/task', parsian_robot_task, queue_size=1, latch=True))
 
-
         rospy.spin()
 
     def rcCallback(self, data):
@@ -45,9 +44,9 @@ class MotionProfilerNode:
     def cfg_callback(self, config, level):
         self.config = config
         self.profiler.reset(config["robot_id"], Point(config["start_x"], config["start_y"]),
-                            Point(config["end_x"], config["end_y"]),init_phase =  config["init_phase"],
-                            dist_step = config["dist_step"],ang_step = config["ang_step"])
-	return config
+                            Point(config["end_x"], config["end_y"]), init_phase=config["init_phase"],
+                            dist_step=config["dist_step"], ang_step=config["ang_step"])
+        return config
 
 
 if __name__ == '__main__':

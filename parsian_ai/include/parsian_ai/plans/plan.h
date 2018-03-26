@@ -8,8 +8,7 @@
 #include <parsian_ai/util/agent.h>
 //#include <skills.h> // TODO : Actions
 
-class Plan
-{
+class Plan {
 protected:
     QList<Agent*> agents;
 public:
@@ -20,7 +19,7 @@ public:
     void assignSkill(int i, Action* skill);
     int agentById(int id);
     QList<int> getAgentIdList();
-	void debugAgents(QString text);
+    void debugAgents(QString text);
 
 //abstract functions
     virtual void execute() = 0;

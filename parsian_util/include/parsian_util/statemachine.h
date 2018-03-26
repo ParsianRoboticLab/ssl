@@ -2,18 +2,16 @@
 #define STATEMACHINE_H
 #include <QObject>
 
-class CState : public QObject
-{
+class CState : public QObject {
     Q_OBJECT
-    public:
-        QString name;
-        void exec();
-    signals:
-        void run();
+public:
+    QString name;
+    void exec();
+signals:
+    void run();
 };
 
-class CStateMachine
-{
+class CStateMachine {
     QList<int> curState;
     QList<CState*> states;
     int currently_running_state;

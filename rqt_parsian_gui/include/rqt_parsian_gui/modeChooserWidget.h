@@ -33,38 +33,37 @@ enum class GameMode {
 };
 
 #define FILE_PATH "/config/team.config"
-namespace rqt_parsian_gui
-{
+namespace rqt_parsian_gui {
 
 
-    class ModeChooserWidget:public QWidget {
+class ModeChooserWidget: public QWidget {
     Q_OBJECT
-    public:
-        ModeChooserWidget(ros::NodeHandle & n);
-        virtual ~ModeChooserWidget();
-    public slots:
-        void toggleMode();
-        void toggleColor();
-        void toggleSide();
-        void saveTeamConfig();
+public:
+    ModeChooserWidget(ros::NodeHandle & n);
+    virtual ~ModeChooserWidget();
+public slots:
+    void toggleMode();
+    void toggleColor();
+    void toggleSide();
+    void saveTeamConfig();
 
-    protected:
-    private:
-        void sendTeamConfig();
-        void loadTeamConfig();
+protected:
+private:
+    void sendTeamConfig();
+    void loadTeamConfig();
 
-        QAction * modeAct;
-        QGridLayout *mainLayout;
-        QString modeStr[2],colorStr[2],sideStr[2];
-        QPushButton *modePB, *colorPB, *sidePB;
-        Color color;
-        TeamSide side;
-        GameMode mode;
-        void wmCb(const parsian_msgs::parsian_world_modelConstPtr& msg);
+    QAction * modeAct;
+    QGridLayout *mainLayout;
+    QString modeStr[2], colorStr[2], sideStr[2];
+    QPushButton *modePB, *colorPB, *sidePB;
+    Color color;
+    TeamSide side;
+    GameMode mode;
+    void wmCb(const parsian_msgs::parsian_world_modelConstPtr& msg);
 
-        ros::Publisher team_config_pub;
-        ros::Subscriber wmsub;
-    };
+    ros::Publisher team_config_pub;
+    ros::Subscriber wmsub;
+};
 }
 
 #endif //RQT_PARSIAN_GUI_MONITORWIDGET_H

@@ -44,12 +44,13 @@
 #include <cstdlib>
 #include <cstring>
 
-extern "C" {
+extern "C"
+{
 
-void triangulate( char *,
-                  struct triangulateio *,
-                  struct triangulateio *,
-                  struct triangulateio * );
+    void triangulate(char *,
+                     struct triangulateio *,
+                     struct triangulateio *,
+                     struct triangulateio *);
 }
 
 namespace rcsc {
@@ -59,8 +60,7 @@ namespace rcsc {
 
 */
 void
-Triangulation::clear()
-{
+Triangulation::clear() {
     clearResults();
 
     M_points.clear();
@@ -72,8 +72,7 @@ Triangulation::clear()
 
 */
 void
-Triangulation::clearResults()
-{
+Triangulation::clearResults() {
     M_triangles.clear();
     // M_result_segments.clear();
     M_edges.clear();
@@ -84,18 +83,16 @@ Triangulation::clearResults()
 
 */
 bool
-Triangulation::addPoint( const Vector2D & p )
-{
+Triangulation::addPoint(const Vector2D & p) {
 #ifdef TRIANGULATION_STRICT_POINT_SET
-    if ( M_point_set.find( p ) != M_point_set.end() )
-    {
+    if (M_point_set.find(p) != M_point_set.end()) {
         return false;
     }
 
-    M_point_set.insert( p );
+    M_point_set.insert(p);
 #endif
 
-    M_points.push_back( p );
+    M_points.push_back(p);
     return true;
 }
 
@@ -104,23 +101,19 @@ Triangulation::addPoint( const Vector2D & p )
 
 */
 size_t
-Triangulation::addPoints( const PointCont & v )
-{
+Triangulation::addPoints(const PointCont & v) {
 #ifdef TRIANGULATION_STRICT_POINT_SET
-    if ( M_points.size() < v.size() )
-    {
-        M_points.reserve( v.size() );
+    if (M_points.size() < v.size()) {
+        M_points.reserve(v.size());
     }
 
     size_t size = 0;
 
     const PointCont::const_iterator end = v.end();
-    for ( PointCont::const_iterator p = v.begin();
-          p != end;
-          ++p )
-    {
-        if ( ! addPoint( *p ) )
-        {
+    for (PointCont::const_iterator p = v.begin();
+            p != end;
+            ++p) {
+        if (! addPoint(*p)) {
             break;
         }
 
@@ -130,7 +123,7 @@ Triangulation::addPoints( const PointCont & v )
     return size;
 #else
 
-    M_points.insert( M_points.end(), v.begin(), v.end() );
+    M_points.insert(M_points.end(), v.begin(), v.end());
     return v.size();
 #endif
 }
@@ -140,19 +133,17 @@ Triangulation::addPoints( const PointCont & v )
 
 */
 bool
-Triangulation::addConstraint( const size_t & origin_index,
-                              const size_t & terminal_index )
-{
-    if ( origin_index == terminal_index
-         || M_points.size() <= origin_index
-         || M_points.size() <= terminal_index )
-    {
+Triangulation::addConstraint(const size_t & origin_index,
+                             const size_t & terminal_index) {
+    if (origin_index == terminal_index
+            || M_points.size() <= origin_index
+            || M_points.size() <= terminal_index) {
         return false;
     }
 
     std::pair< SegmentSet::iterator, bool > result
-        = M_constraints.insert( Segment( std::min( origin_index, terminal_index ),
-                                         std::max( origin_index, terminal_index ) ) );
+        = M_constraints.insert(Segment(std::min(origin_index, terminal_index),
+                                       std::max(origin_index, terminal_index)));
 
     return result.second;
 }
@@ -162,8 +153,7 @@ Triangulation::addConstraint( const size_t & origin_index,
 
 */
 void
-Triangulation::compute()
-{
+Triangulation::compute() {
     M_triangles.clear();
     M_edges.clear();
 
@@ -176,8 +166,7 @@ Triangulation::compute()
     //
     // check enough points exist or not
     //
-    if ( points_size < 3 )
-    {
+    if (points_size < 3) {
         return;
     }
 
@@ -185,49 +174,46 @@ Triangulation::compute()
     // make input data
     //
     struct triangulateio in;
-    std::memset( &in, 0, sizeof( in ) );
+    std::memset(&in, 0, sizeof(in));
 
     //
     // set point list
     //
     in.numberofpoints = points_size;
-    in.pointlist = static_cast< REAL * >( std::malloc( in.numberofpoints * 2 * sizeof( REAL ) ) );
+    in.pointlist = static_cast< REAL * >(std::malloc(in.numberofpoints * 2 * sizeof(REAL)));
 
-    for ( size_t i = 0; i < points_size; ++i )
-    {
-        in.pointlist[i * 2    ] = static_cast< REAL >( points[i].x );
-        in.pointlist[i * 2 + 1] = static_cast< REAL >( points[i].y );
+    for (size_t i = 0; i < points_size; ++i) {
+        in.pointlist[i * 2    ] = static_cast< REAL >(points[i].x);
+        in.pointlist[i * 2 + 1] = static_cast< REAL >(points[i].y);
     }
 
     //
     // set attribute
     //
     in.numberofpointattributes = 0;
-    in.pointattributelist = static_cast< REAL * >( 0 );
+    in.pointattributelist = static_cast< REAL * >(0);
 
 
     //
     // set marker
     //
-    in.pointmarkerlist = static_cast< int * >( 0 );
+    in.pointmarkerlist = static_cast< int * >(0);
 
 
     //
     // set input segments (constraints)
     //
     in.numberofsegments = constraints_size;
-    if ( constraints_size > 0 )
-    {
-        in.segmentlist = static_cast< int * >( std::malloc( in.numberofsegments * 2 * sizeof( int ) ) );
+    if (constraints_size > 0) {
+        in.segmentlist = static_cast< int * >(std::malloc(in.numberofsegments * 2 * sizeof(int)));
 
         const SegmentSet::const_iterator c_end = constraints.end();
         size_t i = 0;
-        for ( SegmentSet::const_iterator c = constraints.begin();
-              c != c_end;
-              ++c, ++i )
-        {
-            in.segmentlist[i * 2]     = static_cast< int >( c->first );
-            in.segmentlist[i * 2 + 1] = static_cast< int >( c->second );
+        for (SegmentSet::const_iterator c = constraints.begin();
+                c != c_end;
+                ++c, ++i) {
+            in.segmentlist[i * 2]     = static_cast< int >(c->first);
+            in.segmentlist[i * 2 + 1] = static_cast< int >(c->second);
 
             //std::cerr << "set constraints " << c->first << ' ' << c->second << std::endl;
         }
@@ -239,14 +225,14 @@ Triangulation::compute()
     //
     in.numberofholes = 0;
     in.numberofregions = 0;
-    in.regionlist = static_cast< REAL * >( 0 );
+    in.regionlist = static_cast< REAL * >(0);
 
 
     //
     // initialize output buffers
     //
     struct triangulateio out;
-    std::memset( &out, 0, sizeof( out ) );
+    std::memset(&out, 0, sizeof(out));
 
 
     //
@@ -262,27 +248,31 @@ Triangulation::compute()
     // E: no triangle output
     // e: edges output
     char opt[32];
-    std::strcpy( opt, "zBNPQ" );
-    if ( constraints_size > 0 ) std::strcat( opt, "pc" );
-    if ( ! M_use_triangles ) std::strcat( opt, "E" );
-    if ( M_use_edges ) std::strcat( opt, "e" );
+    std::strcpy(opt, "zBNPQ");
+    if (constraints_size > 0) {
+        std::strcat(opt, "pc");
+    }
+    if (! M_use_triangles) {
+        std::strcat(opt, "E");
+    }
+    if (M_use_edges) {
+        std::strcat(opt, "e");
+    }
 
-    triangulate( opt, &in, &out, NULL );
+    triangulate(opt, &in, &out, NULL);
 
 
     //
     // set result triangles
     //
-    if ( M_use_triangles )
-    {
+    if (M_use_triangles) {
         const int number_of_triangles = out.numberoftriangles;
-        M_triangles.reserve( number_of_triangles );
+        M_triangles.reserve(number_of_triangles);
 
-        for ( int i = 0; i < number_of_triangles; ++i )
-        {
-            M_triangles.push_back( Triangle( static_cast< size_t >( out.trianglelist[i * 3] ),
-                                             static_cast< size_t >( out.trianglelist[i * 3 + 1] ),
-                                             static_cast< size_t >( out.trianglelist[i * 3 + 2] ) ) );
+        for (int i = 0; i < number_of_triangles; ++i) {
+            M_triangles.push_back(Triangle(static_cast< size_t >(out.trianglelist[i * 3]),
+                                           static_cast< size_t >(out.trianglelist[i * 3 + 1]),
+                                           static_cast< size_t >(out.trianglelist[i * 3 + 2])));
         }
     }
 
@@ -301,15 +291,13 @@ Triangulation::compute()
     //
     // set result edges
     //
-    if ( M_use_edges )
-    {
+    if (M_use_edges) {
         const int number_of_edges = out.numberofedges;
-        M_edges.reserve( number_of_edges );
+        M_edges.reserve(number_of_edges);
 
-        for ( int i = 0; i < number_of_edges; ++i )
-        {
-            M_edges.push_back( Segment( static_cast< size_t >( out.edgelist[i * 2] ),
-                                        static_cast< size_t >( out.edgelist[i * 2 + 1] ) ) );
+        for (int i = 0; i < number_of_edges; ++i) {
+            M_edges.push_back(Segment(static_cast< size_t >(out.edgelist[i * 2]),
+                                      static_cast< size_t >(out.edgelist[i * 2 + 1])));
         }
     }
 
@@ -317,24 +305,20 @@ Triangulation::compute()
     //
     // finalize
     //
-    std::free( in.pointlist );
-    if ( constraints_size > 0 )
-    {
-        std::free( in.segmentlist );
+    std::free(in.pointlist);
+    if (constraints_size > 0) {
+        std::free(in.segmentlist);
     }
 
     //std::free( out.pointlist );
-    if ( M_use_triangles )
-    {
-        std::free( out.trianglelist );
+    if (M_use_triangles) {
+        std::free(out.trianglelist);
     }
-    if ( constraints_size > 0 )
-    {
-        std::free( out.segmentlist );
+    if (constraints_size > 0) {
+        std::free(out.segmentlist);
     }
-    if ( M_use_edges )
-    {
-        std::free( out.edgelist );
+    if (M_use_edges) {
+        std::free(out.edgelist);
     }
 }
 
@@ -344,31 +328,28 @@ Triangulation::compute()
 */
 const
 Triangulation::Triangle *
-Triangulation::findTriangleContains( const Vector2D & point ) const
-{
+Triangulation::findTriangleContains(const Vector2D & point) const {
     const PointCont & points = M_points;
 
     const TriangleCont::const_iterator t_end = M_triangles.end();
-    for ( TriangleCont::const_iterator t = M_triangles.begin();
-          t != t_end;
-          ++t )
-    {
-        Vector2D rel1( points[t->v0_] - point );
-        Vector2D rel2( points[t->v1_] - point );
-        Vector2D rel3( points[t->v2_] - point );
+    for (TriangleCont::const_iterator t = M_triangles.begin();
+            t != t_end;
+            ++t) {
+        Vector2D rel1(points[t->v0_] - point);
+        Vector2D rel2(points[t->v1_] - point);
+        Vector2D rel3(points[t->v2_] - point);
 
-        double outer1 = rel1.outerProduct( rel2 );
-        double outer2 = rel2.outerProduct( rel3 );
-        double outer3 = rel3.outerProduct( rel1 );
+        double outer1 = rel1.outerProduct(rel2);
+        double outer2 = rel2.outerProduct(rel3);
+        double outer3 = rel3.outerProduct(rel1);
 
-        if ( ( outer1 >= -1.0e-9 && outer2 >= -1.0e-9 && outer3 >= -1.0e-9 )
-             || ( outer1 <= 1.0e-9 && outer2 <= 1.0e-9 && outer3 <= 1.0e-9 ) )
-        {
+        if ((outer1 >= -1.0e-9 && outer2 >= -1.0e-9 && outer3 >= -1.0e-9)
+                || (outer1 <= 1.0e-9 && outer2 <= 1.0e-9 && outer3 <= 1.0e-9)) {
             return &(*t);
         }
     }
 
-    return static_cast< Triangle * >( 0 );
+    return static_cast< Triangle * >(0);
 }
 
 
@@ -377,20 +358,17 @@ Triangulation::findTriangleContains( const Vector2D & point ) const
 
 */
 int
-Triangulation::findNearestPoint( const Vector2D & point ) const
-{
+Triangulation::findNearestPoint(const Vector2D & point) const {
     int index = -1;
     double min_dist2 = std::numeric_limits< double >::max();
 
     const PointCont::const_iterator p_end = M_points.end();
     int i = 0;
-    for ( PointCont::const_iterator p = M_points.begin();
-          p != p_end;
-          ++p, ++i )
-    {
-        double d2 = p->dist2( point );
-        if ( d2 < min_dist2 )
-        {
+    for (PointCont::const_iterator p = M_points.begin();
+            p != p_end;
+            ++p, ++i) {
+        double d2 = p->dist2(point);
+        if (d2 < min_dist2) {
             min_dist2 = d2;
             index = i;
         }

@@ -10,10 +10,9 @@
 
 class MovingObject;
 
-class CRawObject
-{
+class CRawObject {
 public:
-    CRawObject(int frameCnt, Vector2D _pos, double orientation, int _ID, double _confidence,MovingObject* _ref= nullptr, int _cam_id=0, double t=0.0);
+    CRawObject(int frameCnt, Vector2D _pos, double orientation, int _ID, double _confidence, MovingObject* _ref = nullptr, int _cam_id = 0, double t = 0.0);
     CRawObject();
     Vector2D pos, dir;
     int frameCount;

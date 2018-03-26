@@ -7,6 +7,7 @@ from parsian_msgs.msg import parsian_packets
 from parsian_msgs.msg import parsian_path
 import rospy
 
+
 class Latency:
     def __init__(self):
         self.queue = []
@@ -26,7 +27,7 @@ class Latency:
         rospy.spin()
 
     def rcCallback(self, data):
-       pass
+        pass
 
     def wmCallback(self, data):
         # type: (parsian_world_model) -> null
@@ -35,12 +36,16 @@ class Latency:
         if len(self.queue) > 500:
             self.queue.pop(0)
         rospy.loginfo(sum(self.queue) / len(self.queue))
+
     def rtCallback(self, data):
         pass
+
     def packetCallback(self, data):
         pass
+
     def visionCallback(self, data):
         pass
+
     def pathplannerCallback(self, data):
         pass
 

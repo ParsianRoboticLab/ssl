@@ -19,8 +19,7 @@ enum kkRPMode {
     RPNONE = 5
 };
 
-class CSkillReceivePass : public CSkill, public ReceivepassAction
-{
+class CSkillReceivePass : public CSkill, public ReceivepassAction {
 private:
     CSkillGotoPointAvoid* gotopointavoid;
     Vector2D ballPos;

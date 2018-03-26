@@ -3,34 +3,34 @@
 #include <parsian_util/action/autogenerate/gotopointaction.h>
 
 GotopointAction::GotopointAction() {
-       dynamicStart = false;
-       maxAcceleration = 0.0;
-       maxDeceleration = 0.0;
-       maxVelocity = 0.0;
-       oneTouchMode = false;
-       slowMode = false;
-       penaltyKick = false;
-       diveMode = false;
-       smooth = false;
-       roller = 0;
+    dynamicStart = false;
+    maxAcceleration = 0.0;
+    maxDeceleration = 0.0;
+    maxVelocity = 0.0;
+    oneTouchMode = false;
+    slowMode = false;
+    penaltyKick = false;
+    diveMode = false;
+    smooth = false;
+    roller = 0;
 }
 
 void GotopointAction::setMessage(const void* _msg) {
     parsian_msgs::parsian_skill_gotoPoint msg = *((parsian_msgs::parsian_skill_gotoPoint*)_msg);
-        dynamicStart = msg.dynamicStart;
-        maxAcceleration = msg.maxAcceleration;
-        maxDeceleration = msg.maxDeceleration;
-        maxVelocity = msg.maxVelocity;
-        oneTouchMode = msg.oneTouchMode;
-        slowMode = msg.slowMode;
-        penaltyKick = msg.penaltyKick;
-        diveMode = msg.diveMode;
-        smooth = msg.smooth;
-        roller = msg.roller;
-        targetPos = msg.targetPos;
-        targetDir = msg.targetDir;
-        targetVel = msg.targetVel;
-        lookAt = msg.lookAt;
+    dynamicStart = msg.dynamicStart;
+    maxAcceleration = msg.maxAcceleration;
+    maxDeceleration = msg.maxDeceleration;
+    maxVelocity = msg.maxVelocity;
+    oneTouchMode = msg.oneTouchMode;
+    slowMode = msg.slowMode;
+    penaltyKick = msg.penaltyKick;
+    diveMode = msg.diveMode;
+    smooth = msg.smooth;
+    roller = msg.roller;
+    targetPos = msg.targetPos;
+    targetDir = msg.targetDir;
+    targetVel = msg.targetVel;
+    lookAt = msg.lookAt;
 
 }
 
@@ -55,11 +55,11 @@ void* GotopointAction::getMessage() {
 }
 
 
-QString GotopointAction::getActionName(){
+QString GotopointAction::getActionName() {
     return SActionName();
 }
 
-QString GotopointAction::SActionName(){
+QString GotopointAction::SActionName() {
     return QString{"GotopointAction"};
 }
 

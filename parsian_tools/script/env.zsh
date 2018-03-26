@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Save the directory this script is located in
 SCRIPTS_DIR=$(builtin cd -q "`dirname "$0"`" > /dev/null && pwd)
@@ -15,9 +15,8 @@ done
 INSTALLPATH="/parsian"
 
 # Set up enviroment variable for catkin and ROS
-source "$PARSIAN_ROOT/devel/setup.zsh"
+source $PARSIAN_ROOT/devel/setup.zsh
 export ROSCONSOLE_FORMAT='[${severity}][${node}->${function}:${line}]: ${message}'
-
 
 
 function pullgit() {
@@ -77,8 +76,48 @@ function parsian() {
 			fi
 			;;
 		rebuild)
-			catkin clean "${@:2}"
+			catkin clean -y
 			catkin build "${@:2}"
+			;;
+		behavior)
+			case $2 in
+			remove) # TODO : This feature is kinda tricky
+			;;
+			add)
+				temp=`pwd`
+				cd $PARSIAN_ROOT/src/parsian_ssl/parsian_tools
+				cd script/auto-generate
+				./behavior.py ${@:3}
+				cd $PARSIAN_ROOT/src/parsian_ssl/parsian_ai/cfg
+				chmod a+x ./$3.cfg
+				cd $temp
+			;;
+			list)
+			roscd parsian_ai
+			if [  -d ./src/behavior ];then
+				echo "###Behaviors:"
+				cd ./src/behavior
+				for i in `ls`;do
+					j=${i%.cpp}
+					echo ${j#behavior}
+				done
+				echo "###End of Behaviors"
+				cd ..
+			else
+				echo "Behavior Directory Doesn't Exists."
+			fi
+			;;
+			help|-h|--help|*)
+				cat <<EOS
+Usage parsian behavior [command] [arg=optinal]
+Commands:
+  add			Add a new behavior if it doesn't exist in parsian_ai
+  remove		Remove a current behavior from parsian_ai
+  list			Show the list of behaviors inside parsian_ai
+  help			Display this help message
+EOS
+			;;
+			esac
 			;;
 		help|-h|--help)
 			cat <<EOS
@@ -88,18 +127,19 @@ Commands:
   run-grsim		Run enough node to run a game in grsim  (arg=--ai run ai along with)
   run-real		Run enough node to run a game in realworld (arg=--ai run ai along with)
   rebuild		clean and then build the specified packages, if nothing mentioned rebuild all packages
+  behavior		Behavior Commands
   [catkin]		If command is not valid for parsian, catkin will be run instead of parsian
 EOS
 			;;
 		*)
 			if [ $# -eq 0 ];then
+				cd $TEMP_DIR
 				echo "Unrecognised parsian command!"
 				echo "Try: parsian help"
-				break
+				return
 			fi
 			catkin "$@"
 esac
-
 cd $TEMP_DIR
 
 }

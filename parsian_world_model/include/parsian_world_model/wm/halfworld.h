@@ -15,8 +15,7 @@
 #include <parsian_world_model/wm/ball.h>
 
 
-class CHalfWorld
-{
+class CHalfWorld {
 public:
     Vector2D positioningPoints[_MAX_NUM_PLAYERS];
     int positioningPointsCount;

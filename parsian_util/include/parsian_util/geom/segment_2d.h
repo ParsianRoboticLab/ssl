@@ -51,24 +51,24 @@ private:
 
 
 
-    bool checkIntersectsOnLine( const Vector2D & p ) const;
+    bool checkIntersectsOnLine(const Vector2D & p) const;
 
 public:
 
     //! not used
-    Segment2D()
-    {}
+    Segment2D() {
+    }
 
     /*!
       \brief construct from 2 points
       \param a 1st point of segment edge
       \param b 2nd point of segment edge
      */
-    Segment2D( const Vector2D & a,
-               const Vector2D & b )
-        : M_a( a )
-        , M_b( b )
-      { }
+    Segment2D(const Vector2D & a,
+              const Vector2D & b)
+        : M_a(a)
+        , M_b(b) {
+    }
 
 
     /*!
@@ -78,13 +78,13 @@ public:
       \param bx 1st point y value of segment edge
       \param by 1st point y value of segment edge
      */
-    Segment2D( const double & ax,
-               const double & ay,
-               const double & bx,
-               const double & by )
-        : M_a( ax, ay )
-        , M_b( bx, by )
-      { }
+    Segment2D(const double & ax,
+              const double & ay,
+              const double & bx,
+              const double & by)
+        : M_a(ax, ay)
+        , M_b(bx, by) {
+    }
 
     /*!
       \brief construct from 2 points
@@ -93,13 +93,12 @@ public:
       \return const reference to itself
     */
     const
-    Segment2D & assign( const Vector2D & a,
-                        const Vector2D & b )
-      {
-          M_a = a;
-          M_b = b;
-          return *this;
-      }
+    Segment2D & assign(const Vector2D & a,
+                       const Vector2D & b) {
+        M_a = a;
+        M_b = b;
+        return *this;
+    }
 
     /*!
       \brief construct directly using raw coordinate values
@@ -109,104 +108,94 @@ public:
       \param by 1st point y value of segment edge
     */
     const
-    Segment2D & assign( const double & ax,
-                        const double & ay,
-                        const double & bx,
-                        const double & by )
-      {
-          M_a.assign( ax, ay );
-          M_b.assign( bx, by );
-          return *this;
-      }
+    Segment2D & assign(const double & ax,
+                       const double & ay,
+                       const double & bx,
+                       const double & by) {
+        M_a.assign(ax, ay);
+        M_b.assign(bx, by);
+        return *this;
+    }
 
     /*!
       \brief swap segment edge point
       \return const reference to itself
     */
     const
-    Segment2D & swap()
-      {
-          // std::swap( M_a, M_b );
-          rcsc::Vector2D tmp = M_a;
-          M_a = M_b;
-          M_b = tmp;
-          return *this;
-      }
+    Segment2D & swap() {
+        // std::swap( M_a, M_b );
+        rcsc::Vector2D tmp = M_a;
+        M_a = M_b;
+        M_b = tmp;
+        return *this;
+    }
 
     /*!
       \brief get 1st point of segment edge
       \return vector object
     */
     const
-    Vector2D & a() const
-      {
-          return M_a;
-      }
+    Vector2D & a() const {
+        return M_a;
+    }
 
     /*!
       \brief get 2nd point of segment edge
       \return vector object
     */
     const
-    Vector2D & b() const
-      {
-          return M_b;
-      }
+    Vector2D & b() const {
+        return M_b;
+    }
 
-	const
-	Vector2D & origin() const
-	  {
-		  return M_a;
-	  }
+    const
+    Vector2D & origin() const {
+        return M_a;
+    }
 
-	/*!
-	  \brief get 2nd point of segment edge
-	  \return const reference to the vector object
-	*/
-	const
-	Vector2D & terminal() const
-	  {
-		  return M_b;
-	  }
+    /*!
+      \brief get 2nd point of segment edge
+      \return const reference to the vector object
+    */
+    const
+    Vector2D & terminal() const {
+        return M_b;
+    }
 
 
     /*!
       \brief get line generated from segment
       \return new line object
     */
-    Line2D line() const
-      {
-          return Line2D( a(), b() );
-      }
+    Line2D line() const {
+        return Line2D(a(), b());
+    }
 
     /*!
       \brief get the length of this segment
       \return distance value
      */
-    double length() const
-      {
-          return a().dist( b() );
-      }
+    double length() const {
+        return a().dist(b());
+    }
 
     /*!
       \brief make perpendicular bisector line from segment points
       \return line object
      */
-    Line2D perpendicularBisector() const
-      {
-          return Line2D::perpendicular_bisector( a(), b() );
-      }
+    Line2D perpendicularBisector() const {
+        return Line2D::perpendicular_bisector(a(), b());
+    }
 
     /*!
       \brief check if the point is within the rectangle defined by this
       segment as a diagonal line.
       \return true if rectangle contains p
      */
-    bool contains( const Vector2D & p ) const
-      {
-          return ( ( p.x - a().x ) * ( p.x - b().x ) <= 1.0e-5
-                   && ( p.y - a().y ) * ( p.y - b().y ) <= 1.0e-5 );
-      }
+    bool contains(const Vector2D & p) const {
+        return ((p.x - a().x) * (p.x - b().x) <= 1.0e-5
+                && (p.y - a().y) * (p.y - b().y) <= 1.0e-5);
+    }
 
     /*!
       \brief check & get the intersection point with other line segment
@@ -214,7 +203,7 @@ public:
       \return intersection point. if it does not exist,
       the invalidated value vector is returned.
     */
-    Vector2D intersection( const Segment2D & other ) const;
+    Vector2D intersection(const Segment2D & other) const;
 
     /*!
       \brief check & get the intersection point with other line
@@ -222,14 +211,14 @@ public:
       \return intersection point. if it does not exist,
       the invalidated value vector is returned.
     */
-    Vector2D intersection( const Line2D & other ) const;
+    Vector2D intersection(const Line2D & other) const;
 
     /*!
       \brief check if segments cross each other or not.
       \param other segment for cross checking
       \return true if this segment crosses, otherwise returns false.
     */
-    bool existIntersection( const Segment2D & other ) const;
+    bool existIntersection(const Segment2D & other) const;
 
     /*!
       \brief check if segments intersect each other on non terminal point.
@@ -238,7 +227,7 @@ public:
       terminal point of segment.
       false if segments not intersect or intersect on terminal point of segment.
     */
-    bool existIntersectionExceptEndpoint( const Segment2D & other ) const;
+    bool existIntersectionExceptEndpoint(const Segment2D & other) const;
 
     /*!
       \brief get a point on segment where distance of point is minimal.
@@ -246,38 +235,38 @@ public:
       \return nearest point on segment. if multiple nearest points found.
        returns one of them.
     */
-    Vector2D nearestPoint( const Vector2D & p ) const;
+    Vector2D nearestPoint(const Vector2D & p) const;
 
     /*!
       \brief get minimum distance between this segment and point
       \param p point
       \return minimum distance between this segment and point
     */
-    double dist( const Vector2D & p ) const;
+    double dist(const Vector2D & p) const;
 
     /*!
       \brief get minimum distance between 2 segments
       \param seg segment
       \return minimum distance between 2 segments
     */
-    double dist( const Segment2D & seg ) const;
+    double dist(const Segment2D & seg) const;
 
     /*!
       \brief get maximum distance between this segment and point
       \param p point
       \return maximum distance between this segment and point
     */
-    double farthestDist( const Vector2D & p ) const;
+    double farthestDist(const Vector2D & p) const;
 
     /*
       \brief check point is on segment or not
       \p point to check
       \p return true if point is on this segment
     */
-    bool onSegment( const Vector2D & p ) const;
+    bool onSegment(const Vector2D & p) const;
 
-    bool onSegmentWeakly( const Vector2D & p ) const;
-    Vector2D projection( const Vector2D & p ) const;
+    bool onSegmentWeakly(const Vector2D & p) const;
+    Vector2D projection(const Vector2D & p) const;
 };
 
 }

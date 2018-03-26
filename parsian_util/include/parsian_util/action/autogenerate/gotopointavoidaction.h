@@ -4,13 +4,13 @@
 #define GotopointavoidAction_HEADER_
 
 
-#include <parsian_util/action/autogenerate/gotopointaction.h> 
+#include <parsian_util/action/autogenerate/gotopointaction.h>
 
 #include <parsian_util/geom/geom.h>
 #include <parsian_msgs/parsian_skill_gotoPointAvoid.h>
 #include <list>
 
-class GotopointavoidAction : public GotopointAction  {
+class GotopointavoidAction : public GotopointAction {
 
 public:
     GotopointavoidAction();
@@ -20,7 +20,6 @@ public:
 
     QString getActionName() override;
     static QString SActionName();
-
 
     SkillProperty(GotopointavoidAction, bool, Avoidpenaltyarea, avoidPenaltyArea);
     SkillProperty(GotopointavoidAction, bool, Noavoid, noAvoid);

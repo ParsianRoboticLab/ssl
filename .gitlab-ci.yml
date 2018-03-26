@@ -8,7 +8,7 @@ before_script:
  - source ros_gitlab_ci/gitlab-ci.bash
  - apt-get install --assume-yes libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
  - MAHI=`pwd`
- - cd /builds/ParsianSoftware/parsian_ssl/parsian_communication/script/
+ - cd /builds/ParsianSoftware/parsian_ssl/parsian_communication/
  - git clone https://github.com/qextserialport/qextserialport.git temp
  - cd temp
  - qmake-qt4

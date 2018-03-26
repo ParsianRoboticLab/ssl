@@ -6,9 +6,8 @@
 
 /*************************************** CBaseCommunicator Class ******************************************/
 
-CBaseCommunicator::CBaseCommunicator()
-{
-    serial_open= false;
+CBaseCommunicator::CBaseCommunicator() {
+    serial_open = false;
     error      = false;
     p = new CMySerialPort();
     p->serial_port = nullptr;
@@ -29,52 +28,42 @@ CBaseCommunicator::CBaseCommunicator()
 }
 
 
-void CBaseCommunicator::readData()
-{
+void CBaseCommunicator::readData() {
 
     QByteArray dataFlow;
-    if(p->serial_port->bytesAvailable()) {
+    if (p->serial_port->bytesAvailable()) {
         dataFlow = p->serial_port->read(p->serial_port->bytesAvailable());
 //        drawer->draw(Vector2D(1,0));
     }
     p->serial_port->flush();
     recDataFlow.append(dataFlow);
-    if(recDataFlow.size() > 100)
-    {
-        recDataFlow.remove(0,recDataFlow.size()/2);
+    if (recDataFlow.size() > 100) {
+        recDataFlow.remove(0, recDataFlow.size() / 2);
     }
 
 //    debug(QString("SIZE : %1").arg(recDataFlow.size()), D_MHMMD);
-    if(recDataFlow.size())
-    {
+    if (recDataFlow.size()) {
 
-        for(int i = 0 ; i < recDataFlow.size() ; i++) {
-            if(recDataFlow[i] == static_cast<unsigned char>(0x99))
-            {
+        for (int i = 0 ; i < recDataFlow.size() ; i++) {
+            if (recDataFlow[i] == static_cast<unsigned char>(0x99)) {
 
-                if(i >= 12)
-                {
+                if (i >= 12) {
 
-                    for(int j = 0 ; j <= 12 ; j++)
-                    {
-                        if(i-12 < 12) {
-                            robotPacket[recDataFlow[i-12]][j] = static_cast<unsigned char>(recDataFlow[j + i - 12]);
-                            onlineRobotsTimer[recDataFlow[i-12]].restart();
+                    for (int j = 0 ; j <= 12 ; j++) {
+                        if (i - 12 < 12) {
+                            robotPacket[recDataFlow[i - 12]][j] = static_cast<unsigned char>(recDataFlow[j + i - 12]);
+                            onlineRobotsTimer[recDataFlow[i - 12]].restart();
                         }
                     }
-                    if (!recDataFlow.isEmpty())
-                    {
-                        recDataFlow.remove(0,i+1);
+                    if (!recDataFlow.isEmpty()) {
+                        recDataFlow.remove(0, i + 1);
                         i = 0;
                     }
 
-                }
-                else
-                {
-                    if (!recDataFlow.isEmpty())
-                    {
-                        recDataFlow.remove(0,i+1);
-                        i =0;
+                } else {
+                    if (!recDataFlow.isEmpty()) {
+                        recDataFlow.remove(0, i + 1);
+                        i = 0;
                     }
                 }
 
@@ -125,32 +114,28 @@ void CBaseCommunicator::readData()
 
 
 
-CBaseCommunicator::~CBaseCommunicator()
-{
+CBaseCommunicator::~CBaseCommunicator() {
     closeSerial();
     delete p;
 }
 
-void CBaseCommunicator::setSerialParams(unsigned int baud, unsigned int charsize, unsigned int parity, short stopbits)
-{
+void CBaseCommunicator::setSerialParams(unsigned int baud, unsigned int charsize, unsigned int parity, short stopbits) {
     p->setSerialParams(baud, charsize, parity, stopbits);
 }
 
 
-void CBaseCommunicator::connectSerial(const char* port)
-{
+void CBaseCommunicator::connectSerial(const char* port) {
     closeSerial();
     _port = QString(port);
-    p->setSerialParams(115200,8,0,1);
+    p->setSerialParams(115200, 8, 0, 1);
 
     p->serial_port = new QextSerialPort(p->portSettings);
     p->serial_port->setPortName(_port);
-    if(p->serial_port->open(QIODevice::ReadWrite)){
+    if (p->serial_port->open(QIODevice::ReadWrite)) {
         serial_open = true;
         ROS_INFO("successfully");
 //        connect(recTime,SIGNAL(timeout()),this,SLOT(readData()));
-    }
-    else{
+    } else {
         ROS_ERROR("Error occured, comunicator connection failed");
         err = QString("Error occured, comunicator connection failed");
         serial_open = false;
@@ -159,56 +144,55 @@ void CBaseCommunicator::connectSerial(const char* port)
     }
 }
 
-void CBaseCommunicator::closeSerial()
-{
-    if (p->serial_port == nullptr) return;
+void CBaseCommunicator::closeSerial() {
+    if (p->serial_port == nullptr) {
+        return;
+    }
     p->serial_port->close();
     delete p->serial_port;
     p->serial_port = nullptr;
     serial_open = false;
 }
 
-bool CBaseCommunicator::errorOccured()     {return error;}
-bool CBaseCommunicator::isSerialConnected(){return serial_open;}
+bool CBaseCommunicator::errorOccured() {
+    return error;
+}
+bool CBaseCommunicator::isSerialConnected() {
+    return serial_open;
+}
 
 ///////////////////////////////////// communicator
-CCommunicator::CCommunicator() : CBaseCommunicator()
-{
+CCommunicator::CCommunicator() : CBaseCommunicator() {
 }
 
 CCommunicator::~CCommunicator() = default;
 
-void CCommunicator::packetCallBack(const parsian_msgs::parsian_packetsConstPtr &_packet)
-{
+void CCommunicator::packetCallBack(const parsian_msgs::parsian_packetsConstPtr &_packet) {
     char* tempStr;
     char test[100];
     for (const auto &robotPacket : _packet->value) {
         tempStr = new char[robotPacket.packets.size()];
-        for(int j = 0 ; j < robotPacket.packets.size() ; j++)
-        {
+        for (int j = 0 ; j < robotPacket.packets.size() ; j++) {
             tempStr[j] = robotPacket.packets.at(j);
         }
-        sprintf(test,"packet :%lu", robotPacket.packets.size());
+        sprintf(test, "packet :%lu", robotPacket.packets.size());
         ROS_INFO_STREAM(test);
         tempStr[0] = static_cast<char>(0x99);
 
         sendString(tempStr, static_cast<int>(robotPacket.packets.size()));
 
-        delete tempStr;
+        delete[] tempStr;
     }
 }
 
-void CCommunicator::sendString(const char* s,int len)
-{
+void CCommunicator::sendString(const char* s, int len) {
 
-    for(int i = 0 ; i < len ; i++)
-    {
-        p->serial_port->write(s + i,1);
+    for (int i = 0 ; i < len ; i++) {
+        p->serial_port->write(s + i, 1);
     }
 }
 
-void CCommunicator::sendByte(char c)
-{
+void CCommunicator::sendByte(char c) {
     char ch = c;
-    sendString(&ch,1);
+    sendString(&ch, 1);
 }

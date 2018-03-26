@@ -60,7 +60,7 @@ public:
     /*!
       \brief set polygon to empty polygon
       \return const reference to itself
-    */    
+    */
     const Polygon2D & assign();
 
     /*!

@@ -9,8 +9,7 @@
 #include "parsian_util/base.h"
 #include <QMutex>
 
-struct CTeamData
-{
+struct CTeamData {
     CRobot* teamMembers[_MAX_NUM_PLAYERS];
     QList<int> activeAgents;
     QString color;
@@ -18,8 +17,7 @@ struct CTeamData
     int goalieID;
 };
 
-class CTeam
-{
+class CTeam {
 public:
     CTeamData *data;
     CTeam(const bool& isYellow, const bool& isLeft);

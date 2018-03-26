@@ -46,22 +46,19 @@ namespace rcsc {
 
 */
 Vector2D
-Segment2D::intersection( const Segment2D & other ) const
-{
+Segment2D::intersection(const Segment2D & other) const {
     Line2D my_line = this->line();
     Line2D other_line = other.line();
 
-    Vector2D tmp_sol = my_line.intersection( other_line );
+    Vector2D tmp_sol = my_line.intersection(other_line);
 
-    if ( ! tmp_sol.valid() )
-    {
+    if (! tmp_sol.valid()) {
         return Vector2D::INVALIDATED;
     }
 
     // check if intersection point is on the line segment
-    if ( ! this->contains( tmp_sol )
-         || ! other.contains( tmp_sol ) )
-    {
+    if (! this->contains(tmp_sol)
+            || ! other.contains(tmp_sol)) {
         return Vector2D::INVALIDATED;
     }
 
@@ -75,10 +72,9 @@ Segment2D::intersection( const Segment2D & other ) const
     Vector2D dc = other.a() - other.b();
     Vector2D ad = other.b() - a();
 
-    double det = dc.outerProduct( ab );
+    double det = dc.outerProduct(ab);
 
-    if ( std::fabs( det ) < 0.001 )
-    {
+    if (std::fabs(det) < 0.001) {
         // area size is 0.
         // segments has same slope.
         std::cerr << "Segment2D::intersection()"
@@ -90,12 +86,11 @@ Segment2D::intersection( const Segment2D & other ) const
     double s = (dc.x * ad.y - dc.y * ad.x) / det;
     double t = (ab.x * ad.y - ab.y * ad.x) / det;
 
-    if ( s < 0.0 || 1.0 < s || t < 0.0 || 1.0 < t )
-    {
+    if (s < 0.0 || 1.0 < s || t < 0.0 || 1.0 < t) {
         return Vector2D::INVALIDATED;
     }
 
-    return Vector2D( a().x + ab.x * s, a().y + ab.y * s );
+    return Vector2D(a().x + ab.x * s, a().y + ab.y * s);
 #endif
 }
 
@@ -104,20 +99,17 @@ Segment2D::intersection( const Segment2D & other ) const
 
 */
 Vector2D
-Segment2D::intersection( const Line2D & other ) const
-{
+Segment2D::intersection(const Line2D & other) const {
     Line2D my_line = this->line();
 
-    Vector2D tmp_sol = my_line.intersection( other );
+    Vector2D tmp_sol = my_line.intersection(other);
 
-    if ( ! tmp_sol.valid() )
-    {
+    if (! tmp_sol.valid()) {
         return Vector2D::INVALIDATED;
     }
 
     // check if intersection point is on the line segment
-    if ( ! this->contains( tmp_sol ) )
-    {
+    if (! this->contains(tmp_sol)) {
         return Vector2D::INVALIDATED;
     }
 
@@ -129,12 +121,11 @@ Segment2D::intersection( const Line2D & other ) const
 
 */
 bool
-Segment2D::existIntersectionExceptEndpoint( const Segment2D & other ) const
-{
-    return    Triangle2D( *this, other.a() ).signedArea2()
-            * Triangle2D( *this, other.b() ).signedArea2() < 0.0
-         &&   Triangle2D( other, this -> a() ).signedArea2()
-            * Triangle2D( other, this -> b() ).signedArea2() < 0.0;
+Segment2D::existIntersectionExceptEndpoint(const Segment2D & other) const {
+    return    Triangle2D(*this, other.a()).signedArea2()
+              * Triangle2D(*this, other.b()).signedArea2() < 0.0
+              &&   Triangle2D(other, this -> a()).signedArea2()
+              * Triangle2D(other, this -> b()).signedArea2() < 0.0;
 }
 
 /*-------------------------------------------------------------------*/
@@ -142,38 +133,31 @@ Segment2D::existIntersectionExceptEndpoint( const Segment2D & other ) const
 
 */
 bool
-Segment2D::existIntersection( const Segment2D & other ) const
-{
-    double a0 = Triangle2D( *this, other.a() ).signedArea2();
-    double a1 = Triangle2D( *this, other.b() ).signedArea2();
-    double b0 = Triangle2D( other, this -> a() ).signedArea2();
-    double b1 = Triangle2D( other, this -> b() ).signedArea2();
+Segment2D::existIntersection(const Segment2D & other) const {
+    double a0 = Triangle2D(*this, other.a()).signedArea2();
+    double a1 = Triangle2D(*this, other.b()).signedArea2();
+    double b0 = Triangle2D(other, this -> a()).signedArea2();
+    double b1 = Triangle2D(other, this -> b()).signedArea2();
 
-    if ( a0 * a1 < 0.0 && b0 * b1 < 0.0 )
-    {
+    if (a0 * a1 < 0.0 && b0 * b1 < 0.0) {
         return true;
     }
 
-    if ( this -> a() == this -> b() )
-    {
-        if ( other.a() == other.b() )
-        {
+    if (this -> a() == this -> b()) {
+        if (other.a() == other.b()) {
             return this -> a() == other.a();
         }
 
-        return b0 == 0.0 && other.checkIntersectsOnLine( this -> a() );
-    }
-    else if ( other.a() == other.b() )
-    {
-        return a0 == 0.0 && this -> checkIntersectsOnLine( other.a() );
+        return b0 == 0.0 && other.checkIntersectsOnLine(this -> a());
+    } else if (other.a() == other.b()) {
+        return a0 == 0.0 && this -> checkIntersectsOnLine(other.a());
     }
 
 
-    if (    (a0 == 0.0 && this -> checkIntersectsOnLine( other.a() ))
-         || (a1 == 0.0 && this -> checkIntersectsOnLine( other.b() ))
-         || (b0 == 0.0 && other.checkIntersectsOnLine( this -> a() ))
-         || (b1 == 0.0 && other.checkIntersectsOnLine( this -> b() )) )
-    {
+    if ((a0 == 0.0 && this -> checkIntersectsOnLine(other.a()))
+            || (a1 == 0.0 && this -> checkIntersectsOnLine(other.b()))
+            || (b0 == 0.0 && other.checkIntersectsOnLine(this -> a()))
+            || (b1 == 0.0 && other.checkIntersectsOnLine(this -> b()))) {
         return true;
     }
 
@@ -186,17 +170,13 @@ Segment2D::existIntersection( const Segment2D & other ) const
 */
 // private
 bool
-Segment2D::checkIntersectsOnLine( const Vector2D & p ) const
-{
-    if ( a().x == b().x )
-    {
-        return (   (a().y <= p.y && p.y <= b().y)
-                || (b().y <= p.y && p.y <= a().y) );
-    }
-    else
-    {
-        return (   (a().x <= p.x && p.x <= b().x)
-                || (b().x <= p.x && p.x <= a().x) );
+Segment2D::checkIntersectsOnLine(const Vector2D & p) const {
+    if (a().x == b().x) {
+        return ((a().y <= p.y && p.y <= b().y)
+                || (b().y <= p.y && p.y <= a().y));
+    } else {
+        return ((a().x <= p.x && p.x <= b().x)
+                || (b().x <= p.x && p.x <= a().x));
     }
 }
 
@@ -205,19 +185,17 @@ Segment2D::checkIntersectsOnLine( const Vector2D & p ) const
 
 */
 Vector2D
-Segment2D::nearestPoint( const Vector2D & p ) const
-{
+Segment2D::nearestPoint(const Vector2D & p) const {
     const Vector2D vec = b() - a();
 
     const double len_square = vec.r2();
 
-    if ( len_square == 0.0 )
-    {
+    if (len_square == 0.0) {
         return a();
     }
 
 
-    double inner_product = vec.innerProduct( (p - a()) );
+    double inner_product = vec.innerProduct((p - a()));
 
     //
     // A: p1 - p0
@@ -227,13 +205,10 @@ Segment2D::nearestPoint( const Vector2D & p ) const
     //       -> 0 <= |A||B|cos(theta) <= |A|^2
     //       -> 0 <= A.B <= |A|^2  // A.B = |A||B|cos(theta)
     //
-    if ( inner_product <= 0.0 )
-    {
-            return a();
-    }
-    else if ( inner_product >= len_square )
-    {
-            return b();
+    if (inner_product <= 0.0) {
+        return a();
+    } else if (inner_product >= len_square) {
+        return b();
     }
 
     return a() + vec * inner_product / len_square;
@@ -244,17 +219,15 @@ Segment2D::nearestPoint( const Vector2D & p ) const
 
 */
 double
-Segment2D::dist( const Vector2D & p ) const
-{
+Segment2D::dist(const Vector2D & p) const {
     double len = this -> length();
 
-    if ( len == 0.0 )
-    {
+    if (len == 0.0) {
         return (p - a()).r();
     }
 
     const Vector2D vec = b() - a();
-    const double prod = vec.innerProduct( p - a() );
+    const double prod = vec.innerProduct(p - a());
 
     //
     // A: p1 - p0
@@ -264,14 +237,13 @@ Segment2D::dist( const Vector2D & p ) const
     //       -> 0 <= |A||b|cos(theta) <= |A|^2
     //       -> 0 <= A.B <= |A|^2  // A.B = |A||B|cos(theta)
     //
-    if ( 0.0 <= prod && prod <= len * len )
-    {
+    if (0.0 <= prod && prod <= len * len) {
         // return perpendicular distance
-        return std::fabs( Triangle2D( *this, p ).signedArea2() / len );
+        return std::fabs(Triangle2D(*this, p).signedArea2() / len);
     }
 
-    return std::min( (p - a()).r(),
-                     (p - b()).r() );
+    return std::min((p - a()).r(),
+                    (p - b()).r());
 }
 
 /*-------------------------------------------------------------------*/
@@ -279,17 +251,15 @@ Segment2D::dist( const Vector2D & p ) const
 
 */
 double
-Segment2D::dist( const Segment2D &  seg ) const
-{
-    if ( this -> existIntersection( seg ) )
-    {
+Segment2D::dist(const Segment2D &  seg) const {
+    if (this -> existIntersection(seg)) {
         return 0.0;
     }
 
-    return std::min( std::min( this -> dist( seg.a() ),
-                               this -> dist( seg.b() ) ),
-                     std::min( seg.dist( a() ),
-                               seg.dist( b() ) ) );
+    return std::min(std::min(this -> dist(seg.a()),
+                             this -> dist(seg.b())),
+                    std::min(seg.dist(a()),
+                             seg.dist(b())));
 }
 
 /*-------------------------------------------------------------------*/
@@ -297,9 +267,8 @@ Segment2D::dist( const Segment2D &  seg ) const
 
 */
 double
-Segment2D::farthestDist( const Vector2D & p ) const
-{
-    return std::max( (a() - p).r(), (b() - p).r() );
+Segment2D::farthestDist(const Vector2D & p) const {
+    return std::max((a() - p).r(), (b() - p).r());
 }
 
 /*-------------------------------------------------------------------*/
@@ -307,10 +276,9 @@ Segment2D::farthestDist( const Vector2D & p ) const
 
 */
 bool
-Segment2D::onSegment( const Vector2D & p ) const
-{
-    return Triangle2D( *this, p ).signedArea2() == 0.0
-           && this -> checkIntersectsOnLine( p );
+Segment2D::onSegment(const Vector2D & p) const {
+    return Triangle2D(*this, p).signedArea2() == 0.0
+           && this -> checkIntersectsOnLine(p);
 }
 
 }

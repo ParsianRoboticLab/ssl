@@ -5,24 +5,20 @@
 
 CRole::CRole() = default;
 
-CRole::CRole(Agent* _agent)
-{
+CRole::CRole(Agent* _agent) {
     assign(_agent);
 }
 
 
-void CRole::assign(Agent* _agent)
-{
+void CRole::assign(Agent* _agent) {
     agent = _agent;
 }
 
-CRoleInfo::CRoleInfo(QString _roleName)
-{
+CRoleInfo::CRoleInfo(QString _roleName) {
     roleName = std::move(_roleName);
 }
 
-Agent* CRoleInfo::robot(int i)
-{
+Agent* CRoleInfo::robot(int i) {
     return agents[i];
 
 }
@@ -31,8 +27,7 @@ int CRoleInfo::count() {
     return agents.size();
 }
 
-int CRoleInfo::index(CRole *me)
-{
+int CRoleInfo::index(CRole *me) {
     return agents.indexOf(me->agent);
 }
 

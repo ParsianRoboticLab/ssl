@@ -71,7 +71,7 @@ public:
       \brief create voronoi diagram handler with points
       \param v array of input points
     */
-    VoronoiDiagramTriangle( const std::vector< Vector2D > & v );
+    VoronoiDiagramTriangle(const std::vector< Vector2D > & v);
 
     /*!
       \brief destructor.
@@ -82,25 +82,23 @@ public:
       \brief set bounding rectangle.
       \param rect input rectangle.
      */
-    void setBoundingRect( const Rect2D & rect );
+    void setBoundingRect(const Rect2D & rect);
 
     /*!
       \brief add point to voronoi diagram as one of input points
       \param p new point to add
     */
-    void addPoint( const Vector2D & p )
-      {
-          M_input_points.push_back( p );
-      }
+    void addPoint(const Vector2D & p) {
+        M_input_points.push_back(p);
+    }
 
     /*!
       \brief add points
       \param v input point container
     */
-    void addPoint( const std::vector< Vector2D > & v )
-      {
-          M_input_points.insert( M_input_points.end(), v.begin(), v.end() );
-      }
+    void addPoint(const std::vector< Vector2D > & v) {
+        M_input_points.insert(M_input_points.end(), v.begin(), v.end());
+    }
 
     /*!
       \brief clear all variables.
@@ -126,40 +124,34 @@ public:
       \brief get result set of points
       \return const reference to point list
     */
-    const Vector2DCont & vertices() const
-      {
-          return M_vertices;
-      }
-    const Vector2DCont & resultPoints() const
-      {
-          return M_vertices;
-      }
+    const Vector2DCont & vertices() const {
+        return M_vertices;
+    }
+    const Vector2DCont & resultPoints() const {
+        return M_vertices;
+    }
 
     /*!
       \brief get result set of segments
       \return const reference to segment list
     */
-    const Segment2DCont & segments() const
-      {
-          return M_segments;
-      }
-    const Segment2DCont & resultSegments() const
-      {
-          return M_segments;
-      }
+    const Segment2DCont & segments() const {
+        return M_segments;
+    }
+    const Segment2DCont & resultSegments() const {
+        return M_segments;
+    }
 
     /*!
       \brief get result set of rays
       \return const reference to ray list
     */
-    const Ray2DCont & rays() const
-      {
-          return M_rays;
-      }
-    const Ray2DCont & resultRays() const
-      {
-          return M_rays;
-      }
+    const Ray2DCont & rays() const {
+        return M_rays;
+    }
+    const Ray2DCont & resultRays() const {
+        return M_rays;
+    }
 
     /*!
       \brief get point set on segments
@@ -167,9 +159,9 @@ public:
       \param max_division max number of point on a segment
       \param result point set on segments
     */
-    void getPointsOnSegments( const double min_length,
-                              const unsigned int max_division,
-                              std::vector< Vector2D > * result ) const;
+    void getPointsOnSegments(const double min_length,
+                             const unsigned int max_division,
+                             std::vector< Vector2D > * result) const;
 };
 
 }

@@ -5,16 +5,15 @@
 
 //CWorldModel* wm;
 
-CWorldModel::CWorldModel() : our{false, false}, opp{true, true}{
+CWorldModel::CWorldModel() : our{false, false}, opp{true, true} {
     field = new CField();
     ball  = new CBall();
     ROS_INFO("WM_UTIL");
 }
 
 CWorldModel::CWorldModel(const parsian_msgs::parsian_world_model &_pwm) :
-our{_pwm.isYellow, _pwm.isLeft, _pwm.our},
-opp{!_pwm.isYellow, !_pwm.isLeft, _pwm.opp}
-{
+    our{_pwm.isYellow, _pwm.isLeft, _pwm.our},
+    opp{!_pwm.isYellow, !_pwm.isLeft, _pwm.opp} {
     this->field = new CField();
     this->ball = new CBall(_pwm.ball);
 }

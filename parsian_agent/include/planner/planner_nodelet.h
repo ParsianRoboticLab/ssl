@@ -16,35 +16,35 @@
 
 
 namespace parsian_agent {
-    class PlannerNodelet : public nodelet::Nodelet {
-    private:
+class PlannerNodelet : public nodelet::Nodelet {
+private:
 
-        void onInit() override ;
+    void onInit() override ;
 
-        void timerCb(const ros::TimerEvent &event);
+    void timerCb(const ros::TimerEvent &event);
 
-        ros::NodeHandle nh;
-        ros::NodeHandle private_nh;
+    ros::NodeHandle nh;
+    ros::NodeHandle private_nh;
 
-        ros::Subscriber world_model_sub;
-        ros::Subscriber common_config_sub;
-        ros::Subscriber planner_sub;
+    ros::Subscriber world_model_sub;
+    ros::Subscriber common_config_sub;
+    ros::Subscriber planner_sub;
 
-        ros::Publisher debug_pub;
-        ros::Publisher draw_pub;
+    ros::Publisher debug_pub;
+    ros::Publisher draw_pub;
 
-        ros::Timer timer_;
+    ros::Timer timer_;
 
-        void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
+    void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
 
-        void wmCb(const parsian_msgs::parsian_world_modelConstPtr &);
+    void wmCb(const parsian_msgs::parsian_world_modelConstPtr &);
 
-        void plannerCb(const parsian_msgs::parsian_get_planConstPtr &);
+    void plannerCb(const parsian_msgs::parsian_get_planConstPtr &);
 
-        boost::shared_ptr<CPlanner> planner;
+    boost::shared_ptr<CPlanner> planner;
 
-        void cleanDraws() const;
-    };
+    void cleanDraws() const;
+};
 }
 
 

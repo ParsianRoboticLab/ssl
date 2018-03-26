@@ -5,8 +5,7 @@
 #include <parsian_agent/kick.h>
 #include <parsian_util/action/autogenerate/onetouchaction.h>
 
-class CSkillKickOneTouch : public CSkill, public OnetouchAction
-{
+class CSkillKickOneTouch : public CSkill, public OnetouchAction {
 protected:
     CSkillGotoPointAvoid* gotopointavoid;
     CSkillKick* kick;

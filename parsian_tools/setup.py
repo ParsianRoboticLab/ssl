@@ -8,5 +8,3 @@ setup_args = generate_distutils_setup(
     packages=['parsian_tools'],
     package_dir={'': 'script'})
 setup(**setup_args)
-
-

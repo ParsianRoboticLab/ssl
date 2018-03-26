@@ -11,14 +11,14 @@
 #include "parsian_util/base.h"
 
 namespace Robot {
-    constexpr double robot_radius_old = 0.090;
-    constexpr double robot_radius_new = 0.0890;
-    constexpr double center_from_kicker_old = 0.075;
-    constexpr double center_from_kicker_new = 0.06;
-    constexpr double kicker_width_old = 0.074;
-    constexpr double kicker_width_new = 0.082;
-    constexpr double wheel_rad_old = 0.035;
-    constexpr double wheel_rad_new = 0.027;
+constexpr double robot_radius_old = 0.090;
+constexpr double robot_radius_new = 0.0890;
+constexpr double center_from_kicker_old = 0.075;
+constexpr double center_from_kicker_new = 0.06;
+constexpr double kicker_width_old = 0.074;
+constexpr double kicker_width_new = 0.082;
+constexpr double wheel_rad_old = 0.035;
+constexpr double wheel_rad_new = 0.027;
 };
 
 using namespace Robot;
@@ -34,39 +34,32 @@ public:
     int id;
 
 
-    void setNewRobot(bool _new)
-    {
+    void setNewRobot(bool _new) {
         newRobot = _new;
     }
 
-    bool isNewRobot()
-    {
+    bool isNewRobot() {
         return newRobot;
     }
 
-    double robotRadius()
-    {
+    double robotRadius() {
         return (newRobot) ? robot_radius_new : robot_radius_old;
     }
 
-    double kickerWidth()
-    {
+    double kickerWidth() {
         return (newRobot) ? kicker_width_new : kicker_width_old;
     }
 
-    double centerFromKicker()
-    {
+    double centerFromKicker() {
         return (newRobot) ? center_from_kicker_new : center_from_kicker_old;
     }
 
-    double wheelRadius()
-    {
+    double wheelRadius() {
         return (newRobot) ? wheel_rad_new : wheel_rad_old;
     }
 
-    Vector2D getKickerPos(double margin = 0)
-    {
-    	return pos + dir*(centerFromKicker()+margin);
+    Vector2D getKickerPos(double margin = 0) {
+        return pos + dir * (centerFromKicker() + margin);
     }
 
 
@@ -74,7 +67,7 @@ public:
 
 private:
 
-    Property(bool,Active,active);
+    Property(bool, Active, active);
     bool newRobot;
 //    bool active;
 

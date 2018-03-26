@@ -37,25 +37,29 @@ Kalman::Kalman(int _state_n, int _obs_n, double _stepsize) {
     obs_n = _obs_n;
     stepsize = _stepsize;
 
-    xs.clear(); xs.emplace_back(state_n, 1);
-    Ps.clear(); Ps.emplace_back(state_n, state_n);
-    Is.clear(); Is.emplace_back();
+    xs.clear();
+    xs.emplace_back(state_n, 1);
+    Ps.clear();
+    Ps.emplace_back(state_n, state_n);
+    Is.clear();
+    Is.emplace_back();
 
     prediction_lookahead = 0.0;
     prediction_time = 0.0;
     errors = Matrix(_state_n, 1);
 }
 
-void Kalman::initial(double t, Matrix &x, Matrix &P)
-{
-    xs.clear(); xs.push_back(x);
-    Ps.clear(); Ps.push_back(P);
-    Is.clear(); Is.emplace_back();
+void Kalman::initial(double t, Matrix &x, Matrix &P) {
+    xs.clear();
+    xs.push_back(x);
+    Ps.clear();
+    Ps.push_back(P);
+    Is.clear();
+    Is.emplace_back();
     stepped_time = time = t;
 }
 
-void Kalman::propagate()
-{
+void Kalman::propagate() {
     Matrix x = xs.back();
     Matrix P = Ps.back();
     Matrix &_A = A(x);
@@ -65,10 +69,10 @@ void Kalman::propagate()
 
 #if KALMAN_DEBUG
     fprintf(stderr, "PROPAGATE:\n");
-  fprintf(stderr, "x =\n");
-  x.print();
-  fprintf(stderr, "P =\n");
-  P.print();
+    fprintf(stderr, "x =\n");
+    x.print();
+    fprintf(stderr, "P =\n");
+    P.print();
 #endif
 
 
@@ -81,17 +85,16 @@ void Kalman::propagate()
 
 #if KALMAN_DEBUG
     fprintf(stderr, "=============>\nx =\n");
-  x.print();
-  fprintf(stderr, "P =\n");
-  P.print();
-  fprintf(stderr, "\n");
+    x.print();
+    fprintf(stderr, "P =\n");
+    P.print();
+    fprintf(stderr, "\n");
 #endif
 
     stepped_time += stepsize;
 }
 
-void Kalman::update(const Matrix &z)
-{
+void Kalman::update(const Matrix &z) {
     Matrix x = xs.front();
     Matrix P = Ps.front();
     Matrix I = Is.front();
@@ -100,7 +103,10 @@ void Kalman::update(const Matrix &z)
     Matrix &_R = R(x);
 
     // We clear the prediction list because we have a new observation.
-    xs.clear(); Ps.clear(); Is.clear(); stepped_time = time;
+    xs.clear();
+    Ps.clear();
+    Is.clear();
+    stepped_time = time;
 
     Matrix K = P * transpose(_H) *
                inverse(_H * P * transpose(_H) + _V * _R * transpose(_V));
@@ -109,21 +115,23 @@ void Kalman::update(const Matrix &z)
 
 #if KALMAN_DEBUG
     fprintf(stderr, "UPDATE:\n");
-  fprintf(stderr, "x =\n");
-  x.print();
-  fprintf(stderr, "z =\n");
-  z.print();
-  fprintf(stderr, "P =\n");
-  P.print();
-  fprintf(stderr, "K =\n");
-  K.print();
+    fprintf(stderr, "x =\n");
+    x.print();
+    fprintf(stderr, "z =\n");
+    z.print();
+    fprintf(stderr, "P =\n");
+    P.print();
+    fprintf(stderr, "K =\n");
+    K.print();
 #endif
 
     x = x + error;
     P = (Matrix(P.nrows()) - K * _H) * P;
 
     // Add the current state back onto the prediction list.
-    xs.push_back(x); Ps.push_back(P); Is.push_back(I);
+    xs.push_back(x);
+    Ps.push_back(P);
+    Is.push_back(I);
 
     if (prediction_lookahead > 0.0) {
         if (time - prediction_time >= prediction_lookahead) {
@@ -131,8 +139,9 @@ void Kalman::update(const Matrix &z)
             if (prediction_time > 0.0) {
                 Matrix m_error = x - prediction_x;
 
-                for(int i=0; i < m_error.nrows(); i++)
+                for (int i = 0; i < m_error.nrows(); i++) {
                     errors.e(i, 0) += fabs(m_error.e(i, 0));
+                }
                 errors_n++;
             }
 
@@ -141,8 +150,9 @@ void Kalman::update(const Matrix &z)
         }
     } else {
 
-        for(int i=0; i < error.nrows(); i++)
+        for (int i = 0; i < error.nrows(); i++) {
             errors.e(i, 0) += error.e(i, 0);
+        }
         errors_n++;
     }
 
@@ -150,18 +160,19 @@ void Kalman::update(const Matrix &z)
 
 #if KALMAN_DEBUG
     fprintf(stderr, "=============>\nx =\n");
-  x.print();
-  fprintf(stderr, "P =\n");
-  P.print();
-  fprintf(stderr, "\n");
+    x.print();
+    fprintf(stderr, "P =\n");
+    P.print();
+    fprintf(stderr, "\n");
 #endif
 }
 
-void Kalman::tick(double dt)
-{
+void Kalman::tick(double dt) {
     auto nsteps = static_cast<uint>(rint(dt / stepsize));
 
-    while(xs.size() - 1 < nsteps) propagate();
+    while (xs.size() - 1 < nsteps) {
+        propagate();
+    }
 
     xs.erase(xs.begin(), xs.begin() + nsteps);
     Ps.erase(Ps.begin(), Ps.begin() + nsteps);
@@ -170,39 +181,43 @@ void Kalman::tick(double dt)
     time += dt;
 }
 
-Matrix Kalman::predict(double dt)
-{
+Matrix Kalman::predict(double dt) {
     auto nsteps = static_cast<uint>(rint(dt / stepsize));
 
-    while(xs.size() - 1 < nsteps) propagate();
+    while (xs.size() - 1 < nsteps) {
+        propagate();
+    }
 
     return xs[nsteps];
 }
 
-Matrix Kalman::predict_cov(double dt)
-{
+Matrix Kalman::predict_cov(double dt) {
     auto nsteps = static_cast<uint>(rint(dt / stepsize));
 
-    while(xs.size() - 1 < nsteps) propagate();
+    while (xs.size() - 1 < nsteps) {
+        propagate();
+    }
 
     return Ps[nsteps];
 }
 
-Matrix Kalman::predict_info(double dt)
-{
+Matrix Kalman::predict_info(double dt) {
     auto nsteps = static_cast<uint>(rint(dt / stepsize));
 
-    while(xs.size() - 1 < nsteps) propagate();
+    while (xs.size() - 1 < nsteps) {
+        propagate();
+    }
 
     return Is[nsteps];
 }
 
-Matrix Kalman::predict_fast(double dt)
-{
+Matrix Kalman::predict_fast(double dt) {
     auto nsteps = static_cast<uint>(rint(dt / stepsize));
     double orig_stepsize = stepsize;
 
-    if (xs.size() - 1 >= nsteps) return xs[nsteps];
+    if (xs.size() - 1 >= nsteps) {
+        return xs[nsteps];
+    }
 
     stepsize = dt - (stepped_time - time);
     propagate();
@@ -218,8 +233,7 @@ Matrix Kalman::predict_fast(double dt)
     return rv;
 }
 
-double Kalman::obs_likelihood(double dt, Matrix &z)
-{
+double Kalman::obs_likelihood(double dt, Matrix &z) {
     Matrix x = predict(dt);
     Matrix P = predict_cov(dt);
     Matrix _hx = h(x);
@@ -231,25 +245,23 @@ double Kalman::obs_likelihood(double dt, Matrix &z)
 
     double likelihood = 1.0;
 
-    for(int i=0; i<D.nrows(); i++)
-        likelihood *= exp( - (D.e(i, 0) * D.e(i, 0)) / (2 * C.e(i, i)) );
+    for (int i = 0; i < D.nrows(); i++) {
+        likelihood *= exp(- (D.e(i, 0) * D.e(i, 0)) / (2 * C.e(i, i)));
+    }
 
     return likelihood;
 }
 
-Matrix Kalman::error_mean()
-{
+Matrix Kalman::error_mean() {
     return errors.scale(1.0 / (double) errors_n);
 }
 
-void Kalman::error_reset()
-{
+void Kalman::error_reset() {
     errors = errors.scale(0.0);
     errors_n = 0;
 }
 
-double Kalman::error_time_elapsed()
-{
+double Kalman::error_time_elapsed() {
     return errors_n * prediction_lookahead;
 }
 

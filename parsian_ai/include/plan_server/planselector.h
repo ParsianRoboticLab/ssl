@@ -34,11 +34,17 @@ public:
 
     void ShufflePlanIndexing(QList<NGameOff::SPlan *> Plans);
 
-    void setHavePassInPlan(bool input) { havePassInPlan = input; }
+    void setHavePassInPlan(bool input) {
+        havePassInPlan = input;
+    }
 
-    bool getHavePassInPlan() { return havePassInPlan; }
+    bool getHavePassInPlan() {
+        return havePassInPlan;
+    }
 
-    NGameOff::SPlan *getSelectedPlan() { return selectedPlan; }
+    NGameOff::SPlan *getSelectedPlan() {
+        return selectedPlan;
+    }
 
     NGameOff::SPlan *selectedPlan;
     CLoadPlayOffJson *planLoader;

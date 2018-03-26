@@ -3,49 +3,49 @@
 #include <parsian_util/action/autogenerate/kickaction.h>
 
 KickAction::KickAction() {
-       tolerance = 0.0;
-       chip = false;
-       kickSpeed = 0.0;
-       spin = 0;
-       slow = false;
-       avoidPenaltyArea = false;
-       avoidOppPenaltyArea = false;
-       interceptMode = false;
-       dontKick = false;
-       sagMode = false;
-       penaltyKick = false;
-       shotEmptySpot = false;
-       passProfiler = false;
-       veryFine = false;
-       goalieMode = false;
-       kickAngTol = 0.0;
-       kickWithCenterOfDribbler = false;
-       playMakeMode = false;
-       isPlayoff = false;
+    tolerance = 0.0;
+    chip = false;
+    kickSpeed = 0.0;
+    spin = 0;
+    slow = false;
+    avoidPenaltyArea = false;
+    avoidOppPenaltyArea = false;
+    interceptMode = false;
+    dontKick = false;
+    sagMode = false;
+    penaltyKick = false;
+    shotEmptySpot = false;
+    passProfiler = false;
+    veryFine = false;
+    goalieMode = false;
+    kickAngTol = 0.0;
+    kickWithCenterOfDribbler = false;
+    playMakeMode = false;
+    isPlayoff = false;
 }
 
 void KickAction::setMessage(const void* _msg) {
     parsian_msgs::parsian_skill_kick msg = *((parsian_msgs::parsian_skill_kick*)_msg);
-        tolerance = msg.tolerance;
-        chip = msg.chip;
-        kickSpeed = msg.kickSpeed;
-        spin = msg.spin;
-        slow = msg.slow;
-        avoidPenaltyArea = msg.avoidPenaltyArea;
-        avoidOppPenaltyArea = msg.avoidOppPenaltyArea;
-        interceptMode = msg.interceptMode;
-        dontKick = msg.dontKick;
-        sagMode = msg.sagMode;
-        penaltyKick = msg.penaltyKick;
-        shotEmptySpot = msg.shotEmptySpot;
-        passProfiler = msg.passProfiler;
-        veryFine = msg.veryFine;
-        goalieMode = msg.goalieMode;
-        kickAngTol = msg.kickAngTol;
-        kickWithCenterOfDribbler = msg.kickWithCenterOfDribbler;
-        playMakeMode = msg.playMakeMode;
-        isPlayoff = msg.isPlayoff;
-        target = msg.target;
+    tolerance = msg.tolerance;
+    chip = msg.chip;
+    kickSpeed = msg.kickSpeed;
+    spin = msg.spin;
+    slow = msg.slow;
+    avoidPenaltyArea = msg.avoidPenaltyArea;
+    avoidOppPenaltyArea = msg.avoidOppPenaltyArea;
+    interceptMode = msg.interceptMode;
+    dontKick = msg.dontKick;
+    sagMode = msg.sagMode;
+    penaltyKick = msg.penaltyKick;
+    shotEmptySpot = msg.shotEmptySpot;
+    passProfiler = msg.passProfiler;
+    veryFine = msg.veryFine;
+    goalieMode = msg.goalieMode;
+    kickAngTol = msg.kickAngTol;
+    kickWithCenterOfDribbler = msg.kickWithCenterOfDribbler;
+    playMakeMode = msg.playMakeMode;
+    isPlayoff = msg.isPlayoff;
+    target = msg.target;
 
 }
 
@@ -76,11 +76,11 @@ void* KickAction::getMessage() {
 }
 
 
-QString KickAction::getActionName(){
+QString KickAction::getActionName() {
     return SActionName();
 }
 
-QString KickAction::SActionName(){
+QString KickAction::SActionName() {
     return QString{"KickAction"};
 }
 

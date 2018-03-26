@@ -44,10 +44,11 @@
 #include <cstring>
 #include <algorithm>
 
-extern "C" {
+extern "C"
+{
 
-    void triangulate( char *, struct triangulateio *,
-                      struct triangulateio *, struct triangulateio * );
+    void triangulate(char *, struct triangulateio *,
+                     struct triangulateio *, struct triangulateio *);
 }
 
 namespace rcsc {
@@ -57,12 +58,11 @@ namespace rcsc {
 
  */
 VoronoiDiagramTriangle::VoronoiDiagramTriangle()
-    : M_bounding_rect( static_cast< Rect2D * >( 0 ) ),
+    : M_bounding_rect(static_cast< Rect2D * >(0)),
       M_input_points(),
       M_vertices(),
       M_segments(),
-      M_rays()
-{
+      M_rays() {
 
 }
 
@@ -70,13 +70,12 @@ VoronoiDiagramTriangle::VoronoiDiagramTriangle()
 /*!
 
  */
-VoronoiDiagramTriangle::VoronoiDiagramTriangle( const std::vector< Vector2D > & v )
-    : M_bounding_rect( static_cast< Rect2D * >( 0 ) ),
-      M_input_points( v ),
+VoronoiDiagramTriangle::VoronoiDiagramTriangle(const std::vector< Vector2D > & v)
+    : M_bounding_rect(static_cast< Rect2D * >(0)),
+      M_input_points(v),
       M_vertices(),
       M_segments(),
-      M_rays()
-{
+      M_rays() {
 
 }
 
@@ -84,8 +83,7 @@ VoronoiDiagramTriangle::VoronoiDiagramTriangle( const std::vector< Vector2D > & 
 /*!
 
  */
-VoronoiDiagramTriangle::~VoronoiDiagramTriangle()
-{
+VoronoiDiagramTriangle::~VoronoiDiagramTriangle() {
     clearBoundingRect();
 }
 
@@ -94,10 +92,9 @@ VoronoiDiagramTriangle::~VoronoiDiagramTriangle()
 
  */
 void
-VoronoiDiagramTriangle::setBoundingRect( const Rect2D & rect )
-{
+VoronoiDiagramTriangle::setBoundingRect(const Rect2D & rect) {
     clearBoundingRect();
-    M_bounding_rect = new Rect2D( rect );
+    M_bounding_rect = new Rect2D(rect);
 }
 
 /*-------------------------------------------------------------------*/
@@ -105,8 +102,7 @@ VoronoiDiagramTriangle::setBoundingRect( const Rect2D & rect )
 
  */
 void
-VoronoiDiagramTriangle::clear()
-{
+VoronoiDiagramTriangle::clear() {
     clearBoundingRect();
     clearResults();
     M_input_points.clear();
@@ -117,12 +113,10 @@ VoronoiDiagramTriangle::clear()
 
  */
 void
-VoronoiDiagramTriangle::clearBoundingRect()
-{
-    if ( M_bounding_rect )
-    {
+VoronoiDiagramTriangle::clearBoundingRect() {
+    if (M_bounding_rect) {
         delete M_bounding_rect;
-        M_bounding_rect = static_cast< Rect2D * >( 0 );
+        M_bounding_rect = static_cast< Rect2D * >(0);
     }
 }
 
@@ -131,8 +125,7 @@ VoronoiDiagramTriangle::clearBoundingRect()
 
  */
 void
-VoronoiDiagramTriangle::clearResults()
-{
+VoronoiDiagramTriangle::clearResults() {
     M_vertices.clear();
     M_segments.clear();
     M_rays.clear();
@@ -143,15 +136,13 @@ VoronoiDiagramTriangle::clearResults()
 
  */
 void
-VoronoiDiagramTriangle::compute()
-{
+VoronoiDiagramTriangle::compute() {
     const size_t input_points_size = M_input_points.size();
 
     //
     // check enough points exist or not
     //
-    if ( input_points_size < 3 )
-    {
+    if (input_points_size < 3) {
         clearResults();
         return;
     }
@@ -160,31 +151,30 @@ VoronoiDiagramTriangle::compute()
     // make input data
     //
     struct triangulateio in;
-    std::memset( &in, 0, sizeof( in ) );
+    std::memset(&in, 0, sizeof(in));
 
     //
     // set point list
     //
     in.numberofpoints = input_points_size;
-    in.pointlist = static_cast< REAL * >( std::malloc( in.numberofpoints * 2 * sizeof( REAL ) ) );
+    in.pointlist = static_cast< REAL * >(std::malloc(in.numberofpoints * 2 * sizeof(REAL)));
 
-    for ( size_t i = 0; i < input_points_size; ++i )
-    {
-        in.pointlist[i * 2    ] = static_cast< REAL >( M_input_points[i].x );
-        in.pointlist[i * 2 + 1] = static_cast< REAL >( M_input_points[i].y );
+    for (size_t i = 0; i < input_points_size; ++i) {
+        in.pointlist[i * 2    ] = static_cast< REAL >(M_input_points[i].x);
+        in.pointlist[i * 2 + 1] = static_cast< REAL >(M_input_points[i].y);
     }
 
     //
     // set attribute
     //
     in.numberofpointattributes = 0;
-    in.pointattributelist = static_cast< REAL * >( 0 );
+    in.pointattributelist = static_cast< REAL * >(0);
 
 
     //
     // set marker
     //
-    in.pointmarkerlist = static_cast< int * >( 0 );
+    in.pointmarkerlist = static_cast< int * >(0);
 
 
     //
@@ -193,7 +183,7 @@ VoronoiDiagramTriangle::compute()
     in.numberofsegments = 0;
     in.numberofholes = 0;
     in.numberofregions = 0;
-    in.regionlist = static_cast< REAL * >( 0 );
+    in.regionlist = static_cast< REAL * >(0);
 
 
     //
@@ -201,8 +191,8 @@ VoronoiDiagramTriangle::compute()
     //
     struct triangulateio mid;
     struct triangulateio out;
-    std::memset( &mid, 0, sizeof( mid ) );
-    std::memset( &out, 0, sizeof( out ) );
+    std::memset(&mid, 0, sizeof(mid));
+    std::memset(&out, 0, sizeof(out));
 
 
     //
@@ -214,24 +204,21 @@ VoronoiDiagramTriangle::compute()
     // N: no point output
     // P: no constraint output
     // Q: don't print debug information
-    triangulate( const_cast< char * >( "vBENPQ" ), &in, &mid, &out );
+    triangulate(const_cast< char * >("vBENPQ"), &in, &mid, &out);
 
 
-    if ( M_bounding_rect )
-    {
+    if (M_bounding_rect) {
         const Rect2D rect = *M_bounding_rect;
 
         //
         // set result points
         //
         const int number_of_points = out.numberofpoints;
-        for ( int i = 0; i < number_of_points; ++i )
-        {
-            Vector2D p( out.pointlist[ i * 2 ],
-                        out.pointlist[ i * 2 + 1 ] );
-            if ( rect.contains( p ) )
-            {
-                M_vertices.insert( p );
+        for (int i = 0; i < number_of_points; ++i) {
+            Vector2D p(out.pointlist[ i * 2 ],
+                       out.pointlist[ i * 2 + 1 ]);
+            if (rect.contains(p)) {
+                M_vertices.insert(p);
             }
         }
 
@@ -239,66 +226,49 @@ VoronoiDiagramTriangle::compute()
         // set result segments
         //
         const int number_of_edges = out.numberofedges;
-        M_segments.reserve( number_of_edges );
+        M_segments.reserve(number_of_edges);
 
-        for ( int i = 0; i < number_of_edges; ++i )
-        {
+        for (int i = 0; i < number_of_edges; ++i) {
             const int start_point_index = out.edgelist[ i * 2 ] - 1;
             const int end_point_index = out.edgelist[ i * 2 + 1 ] - 1;
 
-            if ( start_point_index >= 0 && end_point_index >= 0 )
-            {
-                const Vector2D p0( out.pointlist[ start_point_index * 2 ],
-                                   out.pointlist[ start_point_index * 2 + 1 ] );
-                const Vector2D p1( out.pointlist[ end_point_index * 2 ],
-                                   out.pointlist[ end_point_index * 2 + 1 ] );
+            if (start_point_index >= 0 && end_point_index >= 0) {
+                const Vector2D p0(out.pointlist[ start_point_index * 2 ],
+                                  out.pointlist[ start_point_index * 2 + 1 ]);
+                const Vector2D p1(out.pointlist[ end_point_index * 2 ],
+                                  out.pointlist[ end_point_index * 2 + 1 ]);
 
-                if ( p0.equalsWeakly( p1 ) )
-                {
+                if (p0.equalsWeakly(p1)) {
                     continue;
                 }
 
-                Segment2D segment( p0, p1 );
+                Segment2D segment(p0, p1);
                 Vector2D intersect0, intersect1;
-                const int n = rect.intersection( segment, &intersect0, &intersect1 );
+                const int n = rect.intersection(segment, &intersect0, &intersect1);
 
-                if ( n == 0 )
-                {
-                    if ( rect.contains( segment.origin() ) )
-                    {
-                        M_segments.push_back( segment );
+                if (n == 0) {
+                    if (rect.contains(segment.origin())) {
+                        M_segments.push_back(segment);
                     }
-                }
-                else if ( n == 1 )
-                {
-                    if ( rect.contains( segment.origin() ) )
-                    {
-                        M_vertices.insert( intersect0 );
-                        M_segments.push_back( Segment2D( segment.origin(), intersect0 ) );
-                    }
-                    else if ( rect.contains( segment.terminal() ) )
-                    {
-                        M_vertices.insert( intersect0 );
-                        M_segments.push_back( Segment2D( segment.terminal(), intersect0 ) );
-                    }
-                    else
-                    {
+                } else if (n == 1) {
+                    if (rect.contains(segment.origin())) {
+                        M_vertices.insert(intersect0);
+                        M_segments.push_back(Segment2D(segment.origin(), intersect0));
+                    } else if (rect.contains(segment.terminal())) {
+                        M_vertices.insert(intersect0);
+                        M_segments.push_back(Segment2D(segment.terminal(), intersect0));
+                    } else {
                         //std::cerr << __FILE__ << ':' << __LINE__ << ':'
                         //          << "Unexpected reach." << std::endl;
                         continue;
                     }
+                } else if (n == 2) {
+                    M_vertices.insert(intersect0);
+                    M_vertices.insert(intersect1);
+                    M_segments.push_back(Segment2D(intersect0, intersect1));
                 }
-                else if ( n == 2 )
-                {
-                    M_vertices.insert( intersect0 );
-                    M_vertices.insert( intersect1 );
-                    M_segments.push_back( Segment2D( intersect0, intersect1 ) );
-                }
-            }
-            else
-            {
-                if ( start_point_index < 0 )
-                {
+            } else {
+                if (start_point_index < 0) {
                     std::cerr << __FILE__ << ':' << __LINE__ << ':'
                               << "start_point_index has to be a positive value. "
                               << start_point_index
@@ -306,71 +276,60 @@ VoronoiDiagramTriangle::compute()
                     continue;
                 }
 
-                Vector2D origin( out.pointlist[ start_point_index * 2 ],
-                                 out.pointlist[ start_point_index * 2 + 1] );
+                Vector2D origin(out.pointlist[ start_point_index * 2 ],
+                                out.pointlist[ start_point_index * 2 + 1]);
 
-                if ( ! rect.contains( origin ) )
-                {
+                if (! rect.contains(origin)) {
                     continue;
                 }
 
-                Ray2D ray( origin,
-                           AngleDeg::atan2_deg( out.normlist[ i * 2 + 1],
-                                                out.normlist[ i * 2 ] ) );
+                Ray2D ray(origin,
+                          AngleDeg::atan2_deg(out.normlist[ i * 2 + 1],
+                                              out.normlist[ i * 2 ]));
 
                 Vector2D terminal;
-                if ( rect.intersection( ray, &terminal, static_cast< Vector2D * >( 0 ) ) != 1 )
-                {
+                if (rect.intersection(ray, &terminal, static_cast< Vector2D * >(0)) != 1) {
                     std::cerr << __FILE__ << ':' << __LINE__ << ':'
                               << "Unexpected reach." << std::endl;
                     continue;
                 }
 
-                M_vertices.insert( terminal );
-                M_segments.push_back( Segment2D( origin, terminal ) );
+                M_vertices.insert(terminal);
+                M_segments.push_back(Segment2D(origin, terminal));
             }
         }
-    }
-    else
-    {
+    } else {
         //
         // set result points
         //
         const int number_of_points = out.numberofpoints;
-        for ( int i = 0; i < number_of_points; ++i )
-        {
-            M_vertices.insert( Vector2D( out.pointlist[ i * 2 ],
-                                              out.pointlist[ i * 2 + 1 ] ) );
+        for (int i = 0; i < number_of_points; ++i) {
+            M_vertices.insert(Vector2D(out.pointlist[ i * 2 ],
+                                       out.pointlist[ i * 2 + 1 ]));
         }
 
         //
         // set result segments
         //
         const int number_of_edges = out.numberofedges;
-        M_segments.reserve( number_of_edges );
+        M_segments.reserve(number_of_edges);
 
-        for ( int i = 0; i < number_of_edges; ++i )
-        {
+        for (int i = 0; i < number_of_edges; ++i) {
             const int start_point_index = out.edgelist[ i * 2 ] - 1;
             const int end_point_index = out.edgelist[ i * 2 + 1 ] - 1;
 
-            if ( start_point_index >= 0 && end_point_index >= 0 )
-            {
-                const Vector2D p0( out.pointlist[ start_point_index * 2 ],
-                                   out.pointlist[ start_point_index * 2 + 1 ] );
-                const Vector2D p1( out.pointlist[ end_point_index * 2 ],
-                                   out.pointlist[ end_point_index * 2 + 1 ] );
+            if (start_point_index >= 0 && end_point_index >= 0) {
+                const Vector2D p0(out.pointlist[ start_point_index * 2 ],
+                                  out.pointlist[ start_point_index * 2 + 1 ]);
+                const Vector2D p1(out.pointlist[ end_point_index * 2 ],
+                                  out.pointlist[ end_point_index * 2 + 1 ]);
 
-                if ( ! p0.equalsWeakly( p1 ) )
-                {
-                    M_segments.push_back( Segment2D( p0, p1 ) );
+                if (! p0.equalsWeakly(p1)) {
+                    M_segments.push_back(Segment2D(p0, p1));
                 }
-            }
-            else
-            {
+            } else {
                 //assert( start_point_index >= 0 );
-                if ( start_point_index < 0 )
-                {
+                if (start_point_index < 0) {
                     std::cerr << __FILE__ << ':' << __LINE__ << ':'
                               << "start_point_index have to be positive value. "
                               << start_point_index
@@ -379,10 +338,10 @@ VoronoiDiagramTriangle::compute()
                 }
 
                 // ray
-                M_rays.push_back( Ray2D( Vector2D( out.pointlist[ start_point_index * 2 ],
-                                                          out.pointlist[ start_point_index * 2 + 1] ),
-                                                AngleDeg::atan2_deg( out.normlist[ i * 2 + 1],
-                                                                     out.normlist[ i * 2 ] ) ) );
+                M_rays.push_back(Ray2D(Vector2D(out.pointlist[ start_point_index * 2 ],
+                                                out.pointlist[ start_point_index * 2 + 1]),
+                                       AngleDeg::atan2_deg(out.normlist[ i * 2 + 1],
+                                               out.normlist[ i * 2 ])));
             }
         }
     }
@@ -390,15 +349,15 @@ VoronoiDiagramTriangle::compute()
     //
     // finalize
     //
-    std::free( in.pointlist );
-    std::free( mid.pointlist );
-    std::free( mid.pointmarkerlist );
-    std::free( mid.trianglelist );
-    std::free( out.pointlist );
-    std::free( out.pointattributelist );
-    std::free( out.edgelist );
-    std::free( out.normlist );
-    std::free( out.trianglelist );
+    std::free(in.pointlist);
+    std::free(mid.pointlist);
+    std::free(mid.pointmarkerlist);
+    std::free(mid.trianglelist);
+    std::free(out.pointlist);
+    std::free(out.pointattributelist);
+    std::free(out.edgelist);
+    std::free(out.normlist);
+    std::free(out.trianglelist);
 }
 
 /*-------------------------------------------------------------------*/
@@ -406,38 +365,34 @@ VoronoiDiagramTriangle::compute()
 
  */
 void
-VoronoiDiagramTriangle::getPointsOnSegments( const double min_length,
-                                             const unsigned int max_division,
-                                             std::vector< Vector2D > * result ) const
-{
+VoronoiDiagramTriangle::getPointsOnSegments(const double min_length,
+        const unsigned int max_division,
+        std::vector< Vector2D > * result) const {
     //
     // add voronoi vertices
     //
-    result->insert( result->end(),
-                    M_vertices.begin(),
-                    M_vertices.end() );
+    result->insert(result->end(),
+                   M_vertices.begin(),
+                   M_vertices.end());
 
     //
     // add points on segment
     //
-    for ( Segment2DCont::const_iterator it = M_segments.begin(),
-              end = M_segments.end();
-          it != end;
-          ++it )
-    {
+    for (Segment2DCont::const_iterator it = M_segments.begin(),
+            end = M_segments.end();
+            it != end;
+            ++it) {
         const double len = it->length();
-        if ( len < min_length )
-        {
+        if (len < min_length) {
             continue;
         }
 
-        const int div = std::min( max_division,
-                                  static_cast< unsigned int >( len / min_length ) );
+        const int div = std::min(max_division,
+                                 static_cast< unsigned int >(len / min_length));
 
-        for ( int d = 1; d < div; ++d )
-        {
-            result->push_back( it->origin() * ( static_cast< double >( d ) / div )
-                               + it->terminal() * ( static_cast< double >( div - d ) / div ) );
+        for (int d = 1; d < div; ++d) {
+            result->push_back(it->origin() * (static_cast< double >(d) / div)
+                              + it->terminal() * (static_cast< double >(div - d) / div));
         }
     }
 }

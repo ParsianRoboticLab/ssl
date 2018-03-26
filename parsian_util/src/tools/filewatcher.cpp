@@ -22,21 +22,18 @@
 
 
 FileWatcher::FileWatcher(QObject *parent) :
-    QObject(parent)
-{
+    QObject(parent) {
     m_watcher = new QFileSystemWatcher(this);
 //    connect(m_watcher, SIGNAL(fileChanged(QString)), SIGNAL(fileChanged(QString)));
 //    connect(m_watcher, SIGNAL(directoryChanged(QString)), SLOT(handleDirectoryChange(QString)));
 }
 
-FileWatcher::~FileWatcher()
-{
+FileWatcher::~FileWatcher() {
     delete m_watcher;
 }
 
 // return true if file is watched or false if a parent folder is watched
-bool FileWatcher::addFile(const QString &filename)
-{
+bool FileWatcher::addFile(const QString &filename) {
     bool isReadable = true;
 
     // watch fileName or first readable directory when moving upwards

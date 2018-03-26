@@ -29,21 +29,23 @@ void VisionNodelet::onInit() {
 
     configServer.reset(new dynamic_reconfigure::Server<protobuf_wrapper_config::visionConfig>(nh_private));
     dynamic_reconfigure::Server<protobuf_wrapper_config::visionConfig>::CallbackType f;
-    f = boost::bind(&VisionNodelet::configCb,this, _1, _2);
+    f = boost::bind(&VisionNodelet::configCb, this, _1, _2);
     configServer->setCallback(f);
 
 }
 
-void VisionNodelet::reconnect()
-{
+void VisionNodelet::reconnect() {
     delete vision;
     vision = new RoboCupSSLClient(visionConfig.vision_multicast_port, visionConfig.vision_multicast_ip);
-    if (!vision->open(false)) NODELET_WARN("Connection Failed.");
-    else NODELET_INFO("Connected!");
+    if (!vision->open(false)) {
+        NODELET_WARN("Connection Failed.");
+    } else {
+        NODELET_INFO("Connected!");
+    }
 
 }
 
-void VisionNodelet::configCb(const protobuf_wrapper_config::visionConfig &config , uint32_t level){
+void VisionNodelet::configCb(const protobuf_wrapper_config::visionConfig &config , uint32_t level) {
     visionConfig.vision_multicast_ip = config.vision_multicast_ip;
     visionConfig.vision_multicast_port = config.vision_multicast_port;
     //isOurColorYellow = config.is_yellow;
@@ -70,9 +72,8 @@ void VisionNodelet::timerCb(const ros::TimerEvent &event) {
     }
 }
 
-void VisionNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg)
-{
-        isOurColorYellow = msg->color == parsian_msgs::parsian_team_config::YELLOW;
-        isOurSideLeft = msg->side == parsian_msgs::parsian_team_config::LEFT;
+void VisionNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
+    isOurColorYellow = msg->color == parsian_msgs::parsian_team_config::YELLOW;
+    isOurSideLeft = msg->side == parsian_msgs::parsian_team_config::LEFT;
 }
 

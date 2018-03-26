@@ -15,7 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         nodelet
         parsian_msgs
+	roslint
         )
+
+roslint_cpp()
+roslint_python()
 
 find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui)
 include(${QT_USE_FILE})
@@ -137,7 +141,8 @@ install(FILES
 
 
 catkin_install_python(PROGRAMS script/latency.py
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+				script/blackboardconsole.py
+	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 #############
 ## Testing ##
 #############

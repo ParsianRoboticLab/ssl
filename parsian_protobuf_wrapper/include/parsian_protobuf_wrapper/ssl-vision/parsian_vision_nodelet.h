@@ -27,41 +27,41 @@
 
 namespace parsian_protobuf_wrapper {
 
-    class VisionNodelet : public nodelet::Nodelet {
+class VisionNodelet : public nodelet::Nodelet {
 
 
-    private:
-        virtual void onInit();
+private:
+    virtual void onInit();
 
 
-        // Timer CallBack (to publish)
-        void timerCb(const ros::TimerEvent& event);
-        void reconnect();
-        void configCb(const protobuf_wrapper_config::visionConfig &config , uint32_t level);
+    // Timer CallBack (to publish)
+    void timerCb(const ros::TimerEvent& event);
+    void reconnect();
+    void configCb(const protobuf_wrapper_config::visionConfig &config , uint32_t level);
 
-        ros::Publisher ssl_geometry_pub;
-        ros::Publisher ssl_detection_pub;
+    ros::Publisher ssl_geometry_pub;
+    ros::Publisher ssl_detection_pub;
 //        ros::Publisher ssl_wrapper_pub;
 
-        ros::Subscriber team_config_sub;
+    ros::Subscriber team_config_sub;
 
-        ros::Timer timer;
+    ros::Timer timer;
 
-        boost::shared_ptr<dynamic_reconfigure::Server<protobuf_wrapper_config::visionConfig> > configServer;
-        parsian_msgs::ssl_vision_wrapperPtr wrapper;
+    boost::shared_ptr<dynamic_reconfigure::Server<protobuf_wrapper_config::visionConfig> > configServer;
+    parsian_msgs::ssl_vision_wrapperPtr wrapper;
 
-        void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
+    void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
 
-        bool isOurColorYellow = false, isOurSideLeft = false;
-        RoboCupSSLClient *vision;
-        protobuf_wrapper_config::visionConfig visionConfig;
-        SSL_WrapperPacket vision_packet;
-        std::string teamColor;
+    bool isOurColorYellow = false, isOurSideLeft = false;
+    RoboCupSSLClient *vision;
+    protobuf_wrapper_config::visionConfig visionConfig;
+    SSL_WrapperPacket vision_packet;
+    std::string teamColor;
 
-        int packs;
+    int packs;
 
 
-    };
+};
 }
 
 #endif //PARSIAN_PROTOBUF_WRAPPER_PARSIAN_VISION_NODELET_H_H

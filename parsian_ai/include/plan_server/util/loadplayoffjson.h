@@ -12,8 +12,7 @@
 
 #define API_VERSION 1.2
 
-class CLoadPlayOffJson : public CPlanLoader
-{
+class CLoadPlayOffJson : public CPlanLoader {
 
     Q_OBJECT
 
@@ -26,7 +25,9 @@ public:
     bool save(QString _file);
     bool saveAll();
 
-    QList<NGameOff::SPlan*> getPlans() {return m_plans;}
+    QList<NGameOff::SPlan*> getPlans() {
+        return m_plans;
+    }
 
     QString getModeStr(POMODE _mode);
 protected:

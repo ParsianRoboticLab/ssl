@@ -46,8 +46,8 @@ protected:
     /*!
       \brief accessible only from derived classes
      */
-    Region2D()
-      { }
+    Region2D() {
+    }
 
 public:
 
@@ -55,8 +55,8 @@ public:
       \brief virtual destructor.
      */
     virtual
-    ~Region2D()
-      { }
+    ~Region2D() {
+    }
 
     /*!
       \brief get the area of this region
@@ -71,7 +71,7 @@ public:
       \return true or false
     */
     virtual
-    bool contains( const Vector2D & point ) const = 0;
+    bool contains(const Vector2D & point) const = 0;
 
 };
 

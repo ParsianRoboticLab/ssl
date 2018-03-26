@@ -6,14 +6,14 @@
 
 using namespace std;
 
-class C2DTree{
+class C2DTree {
 public:
     C2DTree();
     ~C2DTree();
     void add(state*);
     void removeAll();
     state *findNearest(Vector2D);
-    void drawBranch(state* , state* , QColor );
+    void drawBranch(state* , state* , QColor);
     int size();
     state* makeBalanced(state** , int , int , int);
 
@@ -21,9 +21,9 @@ public:
     int k;
     state *allNodes[1000];
 private:
-    void quicksort( state *a[] , int lo , int hi , int k);
+    void quicksort(state *a[] , int lo , int hi , int k);
     void addNode(state* const & , state*& , int);
-    state *findNearestNode( Vector2D & , state * const & , int);
+    state *findNearestNode(Vector2D & , state * const & , int);
     void removeBranch(state *);
 
     int cnt , mod;

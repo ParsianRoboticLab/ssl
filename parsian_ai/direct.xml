@@ -1,0 +1,7 @@
+<library path="lib/libdirect_nodelet">
+    <class name="parsian_ai/DirectNodelet" type="parsian_ai::DirectNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            just another behavior for parsian ssl
+        </description>
+    </class>
+</library>

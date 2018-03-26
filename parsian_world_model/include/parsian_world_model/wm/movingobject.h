@@ -11,8 +11,7 @@
 
 class CRawObject;
 
-class MovingObject
-{
+class MovingObject {
 protected:
     int vanishedCounter;
     double lastInsight;
@@ -21,10 +20,10 @@ protected:
     int lastFrameKalmanReset;
     int frameCounter;
     int stoppedFrames;
-	QList<Vector2D> lastSpeeds;
-	QList<double> lastAngularSpeeds;
-public:    		
-    MovingObject(bool resetToZero=true);
+    QList<Vector2D> lastSpeeds;
+    QList<double> lastAngularSpeeds;
+public:
+    MovingObject(bool resetToZero = true);
     CRawObject* observation;
     QQueue<CRawObject*> hist;
 
@@ -34,7 +33,7 @@ public:
     Vector2D vel;
     Vector2D acc;
 
-    double angularVel;    
+    double angularVel;
 
     double inSight;
     double obstacleRadius;
@@ -42,9 +41,9 @@ public:
     int lastFrameUpdated;
     bool modelObjStopped;
     Vector2D modelObjStopPos;
-    Vector2D modelDir,modelCurDir;
+    Vector2D modelDir, modelCurDir;
     double modelSampleTime;
-    double modelC0,modelC1,modelC2; //c2 * x^2 + c1 * x + c0
+    double modelC0, modelC1, modelC2; //c2 * x^2 + c1 * x + c0
     //finding model variables
     int modelFrameCnt;
     double modelC2Sum, modelC2Ave;

@@ -90,9 +90,9 @@ struct SPlayOffPlan {
         this->agentSize = _toCopy.agentSize;
         this->initPos   = _toCopy.initPos  ;
         this->config    = _toCopy.config   ;
-        for(int i = 0; i < _NUM_PLAYERS; i++) {
+        for (int i = 0; i < _NUM_PLAYERS; i++) {
             this->AgentPlan[i].clear();
-            for(int j = 0; j < _toCopy.AgentPlan[i].size(); j++) {
+            for (int j = 0; j < _toCopy.AgentPlan[i].size(); j++) {
                 this->AgentPlan[i].append(_toCopy.AgentPlan[i].at(j));
             }
         }
@@ -103,9 +103,9 @@ struct SPlayOffPlan {
         this->agentSize = _insert.agentSize;
         this->initPos   = _insert.initPos  ;
         this->config    = _insert.config   ;
-        for(int i = 0; i < _NUM_PLAYERS; i++) {
+        for (int i = 0; i < _NUM_PLAYERS; i++) {
             this->AgentPlan[i].clear();
-            for(int j = 0;j < _insert.AgentPlan[i].size();j++) {
+            for (int j = 0; j < _insert.AgentPlan[i].size(); j++) {
                 this->AgentPlan[i].append(_insert.AgentPlan[i].at(j));
             }
         }
@@ -160,7 +160,7 @@ struct SPositioningAgent {
         if (_state < positionArg.size()) {
             return positionArg.at(_state);
 
-       } else {
+        } else {
 
             DBUG(QString("getArgs : wrong absarg %1 < %2").arg(positionArg.size()).arg(_state), D_ERROR);
             SPositioningArg null;
@@ -222,7 +222,7 @@ struct SCommon {
     void addHistory(const int _story) {
         int tempSucces = _story - succesRate;
         history.append(_story);
-        succesRate += tempSucces/history.size();
+        succesRate += tempSucces / history.size();
     }
 
 private:
@@ -303,7 +303,7 @@ typedef QPair<NGameOff::AgentPoint, NGameOff::AgentPoint> AgentPair;
 using namespace NGameOff;
 
 enum FirstStep {Stay, Move, Done};
-enum BlockerSteps{S0,S1,S2,S3};
+enum BlockerSteps {S0, S1, S2, S3};
 
 class CPlayOff : public CMasterPlay {
 
@@ -313,7 +313,9 @@ public:
 
     void execute_x();
     void init(const QList <Agent*>& _agents);
-    virtual QString whoami() {return "PlayOff";}
+    virtual QString whoami() {
+        return "PlayOff";
+    }
     bool deleted;
 
     void setMasterPlan(SPlan* _thePlan);
@@ -367,7 +369,7 @@ private:
     bool BlockerExecute(int agentID);
     Agent* BlockerAgent;
     GotopointavoidAction* blockergpa;
-    enum BlockerStop{
+    enum BlockerStop {
         Diversion,
         BlockStop,
         TurnAndKick
@@ -378,16 +380,16 @@ private:
     POMODE getPlayOffMode();
     void getCostRec(double costArr[][_NUM_PLAYERS], int arrSize, QList<kkValue> &valueList, kkValue value, int size, int aId = 0);
     int kkGetIndex(kkValue &value, int cIndex);
-    bool chipOrNot(int passerID,int ReceiverID,int ReceiverState);
+    bool chipOrNot(int passerID, int ReceiverID, int ReceiverState);
     bool chipOrNot(const SPositioningArg& _posArg);
-    Vector2D getGoalTarget(int shoterID,int shoterState);
+    Vector2D getGoalTarget(int shoterID, int shoterState);
     Vector2D getGoalTarget(const long& _posArg);
-    double getMaxVel(int agentID,int agentState);
+    double getMaxVel(int agentID, int agentState);
     double getMaxVel(const CRolePlayOff* _roleAgent, const SPositioningArg& _posArg);
-    Vector2D getMoveTarget(int agentID,int agentState);
+    Vector2D getMoveTarget(int agentID, int agentState);
     Vector2D getMoveTarget(const SPositioningArg& _posArg);
     /// After life points
-    Vector2D getMarkTarget   (const SPositioningArg&);
+    Vector2D getMarkTarget(const SPositioningArg&);
     Vector2D getDefenseTarget(const SPositioningArg&);
     Vector2D getSupportTarget(const SPositioningArg&);
     ///
@@ -415,7 +417,7 @@ private:
     CRolePlayOff *roleAgent[_NUM_PLAYERS];
     CRolePlayOff *tempAgent;
     CRolePlayOff *newRoleAgent[_NUM_PLAYERS];
-    enum BlockerDetector{
+    enum BlockerDetector {
         penaltyAreaBlock   = 0b001,
         centralRegionBlock = 0b010,
         RoundRegionBlock   = 0b100
@@ -447,30 +449,30 @@ private:
     bool isPlanDone();
     bool isPlanFaild();
     bool setTimer;
-    long tempStart;
+    unsigned int tempStart;
     ////////////////////////////
 
-    bool isKickDone    (CRolePlayOff*);
+    bool isKickDone(CRolePlayOff*);
     bool isOneTouchDone(CRolePlayOff*);
-    bool isMoveDone    (const CRolePlayOff*);
-    bool isReceiveDone (const CRolePlayOff*);
+    bool isMoveDone(const CRolePlayOff*);
+    bool isReceiveDone(const CRolePlayOff*);
     void assignTasks();
     void fillRoleProperties();
     void posExecute();
     void checkEndState();
     bool isPlanEnd();
-    void assignTask     (CRolePlayOff*, const SPositioningAgent&);
-    void assignPass     (CRolePlayOff*, const SPositioningAgent&);
-    void assignMove     (CRolePlayOff*, const SPositioningAgent&);
-    void assignOneTouch (CRolePlayOff*, const SPositioningAgent&);
-    void assignGoalie   (CRolePlayOff*, const SPositioningAgent&);
-    void assignDefense  (CRolePlayOff*, const SPositioningAgent&);
-    void assignMark     (CRolePlayOff*, const SPositioningAgent&);
-    void assignPosition (CRolePlayOff*, const SPositioningAgent&);
-    void assignSupport  (CRolePlayOff*, const SPositioningAgent&);
+    void assignTask(CRolePlayOff*, const SPositioningAgent&);
+    void assignPass(CRolePlayOff*, const SPositioningAgent&);
+    void assignMove(CRolePlayOff*, const SPositioningAgent&);
+    void assignOneTouch(CRolePlayOff*, const SPositioningAgent&);
+    void assignGoalie(CRolePlayOff*, const SPositioningAgent&);
+    void assignDefense(CRolePlayOff*, const SPositioningAgent&);
+    void assignMark(CRolePlayOff*, const SPositioningAgent&);
+    void assignPosition(CRolePlayOff*, const SPositioningAgent&);
+    void assignSupport(CRolePlayOff*, const SPositioningAgent&);
 
-    void assignKick     (CRolePlayOff*, const SPositioningAgent&, bool _chip);
-    void assignReceive  (CRolePlayOff*, const SPositioningAgent&, bool _ignoreAngle);
+    void assignKick(CRolePlayOff*, const SPositioningAgent&, bool _chip);
+    void assignReceive(CRolePlayOff*, const SPositioningAgent&, bool _ignoreAngle);
     QPair<int, int> findTheLastShoot(const SExecution& _plan);
     void findThePasserandReciver(const SExecution&, QList<AgentPair> &_pairList);
     int findReceiver(int _passer, int _state);
@@ -492,7 +494,7 @@ private:
     Vector2D getDynamicTarget(int i);
 
     int dynamicAgentSize;
-    bool ready,pass,shot;
+    bool ready, pass, shot;
     int dynamicState;
     long dynamicStartTime;
 

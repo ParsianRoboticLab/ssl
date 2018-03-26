@@ -3,8 +3,7 @@
 
 #include "parsian_ai/plays/masterplay.h"
 
-class CStopPlay : public CMasterPlay
-{
+class CStopPlay : public CMasterPlay {
 public:
     CStopPlay();
     ~CStopPlay() override;

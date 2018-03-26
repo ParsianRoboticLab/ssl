@@ -6,27 +6,31 @@ CTheirIndirect::CTheirIndirect() : CMasterPlay() {
 
 }
 
-CTheirIndirect::~CTheirIndirect(){
+CTheirIndirect::~CTheirIndirect() {
 
 }
 
-void CTheirIndirect::reset(){
-	executedCycles = 0;
+void CTheirIndirect::reset() {
+    executedCycles = 0;
 }
 
-void CTheirIndirect::init(const QList<Agent*>& _agents){
-	setAgentsID(_agents);
-	initMaster();
+void CTheirIndirect::init(const QList<Agent*>& _agents) {
+    setAgentsID(_agents);
+    initMaster();
 
-//	if( knowledge->getLastPlayExecuted() != TheirIndirectPlay ){
-//		reset();
-//	}
-//	knowledge->setLastPlayExecuted(TheirIndirectPlay);
+//  if( knowledge->getLastPlayExecuted() != TheirIndirectPlay ){
+//    reset();
+//  }
+//  knowledge->setLastPlayExecuted(TheirIndirectPlay);
 }
 
-void CTheirIndirect::execute_x(){
-	if (agents.empty()) return;
+void CTheirIndirect::execute_x() {
+    if (agents.empty()) {
+        return;
+    }
     executedCycles++;
     chooseBlocker();
-    if (agents.size() > 1) appendRemainingsAgents(markAgents);
+    if (agents.size() > 1) {
+        appendRemainingsAgents(markAgents);
+    }
 }

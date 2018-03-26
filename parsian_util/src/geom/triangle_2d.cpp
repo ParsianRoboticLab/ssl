@@ -44,19 +44,17 @@ namespace rcsc {
 
  */
 bool
-Triangle2D::contains( const Vector2D & point ) const
-{
-    Vector2D rel1( M_a - point );
-    Vector2D rel2( M_b - point );
-    Vector2D rel3( M_c - point );
+Triangle2D::contains(const Vector2D & point) const {
+    Vector2D rel1(M_a - point);
+    Vector2D rel2(M_b - point);
+    Vector2D rel3(M_c - point);
 
-    double outer1 = rel1.outerProduct( rel2 );
-    double outer2 = rel2.outerProduct( rel3 );
-    double outer3 = rel3.outerProduct( rel1 );
+    double outer1 = rel1.outerProduct(rel2);
+    double outer2 = rel2.outerProduct(rel3);
+    double outer3 = rel3.outerProduct(rel1);
 
-    if ( (outer1 >= 0.0 && outer2 >= 0.0 && outer3 >= 0.0)
-         || (outer1 <= 0.0 && outer2 <= 0.0 && outer3 <= 0.0) )
-    {
+    if ((outer1 >= 0.0 && outer2 >= 0.0 && outer3 >= 0.0)
+            || (outer1 <= 0.0 && outer2 <= 0.0 && outer3 <= 0.0)) {
         return true;
     }
 
@@ -68,47 +66,40 @@ Triangle2D::contains( const Vector2D & point ) const
 
  */
 int
-Triangle2D::intersection( const Line2D & line,
-                          Vector2D * sol1,
-                          Vector2D * sol2 ) const
-{
+Triangle2D::intersection(const Line2D & line,
+                         Vector2D * sol1,
+                         Vector2D * sol2) const {
     int n_sol = 0;
     Vector2D tsol[2];
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = Segment2D( a(), b() ).intersection( line ) ).isValid() )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = Segment2D(a(), b()).intersection(line)).isValid()) {
         ++n_sol;
     }
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = Segment2D( b(), c() ).intersection( line ) ).isValid() )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = Segment2D(b(), c()).intersection(line)).isValid()) {
         ++n_sol;
     }
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = Segment2D( c(), a() ).intersection( line ) ).isValid() )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = Segment2D(c(), a()).intersection(line)).isValid()) {
         ++n_sol;
     }
 
-    if ( n_sol == 2
-         && std::fabs( tsol[0].x - tsol[1].x ) < 1.0e-5
-         && std::fabs( tsol[0].y - tsol[1].y ) < 1.0e-5 )
-    {
+    if (n_sol == 2
+            && std::fabs(tsol[0].x - tsol[1].x) < 1.0e-5
+            && std::fabs(tsol[0].y - tsol[1].y) < 1.0e-5) {
         n_sol = 1;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol[0];
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol[1];
     }
 
@@ -120,35 +111,30 @@ Triangle2D::intersection( const Line2D & line,
 
  */
 int
-Triangle2D::intersection( const Ray2D & ray,
-                          Vector2D * sol1,
-                          Vector2D * sol2 ) const
-{
+Triangle2D::intersection(const Ray2D & ray,
+                         Vector2D * sol1,
+                         Vector2D * sol2) const {
     Vector2D tsol1, tsol2;
-    int n_sol = intersection( ray.line(), &tsol1, &tsol2 );
+    int n_sol = intersection(ray.line(), &tsol1, &tsol2);
 
-    if ( n_sol > 1
-         && ! ray.inRightDir( tsol2, 1.0 ) )
-    {
+    if (n_sol > 1
+            && ! ray.inRightDir(tsol2, 1.0)) {
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && ! ray.inRightDir( tsol1, 1.0 ) )
-    {
+    if (n_sol > 0
+            && ! ray.inRightDir(tsol1, 1.0)) {
         tsol1 = tsol2;
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol1;
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol2;
     }
 
@@ -160,35 +146,30 @@ Triangle2D::intersection( const Ray2D & ray,
 
  */
 int
-Triangle2D::intersection( const Segment2D & segment,
-                          Vector2D * sol1,
-                          Vector2D * sol2 ) const
-{
+Triangle2D::intersection(const Segment2D & segment,
+                         Vector2D * sol1,
+                         Vector2D * sol2) const {
     Vector2D tsol1, tsol2;
-    int n_sol = intersection( segment.line(), &tsol1, &tsol2 );
+    int n_sol = intersection(segment.line(), &tsol1, &tsol2);
 
-    if ( n_sol > 1
-         && ! segment.contains( tsol2 ) )
-    {
+    if (n_sol > 1
+            && ! segment.contains(tsol2)) {
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && ! segment.contains( tsol1 ) )
-    {
+    if (n_sol > 0
+            && ! segment.contains(tsol1)) {
         tsol1 = tsol2;
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol1;
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol2;
     }
 
@@ -200,21 +181,20 @@ Triangle2D::intersection( const Segment2D & segment,
 
  */
 Vector2D
-Triangle2D::incenter( const Vector2D & a,
-                      const Vector2D & b,
-                      const Vector2D & c )
-{
+Triangle2D::incenter(const Vector2D & a,
+                     const Vector2D & b,
+                     const Vector2D & c) {
     Vector2D ab = b - a;
     Vector2D ac = c - a;
-    Line2D bisect_a( a,
-                     AngleDeg::bisect( ab.th(), ac.th() ) );
+    Line2D bisect_a(a,
+                    AngleDeg::bisect(ab.th(), ac.th()));
 
     Vector2D ba = a - b;
     Vector2D bc = c - b;
-    Line2D bisect_b( b,
-                     AngleDeg::bisect( ba.th(), bc.th() ) );
+    Line2D bisect_b(b,
+                    AngleDeg::bisect(ba.th(), bc.th()));
 
-    return bisect_a.intersection( bisect_b );
+    return bisect_a.intersection(bisect_b);
 }
 
 /*-------------------------------------------------------------------*/
@@ -222,33 +202,29 @@ Triangle2D::incenter( const Vector2D & a,
 
  */
 Vector2D
-Triangle2D::circumcenter( const Vector2D & a,
-                          const Vector2D & b,
-                          const Vector2D & c )
-{
+Triangle2D::circumcenter(const Vector2D & a,
+                         const Vector2D & b,
+                         const Vector2D & c) {
     Line2D perpendicular_ab
-        = Line2D::perpendicular_bisector( a, b );
+        = Line2D::perpendicular_bisector(a, b);
 
     Line2D perpendicular_bc
-        = Line2D::perpendicular_bisector( b, c );
+        = Line2D::perpendicular_bisector(b, c);
 
-    Vector2D sol = perpendicular_ab.intersection( perpendicular_bc );
+    Vector2D sol = perpendicular_ab.intersection(perpendicular_bc);
 
-    if ( ! sol.isValid() )
-    {
+    if (! sol.isValid()) {
         Line2D perpendicular_ca
-            = Line2D::perpendicular_bisector( c, a );
-        sol = perpendicular_ab.intersection( perpendicular_ca );
+            = Line2D::perpendicular_bisector(c, a);
+        sol = perpendicular_ab.intersection(perpendicular_ca);
 
-        if ( sol.isValid() )
-        {
+        if (sol.isValid()) {
             return sol;
         }
 
-        sol = perpendicular_bc.intersection( perpendicular_ca );
+        sol = perpendicular_bc.intersection(perpendicular_ca);
 
-        if ( sol.isValid() )
-        {
+        if (sol.isValid()) {
             return sol;
         }
     }
@@ -288,9 +264,8 @@ Triangle2D::circumcenter( const Vector2D & a,
     Vector2D ab = b - a;
     Vector2D ca = c - a;
 
-    double tmp = ab.outerProduct( ca );
-    if( std::fabs( tmp ) < 1.0e-10 )
-    {
+    double tmp = ab.outerProduct(ca);
+    if (std::fabs(tmp) < 1.0e-10) {
         // The area of parallelogram is 0.
         std::cerr << "Triangle2D::circumcenter()"
                   << " ***ERROR*** at least, two vertex points have same coordiante.\n"
@@ -298,18 +273,18 @@ Triangle2D::circumcenter( const Vector2D & a,
                   << b << '\n'
                   << c << '\n'
                   << std::endl;
-        return Vector2D( Vector2D::INVALIDATED );
+        return Vector2D(Vector2D::INVALIDATED);
     }
 
     double inv = 0.5 / tmp;
     double ab_len2 = ab.r2();
     double ca_len2 = ca.r2();
-    double xcc = inv * ( ab_len2 * ca.y - ca_len2 * ab.y );
-    double ycc = inv * ( ab.x * ca_len2 - ca.x * ab_len2 );
+    double xcc = inv * (ab_len2 * ca.y - ca_len2 * ab.y);
+    double ycc = inv * (ab.x * ca_len2 - ca.x * ab_len2);
 
 
     // circle radius = xcc*xcc + ycc*ycc
-    return Vector2D( a.x + xcc, a.y + ycc );
+    return Vector2D(a.x + xcc, a.y + ycc);
 }
 
 /*-------------------------------------------------------------------*/
@@ -317,14 +292,13 @@ Triangle2D::circumcenter( const Vector2D & a,
 
  */
 Vector2D
-Triangle2D::orthocenter( const Vector2D & a,
-                         const Vector2D & b,
-                         const Vector2D & c )
-{
-    Line2D perpend_a = Line2D( b, c ).perpendicular( a );
-    Line2D perpend_b = Line2D( c, a ).perpendicular( b );
+Triangle2D::orthocenter(const Vector2D & a,
+                        const Vector2D & b,
+                        const Vector2D & c) {
+    Line2D perpend_a = Line2D(b, c).perpendicular(a);
+    Line2D perpend_b = Line2D(c, a).perpendicular(b);
 
-    return perpend_a.intersection( perpend_b );
+    return perpend_a.intersection(perpend_b);
 }
 
 /*-------------------------------------------------------------------*/
@@ -332,22 +306,20 @@ Triangle2D::orthocenter( const Vector2D & a,
 
  */
 bool
-Triangle2D::contains( const Vector2D & a,
-                      const Vector2D & b,
-                      const Vector2D & c,
-                      const Vector2D & point )
-{
-    Vector2D rel1( a - point );
-    Vector2D rel2( b - point );
-    Vector2D rel3( c - point );
+Triangle2D::contains(const Vector2D & a,
+                     const Vector2D & b,
+                     const Vector2D & c,
+                     const Vector2D & point) {
+    Vector2D rel1(a - point);
+    Vector2D rel2(b - point);
+    Vector2D rel3(c - point);
 
-    double outer1 = rel1.outerProduct( rel2 );
-    double outer2 = rel2.outerProduct( rel3 );
-    double outer3 = rel3.outerProduct( rel1 );
+    double outer1 = rel1.outerProduct(rel2);
+    double outer2 = rel2.outerProduct(rel3);
+    double outer3 = rel3.outerProduct(rel1);
 
-    if ( (outer1 >= 0.0 && outer2 >= 0.0 && outer3 >= 0.0)
-         || (outer1 <= 0.0 && outer2 <= 0.0 && outer3 <= 0.0) )
-    {
+    if ((outer1 >= 0.0 && outer2 >= 0.0 && outer3 >= 0.0)
+            || (outer1 <= 0.0 && outer2 <= 0.0 && outer3 <= 0.0)) {
         return true;
     }
 

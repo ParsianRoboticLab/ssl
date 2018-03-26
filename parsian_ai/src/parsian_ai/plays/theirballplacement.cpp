@@ -4,15 +4,15 @@ CTheirBallPlacement::CTheirBallPlacement() : CMasterPlay() {
 
 }
 
-CTheirBallPlacement::~CTheirBallPlacement(){
+CTheirBallPlacement::~CTheirBallPlacement() {
 
 }
 
-void CTheirBallPlacement::reset(){
+void CTheirBallPlacement::reset() {
 
 }
 
-void CTheirBallPlacement::init(const QList<Agent*>& _agents){
+void CTheirBallPlacement::init(const QList<Agent*>& _agents) {
     setAgentsID(_agents);
     initMaster();
 
@@ -23,6 +23,6 @@ void CTheirBallPlacement::init(const QList<Agent*>& _agents){
 }
 
 
-void CTheirBallPlacement::execute_x(){
+void CTheirBallPlacement::execute_x() {
 
 }

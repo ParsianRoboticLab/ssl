@@ -8,15 +8,13 @@
 #include <eigen3/Eigen/Dense>
 
 
-class newKalman
-{
+class newKalman {
 public:
     newKalman();
 };
 
 template <int DIM, int MDIM>
-class KalmanFilter
-{
+class KalmanFilter {
 public:
     typedef Eigen::Matrix<double, DIM, DIM> Matrix;
     typedef Eigen::Matrix<double, MDIM, DIM> MatrixM;
@@ -27,23 +25,21 @@ public:
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     explicit KalmanFilter(const Vector &x) :
-            F(Matrix::Identity()),
-            B(Matrix::Identity()),
-            u(Vector::Zero()),
-            Q(Matrix::Zero()),
-            H(MatrixM::Zero()),
-            R(MatrixMM::Zero()),
-            z(VectorM::Zero()),
-            m_xm(x),
-            m_Pm(Matrix::Identity()),
-            m_x(x),
-            m_P(Matrix::Identity())
-    {
+        F(Matrix::Identity()),
+        B(Matrix::Identity()),
+        u(Vector::Zero()),
+        Q(Matrix::Zero()),
+        H(MatrixM::Zero()),
+        R(MatrixMM::Zero()),
+        z(VectorM::Zero()),
+        m_xm(x),
+        m_Pm(Matrix::Identity()),
+        m_x(x),
+        m_P(Matrix::Identity()) {
     }
 
 public:
-    void predict(bool permanentUpdate)
-    {
+    void predict(bool permanentUpdate) {
         m_xm = F * m_x + u;
         m_Pm = B * m_P * B.transpose() + Q;
         if (permanentUpdate) {
@@ -52,8 +48,7 @@ public:
         }
     }
 
-    void update()
-    {
+    void update() {
         VectorM y = z - H * m_xm;
         MatrixMM S = H * m_Pm * H.transpose() + R;
         Eigen::Matrix<double, DIM, MDIM> K = m_Pm * H.transpose() * S.inverse();
@@ -61,19 +56,16 @@ public:
         m_P = (Matrix::Identity() - K * H) * m_Pm;
     }
 
-    const Vector& state() const
-    {
+    const Vector& state() const {
         return m_xm;
     }
 
-    const Vector& baseState() const
-    {
+    const Vector& baseState() const {
         return m_x;
     }
 
     // !!! Use with care
-    void modifyState(int index, double value)
-    {
+    void modifyState(int index, double value) {
         m_xm(index) = value;
     }
 

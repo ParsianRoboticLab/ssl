@@ -3,14 +3,14 @@
 
 #include "masterplay.h"
 
-class CTheirKickOff : public CMasterPlay{
+class CTheirKickOff : public CMasterPlay {
 public:
-	CTheirKickOff();
-	~CTheirKickOff();
-	void execute_x();
-	void init(const QList <Agent*>& _agents);
+    CTheirKickOff();
+    ~CTheirKickOff();
+    void execute_x();
+    void init(const QList <Agent*>& _agents);
 private:
-	void reset();
+    void reset();
 };
 
 #endif // THEIRKICKOFF_H

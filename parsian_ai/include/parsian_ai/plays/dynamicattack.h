@@ -116,7 +116,7 @@ private:
     int maxHorizontalDistID(const QList<Vector2D>& _points);
 
     ///////////////////
-    bool isPathClear(Vector2D _pos1,Vector2D _pos2, double rad,double t);
+    bool isPathClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
     inline bool chipOrNot(Vector2D target,
                           double _radius = 1, double _treshold = .5);
@@ -137,13 +137,13 @@ private:
     CRoleDynamic *roleAgentPM;
 
     ////////Plan Making
-    bool isDefenseClearing,isWeHaveBall,noPlanException;
-    bool directShot,fast,critical,ballInOppJaw;
+    bool isDefenseClearing, isWeHaveBall, noPlanException;
+    bool directShot, fast, critical, ballInOppJaw;
     ////////////////////
 
-    double shotProb,shotAngle;
-    bool passFlag,repeatFlag;
-    int counter,passerID,lastPasserRoleIndex;
+    double shotProb, shotAngle;
+    bool passFlag, repeatFlag;
+    int counter, passerID, lastPasserRoleIndex;
     long lastTime;
     QList<Agent*> mahiPositionAgents;
     QList<Vector2D> dynamicPosition;

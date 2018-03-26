@@ -4,23 +4,23 @@ COurPenalty::COurPenalty() = default;
 
 COurPenalty::~COurPenalty() = default;
 
-void COurPenalty::reset(){
-	positioningPlan.reset();
-	executedCycles = 0;
+void COurPenalty::reset() {
+    positioningPlan.reset();
+    executedCycles = 0;
 }
 
-void COurPenalty::init(const QList<Agent*>& _agents){
-	setAgentsID(_agents);
-	initMaster();
+void COurPenalty::init(const QList<Agent*>& _agents) {
+    setAgentsID(_agents);
+    initMaster();
 
     // TODO : Last Play seems important!
-//	if( knowledge->getLastPlayExecuted() != OurPenaltyPlay ){
-//		reset();
-//	}
-//	knowledge->setLastPlayExecuted(OurPenaltyPlay);
+//  if( knowledge->getLastPlayExecuted() != OurPenaltyPlay ){
+//    reset();
+//  }
+//  knowledge->setLastPlayExecuted(OurPenaltyPlay);
 }
 
-void COurPenalty::penaltyKick(){
+void COurPenalty::penaltyKick() {
     executedCycles++;
     if (gameState->penaltyShootout()) {
         playOnFlag = false;
@@ -33,7 +33,9 @@ void COurPenalty::penaltyKick(){
 
 }
 
-void COurPenalty::execute_x(){
-    if (agents.empty()) return;
+void COurPenalty::execute_x() {
+    if (agents.empty()) {
+        return;
+    }
     penaltyKick();
 }

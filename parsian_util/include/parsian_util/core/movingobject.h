@@ -10,8 +10,7 @@
 #include <parsian_util/tools/debuger.h>
 #include <parsian_util/tools/drawer.h>
 
-class CMovingObject
-{
+class CMovingObject {
 public:
     CMovingObject();
     CMovingObject(const parsian_msgs::parsian_robot& _pr);

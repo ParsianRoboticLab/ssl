@@ -13,9 +13,15 @@ find_package(catkin REQUIRED COMPONENTS
 		roscpp
 		rospy
 		nodelet
+		roslint
 		)
 
+
+roslint_cpp()
+roslint_python()
+
 ## System dependencies are found with CMake's conventions
+
 
 ## Qt4 
 find_package(Qt4 REQUIRED COMPONENTS QtNetwork QtCore)

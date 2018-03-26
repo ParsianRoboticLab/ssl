@@ -39,22 +39,19 @@ namespace rcsc {
 
 //const double Vector2D::ERROR_VALUE = std::numeric_limits< double >::max();
 const double Vector2D::ERROR_VALUE = 5000.0;
-const Vector2D Vector2D::INVALIDATED( Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE );
+const Vector2D Vector2D::INVALIDATED(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
 
 }
 
-int sign( double d1 )
-{
-  return (d1>0)?1:-1;
+int sign(double d1) {
+    return (d1 > 0) ? 1 : -1;
 }
 
-double max( double d1, double d2 )
-{
-  return (d1>d2)?d1:d2;
+double max(double d1, double d2) {
+    return (d1 > d2) ? d1 : d2;
 }
 
-double min( double d1, double d2 )
-{
-  return (d1<d2)?d1:d2;
+double min(double d1, double d2) {
+    return (d1 < d2) ? d1 : d2;
 }
 

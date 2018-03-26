@@ -26,8 +26,7 @@ struct Fault {
 
 
 class CSkill;
-class Agent
-{
+class Agent {
 public:
     class Abilities {
     public:
@@ -66,19 +65,21 @@ public:
     bool changeIsNeeded;
 
     Vector2D homePos;
-    void accelerationLimiter(double vf,bool diveMode = false);
+    void accelerationLimiter(double vf, bool diveMode = false);
     double goalVisibility;
     QTime agentStopTime;
     bool timerReset;
 
     explicit Agent(int _ID);
-    bool startTrain;bool stopTrain;double wh1,wh2,wh3,wh4;
+    bool startTrain;
+    bool stopTrain;
+    double wh1, wh2, wh3, wh4;
     bool starter;
     bool canRecvPass;
     bool idle;
     int id();
     int commandId();
-    bool trajectory(double& vf,double& vn,double& va,double w1,double w2,double w3,double w4,bool &stop);
+    bool trajectory(double& vf, double& vn, double& va, double w1, double w2, double w3, double w4, bool &stop);
     void loadProfiles();
     double getVisibility();
     void setVisibility(const double &inSight);
@@ -86,7 +87,7 @@ public:
     bool notVisible();
 
     void setOnOffState(bool state);
-    void setCommandID  (int ID);
+    void setCommandID(int ID);
 
     bool shootSensor();
     void setShootSensor(bool b);
@@ -114,7 +115,7 @@ public:
     char getRoller();
     void waitHere();
 
-    double v1L,v2L,v3L,v4L;
+    double v1L, v2L, v3L, v4L;
     double vforwardL, vnormalL, vangularL;
 
     QString localName, prevLocalName;
@@ -124,27 +125,27 @@ public:
     float getMotorMaxRadPerSec();
     float getvLimit();
     float getwLimit();
-    double v1,v2,v3,v4;
+    double v1, v2, v3, v4;
     int roller;
     double kickSpeed;
 
-    int sumEX,sumEY,lastEX,lastEY;
+    int sumEX, sumEY, lastEX, lastEY;
 
     double shotProfile[32][2];
     double chipProfile[32][2];
 
     double getKickValue(bool chip, bool spin, double v);
-    double kickValueSpeed(double value,bool spinner);
-    double kickSpeedValue(double speed,bool spinner);
-    double chipValueDistance(double value,bool spinner);
-    double chipDistanceValue(double distance,bool spinner);
+    double kickValueSpeed(double value, bool spinner);
+    double kickSpeedValue(double speed, bool spinner);
+    double chipValueDistance(double value, bool spinner);
+    double chipDistanceValue(double distance, bool spinner);
 
-    int kickValueForDistance( double dist, double finalVel);
+    int kickValueForDistance(double dist, double finalVel);
 
     bool requestBit , chip, forceKick, forceKickCounter, lowSpeedMode;
     bool beep;
     double vforward, vnormal, vangular;
-    double _ACC,_DEC;
+    double _ACC, _DEC;
     Vector2D oneTouchCheck(Vector2D positioningPos, Vector2D* oneTouchDir);
     vector<Vector2D> pathPlannerResult;
     Vector2D plannerAverageDir;
@@ -155,14 +156,14 @@ public:
     void jacobian(double _vx, double _vy, double _w, double &v1, double &v2, double &v3, double &v4);
 
 private:
-    void jacobianInverse(double _v1, double _v2, double _v3, double _v4,double &_vx, double &_vy, double &_w);
+    void jacobianInverse(double _v1, double _v2, double _v3, double _v4, double &_vx, double &_vy, double &_w);
     bool calibrateGyro;
     unsigned int packetNum;
-    double lastVf,lastVn;
+    double lastVf, lastVn;
     short int selfID;
-    const double Gravity= 9.8;
+    const double Gravity = 9.8;
     double getVar(const double* data);
-    Matrix ANN_forward( Matrix input );
+    Matrix ANN_forward(Matrix input);
 public:
 
     ros::Publisher planner_pub;

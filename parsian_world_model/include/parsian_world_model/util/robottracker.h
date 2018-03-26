@@ -3,8 +3,7 @@
 
 #include <parsian_world_model/util/tracker.h>
 
-class RobotTracker : public Tracker
-{
+class RobotTracker : public Tracker {
 private:
     double latency;
 
@@ -24,7 +23,7 @@ private:
 
     double stuck;
 
-    double boundTo(double x,double low,double high);
+    double boundTo(double x, double low, double high);
 
 protected:
     virtual Matrix& f(const Matrix &x, Matrix &I);// noiseless dynamics
@@ -45,10 +44,12 @@ public:
     RobotTracker(double _latency, bool _our_robot);
     virtual ~RobotTracker() {}
 
-    virtual void reset() { reset_on_obs = true; }
+    virtual void reset() {
+        reset_on_obs = true;
+    }
     void reset(double timestamp, float *state);
     virtual void observe(vraw obs, double timestamp);
-    virtual void observeNew(vraw obs,double _acc_x_sign,double _acc_y_sign);
+    virtual void observeNew(vraw obs, double _acc_x_sign, double _acc_y_sign);
     virtual Vector2D position(double time);
     virtual Vector2D velocity(double time);
     virtual Vector2D acceleration(double time);

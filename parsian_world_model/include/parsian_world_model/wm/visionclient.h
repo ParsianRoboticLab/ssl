@@ -22,8 +22,7 @@
 #define CAMERA_NUM 4
 #define OUT_OF_SIGHT_THRESHOLD 40
 
-class CVisionClient
-{
+class CVisionClient {
 public:
     QTime *vcTimer;
     CVisionBelief v[CAMERA_NUM];
@@ -32,15 +31,15 @@ public:
     double sampleT;
     int lastCamera;
     int activeCameras;
-	int frameCnt;
+    int frameCnt;
 
-	std::vector<Vector2D> boundaries[CAMERA_NUM];
+    std::vector<Vector2D> boundaries[CAMERA_NUM];
 
     CVisionClient();
     ~CVisionClient();
 
     void parse(const parsian_msgs::ssl_vision_detectionConstPtr& packet);
-	void merge(int camera_count=CAMERA_NUM);
+    void merge(int camera_count = CAMERA_NUM);
 };
 
 #define MAX_OBJECT 5
@@ -57,7 +56,7 @@ for (int i = 0; i < packet->##__COLOR__##.size();i++) { \
             { \
                     v[id].__TEAM__##Team[rob_id].removeAt(k); \
             } \
-    }	\
+    } \
     v[id].__TEAM__##Team[rob_id].append(raw); \
     v[id].outofsight_##__TEAM__##Team[rob_id] = 0; \
     __TEAM__##_insight[rob_id] = true; \

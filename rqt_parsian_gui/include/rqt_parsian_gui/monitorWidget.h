@@ -7,6 +7,7 @@
 #include "rqt_parsian_gui/guiDrawer.h"
 #include <ros/ros.h>
 #include <QWidget>
+#include <QTimer>
 #include <QString>
 #include <qcolor.h>
 #include <QMouseEvent>
@@ -33,12 +34,11 @@
 
 
 
-
 namespace rqt_parsian_gui
 {
     class MonitorWidget
             :public QOpenGLWidget {
-        Q_OBJECT
+    Q_OBJECT
     public:
         MonitorWidget();
         ~MonitorWidget();
@@ -51,24 +51,30 @@ namespace rqt_parsian_gui
         const double robot_radius_new = 0.0890;
         const double robot_radius_old = 0.0900;
         int getViewportWidth();
+        void showLogMode(bool isLogMode,bool isReplayMode);
+        QTimer *recShowTimer;
+        bool recShowBool;
+
+
+    public slots:
+        void showHideRec();
 
 
     protected:
 
-
         void initializeGL();
-
         void paintGL();
-        double cameraX,cameraY;
 
+        double cameraX,cameraY;
         double scaleFactor;
         void resizeGL(int width, int height);
         QPainter painter;
         void mousePressEvent(QMouseEvent *event);
+
+
         void wheelEvent(QWheelEvent *event);
-
-
     private:
+        bool isLogging,isReplaying;
         QSizeF viewportSize;
         QSizeF stadiumSize;
         QRectF field;
@@ -81,10 +87,11 @@ namespace rqt_parsian_gui
         double viewportWidth;
         double WH_RATIO;
         double coeff;
+
+
         Vector2D centralPoint;
-
-
         void qglClearColor(QColor clearColor);
+
         void setViewportWidth(int width);
 
         GLuint drawArc(double centerX, double centerY, double radius, int start, int end, QColor color = QColor(255, 255, 255),
@@ -97,8 +104,8 @@ namespace rqt_parsian_gui
 
         GLuint drawPoint(double x, double y, QColor color = QColor(0, 0, 0));
 
-        void drawText(double x, double y, QString text, QColor color, int size);
 
+        void drawText(double x, double y, QString text, QColor color, int size);
         void drawRobot(double x, double y, double ang, int ID, int comID, QColor color,QString str="", bool newRobots=false);
     };
 

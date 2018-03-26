@@ -35,7 +35,7 @@ public:
     Matrix(int rows, int columns, const float *m);
 
     double determinant();
-    double determinant(Matrix *mx,int n);
+    double determinant(Matrix *mx, int n);
 
 
     // this makes an identity matrix
@@ -82,10 +82,16 @@ public:
 
     const Matrix& scale(double factor);
 
-    inline double& e(int row, int col) const {return mat[row*c_+col];}
+    inline double& e(int row, int col) const {
+        return mat[row * c_ + col];
+    }
 
-    int nrows() const { return r_; }
-    int ncols() const { return c_; }
+    int nrows() const {
+        return r_;
+    }
+    int ncols() const {
+        return c_;
+    }
 
     void print() const;
 

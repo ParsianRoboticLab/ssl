@@ -2,10 +2,6 @@ import math
 
 
 class Point:
-    def __init__(self, point):
-        self.x = point.x
-        self.y = point.y
-
     def __init__(self, x, y):
         self.x = x
         self.y = y

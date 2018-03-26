@@ -13,21 +13,19 @@
 
 
 
-namespace rqt_parsian_gui
-{
+namespace rqt_parsian_gui {
 
-    class ModeChooser: public rqt_gui_cpp::Plugin
-    {
+class ModeChooser: public rqt_gui_cpp::Plugin {
     Q_OBJECT
-    public:
+public:
 
-        ModeChooser();
-        virtual void initPlugin(qt_gui_cpp::PluginContext& context);
-        virtual void shutdownPlugin();
-    private:
-        ros::NodeHandle n;
-        ros::NodeHandle n_private;
-        ModeChooserWidget* modeWidget;
-    };
+    ModeChooser();
+    virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+    virtual void shutdownPlugin();
+private:
+    ros::NodeHandle n;
+    ros::NodeHandle n_private;
+    ModeChooserWidget* modeWidget;
+};
 }
 #endif  // RQT_MODE_CHOOSER_H

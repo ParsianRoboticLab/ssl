@@ -13,22 +13,21 @@
 #include <parsian_world_model/util/balltracker.h>
 #include <parsian_util/base.h>
 
-class CBall : public MovingObject
-{
+class CBall : public MovingObject {
 private:
 //    CField field;
 //    Rect2D fieldRect;
     //Vector2D replPos, replVel;
     BallTracker* tracker;
-//	BallTracker* kalmantracker;
-//	RobotTracker* tracker;
+//  BallTracker* kalmantracker;
+//  RobotTracker* tracker;
     int old;
     int blindness;
     QList<Vector2D> ballHist;
     QList<Vector2D> ballLinearHist;
 public:
     static const double radius;
-    CBall(bool noKalman=false);
+    CBall(bool noKalman = false);
     ~CBall();
     virtual void filter(int vanished);
     virtual void init();
@@ -48,7 +47,7 @@ public:
     //model result functions
     Vector2D getDir();
     Vector2D getStopPos();
-    Vector2D getProjectionOfPointOnBallVeclocityDirection(Vector2D point,bool usepath=false);
+    Vector2D getProjectionOfPointOnBallVeclocityDirection(Vector2D point, bool usepath = false);
 
     bool isKicked();
     bool isPassed();
@@ -56,9 +55,9 @@ public:
     int  trakerInsistCounter;
     bool elementNotInSight;
 
-Property(Vector2D, ReplPos, replPos);
-Property(Vector2D, ReplVel, replVel);
-Property(bool, Replaced, repl);
+    Property(Vector2D, ReplPos, replPos);
+    Property(Vector2D, ReplVel, replVel);
+    Property(bool, Replaced, repl);
 };
 
 

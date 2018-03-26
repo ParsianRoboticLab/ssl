@@ -6,8 +6,7 @@
 
 Drawer* drawer;
 
-void Drawer::draw(const Rect2D& _rect, const QColor &_color, bool _filled)
-{
+void Drawer::draw(const Rect2D& _rect, const QColor &_color, bool _filled) {
     parsian_msgs::parsian_draw_rect drawRect;
 
     parsian_msgs::rect2D rect2D;
@@ -38,7 +37,7 @@ void Drawer::draw(const QString& _text, const Vector2D& _pos, const QColor& _col
 
 }
 
-void Drawer::draw(const Circle2D& _circle, int _startAng, int _endAng, const QColor& _color, bool _filled)  {
+void Drawer::draw(const Circle2D& _circle, int _startAng, int _endAng, const QColor& _color, bool _filled) {
 
     parsian_msgs::parsian_draw_circle drawCircle;
 

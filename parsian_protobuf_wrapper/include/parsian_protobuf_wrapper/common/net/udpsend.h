@@ -9,9 +9,8 @@
 #include "ros/ros.h"
 
 
-class UDPSend// : public QObject
-{
-   // Q_OBJECT
+class UDPSend { // : public QObject
+    // Q_OBJECT
 public:
     explicit UDPSend(std::string address, int _port);
     ~UDPSend();

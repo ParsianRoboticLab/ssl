@@ -14,7 +14,11 @@ find_package(catkin REQUIRED COMPONENTS
         nodelet
         roscpp
         rospy
+	roslint
         )
+
+roslint_cpp()
+roslint_python()
 
 file(GLOB_RECURSE HEADER_FILES include *.h)
 

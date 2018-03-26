@@ -28,42 +28,42 @@
 
 namespace parsian_world_model {
 
-    class WMNodelet : public nodelet::Nodelet {
+class WMNodelet : public nodelet::Nodelet {
 
-    private:
-        virtual void onInit();
+private:
+    virtual void onInit();
 
-        // Timer CallBack (to publish)
-        //void timerCb(const ros::TimerEvent& event);
+    // Timer CallBack (to publish)
+    //void timerCb(const ros::TimerEvent& event);
 
 //        Subs CallBack
-        void geomCb(const parsian_msgs::ssl_vision_geometryConstPtr& _geom);
-        void detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr& _detection);
-        void robotsCommandCb(const parsian_msgs::parsian_robot_commandConstPtr& _robotCommad);
-        void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
+    void geomCb(const parsian_msgs::ssl_vision_geometryConstPtr& _geom);
+    void detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr& _detection);
+    void robotsCommandCb(const parsian_msgs::parsian_robot_commandConstPtr& _robotCommad);
+    void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
 
 
-        boost::shared_ptr<WorldModel> wm;
+    boost::shared_ptr<WorldModel> wm;
 
-        ros::Publisher wm_pub;
+    ros::Publisher wm_pub;
 
-        ros::Subscriber vision_detection_sub;
-        ros::Subscriber vision_geom_sub;
-        ros::Subscriber robots_command_sub[12];
-        ros::Subscriber team_config_sub;
-
-
-        boost::shared_ptr<dynamic_reconfigure::Server<world_model_config::world_modelConfig>> server;
-        void ConfigServerCallBack(const world_model_config::world_modelConfig &config, uint32_t level);
+    ros::Subscriber vision_detection_sub;
+    ros::Subscriber vision_geom_sub;
+    ros::Subscriber robots_command_sub[12];
+    ros::Subscriber team_config_sub;
 
 
-        int frame, packs;
+    boost::shared_ptr<dynamic_reconfigure::Server<world_model_config::world_modelConfig>> server;
+    void ConfigServerCallBack(const world_model_config::world_modelConfig &config, uint32_t level);
+
+
+    int frame, packs;
 
 //        ros::Timer timer;
 
 
 
-    };
+};
 }
 
 #endif //PARSIAN_WORLD_MODEL_WORLDMODEL_NODELET_H

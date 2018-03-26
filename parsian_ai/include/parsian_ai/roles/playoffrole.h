@@ -16,7 +16,7 @@ enum class RoleSkill {
     Defense        = 7   // After Life (Move back to our field)
 };
 
-class CRolePlayOff{
+class CRolePlayOff {
 private:
     void update();
     bool updated;
@@ -53,7 +53,7 @@ public:
     ClassProperty(CRolePlayOff, Vector2D, WaitPos, waitPos, updated);
     ClassProperty(CRolePlayOff, float, MaxVelocity, maxVelocity, updated);
     ClassProperty(CRolePlayOff, bool, Intercept, intercept, updated);
-    ClassProperty(CRolePlayOff, bool, AvoidBall,avoidBall, updated);
+    ClassProperty(CRolePlayOff, bool, AvoidBall, avoidBall, updated);
     ClassProperty(CRolePlayOff, bool, IgnoreAngle, ignoreAngle, updated);
     ClassProperty(CRolePlayOff, double, EventDist, eventDist, updated);
     ClassProperty(CRolePlayOff, bool, DoPass, doPass, updated);
@@ -73,8 +73,12 @@ public:
 public:
     void setUpdated(bool _updated);
     bool getUpdated();
-    inline void setRoleUpdate (bool _updated) {roleUpdate = _updated;}
-    inline bool getRoleUpdate () {return roleUpdate;}
+    inline void setRoleUpdate(bool _updated) {
+        roleUpdate = _updated;
+    }
+    inline bool getRoleUpdate() {
+        return roleUpdate;
+    }
 
     CRolePlayOff* setKickRealSpeed(double val) {
         kickSpeed = val;

@@ -25,10 +25,10 @@
 #include "parsian_protobuf_wrapper/referee.pb.h"
 using namespace std;
 /**
-	@author Author Name
+  @author Author Name
 */
 
-class RoboCupSSLClient{
+class RoboCupSSLClient {
 protected:
     static const int MaxDataGramSize = 65536;
     char * in_buffer;
@@ -39,10 +39,10 @@ protected:
 public:
     RoboCupSSLClient(int port,
                      string net_ref_address,
-                     string net_ref_interface="");
+                     string net_ref_interface = "");
 
     ~RoboCupSSLClient();
-    bool open(bool blocking=false);
+    bool open(bool blocking = false);
     void close();
     bool receive(::google::protobuf::Message & packet);
 

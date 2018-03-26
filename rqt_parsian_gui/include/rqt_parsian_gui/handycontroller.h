@@ -31,81 +31,79 @@
 //     7)the pushbutton icons
 //     8)working in real not tested
 
-namespace rqt_parsian_gui
-{
-    class HandyController
-            : public rqt_gui_cpp::Plugin
-    {
+namespace rqt_parsian_gui {
+class HandyController
+    : public rqt_gui_cpp::Plugin {
     Q_OBJECT
-    public:
+public:
 
-        HandyController();
-        virtual void initPlugin(qt_gui_cpp::PluginContext& context);
-        virtual void shutdownPlugin();
-        virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings,
-                                  qt_gui_cpp::Settings& instance_settings) const;
-        virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
-                                     const qt_gui_cpp::Settings& instance_settings);
-
-
-        virtual bool eventFilter(QObject *, QEvent *);
-        void jacobian(double vx, double vy, double w, double &v1, double &v2, double &v3, double &v4);
-        void takeAction(EActionType action);
-        void setRobotVel(double _vtan , double _vnorm , double _w );
-        void waitHere();
+    HandyController();
+    virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+    virtual void shutdownPlugin();
+    virtual void saveSettings(qt_gui_cpp::Settings& plugin_settings,
+                              qt_gui_cpp::Settings& instance_settings) const;
+    virtual void restoreSettings(const qt_gui_cpp::Settings& plugin_settings,
+                                 const qt_gui_cpp::Settings& instance_settings);
 
 
-        ros::Publisher publisher;
-        ros::Publisher wmpublisher;
-        parsian_msgs::parsian_robot_commandPtr cmd;
-
-        QString pkgPath;
-
-
-    public slots:
-        void leftpressed();
-        void uppressed();
-        void rightpressed();
-        void downpressed();
-        void angle1pressed();
-        void angle2pressed();
-        void kickpressed();
-        void chippressed();
-        void haltpressed();
-        void released(QKeyEvent *);
-        void releasedother();
-        void releasednav();
-        void rollerpressed();
-        void agentidchanged(QString);
-        void speedchanged(int);
-        void kickspeedchanged(int);
-        void chipkickspeedchanged(int);
-        void rollerspeedchanged(int);
-        void wmtimedOut();
-
-        // Comment in to signal that the plugin has a way to configure it
-        // bool hasConfiguration() const;
-        // void triggerConfiguration();
-    public:
-        QWidget* widget_;
-        Ui::HandyController mUI;
-        int agentID, speed, kickspeed, chipkickspeed, rollerspeed;
-        ros::NodeHandle nh;
-        ros::NodeHandle nh_private;
-        ros::Timer timer_;
-        QTimer* wmTimer;
-        ros::Subscriber m_wm_sub;
-        void m_wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
-        bool wmtimedout;
-        void timerCb(const ros::TimerEvent& event);
-
-    signals:
-        void startwmtimer(int);
-        void stopwmtimer();
+    virtual bool eventFilter(QObject *, QEvent *);
+    void jacobian(double vx, double vy, double w, double &v1, double &v2, double &v3, double &v4);
+    void takeAction(EActionType action);
+    void setRobotVel(double _vtan , double _vnorm , double _w);
+    void waitHere();
 
 
+    ros::Publisher publisher;
+    ros::Publisher wmpublisher;
+    parsian_msgs::parsian_robot_commandPtr cmd;
+
+    QString pkgPath;
 
 
-    };
+public slots:
+    void leftpressed();
+    void uppressed();
+    void rightpressed();
+    void downpressed();
+    void angle1pressed();
+    void angle2pressed();
+    void kickpressed();
+    void chippressed();
+    void haltpressed();
+    void released(QKeyEvent *);
+    void releasedother();
+    void releasednav();
+    void rollerpressed();
+    void agentidchanged(QString);
+    void speedchanged(int);
+    void kickspeedchanged(int);
+    void chipkickspeedchanged(int);
+    void rollerspeedchanged(int);
+    void wmtimedOut();
+
+    // Comment in to signal that the plugin has a way to configure it
+    // bool hasConfiguration() const;
+    // void triggerConfiguration();
+public:
+    QWidget* widget_;
+    Ui::HandyController mUI;
+    int agentID, speed, kickspeed, chipkickspeed, rollerspeed;
+    ros::NodeHandle nh;
+    ros::NodeHandle nh_private;
+    ros::Timer timer_;
+    QTimer* wmTimer;
+    ros::Subscriber m_wm_sub;
+    void m_wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
+    bool wmtimedout;
+    void timerCb(const ros::TimerEvent& event);
+
+signals:
+    void startwmtimer(int);
+    void stopwmtimer();
+
+
+
+
+};
 }       // namespace rqt_example_cpp
 #endif  // RQT_PARSIAN_GUI_HANDUCONTROLLER_H

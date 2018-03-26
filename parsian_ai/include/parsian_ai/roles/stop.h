@@ -3,12 +3,11 @@
 
 #include <parsian_ai/roles/role.h>
 
-class CRoleStopInfo : public CRoleInfo
-{
+class CRoleStopInfo : public CRoleInfo {
 public:
     explicit CRoleStopInfo(QString _roleName);
     void findPositions();
-	int inCorner;
+    int inCorner;
     Vector2D TA;
     QList <Vector2D> Ps;
     QList <double> thR;
@@ -16,21 +15,20 @@ public:
     QList <int> robotId;
 };
 
-class CRoleStop : public CRole
-{
+class CRoleStop : public CRole {
 protected:
     GotopointavoidAction* gotopoint;
-	NoAction*			  noAction;
-	bool switchAgent;
+    NoAction*       noAction;
+    bool switchAgent;
 public:
-	virtual void parse(QStringList params);
+    virtual void parse(QStringList params);
 
-	explicit CRoleStop(Agent *_agent);
-	~CRoleStop();
-	void assign(Agent* _agent) override;
-	void execute();
-	static CRoleStopInfo* info();
-	double progress();
+    explicit CRoleStop(Agent *_agent);
+    ~CRoleStop();
+    void assign(Agent* _agent) override;
+    void execute();
+    static CRoleStopInfo* info();
+    double progress();
 
 private:
     static CRoleStopInfo* m_info;
@@ -38,14 +36,12 @@ private:
 
 
 
-class CRoleHaltInfo : public CRoleInfo
-{
+class CRoleHaltInfo : public CRoleInfo {
 public:
     explicit CRoleHaltInfo(QString _roleName);
 };
 
-class CRoleHalt : public CRole
-{
+class CRoleHalt : public CRole {
 public:
     explicit CRoleHalt(Agent *_agent);
     ~CRoleHalt();
@@ -53,7 +49,7 @@ public:
     double progress();
 
 private:
-	NoAction* noAction;
+    NoAction* noAction;
 };
 
 #endif // STOP_H

@@ -129,86 +129,86 @@ public:
         BigCenter = 95
     };
 
-    CField ();
+    CField();
 
-    ~CField ();
+    ~CField();
 
-    Vector2D center () const;
+    Vector2D center() const;
 
-    Vector2D ourGoal () const;
+    Vector2D ourGoal() const;
 
-    Vector2D oppGoal () const;
+    Vector2D oppGoal() const;
 
-    Vector2D ourCornerL () const;
+    Vector2D ourCornerL() const;
 
-    Vector2D ourCornerR () const;
+    Vector2D ourCornerR() const;
 
-    Vector2D oppCornerL () const;
+    Vector2D oppCornerL() const;
 
-    Vector2D oppCornerR () const;
+    Vector2D oppCornerR() const;
 
-    Vector2D ourPenalty () const;
+    Vector2D ourPenalty() const;
 
-    Vector2D oppPenalty () const;
+    Vector2D oppPenalty() const;
 
-    Vector2D ourGoalL () const;
+    Vector2D ourGoalL() const;
 
-    Vector2D ourGoalR () const;
+    Vector2D ourGoalR() const;
 
-    Vector2D oppGoalL () const;
+    Vector2D oppGoalL() const;
 
-    Vector2D oppGoalR () const;
+    Vector2D oppGoalR() const;
 
-    Vector2D ourOneThirdL () const;
+    Vector2D ourOneThirdL() const;
 
-    Vector2D ourOneThirdR () const;
+    Vector2D ourOneThirdR() const;
 
-    Vector2D oppOneThirdL () const;
+    Vector2D oppOneThirdL() const;
 
-    Vector2D oppOneThirdR () const;
+    Vector2D oppOneThirdR() const;
 
-    Rect2D fieldRect () const;
+    Rect2D fieldRect() const;
 
-    Rect2D marginedField () const;
+    Rect2D marginedField() const;
 
-    Rect2D ourPenaltyRect () const;
+    Rect2D ourPenaltyRect() const;
 
-    Rect2D oppPenaltyRect () const;
-	
+    Rect2D oppPenaltyRect() const;
+
     Vector2D getfOurGoal() const;
 
-    bool isInField (Vector2D point) const;
+    bool isInField(Vector2D point) const;
 
-    bool isInOurPenaltyArea (Vector2D point) const;
+    bool isInOurPenaltyArea(Vector2D point) const;
 
-    bool isInOppPenaltyArea (Vector2D point) const;
+    bool isInOppPenaltyArea(Vector2D point) const;
 
-    Rect2D getRegion (Region region , double k = 0.25) const;
+    Rect2D getRegion(Region region , double k = 0.25) const;
 
-    Rect2D getRegion (QString name , double k = 0.25) const;
+    Rect2D getRegion(QString name , double k = 0.25) const;
 
-    Rect2D getCircleRegion (int n , int i) const;
+    Rect2D getCircleRegion(int n , int i) const;
 
-    QList<Vector2D> ourBigPAreaIntersect (Line2D line , double scale = - 1 , float bias = 0) const;
+    QList<Vector2D> ourBigPAreaIntersect(Line2D line , double scale = - 1 , float bias = 0) const;
 
-    QList<Vector2D> ourPAreaIntersect (Line2D line) const;
+    QList<Vector2D> ourPAreaIntersect(Line2D line) const;
 
-    QList<Vector2D> ourPAreaIntersect (Segment2D segment) const;
+    QList<Vector2D> ourPAreaIntersect(Segment2D segment) const;
 
     /////////////////////////////////////////////////////////////////////
-    QList<Vector2D> ourPAreaIntersect (Circle2D circle) const;
+    QList<Vector2D> ourPAreaIntersect(Circle2D circle) const;
 
-    QList<Vector2D> oppPAreaIntersect (Line2D line) const;
+    QList<Vector2D> oppPAreaIntersect(Line2D line) const;
 
-    QList<Vector2D> oppPAreaIntersect (Segment2D segment) const;
+    QList<Vector2D> oppPAreaIntersect(Segment2D segment) const;
 
-    QList<Vector2D> oppPAreaIntersect (Circle2D circle) const;
+    QList<Vector2D> oppPAreaIntersect(Circle2D circle) const;
 
-    Vector2D ourPAreaPerpendicularVector (double angle , Vector2D &intersectpoint) const;
+    Vector2D ourPAreaPerpendicularVector(double angle , Vector2D &intersectpoint) const;
 
     Rect2D ourBigPenaltyArea(double scale = 1 , double tolerance = 0 , bool doChangesWithScale  = 1);
 
-    double ourPAreaPos (double angle) const;
+    double ourPAreaPos(double angle) const;
 
 private:
     Vector2D fCenter;

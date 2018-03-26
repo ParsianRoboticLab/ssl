@@ -15,8 +15,7 @@
         public: inline void set##name(type val) {local = val;} \
         protected: type local
 
-class CPlanLoader : public QObject
-{
+class CPlanLoader : public QObject {
 
     Q_OBJECT
 
@@ -32,7 +31,7 @@ protected:
     QStringList m_dirList;
 
 
-    Property(bool, AutoUpdate,autoUpdate);
+    Property(bool, AutoUpdate, autoUpdate);
 
 private:
 

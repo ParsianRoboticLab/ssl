@@ -2,8 +2,7 @@
 #define WARMUP_H
 #include <role.h>
 
-class CRoleWarmupInfo : public CRoleInfo
-{
+class CRoleWarmupInfo : public CRoleInfo {
 public:
     CRoleWarmupInfo(QString _roleName);
     void findPos1();
@@ -13,11 +12,10 @@ public:
     QList <int> robotId;
     QList <double> distR;
     QList <double> distP;
-    void reset(){}
+    void reset() {}
 };
 
-class CRoleWarmup : public CRole
-{
+class CRoleWarmup : public CRole {
 protected:
     CSkillGotoPointAvoid* gotopoint;
 public:

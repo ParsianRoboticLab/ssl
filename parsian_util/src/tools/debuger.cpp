@@ -15,11 +15,11 @@ void Debugger::debug(const QString& _text , unsigned long _type , const QColor& 
 }
 
 std_msgs::ColorRGBA Debugger::toColorRGBA(const QColor &_color) {
-        std_msgs::ColorRGBA colorRGBA;
-        colorRGBA.a = _color.alpha();
-        colorRGBA.r = _color.red();
-        colorRGBA.g = _color.green();
-        colorRGBA.b = _color.blue();
-        return colorRGBA;
+    std_msgs::ColorRGBA colorRGBA;
+    colorRGBA.a = _color.alpha();
+    colorRGBA.r = _color.red();
+    colorRGBA.g = _color.green();
+    colorRGBA.b = _color.blue();
+    return colorRGBA;
 
 }

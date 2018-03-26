@@ -3,15 +3,15 @@
 
 #include <parsian_ai/plays/masterplay.h>
 
-class COurPenalty : public CMasterPlay{
+class COurPenalty : public CMasterPlay {
 public:
-	COurPenalty();
-	~COurPenalty();
-	void penaltyKick();
-	void execute_x();
-	void init(const QList <Agent*>& _agents);
+    COurPenalty();
+    ~COurPenalty();
+    void penaltyKick();
+    void execute_x();
+    void init(const QList <Agent*>& _agents);
 private:
-	void reset();
+    void reset();
 };
 
 #endif // OURPENALTY_H

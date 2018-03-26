@@ -3,15 +3,13 @@
 
 #include <role.h>
 
-class CRoleTemplateInfo : public CRoleInfo
-{
+class CRoleTemplateInfo : public CRoleInfo {
 public:
     CRoleTemplateInfo(QString _roleName);
 };
 
 
-class CRoleTemplate : public CRole
-{
+class CRoleTemplate : public CRole {
 public:
     DEF_ROLE(CRoleTemplate);
     virtual void generateFromConfig(Agent *a);

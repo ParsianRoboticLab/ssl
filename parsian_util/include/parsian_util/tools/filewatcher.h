@@ -29,8 +29,7 @@
 
 class QFileSystemWatcher;
 
-class FileWatcher : public QObject
-{
+class FileWatcher : public QObject {
 //    Q_OBJECT
 public:
     explicit FileWatcher(QObject *parent = 0);

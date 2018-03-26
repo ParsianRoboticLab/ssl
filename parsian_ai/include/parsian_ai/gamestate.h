@@ -8,7 +8,7 @@
 #include <parsian_msgs/ssl_refree_stage.h>
 
 
-enum class States{
+enum class States {
     Halt = 0,
     Stop = 1,
     Start = 2,
@@ -42,7 +42,7 @@ class GameState {
 private:
     int command_ctr;
     States state;
-    int ourScore,theirScore;
+    int ourScore, theirScore;
     bool isReady;
 public:
 

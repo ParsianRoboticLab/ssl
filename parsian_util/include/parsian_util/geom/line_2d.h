@@ -66,97 +66,90 @@ public:
       \param b Line formula B, coefficient for y
       \param c constant C
      */
-    Line2D( const double & a,
-            const double & b,
-            const double & c )
-        : M_a( a )
-        , M_b( b )
-        , M_c( c )
-      { }
+    Line2D(const double & a,
+           const double & b,
+           const double & c)
+        : M_a(a)
+        , M_b(b)
+        , M_c(c) {
+    }
 
     /*!
       \brief construct from 2 points
       \param p1 first point
       \param p2 second point
     */
-    Line2D( const Vector2D & p1,
-            const Vector2D & p2 )
-      {
-          assign( p1, p2 );
-      }
+    Line2D(const Vector2D & p1,
+           const Vector2D & p2) {
+        assign(p1, p2);
+    }
 
     /*!
       \brief construct from origin point + direction
       \param origin origin point
       \param linedir direction from origin point
     */
-    Line2D( const Vector2D & origin,
-            const AngleDeg & linedir )
-      {
-          assign( origin, linedir );
-      }
+    Line2D(const Vector2D & origin,
+           const AngleDeg & linedir) {
+        assign(origin, linedir);
+    }
 
-   /*!
-      \brief construct from 2 points
-      \param p1 first point
-      \param p2 second point
-      \return const reference to itself
-    */
+    /*!
+       \brief construct from 2 points
+       \param p1 first point
+       \param p2 second point
+       \return const reference to itself
+     */
     const
-    Line2D & assign( const Vector2D & p1,
-                     const Vector2D & p2 )
-      {
-          M_a = -( p2.y - p1.y );
-          M_b = p2.x - p1.x;
-          M_c = -M_a * p1.x - M_b * p1.y;
-          return *this;
-      }
+    Line2D & assign(const Vector2D & p1,
+                    const Vector2D & p2) {
+        M_a = -(p2.y - p1.y);
+        M_b = p2.x - p1.x;
+        M_c = -M_a * p1.x - M_b * p1.y;
+        return *this;
+    }
 
-   /*!
-      \brief construct from origin point + direction
-      \param origin origin point
-      \param linedir direction from origin point
-      \return const reference to itself
-    */
+    /*!
+       \brief construct from origin point + direction
+       \param origin origin point
+       \param linedir direction from origin point
+       \return const reference to itself
+     */
     const
-    Line2D & assign( const Vector2D & origin,
-                     const AngleDeg & linedir )
-      {
-          M_a = - linedir.sin();
-          M_b = linedir.cos();
-          M_c = -M_a * origin.x - M_b * origin.y;
-          return *this;
-      }
+    Line2D & assign(const Vector2D & origin,
+                    const AngleDeg & linedir) {
+        M_a = - linedir.sin();
+        M_b = linedir.cos();
+        M_c = -M_a * origin.x - M_b * origin.y;
+        return *this;
+    }
 
     /*!
       \brief accessor
       \return coefficient 'A' of line formula
     */
     const
-    double & a() const
-      {
-          return M_a;
-      }
+    double & a() const {
+        return M_a;
+    }
 
     /*!
       \brief accessor
       \return coefficient 'A' of line formula
     */
     const
-    double & getA() const
-      {
-          return M_a;
-      }
+    double & getA() const {
+        return M_a;
+    }
 
     /*!
       \brief accessor
       \return coefficient 'B'  of line formula
     */
     const
-    double & b() const
-      {
-          return M_b;
-      }
+    double & b() const {
+        return M_b;
+    }
 
     /*!
       \brief accessor
@@ -167,80 +160,71 @@ public:
       \return coefficient 'B'  of line formula
     */
     const
-    double & getB() const
-      {
-          return M_b;
-      }
+    double & getB() const {
+        return M_b;
+    }
 
     /*!
       \brief accessor
       \return coefficient 'C'  of line formula
     */
     const
-    double & c() const
-      {
-          return M_c;
-      }
+    double & c() const {
+        return M_c;
+    }
 
     /*!
       \brief accessor
       \return coefficient 'C'  of line formula
     */
     const
-    double & getC() const
-      {
-          return M_c;
-      }
+    double & getC() const {
+        return M_c;
+    }
 
     /*!
       \brief get X-coordinate correspond to 'y'
       \param y considered Y
       \return X coordinate
     */
-    double getX( const double & y ) const
-      {
-          if ( std::fabs( M_a ) < EPSILOON )
-          {
-              return ERROR_VALUE;
-          }
-          return -( M_b * y + M_c ) / M_a;
-      }
+    double getX(const double & y) const {
+        if (std::fabs(M_a) < EPSILOON) {
+            return ERROR_VALUE;
+        }
+        return -(M_b * y + M_c) / M_a;
+    }
 
     /*!
       \brief get Y-coordinate correspond to 'x'
       \param x considered X
       \return Y coordinate
     */
-    double getY( const double & x ) const
-      {
-          if ( std::fabs( M_b ) < EPSILOON )
-          {
-              return ERROR_VALUE;
-          }
+    double getY(const double & x) const {
+        if (std::fabs(M_b) < EPSILOON) {
+            return ERROR_VALUE;
+        }
 
-          return -( M_a * x + M_c ) / M_b;
-      }
+        return -(M_a * x + M_c) / M_b;
+    }
 
     /*!
       \brief calculate distance from point to this line
       \param p considrered point
       \return distance value
     */
-    double dist( const Vector2D & p ) const
-      {
-          return std::fabs( ( M_a * p.x + M_b * p.y + M_c )
-                            / std::sqrt( M_a * M_a + M_b * M_b ) );
-      }
+    double dist(const Vector2D & p) const {
+        return std::fabs((M_a * p.x + M_b * p.y + M_c)
+                         / std::sqrt(M_a * M_a + M_b * M_b));
+    }
     /*!
       \brief get squared distance from this line to point
       \param p considrered point
       \return squared distance value
     */
-    double dist2( const Vector2D & p ) const
-      {
-          double d = M_a * p.x + M_b * p.y + M_c;
-          return (d * d) / (M_a * M_a + M_b * M_b);
-      }
+    double dist2(const Vector2D & p) const {
+        double d = M_a * p.x + M_b * p.y + M_c;
+        return (d * d) / (M_a * M_a + M_b * M_b);
+    }
 
     /*!
       \brief check if the slope of this line is same to the slope of 'line'
@@ -248,10 +232,9 @@ public:
       \retval true almost same
       \retval false not same
     */
-    bool isParallel( const Line2D & line ) const
-      {
-          return std::fabs( a() * line.b() - line.a() * b() ) < EPSILOON;
-      }
+    bool isParallel(const Line2D & line) const {
+        return std::fabs(a() * line.b() - line.a() * b()) < EPSILOON;
+    }
 
     /*!
       \brief get the intersection point with 'line'
@@ -259,30 +242,27 @@ public:
       \return intersection point. if it does not exist,
       the invaidated value vector is returned.
     */
-    Vector2D intersection( const Line2D & line ) const
-      {
-          return intersection( *this, line );
-      }
+    Vector2D intersection(const Line2D & line) const {
+        return intersection(*this, line);
+    }
 
     /*!
       \brief calc perpendicular line (SUI-SEN)
       \param p the point that perpendicular line pass through
       \return perpendicular line
      */
-    Line2D perpendicular( const Vector2D & p ) const
-      {
-          return Line2D( b(), -a(), a() * p.y - b() * p.x );
-      }
+    Line2D perpendicular(const Vector2D & p) const {
+        return Line2D(b(), -a(), a() * p.y - b() * p.x);
+    }
 
     /*!
       \brief calc projection point from p
       \param p base point
       \return projection point
      */
-    Vector2D projection( const Vector2D & p ) const
-      {
-          return intersection( perpendicular( p ) );
-      }
+    Vector2D projection(const Vector2D & p) const {
+        return intersection(perpendicular(p));
+    }
 
     // static utility
 
@@ -294,8 +274,8 @@ public:
       if no intersection, invalid vector is returned.
      */
     static
-    Vector2D intersection( const Line2D & line1,
-                           const Line2D & line2 );
+    Vector2D intersection(const Line2D & line1,
+                          const Line2D & line2);
 
     /*!
       \brief make angle bisector line from two angles
@@ -305,12 +285,11 @@ public:
       \return line object
      */
     static
-    Line2D angle_bisector( const Vector2D & origin,
-                           const AngleDeg & left,
-                           const AngleDeg & right )
-      {
-          return Line2D( origin, AngleDeg::bisect( left, right ) );
-      }
+    Line2D angle_bisector(const Vector2D & origin,
+                          const AngleDeg & left,
+                          const AngleDeg & right) {
+        return Line2D(origin, AngleDeg::bisect(left, right));
+    }
 
     /*!
       \brief make perpendicular bisector line from twt points
@@ -319,8 +298,8 @@ public:
       \return line object
      */
     static
-    Line2D perpendicular_bisector( const Vector2D & p1,
-                                   const Vector2D & p2 );
+    Line2D perpendicular_bisector(const Vector2D & p1,
+                                  const Vector2D & p2);
 
 };
 

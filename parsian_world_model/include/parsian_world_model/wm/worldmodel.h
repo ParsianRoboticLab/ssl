@@ -32,14 +32,14 @@ public:
     void init();
     void setMode(bool isSimulation);
 
-    double vForwardCmd[12],vNormalCmd[12],vAngCmd[12];
+    double vForwardCmd[12], vNormalCmd[12], vAngCmd[12];
 
     parsian_msgs::parsian_world_modelPtr getParsianWorldModel();
     Robot* them[_MAX_NUM_PLAYERS];
     Robot* us[_MAX_NUM_PLAYERS];
 
 private:
-    parsian_msgs::parsian_robot rosRobots[_MAX_NUM_PLAYERS*2];
+    parsian_msgs::parsian_robot rosRobots[_MAX_NUM_PLAYERS * 2];
     parsian_msgs::parsian_robot rosBall;
     CVisionClient *vc;
 

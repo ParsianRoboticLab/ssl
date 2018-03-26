@@ -18,52 +18,52 @@
 
 
 namespace parsian_agent {
-    class AgentNodelet : public nodelet::Nodelet {
-    private:
+class AgentNodelet : public nodelet::Nodelet {
+private:
 
-        void onInit() override;
+    void onInit() override;
 
-        void timerCb(const ros::TimerEvent &event);
+    void timerCb(const ros::TimerEvent &event);
 
-        ros::NodeHandle nh;
-        ros::NodeHandle private_nh;
+    ros::NodeHandle nh;
+    ros::NodeHandle private_nh;
 
-        ros::Subscriber world_model_sub;
-        ros::Subscriber ai_sub;
-        ros::Subscriber robot_task_sub;
-        ros::Subscriber robot_status_sub;
-        ros::Subscriber common_config_sub;
-        ros::Subscriber planner_sub;
+    ros::Subscriber world_model_sub;
+    ros::Subscriber ai_sub;
+    ros::Subscriber robot_task_sub;
+    ros::Subscriber robot_status_sub;
+    ros::Subscriber common_config_sub;
+    ros::Subscriber planner_sub;
 
-        ros::Publisher debug_pub;
-        ros::Publisher draw_pub;
-        ros::Publisher parsian_robot_command_pub;
+    ros::Publisher debug_pub;
+    ros::Publisher draw_pub;
+    ros::Publisher parsian_robot_command_pub;
 
-        ros::Timer timer_;
+    ros::Timer timer_;
 
-        void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
+    void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
 
-        void wmCb(const parsian_msgs::parsian_world_modelConstPtr &);
+    void wmCb(const parsian_msgs::parsian_world_modelConstPtr &);
 
-        void rtCb(const parsian_msgs::parsian_robot_taskConstPtr &);
+    void rtCb(const parsian_msgs::parsian_robot_taskConstPtr &);
 
-        void aiCb(const parsian_msgs::parsian_ai_statusConstPtr &);
+    void aiCb(const parsian_msgs::parsian_ai_statusConstPtr &);
 
-        void plannerCb(const parsian_msgs::parsian_pathConstPtr&);
+    void plannerCb(const parsian_msgs::parsian_pathConstPtr&);
 
-        boost::shared_ptr<Agent> agent;
+    boost::shared_ptr<Agent> agent;
 
-        CSkill* getSkill(const parsian_msgs::parsian_robot_taskConstPtr &);
+    CSkill* getSkill(const parsian_msgs::parsian_robot_taskConstPtr &);
 
-        CSkillGotoPoint* gotoPoint;
-        CSkillGotoPointAvoid* gotoPointAvoid;
-        CSkillKick* skillKick;
-        CSkillKickOneTouch* oneTouch;
-        CSkillReceivePass* receivePass;
-        bool finished = true;
+    CSkillGotoPoint* gotoPoint;
+    CSkillGotoPointAvoid* gotoPointAvoid;
+    CSkillKick* skillKick;
+    CSkillKickOneTouch* oneTouch;
+    CSkillReceivePass* receivePass;
+    bool finished = true;
 
 
-    };
+};
 }
 
 #endif //PARSIAN_AGENT_AGENTNODELET_H

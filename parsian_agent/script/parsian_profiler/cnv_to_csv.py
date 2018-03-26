@@ -19,7 +19,7 @@ for item in ls:
                 #print(str([point['remain_dist'], point['world_model'], phi, khab] )+ " : "+str(f[(dist, phi, khab)]['total_time'] - point['time']))
 
 r.fit(X_values, Y_values)
-with open(str(int(round(time.time()/10)))+"motion.csv" , "w+") as out:
+with open(str(int(round(time.time() / 10))) + "motion.csv", "w+") as out:
     dist_step = 4   # 40
     max_dist = 4
     vel_step = 4    # 40
@@ -36,8 +36,6 @@ with open(str(int(round(time.time()/10)))+"motion.csv" , "w+") as out:
                     #      + " : " + str(r.predict([[i*max_dist/dist_step, j*max_vel/vel_step, k*2*pi/ang_step,
                     #                                l*2*pi/ang_step]])))
                     out.write(str(i) + " " + str(j) + " " + str(k) + " " + str(l) + " " +
-                              str(r.predict([[i*max_dist/dist_step, j*max_vel/vel_step, k*2*pi/ang_step,
-                                              l*2*pi/ang_step]])[0]) + "\n")
+                              str(r.predict([[i * max_dist / dist_step, j * max_vel / vel_step, k * 2 * pi / ang_step,
+                                              l * 2 * pi / ang_step]])[0]) + "\n")
     out.close()
-
-

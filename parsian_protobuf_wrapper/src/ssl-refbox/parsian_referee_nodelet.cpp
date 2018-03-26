@@ -28,7 +28,7 @@ void RefreeNodelet::onInit() {
 
     server.reset(new dynamic_reconfigure::Server<protobuf_wrapper_config::refereeConfig>);
     dynamic_reconfigure::Server<protobuf_wrapper_config::refereeConfig>::CallbackType f;
-    f = boost::bind(&RefreeNodelet::callback,this, _1, _2);
+    f = boost::bind(&RefreeNodelet::callback, this, _1, _2);
     server->setCallback(f);
 
 }
@@ -36,8 +36,11 @@ void RefreeNodelet::onInit() {
 void RefreeNodelet::reconnect() {
     delete refBox;
     refBox = new RoboCupSSLClient(networkConfig.port, networkConfig.ip);
-    if (!refBox->open(false)) ROS_WARN("Connection Failed.");
-    else ROS_INFO("Connected!");
+    if (!refBox->open(false)) {
+        ROS_WARN("Connection Failed.");
+    } else {
+        ROS_INFO("Connected!");
+    }
 
 }
 
@@ -48,7 +51,7 @@ void RefreeNodelet::callback(const protobuf_wrapper_config::refereeConfig &confi
 }
 
 
-void RefreeNodelet::timerCb(const ros::TimerEvent& event){
+void RefreeNodelet::timerCb(const ros::TimerEvent& event) {
     parsian_msgs::ssl_refree_wrapper referee;
     while (refBox->receive(ssl_referee)) {
         if (ssl_referee.has_command() || ssl_referee.has_stage()) {
@@ -59,8 +62,7 @@ void RefreeNodelet::timerCb(const ros::TimerEvent& event){
 
 }
 
-void RefreeNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg)
-{
+void RefreeNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
     isOurColorYellow = msg->color == parsian_msgs::parsian_team_config::YELLOW;
 }
 

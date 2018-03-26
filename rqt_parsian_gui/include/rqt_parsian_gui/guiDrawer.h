@@ -17,15 +17,13 @@
 #include <parsian_msgs/parsian_draw_vector.h>
 #include <parsian_msgs/parsian_draw_text.h>
 
-class guiBall{
+class guiBall {
 public:
 
 };
-class CGraphicalRobot
-{
+class CGraphicalRobot {
 public:
-    CGraphicalRobot(Vector2D _pos = Vector2D(0,0), Vector2D _dir = Vector2D(1,0), QColor _color = QColor(255, 255, 0), int _ID = 0, int _comID=0, QString _str="", bool _newRobots = false)
-    {
+    CGraphicalRobot(Vector2D _pos = Vector2D(0, 0), Vector2D _dir = Vector2D(1, 0), QColor _color = QColor(255, 255, 0), int _ID = 0, int _comID = 0, QString _str = "", bool _newRobots = false) {
         pos = _pos;
         dir = _dir;
         color = _color;
@@ -43,8 +41,7 @@ public:
 };
 
 
-class CguiDrawer
-{
+class CguiDrawer {
 public:
     QQueue<parsian_msgs::parsian_draw_rect> *rectBuffer;
     QQueue<parsian_msgs::parsian_draw_circle> *arcBuffer;
@@ -53,7 +50,7 @@ public:
     QQueue<parsian_msgs::parsian_draw_vector> *pointBuffer;
     QQueue<parsian_msgs::parsian_draw_text> *textBuffer;
     QQueue<CGraphicalRobot> robotBuffer;
-    struct GuiBall{
+    struct GuiBall {
         Vector2D pos;
         double inSight;
         double radius;
@@ -61,7 +58,9 @@ public:
 
     CguiDrawer();
     ~CguiDrawer();
-    void drawRobot (Vector2D _pos = Vector2D(0,0), Vector2D _dir = Vector2D(0,0), QColor _color = QColor(255, 255, 0), int _ID = 0,int _comID=0, QString _str="", bool newRobots = false);
+
+    void drawRobot(Vector2D _pos = Vector2D(0, 0), Vector2D _dir = Vector2D(0, 0), QColor _color = QColor(255, 255, 0), int _ID = 0, int _comID = 0, QString _str = "", bool newRobots = false);
+
     void clear();
 };
 

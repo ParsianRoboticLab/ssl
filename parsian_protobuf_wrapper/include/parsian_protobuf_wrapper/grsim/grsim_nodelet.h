@@ -22,8 +22,7 @@
 #define MAX_ROBOT_NUM 12
 
 
-class GrsimNodelet : public nodelet::Nodelet
-{
+class GrsimNodelet : public nodelet::Nodelet {
 public:
     GrsimNodelet();
     ~GrsimNodelet();

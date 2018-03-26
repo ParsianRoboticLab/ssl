@@ -42,19 +42,16 @@ namespace rcsc {
 
  */
 Vector2D
-Ray2D::intersection( const Line2D & other ) const
-{
+Ray2D::intersection(const Line2D & other) const {
     Line2D my_line = this->line();
 
-    Vector2D tmp_sol = my_line.intersection( other );
+    Vector2D tmp_sol = my_line.intersection(other);
 
-    if ( ! tmp_sol.valid() )
-    {
+    if (! tmp_sol.valid()) {
         return Vector2D::INVALIDATED;
     }
 
-    if ( ! inRightDir( tmp_sol ) )
-    {
+    if (! inRightDir(tmp_sol)) {
         return Vector2D::INVALIDATED;
     }
 
@@ -66,18 +63,15 @@ Ray2D::intersection( const Line2D & other ) const
 
  */
 Vector2D
-Ray2D::intersection( const Ray2D & other ) const
-{
-    Vector2D tmp_sol = this->line().intersection( other.line() );
+Ray2D::intersection(const Ray2D & other) const {
+    Vector2D tmp_sol = this->line().intersection(other.line());
 
-    if ( ! tmp_sol.valid() )
-    {
+    if (! tmp_sol.valid()) {
         return Vector2D::INVALIDATED;
     }
 
-    if ( ! this->inRightDir( tmp_sol )
-        || ! other.inRightDir( tmp_sol ) )
-    {
+    if (! this->inRightDir(tmp_sol)
+            || ! other.inRightDir(tmp_sol)) {
         return Vector2D::INVALIDATED;
     }
 

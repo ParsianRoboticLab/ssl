@@ -62,45 +62,45 @@ QList<NGameOff::SPlan *> CPlanSelector::getValidPlans(const POMODE _mode, const 
 
     int symmetry = 1;
     QList<NGameOff::SPlan*> validPlans;
-    Q_FOREACH(NGameOff::SPlan* plan, activePlans) { //Find Valid Plans
-            NGameOff::SMatching& matching = plan->matching;
+    Q_FOREACH (NGameOff::SPlan* plan, activePlans) { //Find Valid Plans
+        NGameOff::SMatching& matching = plan->matching;
 
-            if (matching.common->planMode  >= _mode
+        if (matching.common->planMode  >= _mode
                 && matching.common->agentSize >= _ourPlayers.size()
                 && matching.common->chance > 0
                 && matching.common->lastDist >= 0) {
 
-                //check Ball matchig with symmetry
-                plan->common.currentSize = _ourPlayers.size();
-                Vector2D symBall = Vector2D(matching.initPos.ball.x,
-                                            (-1) * matching.initPos.ball.y);
+            //check Ball matchig with symmetry
+            plan->common.currentSize = _ourPlayers.size();
+            Vector2D symBall = Vector2D(matching.initPos.ball.x,
+                                        (-1) * matching.initPos.ball.y);
 
-                double tempDist    = wm->ball->pos.dist(matching.initPos.ball);
-                double tempSymDist = wm->ball->pos.dist(symBall);
+            double tempDist    = wm->ball->pos.dist(matching.initPos.ball);
+            double tempSymDist = wm->ball->pos.dist(symBall);
 
-                if (tempDist < minDist) {
-                    minDist  = tempDist;
-                    symmetry = 1;
-                    nearestPlan = plan;
-                }
-
-                if (tempSymDist < minDist) {
-                    minDist  = tempSymDist;
-                    symmetry = -1;
-                    nearestPlan = plan;
-                }
-
-                if (isRegionMatched(matching.initPos.ball)) {
-                    plan->execution.symmetry = 1;
-                } else if (isRegionMatched(symBall)) {
-                    plan->execution.symmetry = -1;
-                } else {
-                    continue;
-                }
-
-                validPlans.append(plan);
+            if (tempDist < minDist) {
+                minDist  = tempDist;
+                symmetry = 1;
+                nearestPlan = plan;
             }
+
+            if (tempSymDist < minDist) {
+                minDist  = tempSymDist;
+                symmetry = -1;
+                nearestPlan = plan;
+            }
+
+            if (isRegionMatched(matching.initPos.ball)) {
+                plan->execution.symmetry = 1;
+            } else if (isRegionMatched(symBall)) {
+                plan->execution.symmetry = -1;
+            } else {
+                continue;
+            }
+
+            validPlans.append(plan);
         }
+    }
 
     DEBUG(QString("playoff -> there's %1 valid Plan").arg(validPlans.size()), D_DEBUG);
     if (validPlans.isEmpty()) {
@@ -116,25 +116,25 @@ QList<NGameOff::SPlan *> CPlanSelector::getValidPlans(const POMODE _mode, const 
     return validPlans;
 }
 
-bool CPlanSelector::isRegionMatched(const Vector2D &_ball, const double&& regionRadius) const{
+bool CPlanSelector::isRegionMatched(const Vector2D &_ball, const double&& regionRadius) const {
     return (wm->ball->pos.dist(_ball) < regionRadius);
 }
 
 int CPlanSelector::PlayoffShufflePolicy(QList<NGameOff::SPlan*> prevValidPlans, QList<NGameOff::SPlan*> validPlans) {
     bool equal = true;
     // check if prevValidPlans is equal to validPlans
-    if(prevValidPlans.size() == validPlans.size()){
-                foreach (NGameOff::SPlan* p, validPlans) {
-                if(!prevValidPlans.contains(p)){
-                    equal = false;
-                    break;
-                }
+    if (prevValidPlans.size() == validPlans.size()) {
+        foreach (NGameOff::SPlan* p, validPlans) {
+            if (!prevValidPlans.contains(p)) {
+                equal = false;
+                break;
             }
+        }
     } else {
         equal = false;
     }
 
-    if(!shuffled || !equal){
+    if (!shuffled || !equal) {
         ShufflePlanIndexing(validPlans);
         equal = true;
     }
@@ -148,17 +148,17 @@ int CPlanSelector::PlayoffShufflePolicy(QList<NGameOff::SPlan*> prevValidPlans, 
 
     shuffleCounter++;
 
-    return shuffleIndexing.at(shuffleCounter-1);
+    return shuffleIndexing.at(shuffleCounter - 1);
 }
 
 void CPlanSelector::ShufflePlanIndexing(QList<NGameOff::SPlan*> Plans) {
     shuffleSize = 0;
     shuffleIndexing.clear();
 
-    for(int i=0; i<Plans.size(); i++){
+    for (int i = 0; i < Plans.size(); i++) {
         DEBUG(QString("plan%1 chance : %2").arg(i).arg(Plans.at(i)->common.chance) , D_FATEME);
         shuffleSize += (int)Plans.at(i)->common.chance;
-        for(int j=0; j<(int)Plans.at(i)->common.chance; j++){
+        for (int j = 0; j < (int)Plans.at(i)->common.chance; j++) {
             shuffleIndexing.append(i);
         }
     }
@@ -184,7 +184,7 @@ void CPlanSelector::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplay
         }
     }
     qDebug() << "[Coach] matched plan with : " << matcher.findMatching();
-    for (size_t i = 0; i < _plan->common.currentSize;i++) {
+    for (size_t i = 0; i < _plan->common.currentSize; i++) {
         int matchedID = matcher.getMatch(i);
         _plan->common.matchedID.insert(i, _ourplayers.at(matchedID));
 
@@ -204,19 +204,19 @@ QPair<int, int> CPlanSelector::findTheLastShoot(const NGameOff::SExecution &_pla
     int counter = 0;
     qDebug() << "SSS" << _plan.AgentPlan.size();
     Q_FOREACH (QList<playOffRobot> agent, _plan.AgentPlan) {
-            int counter2 = 0;
-            Q_FOREACH(playOffRobot node, agent) {
-                    Q_FOREACH(playOffSkill skill, node.skill) {
-                            if (finalSkills.contains(skill.name)) {
-                                last.first  = counter;
-                                last.second = counter2;
-                                qDebug() << "MAHI " << skill.name;
-                            }
-                            counter2++;
-                        }
+        int counter2 = 0;
+        Q_FOREACH (playOffRobot node, agent) {
+            Q_FOREACH (playOffSkill skill, node.skill) {
+                if (finalSkills.contains(skill.name)) {
+                    last.first  = counter;
+                    last.second = counter2;
+                    qDebug() << "MAHI " << skill.name;
                 }
-            counter++;
+                counter2++;
+            }
         }
+        counter++;
+    }
 
     return last;
 }
@@ -264,7 +264,7 @@ void CPlanSelector::findThePasserAndReceiver(const NGameOff::SExecution &_plan, 
             for (int k = 0; k < node.skill.size(); k++) {
                 const POffSkills& skill = node.skill.at(k).name;
                 if (skill == PassSkill) {
-                    passer.append(NGameOff::AgentPoint(i,j));
+                    passer.append(NGameOff::AgentPoint(i, j));
                 }
             }
         }

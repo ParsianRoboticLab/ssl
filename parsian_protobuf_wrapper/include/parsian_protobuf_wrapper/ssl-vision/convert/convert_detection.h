@@ -14,22 +14,22 @@
 
 
 namespace pr {
-    /**
-     * Converts an SSL DetectionFrame to the ROS version.
-     */
-    parsian_msgs::ssl_vision_detection convert_detection_frame(SSL_DetectionFrame protoFrame, bool isYellow, bool isLeft);
+/**
+ * Converts an SSL DetectionFrame to the ROS version.
+ */
+parsian_msgs::ssl_vision_detection convert_detection_frame(SSL_DetectionFrame protoFrame, bool isYellow, bool isLeft);
 
 
-    /**
-     * Converts a protoBuf DetectionBall to the ROS version.
-     */
-    parsian_msgs::ssl_vision_detection_ball convert_detection_ball(SSL_DetectionBall protoBall);
+/**
+ * Converts a protoBuf DetectionBall to the ROS version.
+ */
+parsian_msgs::ssl_vision_detection_ball convert_detection_ball(SSL_DetectionBall protoBall);
 
 
-    /**
-     * Converts a protoBuf DetectionRobot to the ROS version.
-     */
-    parsian_msgs::ssl_vision_detection_robot convert_detection_robot(SSL_DetectionRobot protoBot);
+/**
+ * Converts a protoBuf DetectionRobot to the ROS version.
+ */
+parsian_msgs::ssl_vision_detection_robot convert_detection_robot(SSL_DetectionRobot protoBot);
 }
 
 #endif // _CONVERT_DETECTION

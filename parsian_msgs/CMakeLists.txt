@@ -10,11 +10,13 @@ project(parsian_msgs)
 find_package(catkin REQUIRED COMPONENTS
 		message_generation
 		std_msgs
+		roslint
 		)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+roslint_cpp()
+roslint_python()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -119,7 +121,7 @@ catkin_package(
 		CATKIN_DEPENDS message_runtime std_msgs
 		#  DEPENDS system_lib
 )
-
+roslint_cpp()
 ###########
 ## Build ##
 ###########

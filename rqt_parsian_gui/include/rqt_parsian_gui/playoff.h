@@ -10,21 +10,21 @@
 #include <parsian_msgs/parsian_update_plans.h>
 #include <ros/ros.h>
 
-namespace rqt_parsian_gui{
+namespace rqt_parsian_gui {
 
 
 class PlayOff : public rqt_gui_cpp::Plugin {
     Q_OBJECT
-    public:
-        PlayOff();
-        virtual void initPlugin(qt_gui_cpp::PluginContext& context);
+public:
+    PlayOff();
+    virtual void initPlugin(qt_gui_cpp::PluginContext& context);
 
-    private:
-        ros::NodeHandle n;
-        ros::NodeHandle n_private;
-        boost::shared_ptr<PlayOffWidget> playOffWidget;
+private:
+    ros::NodeHandle n;
+    ros::NodeHandle n_private;
+    boost::shared_ptr<PlayOffWidget> playOffWidget;
 
-    };
+};
 }  // namespace rqt_example_cpp
 
 #endif //RQT_PARSIAN_GUI_PLAYOFF_H

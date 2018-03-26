@@ -17,8 +17,7 @@
 
 class CRoleInfo;
 
-class CRole
-{
+class CRole {
 public:
     CRole();
     explicit CRole(Agent* _agent);
@@ -27,11 +26,10 @@ public:
     virtual void assign(Agent* _agent);
 };
 
-class CRoleInfo
-{    
+class CRoleInfo {
 protected:
     QString roleName;
-public:        
+public:
     QString getRoleName();
     explicit CRoleInfo(QString _roleName);
     QList< Agent* > agents;

@@ -2,33 +2,30 @@
 
 
 
-namespace rqt_parsian_gui
-{
+namespace rqt_parsian_gui {
 
-    ModeChooser::ModeChooser() : rqt_gui_cpp::Plugin()
-    {
-        setObjectName("noOne");
-    }
+ModeChooser::ModeChooser() : rqt_gui_cpp::Plugin() {
+    setObjectName("noOne");
+}
 
-    void ModeChooser::initPlugin(qt_gui_cpp::PluginContext& context)
-    {
+void ModeChooser::initPlugin(qt_gui_cpp::PluginContext& context) {
 
-        n = getNodeHandle();
-        n_private = getPrivateNodeHandle();
-        // create QWidget
+    n = getNodeHandle();
+    n_private = getPrivateNodeHandle();
+    // create QWidget
 
-        modeWidget = new ModeChooserWidget(n);
-        context.addWidget(modeWidget);
+    modeWidget = new ModeChooserWidget(n);
+    context.addWidget(modeWidget);
 
-    }
+}
 
-    void ModeChooser::shutdownPlugin() {
-        ROS_INFO("Sddf");
-        modeWidget->saveTeamConfig();
-        n.shutdown();
-        n_private.shutdown();
+void ModeChooser::shutdownPlugin() {
+    ROS_INFO("Sddf");
+    modeWidget->saveTeamConfig();
+    n.shutdown();
+    n_private.shutdown();
 
-    }
+}
 
 }
 

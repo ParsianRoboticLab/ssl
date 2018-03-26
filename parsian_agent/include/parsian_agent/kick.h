@@ -19,7 +19,7 @@ enum kckMode {
     KINTERCEPT = 4,
     KKICK = 5,
     KPENALTY = 6,
-    KAVOIDOPPENALTY =7,
+    KAVOIDOPPENALTY = 7,
     KWAITANDKICK = 8,
     KDONTKICK = 9,
     KWAITFORTURN = 10,
@@ -27,8 +27,7 @@ enum kckMode {
 
 };
 
-class CSkillKick : public CSkill, public KickAction
-{
+class CSkillKick : public CSkill, public KickAction {
 private:
     kckMode decideMode();
     kckMode kickMode;
@@ -39,6 +38,10 @@ private:
 
     Vector2D agentPos;
     Vector2D agentDir;
+    Circle2D kickerArea;
+    double jturnThr;
+    double onetouchThr;
+    double distThr;
     QQueue <Vector2D> dirQueue;
     double kkDist;
     double kkBallDist;
@@ -72,7 +75,7 @@ private:
     void kgoalie();
     void findPosToGo();
     void findPosToGoAlt();
-    double oneTouchAngle(Vector2D pos,Vector2D vel,Vector2D ballVel,Vector2D ballDir,Vector2D goal,double landa,double gamma);
+    double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double landa, double gamma);
     Vector2D jTurnStartPos;
     bool isJturn;
     bool jTurnFromBack;

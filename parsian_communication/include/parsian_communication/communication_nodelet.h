@@ -23,42 +23,42 @@
 
 
 namespace parsian_communication {
-    class CommunicationNodelet : public nodelet::Nodelet {
+class CommunicationNodelet : public nodelet::Nodelet {
 
-    private:
-        void onInit();
+private:
+    void onInit();
 
-        boost::shared_ptr<CCommunicator> communicator;
-        ros::Subscriber robotPacketSub;
-        ros::Subscriber team_config_sub;
-        ros::Publisher  drawPub;
-        ros::Publisher  debugPub;
-        ros::Publisher  statusPub;
-        ros::Timer      timer;
-        ros::Timer      recTimer;
-
-
-        void callBack(const parsian_msgs::parsian_packetsConstPtr& _packet);
-        // Timer CallBack (to publish)
-        void timerCb(const ros::TimerEvent& event);
-
-        void recTimerCb(const ros::TimerEvent& event);
-
-        boost::shared_ptr<dynamic_reconfigure::Server<communication::communicationConfig>> server;
-        void ConfigServerCallBack(const communication::communicationConfig &config, uint32_t level);
-        communication::communicationConfig conf;
-
-        void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
-        bool realGame = false;
-        int cbCount;
-        bool sim_handle_flag;
-        parsian_msgs::parsian_packetsPtr modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet);
-        parsian_msgs::parsian_packetsPtr modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet);
+    boost::shared_ptr<CCommunicator> communicator;
+    ros::Subscriber robotPacketSub;
+    ros::Subscriber team_config_sub;
+    ros::Publisher  drawPub;
+    ros::Publisher  debugPub;
+    ros::Publisher  statusPub;
+    ros::Timer      timer;
+    ros::Timer      recTimer;
 
 
+    void callBack(const parsian_msgs::parsian_packetsConstPtr& _packet);
+    // Timer CallBack (to publish)
+    void timerCb(const ros::TimerEvent& event);
+
+    void recTimerCb(const ros::TimerEvent& event);
+
+    boost::shared_ptr<dynamic_reconfigure::Server<communication::communicationConfig>> server;
+    void ConfigServerCallBack(const communication::communicationConfig &config, uint32_t level);
+    communication::communicationConfig conf;
+
+    void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
+    bool realGame = false;
+    int cbCount;
+    bool sim_handle_flag;
+    parsian_msgs::parsian_packetsPtr modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet);
+    parsian_msgs::parsian_packetsPtr modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet);
 
 
-    };
+
+
+};
 }
 
 

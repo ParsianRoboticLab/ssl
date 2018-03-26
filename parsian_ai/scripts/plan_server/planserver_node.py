@@ -36,7 +36,7 @@ class getPlan:
 
     def handle_plan_request(self, req):
         # type: (plan_serviceRequest) -> req
-        print("REQUEST:: #players: "+str(req.plan_req.playersNum)+" game mode: "+str(req.plan_req.gameMode)+"\n")
+        print("REQUEST:: #players: " + str(req.plan_req.playersNum) + " game mode: " + str(req.plan_req.gameMode) + "\n")
         t = int(round(time.time() * 1000000))
         response = plan_serviceResponse()
         out = self.__w.choose_plan(req.plan_req.playersNum, req.plan_req.gameMode, req.plan_req.ballPos.x, req.plan_req.ballPos.y)
@@ -44,7 +44,7 @@ class getPlan:
             t2 = int(round(time.time() * 1000000)) - t
             response.the_plan = out
             response.time_us = t2
-            print ("time: "+str(t2)+" ms")
+            print ("time: " + str(t2) + " ms")
             return response
         else:
             print ("No plan sent :(")

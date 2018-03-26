@@ -17,7 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
         parsian_util
         roscpp
         rospy
+	roslint
         )
+
+roslint_cpp()
+roslint_python()
 
 find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui)
 include(${QT_USE_FILE})

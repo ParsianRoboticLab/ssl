@@ -3,121 +3,124 @@
 #include <QDebug>
 
 
-double AvgWithoutOutliers(QList<double> data , double accuracy){
+double AvgWithoutOutliers(QList<double> data , double accuracy) {
     //calculate a number for each member of list, saved in isOutlier list.
     //for non outlier members, most probable number to be produced is 1/2.
     //if it becaomes greater than 1 (or than "accuracy" :D) we can omit the related member.
     //output is the avrage of non outlier members.
     QList<double> isOutlier;
-    double size = data.count() , n=0;
-    double avrg=0 , a=0 , b=0 , res=0;
+    double size = data.count() , n = 0;
+    double avrg = 0 , a = 0 , b = 0 , res = 0;
     bool equal = true;
 
-    if(size==1)
+    if (size == 1) {
         return data.first();
-
-    for(int i=0; i<size; i++)
-        avrg+=data.at(i);
-
-    avrg/=size;
-
-    for(int i=0; i<size; i++){
-        a = (data.at(i)-avrg)*(data.at(i)-avrg);
-        for(int j=0; j<size; j++){
-            b+=(data.at(j)-avrg)*(data.at(j)-avrg);
-        }
-        b-=a;
-        isOutlier.append( (double)(a*(size-2)/(2*b)) + (double)((size-2)/(2*(size-1))) );
-        b=0;
     }
 
-    for(int i=0; i<size; i++){
-        if(isOutlier.at(i) <= accuracy){
-            res+=data.at(i);
+    for (int i = 0; i < size; i++) {
+        avrg += data.at(i);
+    }
+
+    avrg /= size;
+
+    for (int i = 0; i < size; i++) {
+        a = (data.at(i) - avrg) * (data.at(i) - avrg);
+        for (int j = 0; j < size; j++) {
+            b += (data.at(j) - avrg) * (data.at(j) - avrg);
+        }
+        b -= a;
+        isOutlier.append((double)(a * (size - 2) / (2 * b)) + (double)((size - 2) / (2 * (size - 1))));
+        b = 0;
+    }
+
+    for (int i = 0; i < size; i++) {
+        if (isOutlier.at(i) <= accuracy) {
+            res += data.at(i);
             n++;
         }
     }
 
-    for(int i=0; i<size-1; i++){    // all equal
-        if(data.at(i) != data.at(i+1)) {
+    for (int i = 0; i < size - 1; i++) { // all equal
+        if (data.at(i) != data.at(i + 1)) {
             equal = false;
         }
     }
 
-    if(equal && size > 0) {
+    if (equal && size > 0) {
         return data.last();
     }
 
-    return res/n;
+    return res / n;
 }
 
 
 //fits a line to y array: y = bx + a
 void linefit(unsigned int n, double *x, double *y, double &a, double &b);
 
-double det2x2(double mat[2][2])
-{
+double det2x2(double mat[2][2]) {
     double det = (mat[0][0] * mat[1][1]) - (mat[0][1] * mat[1][0]);
     return det;
 }
 
-double det3x3(double mat[3][3])
-{
+double det3x3(double mat[3][3]) {
     double det = 0.0;
-    det += mat[0][0] * ((mat[1][1] * mat[2][2]) - (mat[1][2]*mat[2][1]));
-    det += mat[0][1] * ((mat[1][2] * mat[2][0]) - (mat[1][0]*mat[2][2]));
-    det += mat[0][2] * ((mat[1][0] * mat[2][1]) - (mat[1][1]*mat[2][0]));
+    det += mat[0][0] * ((mat[1][1] * mat[2][2]) - (mat[1][2] * mat[2][1]));
+    det += mat[0][1] * ((mat[1][2] * mat[2][0]) - (mat[1][0] * mat[2][2]));
+    det += mat[0][2] * ((mat[1][0] * mat[2][1]) - (mat[1][1] * mat[2][0]));
     return det;
 }
 
-void mult3x3(double m1[3][3], double m2[3][3],double m[][3])
-{
-    m[0][0] = m1[0][0]*m2[0][0] + m1[0][1]*m2[1][0] + m1[0][2]*m2[2][0];
-    m[0][1] = m1[0][0]*m2[0][1] + m1[0][1]*m2[1][1] + m1[0][2]*m2[2][1];
-    m[0][2] = m1[0][0]*m2[0][2] + m1[0][1]*m2[1][2] + m1[0][2]*m2[2][2];
-    m[1][0] = m1[1][0]*m2[0][0] + m1[1][1]*m2[1][0] + m1[1][2]*m2[2][0];
-    m[1][1] = m1[1][0]*m2[0][1] + m1[1][1]*m2[1][1] + m1[1][2]*m2[2][1];
-    m[1][2] = m1[1][0]*m2[0][2] + m1[1][1]*m2[1][2] + m1[1][2]*m2[2][2];
-    m[2][0] = m1[2][0]*m2[0][0] + m1[2][1]*m2[1][0] + m1[2][2]*m2[2][0];
-    m[2][1] = m1[2][0]*m2[0][1] + m1[2][1]*m2[1][1] + m1[2][2]*m2[2][1];
-    m[2][2] = m1[2][0]*m2[0][2] + m1[2][1]*m2[1][2] + m1[2][2]*m2[2][2];
+void mult3x3(double m1[3][3], double m2[3][3], double m[][3]) {
+    m[0][0] = m1[0][0] * m2[0][0] + m1[0][1] * m2[1][0] + m1[0][2] * m2[2][0];
+    m[0][1] = m1[0][0] * m2[0][1] + m1[0][1] * m2[1][1] + m1[0][2] * m2[2][1];
+    m[0][2] = m1[0][0] * m2[0][2] + m1[0][1] * m2[1][2] + m1[0][2] * m2[2][2];
+    m[1][0] = m1[1][0] * m2[0][0] + m1[1][1] * m2[1][0] + m1[1][2] * m2[2][0];
+    m[1][1] = m1[1][0] * m2[0][1] + m1[1][1] * m2[1][1] + m1[1][2] * m2[2][1];
+    m[1][2] = m1[1][0] * m2[0][2] + m1[1][1] * m2[1][2] + m1[1][2] * m2[2][2];
+    m[2][0] = m1[2][0] * m2[0][0] + m1[2][1] * m2[1][0] + m1[2][2] * m2[2][0];
+    m[2][1] = m1[2][0] * m2[0][1] + m1[2][1] * m2[1][1] + m1[2][2] * m2[2][1];
+    m[2][2] = m1[2][0] * m2[0][2] + m1[2][1] * m2[1][2] + m1[2][2] * m2[2][2];
 }
 
-void transpose3x3(double m[3][3],double t[][3])
-{
-    t[0][0] = m[0][0];t[0][1] = m[1][0];t[0][2] = m[2][0];
-    t[1][0] = m[0][1];t[1][1] = m[1][1];t[1][2] = m[2][1];
-    t[2][0] = m[0][2];t[2][1] = m[1][2];t[2][2] = m[2][2];
+void transpose3x3(double m[3][3], double t[][3]) {
+    t[0][0] = m[0][0];
+    t[0][1] = m[1][0];
+    t[0][2] = m[2][0];
+    t[1][0] = m[0][1];
+    t[1][1] = m[1][1];
+    t[1][2] = m[2][1];
+    t[2][0] = m[0][2];
+    t[2][1] = m[1][2];
+    t[2][2] = m[2][2];
 }
-double det4x4(double mat[4][4])
-{
+double det4x4(double mat[4][4]) {
     double det = 0.0;
     double matspec[3][3];
-    for (int element = 0;element < 4; element++)
-    {
+    for (int element = 0; element < 4; element++) {
         int row = 0;
         int col = 0;
-        for (int i = 0; i < 4; i++)
-        {
-            if (i == 0) continue;
-            for (int j = 0; j < 4; j++)
-            {
-                if (j == element) continue;
+        for (int i = 0; i < 4; i++) {
+            if (i == 0) {
+                continue;
+            }
+            for (int j = 0; j < 4; j++) {
+                if (j == element) {
+                    continue;
+                }
                 matspec[row][col] = mat[i][j];
                 col++;
             }
             row++;
         }
-        det += det3x3(matspec) * mat[0][element] * ( (element % 2 == 0) ? 1.0 : -1.0);
+        det += det3x3(matspec) * mat[0][element] * ((element % 2 == 0) ? 1.0 : -1.0);
     }
     return det;
 }
 
 void fillmat2x2(
-        double mat[2][2],
-        double m00, double m01,
-        double m10, double m11)
-{
+    double mat[2][2],
+    double m00, double m01,
+    double m10, double m11) {
     mat[0][0] = m00;
     mat[0][1] = m01;
     mat[1][0] = m10;
@@ -125,10 +128,10 @@ void fillmat2x2(
 }
 
 void fillmat3x3(
-        double mat[3][3],
-        double m00, double m01, double m02,
-        double m10, double m11, double m12,
-        double m20, double m21, double m22 )
+    double mat[3][3],
+    double m00, double m01, double m02,
+    double m10, double m11, double m12,
+    double m20, double m21, double m22)
 
 {
     mat[0][0] = m00;
@@ -143,11 +146,11 @@ void fillmat3x3(
 }
 
 void fillmat4x4(
-        double mat[4][4],
-        double m00, double m01, double m02, double m03,
-        double m10, double m11, double m12, double m13,
-        double m20, double m21, double m22, double m23,
-        double m30, double m31, double m32, double m33)
+    double mat[4][4],
+    double m00, double m01, double m02, double m03,
+    double m10, double m11, double m12, double m13,
+    double m20, double m21, double m22, double m23,
+    double m30, double m31, double m32, double m33)
 
 {
     mat[0][0] = m00;
@@ -168,16 +171,14 @@ void fillmat4x4(
     mat[3][3] = m33;
 }
 
-void linefit(unsigned int n, double *x, double *y, double &a, double &b)
-{
+void linefit(unsigned int n, double *x, double *y, double &a, double &b) {
     unsigned int i;
     double si = 0.0;
     double sxi = 0.0;
     double sxi2 = 0.0;
     double syi = 0.0;
     double sxiyi = 0.0;
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         sxi += x[i];
         sxi2 += x[i] * x[i];
         syi += y[i];
@@ -192,28 +193,23 @@ void linefit(unsigned int n, double *x, double *y, double &a, double &b)
     fillmat2x2(matB, si , syi, sxi,   sxiyi);
 
     double delta = det2x2(mat);
-    if (delta == 0.0)
-    {
+    if (delta == 0.0) {
         a = 0.0;
         b = 1e10;
-    }
-    else
-    {
+    } else {
         a = det2x2(matA) / delta;
         b = det2x2(matB) / delta;
     }
 }
 
-void linefit(QVector<Vector2D> p, double &a, double &b)
-{
+void linefit(QVector<Vector2D> p, double &a, double &b) {
     unsigned int i;
     double si = 0.0;
     double sxi = 0.0;
     double sxi2 = 0.0;
     double syi = 0.0;
     double sxiyi = 0.0;
-    for (i = 0; i < p.count(); i++)
-    {
+    for (i = 0; i < p.count(); i++) {
         sxi += p[i].x;
         sxi2 += p[i].x * p[i].x;
         syi += p[i].y;
@@ -228,21 +224,17 @@ void linefit(QVector<Vector2D> p, double &a, double &b)
     fillmat2x2(matB, si , syi, sxi,   sxiyi);
 
     double delta = det2x2(mat);
-    if (delta == 0.0)
-    {
+    if (delta == 0.0) {
         a = 0.0;
         b = 1e10;
-    }
-    else
-    {
+    } else {
         a = det2x2(matA) / delta;
         b = det2x2(matB) / delta;
     }
 }
 
 
-void squarefit(unsigned int n, double *x, double *y, double &a, double &b, double &c)
-{
+void squarefit(unsigned int n, double *x, double *y, double &a, double &b, double &c) {
     unsigned int i;
     double si = 0.0;
     double sxi = 0.0;
@@ -253,8 +245,7 @@ void squarefit(unsigned int n, double *x, double *y, double &a, double &b, doubl
     double sxiyi = 0.0;
     double sxi2yi = 0.0;
     double temp;
-    for (i = 0; i < n; i++)
-    {
+    for (i = 0; i < n; i++) {
         sxi += x[i];
         temp = x[i] * x[i];
         sxi2 += temp;
@@ -271,29 +262,30 @@ void squarefit(unsigned int n, double *x, double *y, double &a, double &b, doubl
     double matA[3][3];
     double matB[3][3];
     double matC[3][3];
-    fillmat3x3(mat,  si , sxi, sxi2,   sxi  , sxi2 , sxi3 ,    sxi2  , sxi3  , sxi4  );
-    fillmat3x3(matA, syi, sxi, sxi2,   sxiyi, sxi2 , sxi3 ,    sxi2yi, sxi3  , sxi4  );
-    fillmat3x3(matB, si , syi, sxi2,   sxi  , sxiyi, sxi3 ,    sxi2  , sxi2yi, sxi4  );
+    fillmat3x3(mat,  si , sxi, sxi2,   sxi  , sxi2 , sxi3 ,    sxi2  , sxi3  , sxi4);
+    fillmat3x3(matA, syi, sxi, sxi2,   sxiyi, sxi2 , sxi3 ,    sxi2yi, sxi3  , sxi4);
+    fillmat3x3(matB, si , syi, sxi2,   sxi  , sxiyi, sxi3 ,    sxi2  , sxi2yi, sxi4);
     fillmat3x3(matC, si , sxi, syi ,   sxi  , sxi2 , sxiyi,    sxi2  , sxi3  , sxi2yi);
 
     double delta = det3x3(mat);
-    if (delta == 0.0)
-    {
+    if (delta == 0.0) {
         a = 0.0;
         b = 0.0;
         c = 0.0;
-    }
-    else
-    {
+    } else {
         a = det3x3(matA) / delta;
         b = det3x3(matB) / delta;
         c = det3x3(matC) / delta;
     }
 }
 
-void trifit(unsigned int n, double *x, double *y, double &a, double &b, double &c)
-{
-    n;x;y;a;b;c;
+void trifit(unsigned int n, double *x, double *y, double &a, double &b, double &c) {
+    n;
+    x;
+    y;
+    a;
+    b;
+    c;
     //TODO : what should happen to these ?!
     /*int i;
     double si = 0.0;
@@ -348,134 +340,117 @@ void trifit(unsigned int n, double *x, double *y, double &a, double &b, double &
 }
 
 
-CPolynomial::CPolynomial()
-{
+CPolynomial::CPolynomial() {
     initialized = false;
     coefs.clear();
 }
 
-CPolynomial::~CPolynomial()
-{
+CPolynomial::~CPolynomial() {
 
 }
 
-void CPolynomial::setCoefs(QList<double> _coefs)
-{
+void CPolynomial::setCoefs(QList<double> _coefs) {
     initialized = true;
     coefs.clear();
     coefs.append(_coefs);
 }
 
-QList<double> CPolynomial::getCoefs()
-{
+QList<double> CPolynomial::getCoefs() {
     return coefs;
 }
 
-double CPolynomial::val(double x)
-{
-    if(!initialized)
+double CPolynomial::val(double x) {
+    if (!initialized) {
         return 0;
-    double sum=0;
-    for(int i=0;i<coefs.count();i++)
-    {
-        sum+=pow(x,i)*coefs[i];
+    }
+    double sum = 0;
+    for (int i = 0; i < coefs.count(); i++) {
+        sum += pow(x, i) * coefs[i];
     }
     return sum;
 }
 
 
 
-CPolynomialFit::CPolynomialFit():CPolynomial()
-{
+CPolynomialFit::CPolynomialFit(): CPolynomial() {
     initialized = false;
 }
 
-CPolynomialFit::~CPolynomialFit()
-{
+CPolynomialFit::~CPolynomialFit() {
 }
 
-void CPolynomialFit::fitToDataSet(QList< QPair<double, double> > newDataSet)
-{
+void CPolynomialFit::fitToDataSet(QList< QPair<double, double> > newDataSet) {
     initialized = true;
     DataSet.clear();
     DataSet.append(newDataSet);
     double term;
     coefs.clear();
-    for(int i=0; i<DataSet.count(); i++)
-    {
+    for (int i = 0; i < DataSet.count(); i++) {
         term = 1;
-        for(int j=0; j<DataSet.count(); j++)
-        {
-            if(i==j) continue;
+        for (int j = 0; j < DataSet.count(); j++) {
+            if (i == j) {
+                continue;
+            }
             term /= (DataSet[i].first - DataSet[j].first);
         }
-        coefs.insert(i,term);
+        coefs.insert(i, term);
     }
 }
 
-double CPolynomialFit::val(double x)
-{
-    if(!initialized)
+double CPolynomialFit::val(double x) {
+    if (!initialized) {
         return 0;
-    double sum=0,term;
-    for(int i=0; i<DataSet.count(); i++)
-    {
+    }
+    double sum = 0, term;
+    for (int i = 0; i < DataSet.count(); i++) {
         term = DataSet[i].second * coefs[i];
-        for(int j=0; j<DataSet.count(); j++)
-        {
-            if(i==j) continue;
+        for (int j = 0; j < DataSet.count(); j++) {
+            if (i == j) {
+                continue;
+            }
             term *= (x - DataSet[j].first);
         }
-        sum+=term;
+        sum += term;
     }
     return sum;
 }
 
 
-CPolynomialRegression::CPolynomialRegression():CPolynomial()
-{
+CPolynomialRegression::CPolynomialRegression(): CPolynomial() {
     initialized = false;
 }
 
-CPolynomialRegression::~CPolynomialRegression()
-{
+CPolynomialRegression::~CPolynomialRegression() {
 }
 
-void CPolynomialRegression::fitToDataSet(QList<QPair<double, double> > newDataSet, int _n)
-{
+void CPolynomialRegression::fitToDataSet(QList<QPair<double, double> > newDataSet, int _n) {
     DataSet.clear();
     DataSet.append(newDataSet);
     n = _n;
     A.resize(n + 1, 1);
     B.resize(n + 1, n + 1);
-    B.e(0,0)=DataSet.count();
-    for(int i=0; i<=2*n; i++)
-    {
+    B.e(0, 0) = DataSet.count();
+    for (int i = 0; i <= 2 * n; i++) {
         double sum = 0;
-        for(int j=0; j<DataSet.count(); j++)
-        {
-            sum += pow(DataSet[j].first,i);
+        for (int j = 0; j < DataSet.count(); j++) {
+            sum += pow(DataSet[j].first, i);
         }
 
-        for(int k=0; k<=n; k++)
-        {
-            if(k<n+1 && i-k<n+1)
-            {
-                B.e(k,i-k)=sum;
+        for (int k = 0; k <= n; k++) {
+            if (k < n + 1 && i - k < n + 1) {
+                B.e(k, i - k) = sum;
                 //                qDebug()<<i<<k<<i-k;
             }
         }
     }
 
-    for(int i=0; i<=n; i++)
-    {
+    for (int i = 0; i <= n; i++) {
         double sum = 0;
-        for(int j=0; j<DataSet.count(); j++)
-        {
-            sum += pow(DataSet[j].first,i)*DataSet[j].second;
+        for (int j = 0; j < DataSet.count(); j++) {
+            sum += pow(DataSet[j].first, i) * DataSet[j].second;
         }
 
-        A.e(i,0)=sum;
+        A.e(i, 0) = sum;
     }
 
     //    fprintf(stderr,"\r\nA:\r\n");
@@ -489,7 +464,7 @@ void CPolynomialRegression::fitToDataSet(QList<QPair<double, double> > newDataSe
     //    }
     initialized = true;
     B.inverse();
-    C = B*A;
+    C = B * A;
 
     //    fprintf(stderr,"\r\nC:\r\n");
     //    C.print();
@@ -497,128 +472,125 @@ void CPolynomialRegression::fitToDataSet(QList<QPair<double, double> > newDataSe
 
     coefs.clear();
 
-    for(int i=0;i<n+1;i++)
-    {
-        coefs.append(C.e(i,0));
+    for (int i = 0; i < n + 1; i++) {
+        coefs.append(C.e(i, 0));
     }
 }
 
-QVector<double> CPolynomialRegression::PolynomialRegression(QList<double> value, QList<int> key, int n/*order*/){
-    double X[2*n+1];
-    double B[n+1][n+2];
-    double Y[n+1];
-    int j , k, N=value.count();
+QVector<double> CPolynomialRegression::PolynomialRegression(QList<double> value, QList<int> key, int n/*order*/) {
+    double X[2 * n + 1];
+    double B[n + 1][n + 2];
+    double Y[n + 1];
+    int j , k, N = value.count();
     coefs.clear();
-    QVector<double> coefs(QVector<double>(n+1));
-    if(value.count()>key.count())
-        N=key.count();
-    if( value.count()>0){
-        for(int i1=0; i1<N; i1++){
-            double temp = value.at(i1) , valj=value.at(i1);
+    QVector<double> coefs(QVector<double>(n + 1));
+    if (value.count() > key.count()) {
+        N = key.count();
+    }
+    if (value.count() > 0) {
+        for (int i1 = 0; i1 < N; i1++) {
+            double temp = value.at(i1) , valj = value.at(i1);
             X[0] = N;
-            for(int i=1;i<2*n+1;i++){
-                X[i]+=temp;
-                temp*=valj;
+            for (int i = 1; i < 2 * n + 1; i++) {
+                X[i] += temp;
+                temp *= valj;
             }
         }
-        for(j=0; j<N; j++){
-            Y[0]+=key.at(j);
+        for (j = 0; j < N; j++) {
+            Y[0] += key.at(j);
             double temp = value.at(j) , valj = value.at(j);
-            for(int i=1; i<n+1; i++){
-                Y[i]+=key.at(j)*temp;
-                temp*=valj;
+            for (int i = 1; i < n + 1; i++) {
+                Y[i] += key.at(j) * temp;
+                temp *= valj;
             }
         }
-        for (int i=0;i<=n;i++)
-            for (j=0;j<=n;j++)
-                B[i][j]=X[i+j];
-        for (int i=0;i<=n;i++)
-            B[i][n+1]=Y[i];
-        n=n+1;
-        for (int i=0;i<n;i++)
-            for (k=i+1;k<n;k++)
-                if (B[i][i]<B[k][i])
-                    for (j=0;j<=n;j++){
-                        double temp=B[i][j];
-                        B[i][j]=B[k][j];
-                        B[k][j]=temp;
-                    }
-        for (int i=0;i<n-1;i++)
-            for (k=i+1;k<n;k++){
-                double t=B[k][i]/B[i][i];
-                for (j=0;j<=n;j++)
-                    B[k][j]=B[k][j]-t*B[i][j];
+        for (int i = 0; i <= n; i++)
+            for (j = 0; j <= n; j++) {
+                B[i][j] = X[i + j];
             }
-        for (int i=n-1;i>=0;i--){
-            coefs[i]=B[i][n];
-            for (j=0;j<n;j++)
-                if (j!=i)
-                    coefs[i]=coefs[i]-B[i][j]*coefs[j];
-            coefs[i]=coefs[i]/B[i][i];
+        for (int i = 0; i <= n; i++) {
+            B[i][n + 1] = Y[i];
+        }
+        n = n + 1;
+        for (int i = 0; i < n; i++)
+            for (k = i + 1; k < n; k++)
+                if (B[i][i] < B[k][i])
+                    for (j = 0; j <= n; j++) {
+                        double temp = B[i][j];
+                        B[i][j] = B[k][j];
+                        B[k][j] = temp;
+                    }
+        for (int i = 0; i < n - 1; i++)
+            for (k = i + 1; k < n; k++) {
+                double t = B[k][i] / B[i][i];
+                for (j = 0; j <= n; j++) {
+                    B[k][j] = B[k][j] - t * B[i][j];
+                }
+            }
+        for (int i = n - 1; i >= 0; i--) {
+            coefs[i] = B[i][n];
+            for (j = 0; j < n; j++)
+                if (j != i) {
+                    coefs[i] = coefs[i] - B[i][j] * coefs[j];
+                }
+            coefs[i] = coefs[i] / B[i][i];
         }
     }
     return coefs;
 }
 
 CHalfLogRegression::CHalfLogRegression() : pr() {
-    A=B=0;
+    A = B = 0;
     initialized = false;
 }
 
 CHalfLogRegression::~CHalfLogRegression()
-= default;
+    = default;
 
-void CHalfLogRegression::fitToDataSet(QList<QPair<double, double> > newDataSet)
-{
-    QList<QPair<double,double> > ds;
+void CHalfLogRegression::fitToDataSet(QList<QPair<double, double> > newDataSet) {
+    QList<QPair<double, double> > ds;
     ds.clear();
-    for(int i=0;i<newDataSet.count();i++)
-    {
-        ds.append(qMakePair(newDataSet[i].first,log(newDataSet[i].second)));
+    for (int i = 0; i < newDataSet.count(); i++) {
+        ds.append(qMakePair(newDataSet[i].first, log(newDataSet[i].second)));
     }
     pr = new CPolynomialRegression();
     pr->fitToDataSet(ds);
-    QList<double> c=pr->getCoefs();
+    QList<double> c = pr->getCoefs();
     A = exp(c[0]);
     B = c[1];
     delete pr;
 
 }
 
-double CHalfLogRegression::val(double x)
-{
-    return A*exp(B*x);
+double CHalfLogRegression::val(double x) {
+    return A * exp(B * x);
 }
 
-double CHalfLogRegression::invval(double y)
-{
-    return (1.0/B)*log(y/A);
+double CHalfLogRegression::invval(double y) {
+    return (1.0 / B) * log(y / A);
 }
 
 
-QList<QList<int> > comb(QList<int> l)
-{        
+QList<QList<int> > comb(QList<int> l) {
     QList<QList<int> > r;
-    if (l.count()==1)
-    {
+    if (l.count() == 1) {
         r.append(l);
         return r;
     }
-    for (int i=0;i<l.count();i++)
-    {
+    for (int i = 0; i < l.count(); i++) {
         bool flag = false;
-        if (i>=1)
-        {
-            if (l[i]!=l[i-1]) flag = true;
+        if (i >= 1) {
+            if (l[i] != l[i - 1]) {
+                flag = true;
+            }
+        } else {
+            flag = true;
         }
-        else flag = true;
-        if (flag)
-        {
+        if (flag) {
             QList<int> q = l;
             q.removeAt(i);
             QList<QList<int> > t = comb(q);
-            for (int j=0;j<t.count();j++)
-            {
+            for (int j = 0; j < t.count(); j++) {
                 t[j].prepend(l[i]);
             }
             r.append(t);
@@ -627,29 +599,24 @@ QList<QList<int> > comb(QList<int> l)
     return r;
 }
 
-QList<QList<int> > generateCombinations(QList<int> l)
-{   
+QList<QList<int> > generateCombinations(QList<int> l) {
     qSort(l.begin(), l.end());
     return comb(l);
 }
 
-void subs(QList<QList<int> >& res, QList<int> r, QList<int> l, int m, int k)
-{        
-    if (r.length()==m) {
+void subs(QList<QList<int> >& res, QList<int> r, QList<int> l, int m, int k) {
+    if (r.length() == m) {
         res.append(r);
-    }
-    else {
-        for (int j=k;j<l.length();j++)
-        {
+    } else {
+        for (int j = k; j < l.length(); j++) {
             r.append(l[j]);
-            subs(res, r, l, m, j+1);
+            subs(res, r, l, m, j + 1);
             r.pop_back();
         }
     }
 }
 
-QList<QList<int> > generateSubsets(QList<int> l, int m)
-{
+QList<QList<int> > generateSubsets(QList<int> l, int m) {
     QList<QList<int> > res;
     QList<int> r;
     subs(res, r, l, m, 0);
@@ -697,8 +664,7 @@ QList<QList<int> > generateSubsets(QList<int> l, int m)
    just fine, but I do not guarantee convergence in all cases.
  ****************************************************************************/
 
-Circle2D circleFit(QVector<Vector2D> P)
-{
+Circle2D circleFit(QVector<Vector2D> P) {
     /* user-selected parameters */
     const int maxIterations = 64;
     const double tolerance = 1e-06;
@@ -749,41 +715,43 @@ Circle2D circleFit(QVector<Vector2D> P)
         b = yAvr + LAvr * LbAvr;
         r = LAvr;
 
-        if (fabs(a - a0) <= tolerance && fabs(b - b0) <= tolerance)
+        if (fabs(a - a0) <= tolerance && fabs(b - b0) <= tolerance) {
             break;
+        }
     }
 
     return Circle2D(Vector2D(a, b), r);
     //  return (j < maxIterations ? j : -1);
 }
 
-MWBM::MWBM()
-{
+MWBM::MWBM() {
     W = NULL;
     n = cap = 0;
 }
 
-MWBM::MWBM(int _m, int _n)
-{
+MWBM::MWBM(int _m, int _n) {
     W = NULL;
     create(_m, _n);
 }
 
-MWBM::~MWBM()
-{
+MWBM::~MWBM() {
     destroy();
 }
 
-void MWBM::create(int _m, int _n)
-{
+void MWBM::create(int _m, int _n) {
     destroy();
-    n = _m;if (_n > _m) n = _n;
+    n = _m;
+    if (_n > _m) {
+        n = _n;
+    }
     W = new double* [n];
-    for (int i=0;i<n;i++)
+    for (int i = 0; i < n; i++) {
         W[i] = new double [n];
-    for (int i=0;i<n;i++)
-        for (int j=0;j<n;j++)
+    }
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             W[i][j] = 0;
+        }
     U = new double [n];
     V = new double [n];
     Y = new double [n]; /* <-- weight variables */
@@ -797,11 +765,13 @@ void MWBM::create(int _m, int _n)
     cap = n;
 }
 
-void MWBM::destroy()
-{
-    if (W == NULL) return;
-    for (int i=0;i<cap;i++)
+void MWBM::destroy() {
+    if (W == NULL) {
+        return;
+    }
+    for (int i = 0; i < cap; i++) {
         delete [] W[i];
+    }
     delete [] W;
     delete [] U;
     delete [] V;
@@ -813,42 +783,49 @@ void MWBM::destroy()
     delete [] R;
     delete [] S;
     delete [] T;
-    W = NULL;n=0;cap=0;
+    W = NULL;
+    n = 0;
+    cap = 0;
 }
 
 void MWBM::changeSize(int k, int r) {
-    int pp = max(k,r);
-    if (pp > cap) return;
+    int pp = max(k, r);
+    if (pp > cap) {
+        return;
+    }
     n = pp;
-    for (int i=0;i<n;i++)
-        for (int j=0;j<n;j++)
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             W[i][j] = 0;
+        }
 }
 
-void MWBM::setWeight(int i, int j, double w)
-{
-    if (i >= n || j >= n || i < 0 || j < 0) return;
+void MWBM::setWeight(int i, int j, double w) {
+    if (i >= n || j >= n || i < 0 || j < 0) {
+        return;
+    }
     W[i][j] = w;
 }
 
-double MWBM::getWeight(int i, int j)
-{
-    if (i >= n || j >= n || i < 0 || j < 0) return 0;
+double MWBM::getWeight(int i, int j) {
+    if (i >= n || j >= n || i < 0 || j < 0) {
+        return 0;
+    }
     return W[i][j];
 }
 
-int MWBM::getMatch(int i)
-{
+int MWBM::getMatch(int i) {
     return M[i];
 }
 
-void MWBM::setWeightsByDists(QList <Vector2D> upNodes, QList <Vector2D> downNodes)
-{
-    if(upNodes.size() > n || downNodes.size() > n)
+void MWBM::setWeightsByDists(QList <Vector2D> upNodes, QList <Vector2D> downNodes) {
+    if (upNodes.size() > n || downNodes.size() > n) {
         return;
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
+    }
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             setWeight(i, j, upNodes[i].dist(downNodes[j]));
+        }
 }
 
 /* Graph Theory: Maximum Weighted Bipartite Matching
@@ -879,8 +856,7 @@ void MWBM::setWeightsByDists(QList <Vector2D> upNodes, QList <Vector2D> downNode
 */
 
 /* Returns the maximum weight, with the perfect matching stored in M. */
-double MWBM::findMatching()
-{
+double MWBM::findMatching() {
     double w, y; /* <-- weight variables */
     int i, j, m, p, q, s, t, v;
 
@@ -889,8 +865,9 @@ double MWBM::findMatching()
         U[i] = V[i] = 0;
 
         for (j = 0; j < n; j++)
-            if (W[i][j] > U[i])
+            if (W[i][j] > U[i]) {
                 U[i] = W[i][j];
+            }
     }
 
     for (m = 0; m < n; m++) {
@@ -901,9 +878,9 @@ double MWBM::findMatching()
             if (M[i] == -1) {
                 S[i] = 1;
                 P[p++] = i;
-            }
-            else
+            } else {
                 S[i] = 0;
+            }
         }
 
         while (true) {
@@ -916,12 +893,12 @@ double MWBM::findMatching()
 
                         if (y == 0) {
                             R[j] = i;
-                            if (N[j] == -1)
+                            if (N[j] == -1) {
                                 goto end_phase;
+                            }
                             T[j] = 1;
                             Q[q++] = j;
-                        }
-                        else if ((Y[j] == -1) || (y < Y[j])) {
+                        } else if ((Y[j] == -1) || (y < Y[j])) {
                             Y[j] = y;
                             R[j] = i;
                         }
@@ -932,15 +909,18 @@ double MWBM::findMatching()
                 y = -1;
 
                 for (j = 0; j < n; j++)
-                    if ((T[j] == 0.0) && ((y == -1) || (Y[j] < y)))
+                    if ((T[j] == 0.0) && ((y == -1) || (Y[j] < y))) {
                         y = Y[j];
+                    }
 
                 for (j = 0; j < n; j++) {
-                    if (T[j] != 0.0)
+                    if (T[j] != 0.0) {
                         V[j] += y;
+                    }
 
-                    if (S[j] != 0.0)
+                    if (S[j] != 0.0) {
                         U[j] -= y;
+                    }
                 }
 
                 for (j = 0; j < n; j++)
@@ -948,8 +928,9 @@ double MWBM::findMatching()
                         Y[j] -= y;
 
                         if (Y[j] == 0) {
-                            if (N[j] == -1)
+                            if (N[j] == -1) {
                                 goto end_phase;
+                            }
                             T[j] = 1;
                             Q[q++] = j;
                         }
@@ -978,48 +959,54 @@ end_phase:
         }
     }
 
-    for (i = w = 0.0; i < n; i++)
+    for (i = w = 0.0; i < n; i++) {
         w += W[i][M[i]];
+    }
 
     return w;
 }
 
-double MWBM::findMaxMinMatching()
-{
+double MWBM::findMaxMinMatching() {
     double minWeight = 0;
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             minWeight = min(minWeight, W[i][j]);
+        }
     double tempW[n][n];
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             tempW[i][j] = W[i][j];
+        }
 //    qDebug() << "sdlfkjsaldfjiefj" << " " << minWeight << endl;
     double l = minWeight - 1, r = 0;
-    for(int _t = 25; _t >= 0; _t--)
-    {
+    for (int _t = 25; _t >= 0; _t--) {
         //qDebug() << l << " " << r << endl;
         double m = (r + l) / 2;
-        for(int i = 0; i < n; i++)
-            for(int j = 0; j < n; j++)
-                if(W[i][j] < m)
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                if (W[i][j] < m) {
                     W[i][j] = -12345678;
+                }
         double d = findMatching();
-        if(d <= -12345678)
+        if (d <= -12345678) {
             r = m;
-        else
+        } else {
             l = m;
-        for(int i = 0; i < n; i++)
-            for(int j = 0; j < n; j++)
+        }
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
                 W[i][j] = tempW[i][j];
+            }
     }
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            if(W[i][j] < l)
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (W[i][j] < l) {
                 W[i][j] = -12345678;
+            }
     double w = findMatching();
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
             W[i][j] = tempW[i][j];
+        }
     return w;
 }

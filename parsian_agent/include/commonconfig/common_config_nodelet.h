@@ -9,16 +9,16 @@
 #include <parsian_agent/config.h>
 
 
-    class CommonConfig : public nodelet::Nodelet {
-    private:
+class CommonConfig : public nodelet::Nodelet {
+private:
 
-        void onInit() override;
+    void onInit() override;
 
-        ros::NodeHandle private_nh;
+    ros::NodeHandle private_nh;
 
-        boost::shared_ptr<dynamic_reconfigure::Server<agent_common::agentConfig>> server;
+    boost::shared_ptr<dynamic_reconfigure::Server<agent_common::agentConfig>> server;
 
-    };
+};
 
 #endif //COMMONCONFIGNODELET_H
 

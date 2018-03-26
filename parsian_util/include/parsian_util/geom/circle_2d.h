@@ -64,9 +64,9 @@ public:
       \brief create a zero area circle at (0,0)
      */
     Circle2D()
-        : M_center( 0.0, 0.0 )
-        , M_radius( 0.0 )
-      { }
+        : M_center(0.0, 0.0)
+        , M_radius(0.0) {
+    }
 
 
 
@@ -75,18 +75,16 @@ public:
       \param c center point
       \param r radius value
      */
-    Circle2D( const Vector2D & c,
-              const double & r )
-        : M_center( c )
-        , M_radius( r )
-      {
-          if ( r < 0.0 )
-          {
-              std::cerr << "Circle2D::Circle2D(). radius must be positive value."
-                        << std::endl;
-              M_radius = 0.0;
-          }
-      }
+    Circle2D(const Vector2D & c,
+             const double & r)
+        : M_center(c)
+        , M_radius(r) {
+        if (r < 0.0) {
+            std::cerr << "Circle2D::Circle2D(). radius must be positive value."
+                      << std::endl;
+            M_radius = 0.0;
+        }
+    }
 
     /*!
       \brief assign new value.
@@ -95,49 +93,44 @@ public:
       \return const reference to this
      */
     const
-    Circle2D & assign( const Vector2D & c,
-                       const double & r )
-      {
-          M_center = c;
-          M_radius = r;
-          if ( r < 0.0 )
-          {
-              std::cerr << "Circle2D::assign(). radius must be positive value."
-                        << std::endl;
-              M_radius = 0.0;
-          }
-          return *this;
-      }
+    Circle2D & assign(const Vector2D & c,
+                      const double & r) {
+        M_center = c;
+        M_radius = r;
+        if (r < 0.0) {
+            std::cerr << "Circle2D::assign(). radius must be positive value."
+                      << std::endl;
+            M_radius = 0.0;
+        }
+        return *this;
+    }
 
     /*!
       \brief check if point is within this region
       \param point considered point
       \return true if point is contained by this circle
      */
-    bool contains( const Vector2D & point ) const
-      {
-          return M_center.dist2( point ) < M_radius * M_radius;
-      }
+    bool contains(const Vector2D & point) const {
+        return M_center.dist2(point) < M_radius * M_radius;
+    }
 
     /*!
       \brief get the center point
       \return center point coordinate value
      */
     const
-    Vector2D & center() const
-      {
-          return M_center;
-      }
+    Vector2D & center() const {
+        return M_center;
+    }
 
     /*!
       \brief get the radius value
       \return radius value
      */
     const
-    double & radius() const
-      {
-          return M_radius;
-      }
+    double & radius() const {
+        return M_radius;
+    }
 
     /*!
       \brief caluclate the intersection with straight line
@@ -146,9 +139,9 @@ public:
       \param sol2 pointer to the 2nd solution variable
       \return the number of solution
      */
-    int intersection( const Line2D & line,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const;
+    int intersection(const Line2D & line,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const;
 
     /*!
       \brief calculate the intersection with ray line
@@ -157,9 +150,9 @@ public:
       \param sol2 pointer to the 2nd solution variable
       \return the number of solution
      */
-    int intersection( const Ray2D & ray,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const;
+    int intersection(const Ray2D & ray,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const;
 
     /*!
       \brief calculate the intersection with another circle
@@ -168,9 +161,9 @@ public:
       \param sol2 pointer to the 2nd solution variable
       \return the number of solution
      */
-    int intersection( const Circle2D & circle,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const;
+    int intersection(const Circle2D & circle,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const;
     /*!
       \brief calculate the intersection with segment
       \param seg considerd segment
@@ -180,9 +173,9 @@ public:
      */
 
 
-    int intersection( const Segment2D & seg,
-                        Vector2D * sol1,
-                        Vector2D * sol2 ) const;
+    int intersection(const Segment2D & seg,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const;
 
 
 
@@ -198,9 +191,9 @@ public:
       \return coordinates of circumcenter
     */
     static
-    Circle2D circumcircle( const Vector2D & a,
-                           const Vector2D & b,
-                           const Vector2D & c );
+    Circle2D circumcircle(const Vector2D & a,
+                          const Vector2D & b,
+                          const Vector2D & c);
 };
 
 }

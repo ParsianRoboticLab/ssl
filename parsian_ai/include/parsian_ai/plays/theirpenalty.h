@@ -3,14 +3,14 @@
 
 #include "masterplay.h"
 
-class CTheirPenalty : public CMasterPlay{
+class CTheirPenalty : public CMasterPlay {
 public:
-	CTheirPenalty();
-	~CTheirPenalty();
-	void execute_x();
-	void init(const QList<Agent*>& _agents);
+    CTheirPenalty();
+    ~CTheirPenalty();
+    void execute_x();
+    void init(const QList<Agent*>& _agents);
 private:
-	void reset();
+    void reset();
 };
 
 #endif // THEIRPENALTYF_H

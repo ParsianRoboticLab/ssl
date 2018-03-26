@@ -46,8 +46,7 @@ enum class DynamicRegion {
 };
 
 
-class CRoleDynamic
-{
+class CRoleDynamic {
 public:
     CRoleDynamic();
     CRoleDynamic(const CRoleDynamic& _copy);
@@ -67,20 +66,20 @@ private:
     void update();
     bool updated;
 
-SkillProperty(CRoleDynamic, Agent*, Agent, agent);
-SkillProperty(CRoleDynamic, DynamicSkill, SelectedSkill, selectedSkill);
-SkillProperty(CRoleDynamic, Vector2D, Target, target);
-SkillProperty(CRoleDynamic, Vector2D, TargetDir, targetDir);
-SkillProperty(CRoleDynamic, bool, AvoidPenaltyArea, avoidPenaltyArea);
-SkillProperty(CRoleDynamic, double, Tolerance, tolerance);
-SkillProperty(CRoleDynamic, bool, Chip, chip);
-SkillProperty(CRoleDynamic, int, KickSpeed, kickSpeed);
-SkillProperty(CRoleDynamic, double, ReceiveRadius, receiveRadius);
-SkillProperty(CRoleDynamic, Vector2D, WaitPos, waitPos);
-SkillProperty(CRoleDynamic, bool, VeryFine, veryFine);
-SkillProperty(CRoleDynamic, bool, EmptySpot, emptySpot);
-SkillProperty(CRoleDynamic, bool, NoKick, noKick);
-SkillProperty(CRoleDynamic, int, AgentID, agentID);
+    SkillProperty(CRoleDynamic, Agent*, Agent, agent);
+    SkillProperty(CRoleDynamic, DynamicSkill, SelectedSkill, selectedSkill);
+    SkillProperty(CRoleDynamic, Vector2D, Target, target);
+    SkillProperty(CRoleDynamic, Vector2D, TargetDir, targetDir);
+    SkillProperty(CRoleDynamic, bool, AvoidPenaltyArea, avoidPenaltyArea);
+    SkillProperty(CRoleDynamic, double, Tolerance, tolerance);
+    SkillProperty(CRoleDynamic, bool, Chip, chip);
+    SkillProperty(CRoleDynamic, int, KickSpeed, kickSpeed);
+    SkillProperty(CRoleDynamic, double, ReceiveRadius, receiveRadius);
+    SkillProperty(CRoleDynamic, Vector2D, WaitPos, waitPos);
+    SkillProperty(CRoleDynamic, bool, VeryFine, veryFine);
+    SkillProperty(CRoleDynamic, bool, EmptySpot, emptySpot);
+    SkillProperty(CRoleDynamic, bool, NoKick, noKick);
+    SkillProperty(CRoleDynamic, int, AgentID, agentID);
 
 public:
     CRoleDynamic* setKickRealSpeed(double val) {

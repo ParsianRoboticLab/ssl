@@ -18,8 +18,7 @@
 
 using namespace rcsc;
 
-class CSkill
-{
+class CSkill {
 protected:
     CStateMachine sm;
     QString stateName();
@@ -34,22 +33,21 @@ public:
     void assign(Agent* _agent);
     void parse(QStringList params);
     void generateFromConfig(Agent* a);
-    virtual CSkill* allocate(Agent* _agent)=0;
-    virtual QString getName()=0;
+    virtual CSkill* allocate(Agent* _agent) = 0;
+    virtual QString getName() = 0;
 
     virtual double timeNeeded();  //in seconds
     double successRate(); //between 0-1
 
-    //these functions should be defined in child classes    
-    virtual double progress()=0;  //between 0-1 ; less than zero on failure
-    virtual void execute()=0;
+    //these functions should be defined in child classes
+    virtual double progress() = 0; //between 0-1 ; less than zero on failure
+    virtual void execute() = 0;
 
     Property(Agent*, Agent, agent);
-friend class CSkills;
+    friend class CSkills;
 };
 
-class CSkills
-{
+class CSkills {
 public:
     CSkills();
     ~CSkills();
@@ -59,8 +57,7 @@ public:
     static CSkill* skill(int i);
     static void* getInfo(const char* name);
 private:
-    struct RegisteredSkill
-    {
+    struct RegisteredSkill {
         const char *name;
         CSkill *Skill;
         void* Info;

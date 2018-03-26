@@ -3,7 +3,7 @@
 
 /* Ennumerations */
 
-enum SKILLINITVAL{
+enum SKILLINITVAL {
     SKILLGOTOPOINT = 0,
     SKILLGOTOPOINTAVOID = 1,
     SKILLKICK = 2,
@@ -37,15 +37,13 @@ enum ProfileMode {
 ////////////////////////////////////</MAHI>
 
 
-enum EQuiescentMode
-{
+enum EQuiescentMode {
     _SIMULATION_MODE,
     _REAL_MODE
 };
 
 
-enum EActionType
-{
+enum EActionType {
     _FORWARD,
     _BACKWARD,
     _LEFT,
@@ -62,21 +60,18 @@ enum EActionType
 };
 
 
-enum EDefaultPlayMode
-{
+enum EDefaultPlayMode {
     _OFFEND_MODE,
     _DEFEND_MODE,
     _FREE_MODE
 };
 
-enum ETeamSideType
-{
+enum ETeamSideType {
     _SIDE_RIGHT,
     _SIDE_LEFT
 };
 
-enum ETeamColorType
-{
+enum ETeamColorType {
     _COLOR_BLUE,
     _COLOR_YELLOW
 };
@@ -92,8 +87,7 @@ struct kkValue {
 /* Structures */
 
 // http://small-size.informatik.uni-bremen.de/referee:protocol
-struct GameStatePacket
-{
+struct GameStatePacket {
     char cmd;                      // current referee command
     unsigned char cmd_counter;     // increments each time new command is set
     unsigned char goals_blue;      // current score for blue team
@@ -110,7 +104,7 @@ struct GameStatePacket
 
 /* Mathematical */
 #define _PI         3.14159265358979323
-#define	_RAD2DEG    (180.0/_PI)
+#define _RAD2DEG    (180.0/_PI)
 #define _DEG2RAD    (_PI/180.0)
 
 /* Motion Constants */
@@ -127,16 +121,6 @@ struct GameStatePacket
 #define _NewProtocolRobot 4
 #endif
 #define _BANG_BANG_NONLINEAR_SWITCH 0.300
-
-
-
-#define _STADIUM_WIDTH   10.90
-#define _STADIUM_HEIGHT  7.70
-
-
-/* COM Port Constants */
-#define _SIM_COM_PORT   "/dev/ttyS6"
-#define _REAL_COM_PORT  "/dev/ttyUSB0"
 
 
 /* Skills */

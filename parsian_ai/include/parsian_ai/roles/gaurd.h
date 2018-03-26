@@ -3,15 +3,13 @@
 
 #include <role.h>
 
-class CRoleGaurdInfo : public CRoleInfo
-{
+class CRoleGaurdInfo : public CRoleInfo {
 public:
     CRoleGaurdInfo(QString _roleName);
-    void reset(){}
+    void reset() {}
 };
 
-class CRoleGaurd : public CRole
-{
+class CRoleGaurd : public CRole {
 protected:
     CSkillGotoPointAvoid* gotopoint;
 public:
@@ -19,7 +17,7 @@ public:
     virtual void generateFromConfig(Agent *a);
     virtual CSkillConfigWidget* generateConfigWidget(QWidget *parent);
     virtual void parse(QStringList params);
-	SkillProperty(CRoleGaurd, bool, Opposite, opposite);
+    SkillProperty(CRoleGaurd, bool, Opposite, opposite);
 };
 
 #endif // GAURD_H

@@ -8,7 +8,7 @@ CLoadPlayOffJson::CLoadPlayOffJson(const QString &_folderDirectory, QObject *par
 
     ROS_INFO("Plan Loader -> PlayOff Json ");
 
-    Q_FOREACH(QString dir, m_dirList) {
+    Q_FOREACH (QString dir, m_dirList) {
         load(dir);
     }
 
@@ -18,7 +18,7 @@ CLoadPlayOffJson::CLoadPlayOffJson(const QString &_folderDirectory, QObject *par
 bool CLoadPlayOffJson::loadAll() {
     m_plans.clear();
     updateDirectory();
-    Q_FOREACH(QString dir, m_dirList) {
+    Q_FOREACH (QString dir, m_dirList) {
         load(dir);
     }
 }
@@ -36,7 +36,7 @@ bool CLoadPlayOffJson::load(QString _file) {
     file.close();
 
     QJson::Parser parser;
-    QVariantMap dataBase = parser.parse(input,&readable).toMap();
+    QVariantMap dataBase = parser.parse(input, &readable).toMap();
     if (readable) {
         readPlan(dataBase, _file);
     } else {
@@ -66,7 +66,7 @@ bool CLoadPlayOffJson::readPlan(const QVariantMap &_map, const QString& _file) {
 
 
     QVariantList plans = _map.value("plans").toList();
-    Q_FOREACH(QVariant plan, plans) {
+    Q_FOREACH (QVariant plan, plans) {
         NGameOff::SPlan* tempPlan = new NGameOff::SPlan();
 
         NGameOff::SGUI      & tempGui       = tempPlan->gui;
@@ -97,9 +97,13 @@ void CLoadPlayOffJson::fillCommon(NGameOff::SCommon& _common, const QVariantMap&
     _common.planRepeat = 0;
 
     QString planMode = _plan.value("planMode").toString();
-    if      (planMode == "KICKOFF" ) _common.planMode = KICKOFF;
-    else if (planMode == "DIRECT"  ) _common.planMode = DIRECT;
-    else if (planMode == "INDIRECT") _common.planMode = INDIRECT;
+    if (planMode == "KICKOFF") {
+        _common.planMode = KICKOFF;
+    } else if (planMode == "DIRECT") {
+        _common.planMode = DIRECT;
+    } else if (planMode == "INDIRECT") {
+        _common.planMode = INDIRECT;
+    }
 }
 
 void CLoadPlayOffJson::fillMatching(NGameOff::SMatching& _matching, const QVariantMap& _plan, bool&& _parsedOk) {
@@ -111,10 +115,10 @@ void CLoadPlayOffJson::fillMatching(NGameOff::SMatching& _matching, const QVaria
         return;
     }
 
-    Q_FOREACH(QVariant initPos, _plan.value("agentInitPos").toList()) {
+    Q_FOREACH (QVariant initPos, _plan.value("agentInitPos").toList()) {
         QVariantMap initPosMap = initPos.toMap();
         _matching.initPos.agents.append(Vector2D(initPosMap.value("x").toDouble(&_parsedOk),
-                                                 initPosMap.value("y").toDouble(&_parsedOk)));
+                                        initPosMap.value("y").toDouble(&_parsedOk)));
     }
 
     if (!_parsedOk) {
@@ -126,10 +130,10 @@ void CLoadPlayOffJson::fillMatching(NGameOff::SMatching& _matching, const QVaria
 void CLoadPlayOffJson::fillExecution(NGameOff::SExecution &_execution, const QVariantMap &_plan, bool&& _parsedOk) {
 
     qDebug() << "PLAN" << _plan.value("agents").toList().size();
-    Q_FOREACH(QVariant agent, _plan.value("agents").toList()) {
+    Q_FOREACH (QVariant agent, _plan.value("agents").toList()) {
         QList<playOffRobot> tempRobots;
         QVariantList positionList = agent.toMap().value("positions").toList();
-        Q_FOREACH(QVariant position, positionList) {
+        Q_FOREACH (QVariant position, positionList) {
             QVariantMap positionMap = position.toMap();
             playOffRobot tempRobot;
             tempRobot.tolerance = positionMap.value("tolerance").toDouble(&_parsedOk);
@@ -142,7 +146,7 @@ void CLoadPlayOffJson::fillExecution(NGameOff::SExecution &_execution, const QVa
             }
 
 
-            Q_FOREACH(QVariant skill, positionMap.value("skills").toList()) {
+            Q_FOREACH (QVariant skill, positionMap.value("skills").toList()) {
                 QVariantMap skillMap = skill.toMap();
                 playOffSkill tempSkill;
                 tempSkill.name = strToEnum(skillMap.value("name").toString());
@@ -175,7 +179,7 @@ void CLoadPlayOffJson::fillGUI(NGameOff::SGUI &_gui, const QFileInfo& _fileInfo,
 QString CLoadPlayOffJson::getPackageName(QString _path) {
     QString packageName = QFileInfo(m_mainDirectory).baseName();
     _path.remove(0, m_mainDirectory.length());
-    _path.replace('/','.');
+    _path.replace('/', '.');
     packageName.append(_path);
     //    qDebug() << packageName;
     return packageName;
@@ -187,9 +191,9 @@ Vector2D CLoadPlayOffJson::findShotPos(NGameOff::SPlan *&_plan) {
     finisher.append(ChipToGoalSkill);
     finisher.append(OneTouchSkill);
 
-    Q_FOREACH(QList<playOffRobot> agentPlan, _plan->execution.AgentPlan) {
-        Q_FOREACH(playOffRobot agentTask, agentPlan) {
-            Q_FOREACH(playOffSkill agentSkill, agentTask.skill) {
+    Q_FOREACH (QList<playOffRobot> agentPlan, _plan->execution.AgentPlan) {
+        Q_FOREACH (playOffRobot agentTask, agentPlan) {
+            Q_FOREACH (playOffSkill agentSkill, agentTask.skill) {
                 if (finisher.contains(agentSkill.name)) {
                     return agentTask.pos;
                 }
@@ -199,20 +203,35 @@ Vector2D CLoadPlayOffJson::findShotPos(NGameOff::SPlan *&_plan) {
 }
 
 POffSkills CLoadPlayOffJson::strToEnum(const QString& _str) {
-    if       (_str == "NoSkill"           ) return NoSkill;
-    else if  (_str == "Mark"              ) return Mark;
-    else if  (_str == "Goalie"            ) return Goalie;
-    else if  (_str == "Support"           ) return Support;
-    else if  (_str == "Defense"           ) return Defense;
-    else if  (_str == "Position"          ) return Position;
-    else if  (_str == "MoveSkill"         ) return MoveSkill;
-    else if  (_str == "PassSkill"         ) return PassSkill;
-    else if  (_str == "OneTouchSkill"     ) return OneTouchSkill;
-    else if  (_str == "ChipToGoalSkill"   ) return ChipToGoalSkill;
-    else if  (_str == "ShotToGoalSkill"   ) return ShotToGoalSkill;
-    else if  (_str == "ReceivePassSkill"  ) return ReceivePassSkill;
-    else if  (_str == "ReceivePassIASkill") return ReceivePassIASkill;
-    else                                    return NoSkill;
+    if (_str == "NoSkill") {
+        return NoSkill;
+    } else if (_str == "Mark") {
+        return Mark;
+    } else if (_str == "Goalie") {
+        return Goalie;
+    } else if (_str == "Support") {
+        return Support;
+    } else if (_str == "Defense") {
+        return Defense;
+    } else if (_str == "Position") {
+        return Position;
+    } else if (_str == "MoveSkill") {
+        return MoveSkill;
+    } else if (_str == "PassSkill") {
+        return PassSkill;
+    } else if (_str == "OneTouchSkill") {
+        return OneTouchSkill;
+    } else if (_str == "ChipToGoalSkill") {
+        return ChipToGoalSkill;
+    } else if (_str == "ShotToGoalSkill") {
+        return ShotToGoalSkill;
+    } else if (_str == "ReceivePassSkill") {
+        return ReceivePassSkill;
+    } else if (_str == "ReceivePassIASkill") {
+        return ReceivePassIASkill;
+    } else {
+        return NoSkill;
+    }
 }
 
 QString CLoadPlayOffJson::getModeStr(POMODE _mode) {
@@ -234,6 +253,7 @@ void CLoadPlayOffJson::slt_fileChanged(const QString &_file) {
     if (autoUpdate) {
         load(_file);
         emit plansUpdated();
+    } else {
+        qDebug() << "File Changed But not Updated";
     }
-    else qDebug() << "File Changed But not Updated";
 }

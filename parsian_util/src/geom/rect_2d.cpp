@@ -43,10 +43,9 @@ namespace rcsc {
 
  */
 int
-Rect2D::intersection( const Line2D & line,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const
-{
+Rect2D::intersection(const Line2D & line,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const {
     int n_sol = 0;
     Vector2D tsol[2];
 
@@ -55,43 +54,37 @@ Rect2D::intersection( const Line2D & line,
     const double top_y = top();
     const double bottom_y = bottom();
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = leftEdge().intersection( line ) ).valid()
-         && top_y >= tsol[n_sol].y && tsol[n_sol].y >= bottom_y )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = leftEdge().intersection(line)).valid()
+            && top_y >= tsol[n_sol].y && tsol[n_sol].y >= bottom_y) {
         ++n_sol;
     }
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = rightEdge().intersection( line ) ).valid()
-         && top_y >= tsol[n_sol].y && tsol[n_sol].y >= bottom_y )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = rightEdge().intersection(line)).valid()
+            && top_y >= tsol[n_sol].y && tsol[n_sol].y >= bottom_y) {
         ++n_sol;
     }
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = topEdge().intersection( line ) ).valid()
-         && left_x <= tsol[n_sol].x && tsol[n_sol].x <= right_x )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = topEdge().intersection(line)).valid()
+            && left_x <= tsol[n_sol].x && tsol[n_sol].x <= right_x) {
         ++n_sol;
     }
 
-    if ( n_sol < 2
-         && ( tsol[n_sol] = bottomEdge().intersection( line ) ).valid()
-         && left_x <= tsol[n_sol].x && tsol[n_sol].x <= right_x )
-    {
+    if (n_sol < 2
+            && (tsol[n_sol] = bottomEdge().intersection(line)).valid()
+            && left_x <= tsol[n_sol].x && tsol[n_sol].x <= right_x) {
         ++n_sol;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol[0];
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol[1];
     }
 
@@ -103,35 +96,30 @@ Rect2D::intersection( const Line2D & line,
 
  */
 int
-Rect2D::intersection( const Ray2D & ray,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const
-{
+Rect2D::intersection(const Ray2D & ray,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const {
     Vector2D tsol1, tsol2;
-    int n_sol = intersection( ray.line(), &tsol1, &tsol2 );
+    int n_sol = intersection(ray.line(), &tsol1, &tsol2);
 
-    if ( n_sol > 1
-         && ! ray.inRightDir( tsol2, 1.0 ) )
-    {
+    if (n_sol > 1
+            && ! ray.inRightDir(tsol2, 1.0)) {
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && ! ray.inRightDir( tsol1, 1.0 ) )
-    {
+    if (n_sol > 0
+            && ! ray.inRightDir(tsol1, 1.0)) {
         tsol1 = tsol2;
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol1;
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol2;
     }
 
@@ -143,35 +131,30 @@ Rect2D::intersection( const Ray2D & ray,
 
  */
 int
-Rect2D::intersection( const Segment2D & segment,
-                      Vector2D * sol1,
-                      Vector2D * sol2 ) const
-{
+Rect2D::intersection(const Segment2D & segment,
+                     Vector2D * sol1,
+                     Vector2D * sol2) const {
     Vector2D tsol1, tsol2;
-    int n_sol = intersection( segment.line(), &tsol1, &tsol2 );
+    int n_sol = intersection(segment.line(), &tsol1, &tsol2);
 
-    if ( n_sol > 1
-         && ! segment.contains( tsol2 ) )
-    {
+    if (n_sol > 1
+            && ! segment.contains(tsol2)) {
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && ! segment.contains( tsol1 ) )
-    {
+    if (n_sol > 0
+            && ! segment.contains(tsol1)) {
         tsol1 = tsol2;
         --n_sol;
     }
 
-    if ( n_sol > 0
-         && sol1 )
-    {
+    if (n_sol > 0
+            && sol1) {
         *sol1 = tsol1;
     }
 
-    if ( n_sol > 1
-         && sol2 )
-    {
+    if (n_sol > 1
+            && sol2) {
         *sol2 = tsol2;
     }
 
@@ -180,24 +163,23 @@ Rect2D::intersection( const Segment2D & segment,
 
 
 int
-Rect2D::intersection( const Circle2D & circle,
-                      Vector2D * sol1, Vector2D * sol2,
-                      Vector2D * sol3, Vector2D * sol4) const
-{
+Rect2D::intersection(const Circle2D & circle,
+                     Vector2D * sol1, Vector2D * sol2,
+                     Vector2D * sol3, Vector2D * sol4) const {
     int ni = 0;
     Vector2D sols[4] = {Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE),
                         Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE),
                         Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE),
-                        Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE)};
+                        Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE)
+                       };
 
     Segment2D segs[4];
     segs[0] = Segment2D(topLeft(), topRight());
     segs[1] = Segment2D(bottomLeft(), bottomRight());
     segs[2] = Segment2D(bottomLeft(), topLeft());
     segs[3] = Segment2D(bottomRight(), topRight());
-    for( int i = 0; i < 4 && ni < 4; i++ )
-    {
-        ni += circle.intersection(segs[i], &sols[ni], &sols[ni+1]);
+    for (int i = 0; i < 4 && ni < 4; i++) {
+        ni += circle.intersection(segs[i], &sols[ni], &sols[ni + 1]);
     }
     *sol1 = sols[0];
     *sol2 = sols[1];
@@ -208,17 +190,16 @@ Rect2D::intersection( const Circle2D & circle,
 }
 
 int
-Rect2D::rotateAndintersect( const Segment2D & segment, Vector2D center, float angle ,
-                      Vector2D * sol1,
-                      Vector2D * sol2) const
-{
+Rect2D::rotateAndintersect(const Segment2D & segment, Vector2D center, float angle ,
+                           Vector2D * sol1,
+                           Vector2D * sol2) const {
     Vector2D a = segment.a() - center;
     Vector2D b = segment.b() - center;
     a.rotate(-angle);
     b.rotate(-angle);
     a += center;
     b += center;
-    int res = intersection(Segment2D(a,b),sol1,sol2);
+    int res = intersection(Segment2D(a, b), sol1, sol2);
     sol1->rotate(angle);
     sol2->rotate(angle);
 
@@ -227,17 +208,16 @@ Rect2D::rotateAndintersect( const Segment2D & segment, Vector2D center, float an
 
 
 int
-Rect2D::rotateAndintersect( const Circle2D & circle, Vector2D center, float angle ,
-                      Vector2D * sol1,
-                      Vector2D * sol2,
-                      Vector2D * sol3,
-                      Vector2D * sol4) const
-{
+Rect2D::rotateAndintersect(const Circle2D & circle, Vector2D center, float angle ,
+                           Vector2D * sol1,
+                           Vector2D * sol2,
+                           Vector2D * sol3,
+                           Vector2D * sol4) const {
 
     Vector2D cirCenter = circle.center() - center;
     cirCenter.rotate(-angle);
     cirCenter += center;
-    int res = intersection(Circle2D(cirCenter, circle.radius()) ,sol1, sol2, sol3, sol4);
+    int res = intersection(Circle2D(cirCenter, circle.radius()) , sol1, sol2, sol3, sol4);
 
     sol1->rotate(angle);
     sol2->rotate(angle);

@@ -39,7 +39,7 @@
 class Debugger {
 public:
 
-    void debug(const QString& text, unsigned long type, const QColor& color = QColor(0,0,0));
+    void debug(const QString& text, unsigned long type, const QColor& color = QColor(0, 0, 0));
 
     parsian_msgs::parsian_debugs debugs;
 

@@ -12,24 +12,22 @@
 #include <parsian_ai/gamestate.h>
 
 
-enum PlayMakerKickModes{FixedPass , FixedShoot};
+enum PlayMakerKickModes {FixedPass , FixedShoot};
 
-class CRolePlayMakeInfo : public CRoleInfo
-{
+class CRolePlayMakeInfo : public CRoleInfo {
 public:
     explicit CRolePlayMakeInfo(QString _roleName);
     void reset() override {}
 };
 
-class CRolePlayMake : public CRole
-{
+class CRolePlayMake : public CRole {
 public:
     KickAction* kick;
     OnetouchAction* onetouch;
     GotopointavoidAction* gotopoint;
     NoAction* wait;
     Vector2D penaltyTarget;
-    bool firstKick=true;
+    bool firstKick = true;
     Vector2D target;
     void stopBehindBall(bool penalty = false);
     Vector2D initialPoint;
@@ -55,9 +53,9 @@ public:
     void resetPlayMake();
     void execute();
 
-    void kickPass( double kickSpeed );
-    enum KickPassMode{KickPassFirst , KickPassSecond};
-    enum penaltyStrategy{pgoaheadShoot , pchipShoot , pshootDirect};
+    void kickPass(double kickSpeed);
+    enum KickPassMode {KickPassFirst , KickPassSecond};
+    enum penaltyStrategy {pgoaheadShoot , pchipShoot , pshootDirect};
 
     KickPassMode kickPassMode;
     int kickPassCyclesWait;

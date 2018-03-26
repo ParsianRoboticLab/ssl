@@ -52,4 +52,8 @@ Of Course `parsian_<pkg_name>_<node_name>_node` is a long name to use, as a shor
 
 > - if you wanna subscribe to a topic attention to node name standard for private message publisher.
 
+Coding Style
+-------------
+install `astyle` and use following command
+find -regextype egrep -regex '.*\.[ch](pp)?$' -exec astyle '{}' -A2 --indent=spaces=4 --pad-oper --unpad-paren --pad-header --convert-tabs \;
 

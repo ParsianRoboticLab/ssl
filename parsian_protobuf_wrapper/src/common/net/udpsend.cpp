@@ -1,7 +1,6 @@
 #include "parsian_protobuf_wrapper/common/net/udpsend.h"
 
-UDPSend::UDPSend(std::__cxx11::string address, int _port)// : QObject(parent)
-{
+UDPSend::UDPSend(std::__cxx11::string address, int _port) { // : QObject(parent)
     connect = true;
     QString add(address.c_str());
     host.setAddress(add);
@@ -11,8 +10,7 @@ UDPSend::UDPSend(std::__cxx11::string address, int _port)// : QObject(parent)
 
 }
 
-void UDPSend::setIP(std::__cxx11::string _ip)
-{
+void UDPSend::setIP(std::__cxx11::string _ip) {
     QString add(_ip.c_str());
     connect = false;
     socket->disconnectFromHost();
@@ -22,20 +20,19 @@ void UDPSend::setIP(std::__cxx11::string _ip)
     connect = true;
 }
 
-void UDPSend::setport(int _port)
-{
+void UDPSend::setport(int _port) {
     connect = false;
     port = _port;
     socket->bind(host, port);
     connect = true;
 }
 
-void UDPSend::send(std::string buf)
-{
+void UDPSend::send(std::string buf) {
 
     QByteArray datagram(buf.c_str(), buf.length());
-    if(connect)
+    if (connect) {
         socket->writeDatagram(datagram, host, port);
+    }
 //        ROS_INFO("sending byte: %lld", socket->writeDatagram(datagram, host, port));
 
 }

@@ -2,15 +2,15 @@
 #include <gtest/gtest.h>
 #include "parsian_protobuf_wrapper/ssl-vision/convert/convert_units.h"
 
-TEST(VisionTest, basicTest){
+TEST(VisionTest, basicTest) {
     EXPECT_TRUE(true);
 }
 
-TEST(VisionTest, secondTest){
+TEST(VisionTest, secondTest) {
     EXPECT_EQ(pr::mm_to_m(1000), 1.0);
 }
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
     //// Initialize ROS node ////
     ros::init(argc, argv, "VisionTest");
 

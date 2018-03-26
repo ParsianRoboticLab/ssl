@@ -161,7 +161,7 @@ class MotionProfiler:
 
     def __saveResult(self):
         __log_file = open(path.abspath("../profiler_data/" + str(self.__robot_id) + "_" +
-                                       str(int(round(time.time()/10))) + "_motion.profile"), "w+")
+                                       str(int(round(time.time() / 10))) + "_motion.profile"), "w+")
         __log_file.write(str(self.__result))
         __log_file.close()
 
@@ -217,7 +217,7 @@ class MotionProfiler:
         self.__current_task.gotoPointAvoidTask = task
 
     def __getPhase(self):
-        return math.pi * (self.__current_ang_step * 2 / float(self.__ang_step) + self.__init_phase / 180.0) \
+        return math.pi * (self.__current_ang_step * 2 / float(self.__ang_step) + self.__init_phase / 180.0)\
 
     def __getTaskPhase(self):
         return self.__getPhase() + self.__path_angle
@@ -230,8 +230,8 @@ class MotionProfiler:
         else:
             self.__current_key = (
                 self.__end_pos.distance(self.__start_pos) * self.__current_dist_step / self.__dist_step,
-                math.pi + self.__getPhase() - (0 if math.pi + self.__getPhase() < 2*math.pi else 2*math.pi),
-                math.pi + self.__path_angle - (0 if math.pi + self.__path_angle < 2*math.pi else 2*math.pi))
+                math.pi + self.__getPhase() - (0 if math.pi + self.__getPhase() < 2 * math.pi else 2 * math.pi),
+                math.pi + self.__path_angle - (0 if math.pi + self.__path_angle < 2 * math.pi else 2 * math.pi))
 
     def __addValueToKey(self):
         self.__result[self.__current_key] = {"data": self.__current_value,

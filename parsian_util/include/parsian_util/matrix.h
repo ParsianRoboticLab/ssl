@@ -18,80 +18,86 @@
 class Matrix {
 
 
-  // errr... rows and columns
+    // errr... rows and columns
 
-  int r_;
-  int c_;
+    int r_;
+    int c_;
 
-  double* mat;
+    double* mat;
 
-  void str_init(char* const init_string);
+    void str_init(char* const init_string);
 
-  Matrix *reduce_matrix(int cut_row, int cut_col) const;
+    Matrix *reduce_matrix(int cut_row, int cut_col) const;
 
 public:
-  Matrix(char* const init_string);
-  Matrix(int rows, int columns);
-  Matrix(int rows, int columns, const float *m);
+    Matrix(char* const init_string);
+    Matrix(int rows, int columns);
+    Matrix(int rows, int columns, const float *m);
 
-  double determinant();
-  double determinant(Matrix *mx,int n);
+    double determinant();
+    double determinant(Matrix *mx, int n);
 
 
-  // this makes an identity matrix
-  Matrix(int identity_size);
+    // this makes an identity matrix
+    Matrix(int identity_size);
 
-  // standard stuffs.
-  Matrix();
-  Matrix(const Matrix& other);
+    // standard stuffs.
+    Matrix();
+    Matrix(const Matrix& other);
 
-  ~Matrix();
+    ~Matrix();
 
-  void CopyData(float *data);
-  void CopyData(double *data);
+    void CopyData(float *data);
+    void CopyData(double *data);
 
-  const Matrix& operator= (const Matrix& other);
+    const Matrix& operator= (const Matrix& other);
 
-  const Matrix& operator= (char* const init_string);
+    const Matrix& operator= (char* const init_string);
 
-  friend const Matrix operator+ (const Matrix& a, const Matrix& b);
-  friend const Matrix operator- (const Matrix& a, const Matrix& b);
-  friend const Matrix operator* (const Matrix& a, const Matrix& b);
-  friend const Matrix operator* (const double a , const Matrix& m);
-  friend Matrix kron(const Matrix &a , const Matrix &b);
-  friend const Matrix inverse(const Matrix& a);
-  friend const Matrix transpose(const Matrix& a);
-  friend const Matrix pseudoinverse(const Matrix& a);
+    friend const Matrix operator+ (const Matrix& a, const Matrix& b);
+    friend const Matrix operator- (const Matrix& a, const Matrix& b);
+    friend const Matrix operator* (const Matrix& a, const Matrix& b);
+    friend const Matrix operator* (const double a , const Matrix& m);
+    friend Matrix kron(const Matrix &a , const Matrix &b);
+    friend const Matrix inverse(const Matrix& a);
+    friend const Matrix transpose(const Matrix& a);
+    friend const Matrix pseudoinverse(const Matrix& a);
 
-  friend const Matrix& m_multiply(Matrix& out, const Matrix& a,
-								  const Matrix& b);
-  friend const Matrix& m_inverse(Matrix& out, const Matrix& in);
-  friend const Matrix& m_add(Matrix& out, const Matrix& a,
-							 const Matrix& b);
-  friend const Matrix& m_subtract(Matrix& out, const Matrix& a,
-								  const Matrix& b);
-  friend const Matrix& m_transpose(Matrix& out, const Matrix& in);
-  friend const Matrix& m_pseudoinverse(Matrix& out, const Matrix& in);
+    friend const Matrix& m_multiply(Matrix& out, const Matrix& a,
+                                    const Matrix& b);
+    friend const Matrix& m_inverse(Matrix& out, const Matrix& in);
+    friend const Matrix& m_add(Matrix& out, const Matrix& a,
+                               const Matrix& b);
+    friend const Matrix& m_subtract(Matrix& out, const Matrix& a,
+                                    const Matrix& b);
+    friend const Matrix& m_transpose(Matrix& out, const Matrix& in);
+    friend const Matrix& m_pseudoinverse(Matrix& out, const Matrix& in);
 
-  const Matrix& transpose();
-  const Matrix& identity(int size);
-  const Matrix& inverse();
-  const Matrix& resize(int row, int col);
-  const Matrix& resizeS(int row, int col);
-  const Matrix& pseudoinverse();
+    const Matrix& transpose();
+    const Matrix& identity(int size);
+    const Matrix& inverse();
+    const Matrix& resize(int row, int col);
+    const Matrix& resizeS(int row, int col);
+    const Matrix& pseudoinverse();
 
-  const Matrix& scale(double factor);
+    const Matrix& scale(double factor);
 
-  inline double& e(int row, int col) const {return mat[row*c_+col];}
+    inline double& e(int row, int col) const {
+        return mat[row * c_ + col];
+    }
 
-  int nrows() const { return r_; }
-  int ncols() const { return c_; }
+    int nrows() const {
+        return r_;
+    }
+    int ncols() const {
+        return c_;
+    }
 
-  void print() const;
+    void print() const;
 
-  bool equals(double val);
-  double  dot(Matrix &m);
-  Matrix& dotP(Matrix &m);
+    bool equals(double val);
+    double  dot(Matrix &m);
+    Matrix& dotP(Matrix &m);
 };
 
 Matrix kron(const Matrix &a , const Matrix &b);

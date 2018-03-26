@@ -6,7 +6,7 @@
 
 
 CRawObject::CRawObject(int frameCnt, Vector2D _pos, double orientation, int _ID, double _confidence, MovingObject *_ref, int _cam_id, double t)
-        : pos() , dir() , updated() , mergeCount() {
+    : pos() , dir() , updated() , mergeCount() {
     frameCount = frameCnt;
     pos = _pos;
     ID = _ID;

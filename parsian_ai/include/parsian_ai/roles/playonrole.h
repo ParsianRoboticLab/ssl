@@ -34,8 +34,7 @@ enum MSkills {
 
 };
 
-class CRolePlayOn
-{
+class CRolePlayOn {
 private:
 
     CSkillGotoPoint *gotoPointSkill;

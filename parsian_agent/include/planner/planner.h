@@ -25,8 +25,7 @@
 
 
 
-class CPlanner
-{
+class CPlanner {
 public:
     ///////////////////////////////////////////////////////////////////
     explicit CPlanner(int _ID);
@@ -34,9 +33,9 @@ public:
     void runPlanner();
     void run();
     void resetPlanner(Vector2D);
-    void initPathPlanner(Vector2D _goal,const QList<int>& _ourRelaxList,const QList<int>& _oppRelaxList ,const bool& _avoidPenaltyArea , const bool& _avoidCenterArea , const double& _ballObstacleRadius );
+    void initPathPlanner(Vector2D _goal, const QList<int>& _ourRelaxList, const QList<int>& _oppRelaxList , const bool& _avoidPenaltyArea , const bool& _avoidCenterArea , const double& _ballObstacleRadius);
     int getID();
-    vector<Vector2D> getResultModified ();
+    vector<Vector2D> getResultModified();
     Vector2D getAverageDir();
 private:
     vector<Vector2D> result , Rresult , resultModified , RresultModified;
@@ -57,7 +56,7 @@ private:
     QList <Vector2D> dirs;
     Vector2D chooseTarget(Vector2D &);
     state *extendTree(state *& , Vector2D & , Vector2D & , vector<Vector2D> &);
-    bool validState( state *& );
+    bool validState(state *&);
     void checkAgent();
     void Draw();
     ///////////////////////////////////////////////////////////////
@@ -65,7 +64,7 @@ private:
     bool isRandomState;
     Segment2D agentPath;
     void generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, QList<int> &oppRelaxList, bool avoidPenaltyArea, bool avoidCenterCircle , double ballObstacleRadius, Vector2D agentGoal);
-    double timeEstimator(Vector2D _pos,Vector2D _vel,Vector2D _ang,Vector2D _goal);
+    double timeEstimator(Vector2D _pos, Vector2D _vel, Vector2D _ang, Vector2D _goal);
     void createObstacleProb(CObstacles &obs, Vector2D _pos, Vector2D _vel, Vector2D _ang, Vector2D &_center, double &_rad, Vector2D agentPos, Vector2D agentVel, Vector2D agentGoal, Vector2D agentDir);
     void emitPlan(const vector<Vector2D>& _resultModified, const Vector2D& averageDir);
     bool readyToPlan;

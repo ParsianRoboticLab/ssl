@@ -8,8 +8,7 @@
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 #include <parsian_ai/config.h>
 
-class CMarkPlan : public Plan
-{
+class CMarkPlan : public Plan {
 public:
     ////////////////////////////// AHZ ///////////////////
     Line2D getBisectorLine(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
@@ -63,7 +62,7 @@ public:
     void markPosesRefinePlayon();
     QList<Vector2D> ShootBlockRatio(double, Vector2D);
     QList<Vector2D> PassBlockRatio(double ratio, Vector2D opp);
-    bool sortBy(const Vector2D &robot1,const Vector2D &robot2);
+    bool sortBy(const Vector2D &robot1, const Vector2D &robot2);
     QList<CRobot*> sortdanger(const QList<CRobot*> oppagent);
     QList<QPair<Vector2D, double> > sortdangerpassplayoff(QList<Vector2D> oppposdanger);
     QList<QPair<Vector2D, double> > sortdangerpassplayon(QList<Vector2D> oppposdanger);

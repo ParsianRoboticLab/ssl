@@ -16,7 +16,7 @@ public:
     QList<CRawObject> oppTeam[_MAX_NUM_PLAYERS];
     QList<CRawObject> ball;
     double visionLatency;
-    double timeStep,ltcapture;
+    double timeStep, ltcapture;
     double time;
     int cam_id;
 

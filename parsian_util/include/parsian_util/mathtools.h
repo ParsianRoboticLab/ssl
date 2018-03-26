@@ -23,26 +23,25 @@ void squarefit(unsigned int n, double *x, double *y, double &a, double &b, doubl
 //fits a line to y array: y = bx + a
 void linefit(unsigned int n, double *x, double *y, double &a, double &b);
 void fillmat2x2(
-        double mat[2][2],
-        double m00, double m01,
-        double m10, double m11);
+    double mat[2][2],
+    double m00, double m01,
+    double m10, double m11);
 void fillmat3x3(
-        double mat[3][3],
-        double m00, double m01, double m02,
-        double m10, double m11, double m12,
-        double m20, double m21, double m22 );
+    double mat[3][3],
+    double m00, double m01, double m02,
+    double m10, double m11, double m12,
+    double m20, double m21, double m22);
 void fillmat4x4(
-        double mat[4][4],
-        double m00, double m01, double m02, double m03,
-        double m10, double m11, double m12, double m13,
-        double m20, double m21, double m22, double m23,
-        double m30, double m31, double m32, double m33);
-void mult3x3(double m1[3][3], double m2[3][3],double m[][3]);
-void transpose3x3(double m[3][3],double t[][3]);
+    double mat[4][4],
+    double m00, double m01, double m02, double m03,
+    double m10, double m11, double m12, double m13,
+    double m20, double m21, double m22, double m23,
+    double m30, double m31, double m32, double m33);
+void mult3x3(double m1[3][3], double m2[3][3], double m[][3]);
+void transpose3x3(double m[3][3], double t[][3]);
 
 
-class CPolynomial
-{
+class CPolynomial {
 public:
     CPolynomial();
     ~CPolynomial();
@@ -54,8 +53,7 @@ protected:
     QList< double > coefs;
 };
 
-class CPolynomialFit : public CPolynomial
-{
+class CPolynomialFit : public CPolynomial {
 public:
     CPolynomialFit();
     ~CPolynomialFit();
@@ -65,35 +63,32 @@ private:
     QList< QPair<double, double> > DataSet;
 };
 
-class CPolynomialRegression : public CPolynomial
-{
+class CPolynomialRegression : public CPolynomial {
 public:
     CPolynomialRegression();
     ~CPolynomialRegression();
     QVector<double> PolynomialRegression(QList<double> value, QList<int> key, int n/*order*/);
-    void fitToDataSet(QList< QPair<double, double> > newDataSet, int _n=1);
+    void fitToDataSet(QList< QPair<double, double> > newDataSet, int _n = 1);
 private:
     int n;
-    Matrix A,B,C;
+    Matrix A, B, C;
     QList< QPair<double, double> > DataSet;
 };
 
-class CHalfLogRegression
-{
+class CHalfLogRegression {
 public:
     CHalfLogRegression();
     ~CHalfLogRegression();
     void fitToDataSet(QList< QPair<double, double> > newDataSet);
     double val(double x);
     double invval(double y);
-    double A,B;
+    double A, B;
 private:
     CPolynomialRegression *pr;
     bool initialized;
 };
 
-class MWBM //Maximum Weighted Bipartite Matching
-{
+class MWBM { //Maximum Weighted Bipartite Matching
 private:
     int n, cap;
     double **W;

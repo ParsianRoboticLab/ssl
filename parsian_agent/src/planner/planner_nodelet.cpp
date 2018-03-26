@@ -5,7 +5,7 @@ PLUGINLIB_EXPORT_CLASS(parsian_agent::PlannerNodelet, nodelet::Nodelet);
 
 using namespace parsian_agent;
 
-void PlannerNodelet::onInit(){
+void PlannerNodelet::onInit() {
     ROS_INFO("%s onInits", getName().c_str());
 
     nh = getNodeHandle();
@@ -28,7 +28,7 @@ void PlannerNodelet::onInit(){
     planner->path_pub = private_nh.advertise<parsian_msgs::parsian_path>("path", 5);
 
 
-    timer_ = nh.createTimer(ros::Duration(0.1), &PlannerNodelet::timerCb, this);
+    timer_ = nh.createTimer(ros::Duration(0.2), &PlannerNodelet::timerCb, this);
 }
 
 void PlannerNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cnf) {
@@ -40,8 +40,10 @@ void PlannerNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) 
     wm->update(_wm);
 }
 
-void PlannerNodelet::timerCb(const ros::TimerEvent& event){
-    if (debugger != nullptr) debug_pub.publish(debugger->debugs);
+void PlannerNodelet::timerCb(const ros::TimerEvent& event) {
+    if (debugger != nullptr) {
+        debug_pub.publish(debugger->debugs);
+    }
     if (drawer   != nullptr) {
         draw_pub.publish(drawer->draws);
         cleanDraws();
@@ -63,7 +65,11 @@ void PlannerNodelet::cleanDraws() const {
 void PlannerNodelet::plannerCb(const parsian_msgs::parsian_get_planConstPtr & _plan) {
     QList<int> ourRL;
     QList<int> oppRL;
-    for (const auto& id : _plan->ourRelaxList) ourRL.append(id);
-    for (const auto& id : _plan->oppRelaxList) oppRL.append(id);
+    for (const auto& id : _plan->ourRelaxList) {
+        ourRL.append(id);
+    }
+    for (const auto& id : _plan->oppRelaxList) {
+        oppRL.append(id);
+    }
     planner->initPathPlanner(Vector2D(_plan->goal), ourRL, oppRL, _plan->avoidPenaltyArea, _plan->avoidCenterCircle, _plan->ballObstacleRadius);
 }

@@ -20,9 +20,9 @@ void CommunicationNodelet::onInit() {
     drawer = new Drawer();
     debugger = new Debugger();
 
-    drawPub    = n.advertise<parsian_msgs::parsian_draw>("/draws",1000);
-    debugPub   = n.advertise<parsian_msgs::parsian_debugs>("/debugs",1000);
-    statusPub  = n.advertise<parsian_msgs::parsian_robots_status>("/robots_status",1000);
+    drawPub    = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
+    debugPub   = n.advertise<parsian_msgs::parsian_debugs>("/debugs", 1000);
+    statusPub  = n.advertise<parsian_msgs::parsian_robots_status>("/robots_status", 1000);
     robotPacketSub   = n.subscribe("/packets" , 10000, &CommunicationNodelet::callBack, this);
     team_config_sub = n.subscribe("/team_config", 1000, & CommunicationNodelet::teamConfigCb, this);
 
@@ -32,11 +32,11 @@ void CommunicationNodelet::onInit() {
 
     server.reset(new dynamic_reconfigure::Server<communication::communicationConfig>(private_nh));
     dynamic_reconfigure::Server<communication::communicationConfig>::CallbackType f;
-    f = boost::bind(&CommunicationNodelet::ConfigServerCallBack,this, _1, _2);
+    f = boost::bind(&CommunicationNodelet::ConfigServerCallBack, this, _1, _2);
     server->setCallback(f);
 
 
-    while(!communicator->isSerialConnected()){
+    while (!communicator->isSerialConnected()) {
         communicator->connectSerial(conf.serial_connect.c_str());//conf.serial_connect.c_str());
     }
 
@@ -55,21 +55,21 @@ void CommunicationNodelet::onInit() {
 }
 
 void CommunicationNodelet::callBack(const parsian_msgs::parsian_packetsConstPtr& _packet) {
-  ROS_INFO("salam");
+    ROS_INFO("salam");
 
-  if(!communicator->isSerialConnected()){
-      communicator->connectSerial(conf.serial_connect.c_str());//conf.serial_connect.c_str());
-  }
+    if (!communicator->isSerialConnected()) {
+        communicator->connectSerial(conf.serial_connect.c_str());//conf.serial_connect.c_str());
+    }
     if (cbCount >= 90) {
         cbCount = 0;
         sim_handle_flag = false;
     }
 
-    if (realGame){
+    if (realGame) {
         communicator->packetCallBack(_packet);
         sim_handle_flag = true;
         cbCount = 0;
-    } else if (cbCount >=0 && cbCount < 60 && sim_handle_flag) {
+    } else if (cbCount >= 0 && cbCount < 60 && sim_handle_flag) {
         communicator->packetCallBack(modeChangePacket(_packet));
         cbCount++;
         ROS_INFO_STREAM("Cc:" << cbCount << modeChangePacket(_packet).get()->value.at(2).packets.at(5));
@@ -79,19 +79,19 @@ void CommunicationNodelet::callBack(const parsian_msgs::parsian_packetsConstPtr&
         ROS_INFO_STREAM("Ccz:" << cbCount << modeChangePacket(_packet).get()->value.at(2).packets.at(5));
     }
 }
-parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet)
-{
+parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet) {
     auto  sim_handle_packet = *_packet;
-    for (auto & robot_packet : sim_handle_packet.value)
-    {
-        for (int i = 0; i < 14; i++ )
-        {
-            if (i != 11 && i != 0)
+    for (auto & robot_packet : sim_handle_packet.value) {
+        for (int i = 0; i < 14; i++) {
+            if (i != 11 && i != 0) {
                 robot_packet.packets[i] = 0;
-            if (i == 8)
+            }
+            if (i == 8) {
                 robot_packet.packets[i] = 0x01;
-            if (i == 1)
+            }
+            if (i == 1) {
                 robot_packet.packets[i] &= 0x0F;
+            }
         }
     }
     parsian_msgs::parsian_packetsPtr packet_{new parsian_msgs::parsian_packets};
@@ -99,17 +99,16 @@ parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacket(const pa
     return packet_;
 }
 
-parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet)
-{
+parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet) {
     auto  sim_handle_packet = *_packet;
-    for (auto & robot_packet : sim_handle_packet.value)
-    {
-        for (int i = 0; i < 14; i++ )
-        {
-            if (i != 11 && i != 0)
+    for (auto & robot_packet : sim_handle_packet.value) {
+        for (int i = 0; i < 14; i++) {
+            if (i != 11 && i != 0) {
                 robot_packet.packets[i] = 0;
-            if (i == 1)
+            }
+            if (i == 1) {
                 robot_packet.packets[i] &= 0x0F;
+            }
         }
     }
     parsian_msgs::parsian_packetsPtr packet_{new parsian_msgs::parsian_packets};
@@ -118,30 +117,28 @@ parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacketZero(cons
 }
 
 void CommunicationNodelet::timerCb(const ros::TimerEvent &event) {
-    if (drawer != nullptr){
+    if (drawer != nullptr) {
         drawPub.publish(drawer->draws);
         drawer->draws.vectors.clear();
     }
-    if (debugger != nullptr)
+    if (debugger != nullptr) {
         debugPub.publish(debugger->debugs);
+    }
 }
 
 
 void CommunicationNodelet::recTimerCb(const ros::TimerEvent &event) {
     communicator->readData();
-    if(communicator->robotsStat != nullptr)
-    {
+    if (communicator->robotsStat != nullptr) {
         statusPub.publish(communicator->robotsStat);
     }
 }
 
-void CommunicationNodelet::ConfigServerCallBack(const communication::communicationConfig &config, uint32_t level)
-{
-  conf = config;
+void CommunicationNodelet::ConfigServerCallBack(const communication::communicationConfig &config, uint32_t level) {
+    conf = config;
 }
 
-void CommunicationNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg)
-{
+void CommunicationNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
     realGame = msg->mode == parsian_msgs::parsian_team_config::REAL;
 }
 

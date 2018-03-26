@@ -19,33 +19,33 @@
 #include "parsian_msgs/ssl_vision_detection.h"
 #include "parsian_msgs/parsian_world_model.h"
 namespace parsian_packet {
-    class PacketNodelet : public nodelet::Nodelet {
+class PacketNodelet : public nodelet::Nodelet {
 
-    private:
-        void onInit();
+private:
+    void onInit();
 
-        Packet packet;
-        parsian_msgs::parsian_packets robotPacks;
+    Packet packet;
+    parsian_msgs::parsian_packets robotPacks;
 
-        ros::Publisher  drawPub;
-        ros::Publisher  debugPub;
-        ros::Publisher  packetPub;
-        ros::Timer      timer;
+    ros::Publisher  drawPub;
+    ros::Publisher  debugPub;
+    ros::Publisher  packetPub;
+    ros::Timer      timer;
 
-        ros::Subscriber robotPacketSub[_MAX_ROBOT_NUM];
+    ros::Subscriber robotPacketSub[_MAX_ROBOT_NUM];
 
 
-        ros::Subscriber visinSub;
-        void callBack(const parsian_msgs::parsian_robot_commandConstPtr& _packet);
-        void syncData(const parsian_msgs::parsian_world_modelConstPtr& _packet);
+    ros::Subscriber visinSub;
+    void callBack(const parsian_msgs::parsian_robot_commandConstPtr& _packet);
+    void syncData(const parsian_msgs::parsian_world_modelConstPtr& _packet);
 
-        unsigned char robotPackets[_MAX_ROBOT_NUM][_ROBOT_PACKET_SIZE];
-        unsigned char visionCounter;
+    unsigned char robotPackets[_MAX_ROBOT_NUM][_ROBOT_PACKET_SIZE];
+    unsigned char visionCounter;
 
-        // Timer CallBack (to publish)
-        void timerCb(const ros::TimerEvent& event);
+    // Timer CallBack (to publish)
+    void timerCb(const ros::TimerEvent& event);
 
-    };
+};
 }
 
 

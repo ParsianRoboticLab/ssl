@@ -14,12 +14,10 @@
 #include <QVBoxLayout>
 
 #define max_robot 12
-namespace rqt_parsian_gui
-{
+namespace rqt_parsian_gui {
 
-class RobotStatus : public rqt_gui_cpp::Plugin
-{
-  Q_OBJECT
+class RobotStatus : public rqt_gui_cpp::Plugin {
+    Q_OBJECT
 public:
 
     RobotStatus();
@@ -29,7 +27,7 @@ public:
 private:
     ros::NodeHandle n;
     ros::NodeHandle n_private;
-    ros::Subscriber rs_sub,rc_sub[max_robot];
+    ros::Subscriber rs_sub, rc_sub[max_robot];
     void rsCallback(const parsian_msgs::parsian_robots_statusConstPtr);
     void rcCallback(const parsian_msgs::parsian_robot_commandConstPtr);
     RobotStatusWidget *statusWidget[max_robot];

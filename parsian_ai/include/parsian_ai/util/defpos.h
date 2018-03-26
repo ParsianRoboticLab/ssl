@@ -29,7 +29,7 @@ public:
     //////////////////////////////////////////////////////////////
     kkDefPos getDefPositions(Vector2D _ballPos, int _size, double _limit1, double _limit2);
     //HMD
-    Vector2D getIntersectionWithPenaltyAreaDef(double _tempBestRadius , Segment2D _seg);    
+    Vector2D getIntersectionWithPenaltyAreaDef(double _tempBestRadius , Segment2D _seg);
     //HMD Finish
     double nearRadius[2];
     bool isNearPenaltyArea;

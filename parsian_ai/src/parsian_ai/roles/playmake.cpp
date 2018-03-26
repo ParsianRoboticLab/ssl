@@ -3,8 +3,7 @@
 using namespace std;
 
 
-CRolePlayMake::CRolePlayMake(Agent *_agent) : CRole(_agent)
-{
+CRolePlayMake::CRolePlayMake(Agent *_agent) : CRole(_agent) {
     justTurn = false;
     kickToTheirDefense = false;
     kick = new KickAction();
@@ -33,33 +32,29 @@ CRolePlayMake::CRolePlayMake(Agent *_agent) : CRole(_agent)
     out.setDevice(&lastBounceDataFile);
 }
 
-CRolePlayMake::~CRolePlayMake()
-{
+CRolePlayMake::~CRolePlayMake() {
     delete kick;
     delete wait;
     delete onetouch;
     delete gotopoint;
 }
 
-void CRolePlayMake::stopBehindBall(bool penalty)
-{
-    if( penalty)
-    {
-        if( gameState->isStop() ){
+void CRolePlayMake::stopBehindBall(bool penalty) {
+    if (penalty) {
+        if (gameState->isStop()) {
             debugger->debug("stop, reset changeDirPenaltyStriker flag", D_FATEME);
 
         }
 
-        if(gameState->penaltyShootout()) {
+        if (gameState->penaltyShootout()) {
             gotopoint->setTargetpos(wm->ball->pos + (wm->ball->pos - wm->field->oppGoal()) * 0.03);
             gotopoint->setTargetdir(wm->ball->pos - agent->pos());
-        }
-        else{
+        } else {
             Vector2D direction, position;
 
             direction = wm->ball->pos - agent->pos();
-            direction.y*=1.2;
-            position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + Vector2D(0,0.2)).norm()*(0.13);
+            direction.y *= 1.2;
+            position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + Vector2D(0, 0.2)).norm() * (0.13);
             gotopoint->setTargetpos(position);
             gotopoint->setTargetdir(direction);
         }
@@ -71,16 +66,15 @@ void CRolePlayMake::stopBehindBall(bool penalty)
         gotopoint->setAvoidcentercircle(false);
 
         gotopoint->setBallobstacleradius(0.2);
-        agent->action=gotopoint;
+        agent->action = gotopoint;
         gotopoint->setNoavoid(false);
         gotopoint->setSlowmode(false);
 
-    }
-    else
-    {
-        Vector2D shadowPoint = wm->ball->pos + Vector2D( wm->ball->pos - wm->field->oppGoal()).norm()*0.3;
-        if ( kickoffmode || kickoffWing)
-            shadowPoint = wm->ball->pos + Vector2D( wm->field->oppGoal() - wm->ball->pos ).norm()*0.3;
+    } else {
+        Vector2D shadowPoint = wm->ball->pos + Vector2D(wm->ball->pos - wm->field->oppGoal()).norm() * 0.3;
+        if (kickoffmode || kickoffWing) {
+            shadowPoint = wm->ball->pos + Vector2D(wm->field->oppGoal() - wm->ball->pos).norm() * 0.3;
+        }
         gotopoint->setSlowmode(true);
         gotopoint->setNoavoid(false);
         gotopoint->setAvoidpenaltyarea(true);
@@ -93,41 +87,38 @@ void CRolePlayMake::stopBehindBall(bool penalty)
     }
 }
 
-void CRolePlayMake::executeOurKickOff()
-{
+void CRolePlayMake::executeOurKickOff() {
     slow = true;
     kickoffmode = true;
 
-    if ( cyclesExecuted < cyclesToWait )
-    {
-        drawer->draw("waiting",Vector2D(0,-2));
+    if (cyclesExecuted < cyclesToWait) {
+        drawer->draw("waiting", Vector2D(0, -2));
         stopBehindBall(false);
         return;
     }
 
-    if( kickMode == FixedShoot )
+    if (kickMode == FixedShoot) {
         chipToOppGoal = true;
-    if(gameState->isStop()){
-        stopBehindBall(false);
     }
-    else{
-        if(chipToOppGoal){
+    if (gameState->isStop()) {
+        stopBehindBall(false);
+    } else {
+        if (chipToOppGoal) {
             kick->setTolerance(0.05);
             kick->setTarget(wm->field->oppGoal());
 
-            kick->setTarget(wm->field->oppGoal()*(2.0/3.0));
+            kick->setTarget(wm->field->oppGoal() * (2.0 / 3.0));
 
             double kickSpeed;
-            kickSpeed = wm->ball->pos.dist(wm->field->oppCornerL())/3.0;
+            kickSpeed = wm->ball->pos.dist(wm->field->oppCornerL()) / 3.0;
 
             kick->setKickspeed(kickSpeed);
             kick->setSpin(false);
             kick->setChip(true);
             kick->setSlow(false);
             agent->action = kick;
-        }
-        else{
-            if (wm->ball->inSight<=0 || !wm->ball->pos.valid() || !wm->field->isInField(wm->ball->pos)) {
+        } else {
+            if (wm->ball->inSight <= 0 || !wm->ball->pos.valid() || !wm->field->isInField(wm->ball->pos)) {
                 wait->setWaithere(true);
                 agent->action = wait;
                 return;
@@ -148,65 +139,69 @@ void CRolePlayMake::executeOurKickOff()
         }
     }
 }
-bool CRolePlayMake::ShootPenalty(){
+bool CRolePlayMake::ShootPenalty() {
     double w;
-    QList<int> relax,empty;
+    QList<int> relax, empty;
     relax.append(agent->id());
     penaltyTarget = know->getEmptyPosOnGoal(agent->pos(), w, true, relax, empty);
-    if(penaltyTarget.dist(wm->field->oppGoal()) < 0.1){
-        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0/10.0, true, 0.06,agent);
+    if (penaltyTarget.dist(wm->field->oppGoal()) < 0.1) {
+        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 10.0, true, 0.06, agent);
 
     }
-    debugger->debug(QString("goalie index :%1").arg(wm->opp.data->goalieID),D_NADIA);
-    if(wm->opp[wm->opp.data->goalieID] == nullptr)
+    debugger->debug(QString("goalie index :%1").arg(wm->opp.data->goalieID), D_NADIA);
+    if (wm->opp[wm->opp.data->goalieID] == nullptr) {
         return false;
+    }
     return Segment2D(agent->pos(), penaltyTarget).dist(wm->opp[wm->opp.data->goalieID]->pos)
-           > fabs(agent->pos().x-wm->opp[wm->opp.data->goalieID]->pos.x)/4;
+           > fabs(agent->pos().x - wm->opp[wm->opp.data->goalieID]->pos.x) / 4;
 }
 
-double CRolePlayMake::lastBounce(){
-    return (wm->field->oppGoal().dist(agent->pos()))-0.23;
+double CRolePlayMake::lastBounce() {
+    return (wm->field->oppGoal().dist(agent->pos())) - 0.23;
 }
 
-int CRolePlayMake::getPenaltychipSpeed(){
-    Vector2D oppGoaliPos=wm->opp[wm->opp.data->goalieID]->pos;
-    debugger->debug(QString("chipsepeed:%1").arg(know->chipGoalPropability(true)),D_NADIA);
-    if(know->chipGoalPropability(true)>0.1){
+int CRolePlayMake::getPenaltychipSpeed() {
+    Vector2D oppGoaliPos = wm->opp[wm->opp.data->goalieID]->pos;
+    debugger->debug(QString("chipsepeed:%1").arg(know->chipGoalPropability(true)), D_NADIA);
+    if (know->chipGoalPropability(true) > 0.1) {
 
         // TODO : FIX THIS
         return 2;//(knowledge->getProfile(agent->id(),(oppGoaliPos-agent->pos()).length(),false)+knowledge->getProfile(agent->id()+1,lastBounce(),false))/2;
+    } else {
+        return -1;
     }
-    else return -1;
 }
 
-void CRolePlayMake::firstKickInShootout(bool isChip){
+void CRolePlayMake::firstKickInShootout(bool isChip) {
 
-    double divation=0;
+    double divation = 0;
 
-    debugger->debug("first : ",D_NADIA);
+    debugger->debug("first : ", D_NADIA);
 
 
-    penaltyTarget=wm->field->oppGoalL()+divation*Vector2D(0,wm->field->oppGoalL().y);;
+    penaltyTarget = wm->field->oppGoalL() + divation * Vector2D(0, wm->field->oppGoalL().y);;
     kick->setTarget(penaltyTarget);
 
-    if(isChip){//chip first
+    if (isChip) { //chip first
         kick->setKickspeed(1.0);
         kick->setChip(true);
-        if(wm->ball->vel.length()>0.4)
-            firstKick=false;
+        if (wm->ball->vel.length() > 0.4) {
+            firstKick = false;
+        }
 
-    }else{//kick first
+    } else { //kick first
 
 
         kick->setChip(false);
         kick->setKickspeed(1.0);
-        if(wm->ball->vel.length()>0.1)
-            firstKick=false;
+        if (wm->ball->vel.length() > 0.1) {
+            firstKick = false;
+        }
     }
 }
 
-void CRolePlayMake::kickInitialShootout(){
-    penaltyTarget=wm->field->oppGoal();
+void CRolePlayMake::kickInitialShootout() {
+    penaltyTarget = wm->field->oppGoal();
     kick->setTarget(penaltyTarget);
     kick->setPenaltykick(false);
     kick->setInterceptmode(false);
@@ -216,107 +211,112 @@ void CRolePlayMake::kickInitialShootout(){
     kick->setSpin(0);
 }
 
-void CRolePlayMake::ShootoutSwitching(bool isChip){
+void CRolePlayMake::ShootoutSwitching(bool isChip) {
 
-    if(wm->ball->vel.length()<0.2)
-        firstKick=true;
-
-
-
-    switch(choosePenaltyStrategy()){
-
-        case pgoaheadShoot:
-            debugger->debug("pgoahead : ",D_NADIA);
-            if(agent->pos().x < 1){//agent is not ahead enough
+    if (wm->ball->vel.length() < 0.2) {
+        firstKick = true;
+    }
 
 
-                penaltyTarget=wm->field->oppGoalL();
-                kick->setTarget(penaltyTarget);
 
-                if(isChip){//chip first
+    switch (choosePenaltyStrategy()) {
 
-                    kick->setKickspeed(170);
-                    kick->setChip(true);
-
-                }else{//kick first
-
-                    kick->setChip(false);
-                    kick->setKickspeed(50);
-                }
-            }
-            else{ //shoot to goal
-
-                penaltyTarget=know->getEmptyPosOnGoalForPenalty(0.13,true, 10,agent);
-                kick->setChip(false);
-                kick->setKickspeed(1023);
-                kick->setDontkick(false);
-                kick->setTarget(penaltyTarget);
-
-            }
-
-            break;
+    case pgoaheadShoot:
+        debugger->debug("pgoahead : ", D_NADIA);
+        if (agent->pos().x < 1) { //agent is not ahead enough
 
 
-        case pchipShoot:
-            debugger->debug("pchipshoot",D_NADIA);
-            kick->setTarget(wm->field->oppGoal());
-            kick->setKickspeed(getPenaltychipSpeed());
-            kick->setChip(true);
-            break;
-
-        case pshootDirect:
-            debugger->debug("pdirect : ",D_NADIA);
-            penaltyTarget=know->getEmptyPosOnGoalForPenalty(0.13,true, 10,agent);
+            penaltyTarget = wm->field->oppGoalL();
             kick->setTarget(penaltyTarget);
+
+            if (isChip) { //chip first
+
+                kick->setKickspeed(170);
+                kick->setChip(true);
+
+            } else { //kick first
+
+                kick->setChip(false);
+                kick->setKickspeed(50);
+            }
+        } else { //shoot to goal
+
+            penaltyTarget = know->getEmptyPosOnGoalForPenalty(0.13, true, 10, agent);
             kick->setChip(false);
-            kick->setKickspeed(1000);
-            kick->setAvoidopppenaltyarea(true);
-            break;
-        default:break;
+            kick->setKickspeed(1023);
+            kick->setDontkick(false);
+            kick->setTarget(penaltyTarget);
+
+        }
+
+        break;
+
+
+    case pchipShoot:
+        debugger->debug("pchipshoot", D_NADIA);
+        kick->setTarget(wm->field->oppGoal());
+        kick->setKickspeed(getPenaltychipSpeed());
+        kick->setChip(true);
+        break;
+
+    case pshootDirect:
+        debugger->debug("pdirect : ", D_NADIA);
+        penaltyTarget = know->getEmptyPosOnGoalForPenalty(0.13, true, 10, agent);
+        kick->setTarget(penaltyTarget);
+        kick->setChip(false);
+        kick->setKickspeed(1000);
+        kick->setAvoidopppenaltyarea(true);
+        break;
+    default:
+        break;
     }
 }
 
-int CRolePlayMake::choosePenaltyStrategy(){
-    if(ShootPenalty()) return pshootDirect;
-    else if(getPenaltychipSpeed()!= -1) return pchipShoot;
-    else return pgoaheadShoot;
+int CRolePlayMake::choosePenaltyStrategy() {
+    if (ShootPenalty()) {
+        return pshootDirect;
+    } else if (getPenaltychipSpeed() != -1) {
+        return pchipShoot;
+    } else {
+        return pgoaheadShoot;
+    }
 }
 
-void CRolePlayMake::executeOurPenaltyShootout(){
+void CRolePlayMake::executeOurPenaltyShootout() {
 
-    bool chipchip=false;
+    bool chipchip = false;
 
-    debugger->debug("penalty Shootout : ",D_NADIA);
-    if (abs(wm->ball->pos.x) > 4.4)//penalty finished
-        firstKick=true;
+    debugger->debug("penalty Shootout : ", D_NADIA);
+    if (abs(wm->ball->pos.x) > 4.4) { //penalty finished
+        firstKick = true;
+    }
 
 
-    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop*/)
-    {//stop behind ball
+    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop*/) {
+        //stop behind ball
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));
         stopBehindBall(true);
         setNoKick(true);
-    }
-    else {      //force start
+    } else {    //force start
 
         //initial kick skill:
         kickInitialShootout();
 
-        if(ShootPenalty())
-            firstKick=false;
-
-        if(firstKick){
-            firstKickInShootout(chipchip);
+        if (ShootPenalty()) {
+            firstKick = false;
         }
-        else{
+
+        if (firstKick) {
+            firstKickInShootout(chipchip);
+        } else {
             ShootoutSwitching(chipchip);
         }
 
         kick->setShotemptyspot(true);
         kick->setAvoidopppenaltyarea(false);
         agent->action = kick;
-        drawer->draw(penaltyTarget,"red"); // todo : is my change OK
+        drawer->draw(penaltyTarget, "red"); // todo : is my change OK
         //drawer->draw(penaltyTarget,0,"red");
     }
 
@@ -327,39 +327,33 @@ void CRolePlayMake::executeOurPenalty() {
     Vector2D shift;
     Vector2D position;
 
-    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop || knowledge->getGameState()==CKnowledge::Stop*/)
-    {
+    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop || knowledge->getGameState()==CKnowledge::Stop*/) {
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));
         stopBehindBall(true);
-        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0/8.0, true, 0.03);
+        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 8.0, true, 0.03);
 
         changeDirPenaltyStrikerTime.restart();
         timerStartFlag = true;
-    }
-    else {
-        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0/8.0, true, 0.03);   //////// tune
+    } else {
+        penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 8.0, true, 0.03); //////// tune
         kick->setSpin(1);
         gotopoint->setRoller(1);
         ////////////// change robot direction before kicking //////////////
-        if(timerStartFlag)
-        {
-            if(changeDirPenaltyStrikerTime.elapsed() < 2500){
-                if(penaltyTarget.y * wm->field->oppGoalL().y < 0 && penaltyTarget.dist(wm->field->oppGoal()) > 0.25){
-                    penaltyTarget.y = wm->field->oppGoalR().y*2;
-                    shift = Vector2D(0,0.3);
+        if (timerStartFlag) {
+            if (changeDirPenaltyStrikerTime.elapsed() < 2500) {
+                if (penaltyTarget.y * wm->field->oppGoalL().y < 0 && penaltyTarget.dist(wm->field->oppGoal()) > 0.25) {
+                    penaltyTarget.y = wm->field->oppGoalR().y * 2;
+                    shift = Vector2D(0, 0.3);
+                } else {
+                    penaltyTarget.y = wm->field->oppGoalL().y * 2;
+                    shift = Vector2D(0, -0.3);
                 }
-                else{
-                    penaltyTarget.y = wm->field->oppGoalL().y*2;
-                    shift = Vector2D(0,-0.3);
-                }
-                position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + shift).norm()*(0.13);
+                position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + shift).norm() * (0.13);
                 gotopoint->setTargetdir(penaltyTarget);
                 gotopoint->setTargetpos(position);
                 gotopoint->setLookat(wm->ball->pos);
-            }
-            else
-            {
+            } else {
                 timerStartFlag = false;
             }
 
@@ -383,10 +377,9 @@ void CRolePlayMake::executeOurPenalty() {
         kick->setTolerance(20);
         kick->setChip(false);
 
-        if(timerStartFlag){
+        if (timerStartFlag) {
             agent->action = gotopoint;
-        }
-        else{
+        } else {
             agent->action = kick;
         }
     }
@@ -395,16 +388,16 @@ void CRolePlayMake::executeOurPenalty() {
 
 }
 
-void CRolePlayMake::theirPenaltyPositioning(){
-    debugger->debug("iiiin",D_NADIA);
+void CRolePlayMake::theirPenaltyPositioning() {
+    debugger->debug("iiiin", D_NADIA);
     gotopoint->setTargetpos(wm->field->oppCornerL());
     gotopoint->setTargetdir(wm->field->ourGoal());
     agent->action = gotopoint;
 }
 
-void CRolePlayMake::kickPass( double kickSpeed ){
-    Vector2D behindTheBall = wm->ball->pos + Vector2D( wm->ball->pos - pointToPass ).norm()*0.2;
-    if( kickPassMode == KickPassFirst && agent->pos().dist(behindTheBall) > 0.01 ){
+void CRolePlayMake::kickPass(double kickSpeed) {
+    Vector2D behindTheBall = wm->ball->pos + Vector2D(wm->ball->pos - pointToPass).norm() * 0.2;
+    if (kickPassMode == KickPassFirst && agent->pos().dist(behindTheBall) > 0.01) {
         finalTarget = wm->ball->pos;
         gotopoint->setTargetpos(behindTheBall);
         gotopoint->setTargetdir(Vector2D(1.0, 0.0));
@@ -415,10 +408,9 @@ void CRolePlayMake::kickPass( double kickSpeed ){
         gotopoint->setAvoidcentercircle(false);
         gotopoint->setBallobstacleradius(0.2);
         agent->action = gotopoint;
-    }
-    else{
+    } else {
         kickPassMode = KickPassSecond;
-        if( kickPassCyclesWait > 4 && agent->pos().dist(finalTarget) > 0.01 ){
+        if (kickPassCyclesWait > 4 && agent->pos().dist(finalTarget) > 0.01) {
             gotopoint->setTargetpos(finalTarget);
             gotopoint->setTargetdir(Vector2D(1.0, 0.0));
             gotopoint->setLookat(pointToPass);
@@ -428,17 +420,17 @@ void CRolePlayMake::kickPass( double kickSpeed ){
             gotopoint->setAvoidcentercircle(false);
             gotopoint->setBallobstacleradius(0);
             agent->action = gotopoint;
-        }
-        else
+        } else {
             kickPassCyclesWait++;
+        }
     }
 }
 
 void CRolePlayMake::execute() {
     cyclesExecuted++;
-    if( wm->ball->inSight <= 0
-        || !wm->ball->pos.valid()
-        || !wm->field->marginedField().contains(wm->ball->pos)){
+    if (wm->ball->inSight <= 0
+            || !wm->ball->pos.valid()
+            || !wm->field->marginedField().contains(wm->ball->pos)) {
         wait->setWaithere(true);
         agent->action = wait;
         return;
@@ -452,42 +444,39 @@ void CRolePlayMake::execute() {
     Vector2D target = know->getEmptyPosOnGoal(wm->ball->pos , region , true , ourRelax, oppRelax);
     double kickSpeed = 5;
 
-    if(!noKick){
+    if (!noKick) {
         return;
     }
 
-    if(gameState->ourKickoff() ){
+    if (gameState->ourKickoff()) {
         executeOurKickOff();
 
         return;
-    }
-    else if(gameState->theirPenaltyShootout()){
+    } else if (gameState->theirPenaltyShootout()) {
         theirPenaltyPositioning();
         return;
 
-    }
-    else if (gameState->ourPenaltyShootout()){
-        debugger->debug(QString("st:%1").arg(!gameState->ourPenaltyShootout()),D_NADIA);
+    } else if (gameState->ourPenaltyShootout()) {
+        debugger->debug(QString("st:%1").arg(!gameState->ourPenaltyShootout()), D_NADIA);
         executeOurPenaltyShootout();
         return;
-    }
-    else if(gameState->ourPenaltyKick()){
-        debugger->debug(QString("st___:%1").arg(!gameState->ourPenaltyKick()),D_NADIA);
+    } else if (gameState->ourPenaltyKick()) {
+        debugger->debug(QString("st___:%1").arg(!gameState->ourPenaltyKick()), D_NADIA);
         executeOurPenalty();
         return;
 
     }
 
-    if ( cyclesExecuted < cyclesToWait )
-    {
+    if (cyclesExecuted < cyclesToWait) {
         stopBehindBall(false);
         return;
     }
 
-    if( noKick )
+    if (noKick) {
         return;
+    }
 
-    if( kickMode == FixedPass ){
+    if (kickMode == FixedPass) {
         debugger->debug("HERE" , D_MASOOD);
         setThrough(false);
         target = pointToPass;
@@ -496,8 +485,7 @@ void CRolePlayMake::execute() {
         kick->setChip(chip);
         kickPass(kickSpeed);
         return;
-    }
-    else if( kickMode == FixedShoot ){
+    } else if (kickMode == FixedShoot) {
         target = pointToShoot;
         setChip(false);
         kickSpeed = agent->pos().dist(target);
@@ -548,42 +536,61 @@ void CRolePlayMake::parse(QStringList params) {
     setLocalAgentPassTarget("");
     setPassReceiver(-1);
     kick->setInterceptmode(false);
-    for (int i=0;i<params.length();i++)
-    {
+    for (int i = 0; i < params.length(); i++) {
         bool ok = false;
         int p = params[i].toInt(&ok);
-        if (params[i].toLower()=="slow") setSlow(true);
-        else if (params[i].toLower()=="chip") setChip(true);
-        else if (params[i].toLower()=="indirectkhafan") setIndirectKhafan(true);
-        else if (params[i].toLower()=="nostop") setNoStop(true);
-        else if (params[i].toLower()=="wing") setKickoffWing(true);
-        else if (params[i].toLower()=="indirectgoogooli") setIndirectGoogooli(true);
-        else if (params[i].toLower()=="chipindirect") setChipIndirect(true);
-        else if (params[i].toLower()=="through") setThrough(true);
-        else if (params[i].toLower()=="nokick") setNoKick(true);
-        else if (params[i].toLower()=="allowonetouch") setAllowOneTouch(true);
-        else if (params[i].toLower()=="allowonepass") setAllowOnePass(true);
-        else if (params[i].toLower()=="followsequence") setFollowSequence(true);
-        else if (params[i].toLower()=="kickoff") setKickoffmode(true);
-        else if (params[i].toLower()=="indirecttiny") setIndirectTiny(true);
-        else if (params[i].toLower()=="chipinpenalty") setChipInPenaltyArea(true);
-        else if (params[i].toLower()=="shadowpass") setShadowPass(true);
-        else if (params[i].toLower()=="khers") setKhers(true);
-        else if (params[i].toLower()=="kicktotheirdefense") setKickToTheirDefense(true);
-        else if (params[i].toLower()=="justturn") setJustTurn(true);
-        else if (params[i].toLower()=="longchip") setLongChip(true);
-        else if (params[i].toLower()=="chiptogoal") setChipToOppGoal(true);
-        else if (params[i].toLower()=="shadowypoint") setShadowyPoint(true);
-        else if (params[i].toLower()=="safe") setSafeIndirect(true);
-        else if (params[i].startsWith("@"))
-        {
-            localAgentPassTarget = params[i].right(params[i].length()-1);
-        }
-        else if (params[i].toLower()=="%") {
+        if (params[i].toLower() == "slow") {
+            setSlow(true);
+        } else if (params[i].toLower() == "chip") {
+            setChip(true);
+        } else if (params[i].toLower() == "indirectkhafan") {
+            setIndirectKhafan(true);
+        } else if (params[i].toLower() == "nostop") {
+            setNoStop(true);
+        } else if (params[i].toLower() == "wing") {
+            setKickoffWing(true);
+        } else if (params[i].toLower() == "indirectgoogooli") {
+            setIndirectGoogooli(true);
+        } else if (params[i].toLower() == "chipindirect") {
+            setChipIndirect(true);
+        } else if (params[i].toLower() == "through") {
+            setThrough(true);
+        } else if (params[i].toLower() == "nokick") {
+            setNoKick(true);
+        } else if (params[i].toLower() == "allowonetouch") {
+            setAllowOneTouch(true);
+        } else if (params[i].toLower() == "allowonepass") {
+            setAllowOnePass(true);
+        } else if (params[i].toLower() == "followsequence") {
+            setFollowSequence(true);
+        } else if (params[i].toLower() == "kickoff") {
+            setKickoffmode(true);
+        } else if (params[i].toLower() == "indirecttiny") {
+            setIndirectTiny(true);
+        } else if (params[i].toLower() == "chipinpenalty") {
+            setChipInPenaltyArea(true);
+        } else if (params[i].toLower() == "shadowpass") {
+            setShadowPass(true);
+        } else if (params[i].toLower() == "khers") {
+            setKhers(true);
+        } else if (params[i].toLower() == "kicktotheirdefense") {
+            setKickToTheirDefense(true);
+        } else if (params[i].toLower() == "justturn") {
+            setJustTurn(true);
+        } else if (params[i].toLower() == "longchip") {
+            setLongChip(true);
+        } else if (params[i].toLower() == "chiptogoal") {
+            setChipToOppGoal(true);
+        } else if (params[i].toLower() == "shadowypoint") {
+            setShadowyPoint(true);
+        } else if (params[i].toLower() == "safe") {
+            setSafeIndirect(true);
+        } else if (params[i].startsWith("@")) {
+            localAgentPassTarget = params[i].right(params[i].length() - 1);
+        } else if (params[i].toLower() == "%") {
             setManualPassReceive(true);
             setPassReceiver(-5);
-        }
-        else if (ok) {
+        } else if (ok) {
             setManualPassReceive(true);
             setPassReceiver(p);
         }
@@ -595,7 +602,7 @@ CRolePlayMakeInfo::CRolePlayMakeInfo(QString _roleName) : CRoleInfo(_roleName) {
 }
 
 void CRolePlayMake::resetOffPlays() {
-    setIndirectTiny( false);
+    setIndirectTiny(false);
     setIndirectGoogooli(false);
     setIndirectKhafan(false);
     setChipInPenaltyArea(false);

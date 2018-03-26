@@ -7,7 +7,7 @@
 
 #include <parsian_util/core/agent.h>
 
-class Agent : public CAgent  {
+class Agent : public CAgent {
 public:
     explicit Agent(const parsian_msgs::parsian_agent& _agent);
     explicit Agent(int id);
