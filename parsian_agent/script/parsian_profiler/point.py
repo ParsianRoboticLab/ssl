@@ -15,5 +15,17 @@ class Point:
     def difY(self, point):
         return point.y - self.y
 
+    def minus(self,p):
+        return Point(self.x -p.x, self.y - p.y )
+
     def angle(self, point):
         return math.atan2(self.difY(point), self.difX(point))
+
+    def length(self):
+        return math.hypot(self.x, self.y)
+
+    def unitPoint(self):
+        tempX = self.x/self.length()
+        tempY = self.y/self.length()
+        return Point(tempX,tempY)
+

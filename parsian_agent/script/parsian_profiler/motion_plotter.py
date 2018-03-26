@@ -38,3 +38,4 @@ for item in ls:
             remain_dist.clear()
             command.clear()
             world_model.clear()
+

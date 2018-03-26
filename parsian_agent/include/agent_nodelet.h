@@ -61,7 +61,7 @@ private:
     CSkillKickOneTouch* oneTouch;
     CSkillReceivePass* receivePass;
     bool finished = true;
-
+    int watchdog;
 
 };
 }

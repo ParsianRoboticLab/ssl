@@ -2,6 +2,7 @@ import time
 import math
 from point import Point
 import rospy
+import rospkg
 from os import path
 from parsian_msgs.msg import parsian_skill_gotoPointAvoid
 from parsian_msgs.msg import parsian_robot_task
@@ -160,8 +161,8 @@ class MotionProfiler:
         self.__current_value.append(data)
 
     def __saveResult(self):
-        __log_file = open(path.abspath("../profiler_data/" + str(self.__robot_id) + "_" +
-                                       str(int(round(time.time() / 10))) + "_motion.profile"), "w+")
+        __log_file = open(path.abspath(rospkg.RosPack().get_path("parsian_agent")+ "/profiler_data/" + str(self.__robot_id) + "_" +
+                                       str(int(round(time.time()/10))) + "_motion.profile"), "w+")
         __log_file.write(str(self.__result))
         __log_file.close()
 

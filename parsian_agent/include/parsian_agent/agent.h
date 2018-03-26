@@ -14,7 +14,11 @@
 #include <QFile>
 #include <fstream>
 #include <QTime>
-
+#include <vector>
+#include <string>
+#include <ros/package.h>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 using namespace std;
 
 #define MAX_KICK_SPEED 1023
@@ -135,10 +139,10 @@ public:
     double chipProfile[32][2];
 
     double getKickValue(bool chip, bool spin, double v);
-    double kickValueSpeed(double value, bool spinner);
-    double kickSpeedValue(double speed, bool spinner);
+    double kickValueSpeed(double value,bool spinner);
+    double kickSpeedValue(double speed, int spinner);
     double chipValueDistance(double value, bool spinner);
-    double chipDistanceValue(double distance, bool spinner);
+    double chipDistanceValue(double distance,int spinner);
 
     int kickValueForDistance(double dist, double finalVel);
 
@@ -163,7 +167,18 @@ private:
     short int selfID;
     const double Gravity = 9.8;
     double getVar(const double* data);
-    Matrix ANN_forward(Matrix input);
+    Matrix ANN_forward( Matrix input );
+    //kick profiler usage
+    void getkickprofilerdata();
+    bool gotkickprofilerdatas;
+    float convertkickspeedtokickchargetime(float kickspeed, int spin);
+    float kick_coef_a[8], kick_coef_b[8], kick_coef_c[8];
+    //chip profiler usage
+    void getchipprofilerdata();
+    bool gotchipprofilerdatas;
+    float convertchipdisttochipchargetime(float chipdist, int spin);
+    float chip_coef_a[8], chip_coef_b[8], chip_coef_c[8];
+
 public:
 
     ros::Publisher planner_pub;

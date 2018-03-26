@@ -21,14 +21,15 @@ double obstacle::margin(state s , double obsMargin) {
     double d;
 
     switch (type) {
-    case OBS_CIRCLE:
-        d = pos.dist(s.pos);
-        return (d - rad.x - obsMargin);
-    case OBS_RECTANGLE:
-        p.assign(boundTo(s.pos.x, pos.x - rad.x, pos.x + rad.x),
-                 boundTo(s.pos.y, pos.y - rad.y, pos.y + rad.y));
-        d = p.dist(s.pos);
-        return (d - obsMargin);
+        case OBS_CIRCLE:
+            d = pos.dist(s.pos);
+            return (d - rad.x - obsMargin);
+        case OBS_RECTANGLE:
+            p.assign(boundTo(s.pos.x, pos.x - rad.x, pos.x + rad.x),
+                     boundTo(s.pos.y, pos.y - rad.y, pos.y + rad.y));
+            d = p.dist(s.pos);
+            return (d - obsMargin);
+        default:break;
     }
 
     return (0.0);
@@ -60,25 +61,26 @@ bool obstacle::check(state s0, state s1 , double obsMargin) {
     }
 
     switch (type) {
-    case OBS_CIRCLE:
-        p = Segment2D(s0.pos, s1.pos).nearestPoint(pos);
-        d = p.dist(pos);
-        return (d > rad.x + obsMargin);
+        case OBS_CIRCLE:
+            p = Segment2D(s0.pos, s1.pos).nearestPoint(pos);
+            d = p.dist(pos);
+            return (d > rad.x + obsMargin);
 
-    case OBS_RECTANGLE:
-        c[0].assign(pos.x - rad.x, pos.y - rad.y);
-        c[1].assign(pos.x + rad.x, pos.y - rad.y);
-        c[2].assign(pos.x + rad.x, pos.y + rad.y);
-        c[3].assign(pos.x - rad.x, pos.y + rad.y);
-        for (i = 0; i < 4; i++) {
-            d = Segment2D(s0.pos, s1.pos).dist(Segment2D(c[i], c[(i + 1) % 4]));
-            if (d < obsMargin) {
-                return (false);
+        case OBS_RECTANGLE:
+            c[0].assign(pos.x - rad.x, pos.y - rad.y);
+            c[1].assign(pos.x + rad.x, pos.y - rad.y);
+            c[2].assign(pos.x + rad.x, pos.y + rad.y);
+            c[3].assign(pos.x - rad.x, pos.y + rad.y);
+            for (i = 0; i < 4; i++) {
+                d = Segment2D(s0.pos, s1.pos).dist(Segment2D(c[i], c[(i + 1) % 4]));
+                if (d < obsMargin) {
+                    return (false);
+                }
             }
-        }
 
-        return (check(s0 , obsMargin));
+            return (check(s0 , obsMargin));
 
+        default:break;
     }
 
     return (true);
@@ -96,20 +98,34 @@ CObstacles::CObstacles() {
     obsMargin = Robot::robot_radius_new;
 }
 
-void CObstacles::add_rectangle(double cx, double cy, double w, double h) {
+void CObstacles::add_rectangle(double left_x, double top_y, double l, double w) {
+    obstacle temp;
+    temp.type = OBS_RECTANGLE;
+    temp.pos.assign(left_x + l/2, top_y - w/2);
+    temp.vel.assign(0, 0);
+    temp.rad.assign(l, w);
+    Rect2D testRect(left_x, top_y, l, w); // = Rect2D::from_center(cx,cy,w,h);
+    if (!testRect.contains(targetPosition)) {
+//        drawer->draw(testRect,QColor(Qt::red));
+        obs.append(temp);
+    }
+
+}
+
+void CObstacles::add_rectangle_from_center(double cx, double cy, double w, double h) {
     obstacle temp;
     temp.type = OBS_RECTANGLE;
     temp.pos.assign(cx, cy);
     temp.vel.assign(0, 0);
     temp.rad.assign(w / 2 , h / 2);
-    Rect2D testRect(cx - (w / 2), cy - (h / 2), h, w); // = Rect2D::from_center(cx,cy,w,h);
+    Rect2D testRect(cx - (w / 2), cy + (h / 2), w, h); // = Rect2D::from_center(cx,cy,w,h);
     if (!testRect.contains(targetPosition)) {
-        drawer->draw(testRect,QColor(Qt::red));
-
+//        drawer->draw(testRect,QColor(Qt::red));
         obs.append(temp);
     }
 
 }
+
 
 void CObstacles::add_circle(double x, double y, double radius,
                             double vx, double vy) {
@@ -122,7 +138,6 @@ void CObstacles::add_circle(double x, double y, double radius,
 
     if (!testCircle.contains(targetPosition) && !testCircle.contains(agentPos)) {
 //        drawer->draw(testCircle,QColor(Qt::red));
-
         obs.append(temp);
     }
 }
@@ -144,7 +159,7 @@ bool CObstacles::check(Vector2D p, QList<int> &id) {
 
 bool CObstacles::check(state s) {
     for (int i = 0 ; i < obs.count() ; i++)
-        if (obs[i].check(s , obsMargin) == false) {
+        if (!obs[i].check(s , obsMargin)) {
             return false;
         }
     return true;
@@ -154,7 +169,7 @@ bool CObstacles::check(state s, QList<int> &id) {
     bool isSafe = true;
     id.clear();
     for (int i = 0 ; i < obs.count() ; i++)
-        if (obs[i].check(s , obsMargin) == false) {
+        if (!obs[i].check(s , obsMargin)) {
             id.append(i);
             isSafe = false;
         }
@@ -163,7 +178,7 @@ bool CObstacles::check(state s, QList<int> &id) {
 
 bool CObstacles::check(state s0, state s1) {
     for (int i = 0 ; i < obs.count() ; i++)
-        if (obs[i].check(s0 , s1 , obsMargin) == false) {
+        if (!obs[i].check(s0 , s1 , obsMargin)) {
             return false;
         }
     return true;
@@ -173,7 +188,7 @@ bool CObstacles::check(state s0, state s1, QList<int> &id) {
     id.clear();
     bool isSafe = true;
     for (int i = 0 ; i < obs.count() ; i++)
-        if (obs[i].check(s0 , s1 , obsMargin) == false) {
+        if (!obs[i].check(s0 , s1 , obsMargin)) {
             id.append(i);
             isSafe = false;
         }
@@ -198,10 +213,7 @@ void CObstacles::draw() {
             drawer->draw(Circle2D(obs[i].pos, obs[i].rad.x), 0, 360, QColor("red"));
         } else if (obs[i].type == OBS_RECTANGLE)
             drawer->draw(Rect2D(
-                             Vector2D(obs[i].pos.x - obs[i].rad.x, obs[i].pos.y + obs[i].rad.y),
-                             obs[i].rad.x * 2.0, obs[i].rad.y * 2.0), QColor("red"));
+                    Vector2D(obs[i].pos.x - obs[i].rad.x, obs[i].pos.y + obs[i].rad.y),
+                    obs[i].rad.x * 2.0, obs[i].rad.y * 2.0), QColor("red"));
     }
 }
-
-
-

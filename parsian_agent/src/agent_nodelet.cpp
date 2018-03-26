@@ -33,6 +33,7 @@ void AgentNodelet::onInit() {
     agent->planner_pub = private_nh.advertise<parsian_msgs::parsian_get_plan>("plan", 5);
 
     timer_ = nh.createTimer(ros::Duration(0.01), &AgentNodelet::timerCb, this);
+    watchdog = 0;
 }
 
 void AgentNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cnf) {
@@ -42,7 +43,13 @@ void AgentNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cn
 
 void AgentNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
     wm->update(_wm);
-    if (agent->skill != nullptr && finished) {
+    watchdog++;
+    if (watchdog >= conf->watchdog) {
+        agent->waitHere();
+        agent->skill = nullptr;
+        parsian_robot_command_pub.publish(agent->getCommand());
+
+    } else if (agent->skill != nullptr && finished) {
         finished = false;
         agent->execute();
         parsian_robot_command_pub.publish(agent->getCommand());
@@ -69,7 +76,7 @@ void AgentNodelet::timerCb(const ros::TimerEvent& event) {
 }
 
 void AgentNodelet::rtCb(const parsian_msgs::parsian_robot_taskConstPtr& _robot_task) {
-    //  ROS_INFO("callBack called");
+    watchdog = 0;
     agent->skill = getSkill(_robot_task);
 }
 
@@ -89,9 +96,25 @@ CSkill* AgentNodelet::getSkill(const parsian_msgs::parsian_robot_taskConstPtr &_
         ROS_INFO_STREAM("GOTOPOINTAVOID executed!" << gotoPointAvoid->getTargetpos().y);
         break;
     case parsian_msgs::parsian_robot_task::KICK:
-        skillKick->setMessage(&_task->kickTask);
-        skill = skillKick;
-        //ROS_INFO("KICK executed!");
+			skillKick->setMessage(&_task->kickTask);
+            if(!_task->kickTask.chip)
+            {
+                if (!_task->kickTask.iskickchargetime)
+                    skillKick->setKickspeed(agent->kickSpeedValue(_task->kickTask.kickSpeed,_task->kickTask.spin));
+                else
+                    skillKick->setKickspeed(_task->kickTask.kickchargetime);
+            }
+            else
+            {
+                if (!_task->kickTask.iskickchargetime)
+                    skillKick->setKickspeed(agent->chipDistanceValue(_task->kickTask.kickSpeed,_task->kickTask.spin));
+                else
+                    skillKick->setKickspeed(_task->kickTask.kickchargetime);
+            }
+            skill = skillKick;
+            //ROS_INFO("KICK executed!");
+            break;
+
         break;
     case parsian_msgs::parsian_robot_task::ONETOUCH:
         oneTouch->setMessage(&_task->oneTouchTask);

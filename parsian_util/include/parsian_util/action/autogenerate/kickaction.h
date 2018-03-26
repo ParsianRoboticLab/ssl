@@ -24,6 +24,8 @@ public:
 
     SkillProperty(KickAction, double, Tolerance, tolerance);
     SkillProperty(KickAction, bool, Chip, chip);
+    SkillProperty(KickAction, bool, Iskickchargetime, iskickchargetime);
+    SkillProperty(KickAction, double, Kickchargetime, kickchargetime);
     SkillProperty(KickAction, double, Kickspeed, kickSpeed);
     SkillProperty(KickAction, int, Spin, spin);
     SkillProperty(KickAction, bool, Slow, slow);

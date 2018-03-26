@@ -40,7 +40,8 @@ public:
     void clear() {
         obs.clear();
     }
-    void add_rectangle(double cx, double cy, double w, double h);     //add rect with given properties to obs
+    void add_rectangle_from_center(double cx, double cy, double w, double h);     //add rect with given properties to obs
+    void add_rectangle(double left_x, double top_y, double l, double w);     //add rect with given properties to obs
     void add_circle(double x, double y, double radius,                //add circle with given properties to obs
                     double vx, double vy);
 

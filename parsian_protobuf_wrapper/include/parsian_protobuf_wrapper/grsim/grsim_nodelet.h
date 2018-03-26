@@ -16,6 +16,10 @@
 #include "parsian_protobuf_wrapper/common/net/udpsend.h"
 #include "parsian_msgs/grsim_robot_replacement.h"
 #include "parsian_msgs/grsim_ball_replacement.h"
+#include <ros/package.h>
+#include <fstream>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 #include <parsian_msgs/parsian_team_config.h>
 
@@ -67,6 +71,15 @@ public:
     ros::Subscriber team_config_sub;
     ros::ServiceServer service0;
     ros::ServiceServer service1;
+
+    //kick profiler usage
+    std::vector<std::vector<std::string>> dataList;
+    void getprofilerdata();
+    std::vector<bool> gotprofilerdatas;
+    double convertkickchargetimetokickspeed(int id, double chargetime);
+    std::vector<double> coef_a;
+    std::vector<double> coef_b;
+    std::vector<double> coef_c;
 };
 
 #endif /* GRSIMNODELET_H_ */

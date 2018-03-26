@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 2.8.3)
 project(parsian_agent)
 
@@ -51,6 +52,7 @@ catkin_python_setup()
 generate_dynamic_reconfigure_options(
     cfg/agent.cfg
     cfg/motion_pro.cfg
+    cfg/kick_pro.cfg
 )
 
 ###################################
@@ -271,6 +273,8 @@ install(FILES
 
 
 catkin_install_python(PROGRAMS script/parsian_profiler/motion_profiler_node.py
+							   script/parsian_profiler/kick_profiler_node.py
+							   script/parsian_profiler/chip_handy_test_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 #############
 ## Testing ##

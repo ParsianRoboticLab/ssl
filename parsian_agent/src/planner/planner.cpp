@@ -530,6 +530,7 @@ void CPlanner::createObstacleProb(CObstacles &obs, Vector2D _pos, Vector2D _vel,
 }
 
 void CPlanner::generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, QList<int> &oppRelaxList, bool avoidPenaltyArea, bool avoidCenterCircle , double ballObstacleRadius, Vector2D agentGoal) {
+
     obs.clear();
     obs.targetPosition = goal;
 
@@ -540,13 +541,11 @@ void CPlanner::generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, 
     agentVel = wm->our[ID]->vel;
     obs.agentPos = agentPos;
 
-
-
     agentPath.assign(agentPos, agentGoal);
     Vector2D _center , dummy1, dummy2;
     double rad = 0;
-    ROS_INFO_STREAM("OUR" << wm->our.activeAgentsCount());
 
+    ROS_INFO_STREAM("OUR" << wm->our.activeAgentsCount());
     for (int j = 0; j < wm->our.activeAgentsCount(); j++) {
         if ((ourRelaxList.contains(wm->our.active(j)->id) == false) && (ID != wm->our.active(j)->id)) {
 
@@ -555,6 +554,7 @@ void CPlanner::generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, 
 
         }
     }
+
     ROS_INFO_STREAM("OPP" << wm->opp.activeAgentsCount());
     for (int j = 0; j < wm->opp.activeAgentsCount(); j++) {
         if (oppRelaxList.contains(wm->opp.active(j)->id) == false) {
@@ -571,10 +571,10 @@ void CPlanner::generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, 
     }
 
     if (avoidPenaltyArea) {
-
+        /////////////// Penalty area obstacle //////////////////////////////////////
+        obs.add_rectangle_from_center(-1 * (field._FIELD_WIDTH / 2) + field._PENALTY_DEPTH/2, 0 , wm->field->_PENALTY_DEPTH, wm->field->_PENALTY_WIDTH);
+        obs.add_rectangle_from_center((field._FIELD_WIDTH / 2) - field._PENALTY_DEPTH/2, 0 , wm->field->_PENALTY_DEPTH, wm->field->_PENALTY_WIDTH);
     }
-    /////////////// Penalty area obstacle //////////////////////////////////////
-    obs.add_rectangle(-1 * (field._FIELD_WIDTH / 2) , 0 , wm->field->_PENALTY_DEPTH * 2 , wm->field->_PENALTY_WIDTH);
 
     //obs.add_rectangle(0,0,0.5,0.5);
     if (avoidCenterCircle) {

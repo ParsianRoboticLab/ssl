@@ -7,8 +7,8 @@
 void GrsimNodelet::GrsimBotCmd(const parsian_msgs::parsian_robot_command::ConstPtr& msg) {
     grSim_Robot_Command* GrsimRobotCommand = GrsimCommand->add_robot_commands();
     GrsimRobotCommand->set_id(msg->robot_id);
-    GrsimRobotCommand->set_kickspeedx(msg->kickSpeed / 100);
-    GrsimRobotCommand->set_kickspeedz(msg->kickspeedz / 200);
+    GrsimRobotCommand->set_kickspeedx(convertkickchargetimetokickspeed(msg->robot_id, msg->kickSpeed));
+    GrsimRobotCommand->set_kickspeedz(msg->kickspeedz / 200.0);
     GrsimRobotCommand->set_veltangent(0);
     GrsimRobotCommand->set_velnormal(0);
     GrsimRobotCommand->set_velangular(0);
@@ -96,6 +96,10 @@ GrsimNodelet::~GrsimNodelet() {
 
 void GrsimNodelet::onInit() {
     NODELET_INFO("grsim_nodelet onInit");
+
+
+    getprofilerdata();
+
     udp = new UDPSend(ip, port);
 
     GrsimCommand = new grSim_Commands;
@@ -130,6 +134,51 @@ void GrsimNodelet::onInit() {
 
 void GrsimNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
     isYellow = (msg->color == parsian_msgs::parsian_team_config::YELLOW);
+}
+
+//kick profiler usage
+void GrsimNodelet::getprofilerdata()
+{
+    std::ifstream file(ros::package::getPath("parsian_agent") + "/profiler_data/coefficients/coeffs_kick_0.csv");
+    if (!file.is_open())
+        ROS_INFO_STREAM("profiler datas failed to open");
+    else
+    {
+        ROS_INFO_STREAM("file opened");
+        std::string line = "";
+        // Iterate through each line and split the content using delimeter
+        while (getline(file, line))
+        {
+            std::vector<std::string> vec;
+            boost::algorithm::split(vec, line, boost::is_any_of(","));
+            dataList.push_back(vec);
+        }
+        // Close the File
+        file.close();
+        for(int i{1}; i<dataList.size(); i++){
+                coef_a.push_back(atof(dataList[i][1].c_str()));
+                coef_b.push_back(atof(dataList[i][2].c_str()));
+                coef_c.push_back(atof(dataList[i][3].c_str()));
+                gotprofilerdatas.push_back(true);
+            }
+    }
+}
+double GrsimNodelet::convertkickchargetimetokickspeed(int id, double chargetime)
+{
+    if (gotprofilerdatas[id])
+    {
+        ROS_INFO_STREAM(coef_a[id] << " " << coef_b[id] << " " << coef_c[id]);
+        double mkickspeed = (((-1*coef_b[id]) + sqrt(coef_b[id]*coef_b[id] - 4*coef_a[id]*(coef_c[id] - chargetime)))/(2*coef_a[id]));
+        return mkickspeed;
+
+    }
+    else
+    {
+        ROS_INFO_STREAM("there was no result for this robot in profiler datas");
+        return 5;
+    }
+
+
 }
 
 
