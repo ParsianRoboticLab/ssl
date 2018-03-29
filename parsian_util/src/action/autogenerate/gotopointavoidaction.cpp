@@ -3,25 +3,25 @@
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 
 GotopointavoidAction::GotopointavoidAction() {
-    avoidPenaltyArea = false;
-    noAvoid = false;
-    avoidCenterCircle = false;
-    ballObstacleRadius = 0.0;
-    drawPath = false;
-    diveMode = false;
+       avoidPenaltyArea = false;
+       noAvoid = false;
+       avoidCenterCircle = false;
+       ballObstacleRadius = 0.0;
+       drawPath = false;
+       diveMode = false;
 }
 
 void GotopointavoidAction::setMessage(const void* _msg) {
     parsian_msgs::parsian_skill_gotoPointAvoid msg = *((parsian_msgs::parsian_skill_gotoPointAvoid*)_msg);
-    avoidPenaltyArea = msg.avoidPenaltyArea;
-    noAvoid = msg.noAvoid;
-    avoidCenterCircle = msg.avoidCenterCircle;
-    ballObstacleRadius = msg.ballObstacleRadius;
-    drawPath = msg.drawPath;
-    diveMode = msg.diveMode;
-    addVel = msg.addVel;
+        avoidPenaltyArea = msg.avoidPenaltyArea;
+        noAvoid = msg.noAvoid;
+        avoidCenterCircle = msg.avoidCenterCircle;
+        ballObstacleRadius = msg.ballObstacleRadius;
+        drawPath = msg.drawPath;
+        diveMode = msg.diveMode;
+        addVel = msg.addVel;
 
-    GotopointAction::setMessage(&msg.base);
+        GotopointAction::setMessage(&msg.base);
 }
 
 void* GotopointavoidAction::getMessage() {
@@ -39,11 +39,11 @@ void* GotopointavoidAction::getMessage() {
 }
 
 
-QString GotopointavoidAction::getActionName() {
+QString GotopointavoidAction::getActionName(){
     return SActionName();
 }
 
-QString GotopointavoidAction::SActionName() {
+QString GotopointavoidAction::SActionName(){
     return QString{"GotopointavoidAction"};
 }
 

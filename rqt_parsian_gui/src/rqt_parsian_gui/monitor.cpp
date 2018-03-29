@@ -99,7 +99,6 @@ namespace rqt_parsian_gui {
 //                QDir().mkdir("logs/"+baseFileName);
 //                suggestionName="logs/"+baseFileName+"/"+suggestionName+".bag";
 //            }
-
             std::string s;
             s = ros::package::getPath("rqt_parsian_gui");
             ROS_INFO_STREAM(s + "aa");
@@ -339,6 +338,7 @@ namespace rqt_parsian_gui {
         fieldWidget->drawerBuffer = lastdrawer;
 
 //        fieldWidget->drawerBuffer->draw(Circle2D(ballpos, radius), 0, 360, QColor("orange"), true);
+
 
         fieldWidget->update();
         if (isReplayMode && mywm != nullptr) {

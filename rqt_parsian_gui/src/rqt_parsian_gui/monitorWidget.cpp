@@ -43,7 +43,7 @@ namespace rqt_parsian_gui
         recShowBool = false;
         connect(recShowTimer , SIGNAL(timeout()) , this , SLOT(showHideRec()));
         coeff=viewportSize.height()/stadiumSize.width();
-        centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.width()/2)/WH_RATIO);
+        centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
         monitor_pub = n.advertise<parsian_msgs::vector2D>("/mousePos", 1000);
         mousePos.reset(new parsian_msgs::vector2D);
 
@@ -72,17 +72,29 @@ namespace rqt_parsian_gui
     void MonitorWidget::mousePressEvent(QMouseEvent *event)
     {
 
-        mousePos->x=(double(event->pos().x())- centralPoint.y)/coeff/scaleFactor;
-        mousePos->y=(double(event->pos().y()) - centralPoint.x)/coeff/scaleFactor;
-        ROS_INFO_STREAM("hii__"<<mousePos->x<<"__"<<mousePos->y);
-        monitor_pub.publish(*mousePos);
+        if(event->buttons() == Qt::RightButton){
+            cameraX=0.0;
+            cameraY=0.0;
+            scaleFactor=1;
+            centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
+        } else {
+            mousePos->y = (double(event->pos().x()) - centralPoint.x) / coeff / scaleFactor;
+            mousePos->x = (double(event->pos().y()) - centralPoint.y) / coeff / scaleFactor;
+//            mousePos->x = double(event->pos().x());
+//            mousePos->y = double(event->pos().y());
+            ROS_INFO_STREAM("mousepos__" << mousePos->x << "__" << mousePos->y);
+            ROS_INFO_STREAM("_CP_"<<centralPoint.x<<"__"<<centralPoint.y);
+            ROS_INFO_STREAM("_E_"<<event->pos().x()<<"__"<<event->pos().y());
+            monitor_pub.publish(*mousePos);
+        }
     }
+
 
     void MonitorWidget::wheelEvent(QWheelEvent *event)
     {
 
-        centralPoint.y = 400 + cameraY * coeff;
         centralPoint.x = 400 / WH_RATIO + cameraX * coeff;
+        centralPoint.y = 400 + cameraY * coeff;
         if (event->delta() > 0) {
             if (scaleFactor > 3) {
                 return;
@@ -98,7 +110,7 @@ namespace rqt_parsian_gui
 
 
 //
-            if (scaleFactor < 0.5) {
+            if (scaleFactor < 1) {
                 return;
             }
 
@@ -204,6 +216,7 @@ namespace rqt_parsian_gui
 
 
 
+        // ROS_INFO_STREAM("Rect LX : "<< rec.rect.left_x << "Rect TY : "<< rec.rect.top_y << "Rect w : "<< rec.rect.width << "Rect L : "<< rec.rect.length);
         parsian_msgs::parsian_draw_rect rec;
         while (!drawerBuffer->rectBuffer->isEmpty()) {
             rec = drawerBuffer->rectBuffer->dequeue();
@@ -213,8 +226,8 @@ namespace rqt_parsian_gui
 
             drawRect(rec.rect.left_x,
                      rec.rect.top_y,
-                     rec.rect.left_x + rec.rect.width,
-                     rec.rect.top_y - rec.rect.length,
+                     rec.rect.left_x + rec.rect.length,
+                     rec.rect.top_y - rec.rect.width,
                      col,
                      rec.filled);
         }

@@ -8,6 +8,7 @@ KickAction::KickAction() {
        iskickchargetime = false;
        kickchargetime = 0.0;
        kickSpeed = 0.0;
+       chipDist = 0.0;
        spin = 0;
        slow = false;
        avoidPenaltyArea = false;
@@ -33,6 +34,7 @@ void KickAction::setMessage(const void* _msg) {
         iskickchargetime = msg.iskickchargetime;
         kickchargetime = msg.kickchargetime;
         kickSpeed = msg.kickSpeed;
+        chipDist = msg.chipDist;
         spin = msg.spin;
         slow = msg.slow;
         avoidPenaltyArea = msg.avoidPenaltyArea;
@@ -60,6 +62,7 @@ void* KickAction::getMessage() {
     _msg->iskickchargetime = iskickchargetime;
     _msg->kickchargetime = kickchargetime;
     _msg->kickSpeed = kickSpeed;
+    _msg->chipDist = chipDist;
     _msg->spin = spin;
     _msg->slow = slow;
     _msg->avoidPenaltyArea = avoidPenaltyArea;
@@ -82,11 +85,11 @@ void* KickAction::getMessage() {
 }
 
 
-QString KickAction::getActionName() {
+QString KickAction::getActionName(){
     return SActionName();
 }
 
-QString KickAction::SActionName() {
+QString KickAction::SActionName(){
     return QString{"KickAction"};
 }
 

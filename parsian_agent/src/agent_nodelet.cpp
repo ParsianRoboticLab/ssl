@@ -105,15 +105,17 @@ CSkill* AgentNodelet::getSkill(const parsian_msgs::parsian_robot_taskConstPtr &_
             {
                 if (!_task->kickTask.iskickchargetime)
                     skillKick->setKickspeed(agent->kickSpeedValue(_task->kickTask.kickSpeed,_task->kickTask.spin));
-                else
+                else {
                     skillKick->setKickspeed(_task->kickTask.kickchargetime);
+                }
             }
             else
             {
                 if (!_task->kickTask.iskickchargetime)
                     skillKick->setKickspeed(agent->chipDistanceValue(_task->kickTask.kickSpeed,_task->kickTask.spin));
-                else
+                else {
                     skillKick->setKickspeed(_task->kickTask.kickchargetime);
+                }
             }
             skill = skillKick;
             //ROS_INFO("KICK executed!");

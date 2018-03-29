@@ -442,6 +442,7 @@ private:
     bool doPass, doAfterlife;
 
     //////////////End  Plan
+    bool isBallPushed();
     bool isTimeOver();
     bool isBallDirChanged();
     SFail isAnyTaskFaild();
@@ -517,6 +518,7 @@ private:
     void secondDegree();
     void thirdDegree();
     void doneDegree();
+
 
 
 };

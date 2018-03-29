@@ -131,9 +131,8 @@ set (${PROJECT_NAME}_SRCS
   src/${PROJECT_NAME}/handycontroller.cpp
   src/${PROJECT_NAME}/playoffWidget.cpp
   src/${PROJECT_NAME}/playoff.cpp
-  #src/${PROJECT_NAME}/blackboardMonitor.cpp
-  #src/${PROJECT_NAME}/blackboardMonitorWidget.cpp
-
+  src/${PROJECT_NAME}/taskRunner.cpp
+  src/${PROJECT_NAME}/taskRunnerWidget.cpp
 )
 
 set(${PROJECT_NAME}_HDRS
@@ -147,8 +146,8 @@ set(${PROJECT_NAME}_HDRS
   include/${PROJECT_NAME}/handycontroller.h
   include/${PROJECT_NAME}/playoffWidget.h
   include/${PROJECT_NAME}/playoff.h
-  #include/${PROJECT_NAME}/blackboardMonitor.h
-  #include/${PROJECT_NAME}/blackboardMonitorWidget.h
+  include/${PROJECT_NAME}/taskRunner.h
+  include/${PROJECT_NAME}/taskRunnerWidget.h
 )
 
 

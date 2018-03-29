@@ -43,7 +43,7 @@ void AINodelet::onInit() {
 
 }
 void AINodelet::mousePosCb(const parsian_msgs::vector2DConstPtr &_mousePos) {
-    mousePos.assign(_mousePos.get()->y * -1,_mousePos.get()->x * -1);
+    mousePos.assign(_mousePos.get()->y ,_mousePos.get()->x );
 }
 void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf) {
     teamConfig = *_conf;
@@ -74,7 +74,7 @@ void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstP
     }
 
     parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
-    ROS_INFO_STREAM("last plan name: " << lastPlan.the_plan.planFile);
+    ROS_INFO_STREAM("HSHM: last plan name: " << lastPlan.the_plan.planFile);
 
 }
 

@@ -28,7 +28,7 @@ void PlannerNodelet::onInit() {
     planner->path_pub = private_nh.advertise<parsian_msgs::parsian_path>("path", 5);
 
 
-    timer_ = nh.createTimer(ros::Duration(0.2), &PlannerNodelet::timerCb, this);
+    timer_ = nh.createTimer(ros::Duration(0.1), &PlannerNodelet::timerCb, this);
 }
 
 void PlannerNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cnf) {

@@ -50,6 +50,7 @@ CPlayOff::CPlayOff() : CMasterPlay() {
 
     criticalInit = true;
     criticalKick = new KickAction();
+
 }
 
 CPlayOff::~CPlayOff() {
@@ -249,10 +250,9 @@ void CPlayOff::staticExecute() {
 
             }
 
-            if (isPlanEnd() && false) {
+            if (isPlanEnd()) {
                 playOnFlag = true;
-                ROS_INFO("Ends");
-
+                ROS_INFO("Playoff Ends");
             }
 
         } else {
@@ -1104,7 +1104,7 @@ bool CPlayOff::isPlanDone() {
     const int& tLastState = masterPlan->execution.theLastState;
 
     // Plan doesn't include a final shoot
-    if (tLastState == -1 || tLastAgent == -1) {
+     if (tLastState == -1 || tLastAgent == -1) {
         if (isAllTasksDone()) {
             ROS_INFO("MAHIS: all task");
 
@@ -1131,6 +1131,12 @@ bool CPlayOff::isPlanFaild() {
         ROS_INFO("MAHIS: Faild By Time Over");
         //        masterPlan->common.addHistory(); // Not Changeing History
         return true;
+
+    //}
+// else if (isBallPushed()) {
+        // change passer agent
+  //      return true;
+
     } else if (isBallDirChanged()) {
         DBUG("Faild By Ball Dir Changed", D_MAHI);
         ROS_INFO("MAHIS: Faild By Ball Dir Changed");
@@ -1169,6 +1175,54 @@ bool CPlayOff::isAllTasksDone() {
     }
 
     return true;
+}
+
+bool CPlayOff::isBallPushed() {
+    CRolePlayOff *currPasser;
+    bool passerFound = false;
+    int index = 0;
+    for (auto ag: roleAgent) {
+        if (ag->getSelectedSkill() == RoleSkill::Kick && ag->getAgent()->pos().dist(wm->ball->pos) < 0.17) {
+            currPasser = ag;
+            passerFound = true;
+            break;
+        }
+    }
+
+    if (passerFound) {
+        if (lastBallPos.dist(wm->ball->pos) > 0.05
+            && wm->ball->pos.dist(currPasser->getAgent()->pos()) < 0.13) {
+            ROS_ERROR_STREAM("agent " << currPasser->getAgent()->id() << " PUSHED  THE BALL");
+
+            // switch passer
+            double second_min_dist = 100;
+            CRolePlayOff *secondary_passer;
+
+            for (auto ag: roleAgent) {
+                if (ag->getAgent() != NULL) {
+                    if (ag->getAgent()->id() != currPasser->getAgent()->id()) {
+                        double temp = ag->getAgent()->pos().dist(wm->ball->pos);
+                        if (temp < second_min_dist) {
+                            second_min_dist = temp;
+                            secondary_passer = ag;
+                        }
+                    }
+                }
+            }
+
+            if (second_min_dist < 100) {
+                ROS_ERROR_STREAM("agent " << secondary_passer->getAgent()->id() << " will be replaced i guess :/");
+                Agent *curr = currPasser->getAgent();
+                currPasser->setAgent(secondary_passer->getAgent());
+                secondary_passer->setAgent(curr);
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 bool CPlayOff::isTimeOver() {
@@ -1285,6 +1339,7 @@ Vector2D CPlayOff::getEmptyTarget(Vector2D _position, double _radius) {
 void CPlayOff::passManager() {
     // TODO : FOR MORE THAN ONE PASS
 
+
     const AgentPoint& p = masterPlan->execution.passer;
     const AgentPoint& r = masterPlan->execution.reciver;
 
@@ -1298,7 +1353,6 @@ void CPlayOff::passManager() {
         doPass = positionAgent[r.id].getAbsArgs(r.state).staticPos.dist(c -> pos()) <= masterPlan->common.lastDist;
         doAfterlife = positionAgent[r.id].getAbsArgs(r.state).staticPos.dist(c -> pos()) <= masterPlan->common.lastDist;
         roleAgent[p.id]->setDoPass(doPass);
-
     }
 }
 
@@ -1470,7 +1524,8 @@ void CPlayOff::assignPass(CRolePlayOff* _roleAgent, const SPositioningAgent& _po
         //_roleAgent->setKickRealSpeed(static_cast <double> (_posAgent.getArgs().rightData)/200);
         DBUG(QString("VALUE : %1").arg(static_cast <double>(_posAgent.getArgs().rightData) / 200), D_MAHI);
     } else {
-        _roleAgent->setKickSpeed(static_cast<int>(_posAgent.getArgs().leftData));
+
+        _roleAgent->setKickSpeed(static_cast<int>(_posAgent.getArgs().leftData)/100);
         //        _roleAgent->setKickRealSpeed(static_cast <double> (_posAgent.getArgs().leftData)/100);
 
     }
@@ -1767,13 +1822,11 @@ bool CPlayOff::isPathClear(Vector2D _pos1,
 void CPlayOff::assignTasks() {
     int &sym = masterPlan->execution.symmetry;
     for (size_t i = 0; i < masterPlan->common.currentSize; i++) {
-        ROS_INFO_STREAM("-------------------DEBUGGING " << masterPlan->common.currentSize
-                        << " : " << masterPlan->execution.AgentPlan[i].size());
+
         positionAgent[i].positionArg.clear();
 
         Q_FOREACH (playOffRobot agentPlan, masterPlan->execution.AgentPlan[i]) {
             SPositioningArg tempPosArg;
-            ROS_INFO_STREAM("agentPlan.pos " << agentPlan.pos);
             tempPosArg.staticPos = agentPlan.pos;
             tempPosArg.staticAng = Vector2D::polar2vector(1, agentPlan.angle);
             tempPosArg.staticAng.assign(tempPosArg.staticAng.x, -1 * sym * tempPosArg.staticAng.y);
@@ -1942,7 +1995,7 @@ EMode CPlayOff::getMasterMode() {
 */
 bool CPlayOff::isKickDone(CRolePlayOff * _roleAgent) {
 
-    if (Circle2D(_roleAgent->getAgent()->pos(), 0.4).contains(wm->ball->pos)) {
+    if (Circle2D(_roleAgent->getAgent()->pos(), 0.2).contains(wm->ball->pos)) {
         _roleAgent->setBallIsNear(true);
     } else if (!Circle2D(_roleAgent->getAgent()->pos(), 0.6).contains(wm->ball->pos)
                && _roleAgent->getBallIsNear()) {
@@ -1954,16 +2007,23 @@ bool CPlayOff::isKickDone(CRolePlayOff * _roleAgent) {
             /** Ball gonna touch the target point **/
 
             // check ball speed
-            if (wm->ball->vel.length() / (_roleAgent->getAgent()->pos().dist(_roleAgent->getTarget())) > 1 || true) {
-                DBUG("[playoff] speed is enough", D_MAHI);
-                // check ball direction
-                Vector2D sol1, sol2;
-                if (Circle2D(_roleAgent->getTarget(), 0.5).intersection(Ray2D(wm->ball->pos, wm->ball->pos + wm->ball->vel), &sol1, &sol2)) {
-                    DBUG("[playoff] direction is correct", D_MAHI);
-                    DBUG("[playoff] kick is Done", D_MAHI);
-                    return true;
-                }
-            }
+//            if (wm->ball->vel.length() / (_roleAgent->getAgent()->pos().dist(_roleAgent->getTarget())) > 1 || true) {
+//            DBUG("[playoff] speed is enough", D_MAHI);
+
+            // check ball direction
+//            Vector2D sol1, sol2;
+
+//                ((wm->ball->pos - _roleAgent->getAgent()->pos()) - (lastBallPos - _roleAgent->getAgent()->pos())).length() > 0.15
+//            if (true || wm->ball->vel.angleWith(_roleAgent->getAgent()->dir()).RAD2DEG < 40 /*&& wm->ball->vel.length() > 0.2*/
+//                Circle2D(_roleAgent->getTarget(), 0.5).intersection(
+//                        Ray2D(wm->ball->pos, wm->ball->pos + wm->ball->vel), &sol1, &sol2)
+//                    ) {
+//                DBUG("[playoff] direction is correct", D_MAHI);
+            DBUG("[playoff] kick is Done", D_MAHI);
+            return true;
+
+//            }
+//            }
         }
     }
     return false;

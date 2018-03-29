@@ -66,6 +66,6 @@
     <rqt_gui plugin="${prefix}/plugin3.xml"/>
     <rqt_gui plugin="${prefix}/mode_plugin.xml"/>
     <rqt_gui plugin="${prefix}/playoff_plugin.xml"/>
-    <rqt_gui plugin="${prefix}/blackboard_plugin.xml"/>
+    <rqt_gui plugin="${prefix}/task_runner_plugin.xml"/>
   </export>
 </package>

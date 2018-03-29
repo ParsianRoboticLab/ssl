@@ -102,6 +102,14 @@ void CPlanner::runPlanner() {
         return;
     }
 
+    if (obst.check(Rgoal,goal)) {
+        result.clear();
+        Rresult.clear();
+        averageDir.assign(0, 0);
+        return;
+    }
+
+
     state *nearestToGoal = nullptr , *nearest = nullptr;
     Vector2D target;
     state *RnearestToGoal = nullptr , *Rnearest = nullptr;
@@ -269,10 +277,6 @@ void CPlanner::runPlanner() {
 
     resultModified.clear();
     RresultModified.clear();
-
-    for (int i = static_cast<int>(result.size() - 1); i > 0 ; i --) {
-        //draw(Segment2D(result[i],result[i-1]),QColor(Qt::red));
-    }
     //////////////////////////////////////////////////path smoothing
     if (temp.size() > 1) {
         resultModified.push_back(std::move(temp.back()));
@@ -308,25 +312,25 @@ void CPlanner::runPlanner() {
     reverse(RresultModified.begin() , RresultModified.end());
 
     // miangin vazn dar, az direction harkat
-    Vector2D newDir;
-    if (resultModified.size() > 1) {
-        newDir = (resultModified[1] - resultModified[0]).norm();
-    } else {
-        newDir = (goal - Rgoal).norm();
-    }
-    int cntcnt = 8;
-    int vd = 1;
-    if (dirs.count() > cntcnt - 1) {
-        averageDir = (averageDir * (cntcnt + (vd - 1)) - dirs.at(0) - (vd - 1) * dirs.last() + vd * newDir) / (cntcnt + (vd - 1));
-        dirs.pop_front();
-    } else {
-        if (dirs.count()) {
-            averageDir = (averageDir * (dirs.count() + (vd - 1)) - (vd - 1) * dirs.last() + vd * newDir) / (dirs.count() + vd);
-        } else {
-            averageDir = newDir;
-        }
-    }
-    dirs.push_back(newDir);
+//    Vector2D newDir;
+//    if (resultModified.size() > 1) {
+//        newDir = (resultModified[1] - resultModified[0]).norm();
+//    } else {
+//        newDir = (goal - Rgoal).norm();
+//    }
+//    int cntcnt = 8;
+//    int vd = 1;
+//    if (dirs.count() > cntcnt - 1) {
+//        averageDir = (averageDir * (cntcnt + (vd - 1)) - dirs.at(0) - (vd - 1) * dirs.last() + vd * newDir) / (cntcnt + (vd - 1));
+//        dirs.pop_front();
+//    } else {
+//        if (dirs.count()) {
+//            averageDir = (averageDir * (dirs.count() + (vd - 1)) - (vd - 1) * dirs.last() + vd * newDir) / (dirs.count() + vd);
+//        } else {
+//            averageDir = newDir;
+//        }
+//    }
+//    dirs.push_back(newDir);
 
     if (conf->Draw_Path) {
         for (int j = 1; j < resultModified.size(); j++) {
@@ -336,7 +340,7 @@ void CPlanner::runPlanner() {
                              static_cast<int>(255 / (resultModified.size() / (double) j))));
             drawer->draw(result[j]);
         }
-        Draw();
+        //Draw();
         obst.draw();
     }
 
@@ -345,10 +349,10 @@ void CPlanner::runPlanner() {
 void CPlanner::Draw() {
 
 
-    for (int i = 0 ; i < nodes.size() ; i++)
-        if (nodes.allNodes[i]->parent) {
-            drawer->draw(Segment2D(nodes.allNodes[i]->pos , nodes.allNodes[i]->parent->pos) , "white");
-        }
+//    for (int i = 0 ; i < nodes.size() ; i++)
+//        if (nodes.allNodes[i]->parent) {
+//            drawer->draw(Segment2D(nodes.allNodes[i]->pos , nodes.allNodes[i]->parent->pos) , "white");
+//        }
 
     for (int i = 0 ; i < Rnodes.size() ; i++)
         if (Rnodes.allNodes[i]->parent) {
@@ -451,38 +455,44 @@ void CPlanner::initPathPlanner(Vector2D _goal, const QList<int>& _ourRelaxList, 
 }
 
 double CPlanner::timeEstimator(Vector2D _pos, Vector2D _vel, Vector2D _dir, Vector2D posT) {
+
     double _x3;
-    double acc;
+    double acc = conf->AccMaxForward;
     double dec = conf->DecMax;
     double xSat;
-    double veltan = (_vel.x) * cos(_dir.th().radian()) + (_vel.y) * sin(_dir.th().radian());
-    double offset = 0.15;
-    double velnorm = -1 * (_vel.x) * sin(_dir.th().radian()) + (_vel.y) * cos(_dir.th().radian());
+    Vector2D tAgentVel = _vel;
+    Vector2D tAgentDir = _dir;
+    double veltan = (tAgentVel.x) * cos(tAgentDir.th().radian()) + (tAgentVel.y) * sin(tAgentDir.th().radian());
+    double offset = 0;
+    double velnorm = -1 * (tAgentVel.x) * sin(tAgentDir.th().radian()) + (tAgentVel.y) * cos(tAgentDir.th().radian());
+    double distCoef = 1, distEffect = 1, angCoef = 0.003;
+    double dist = 0;
+    double rrtAngSum = 0;
+    QList <Vector2D> _result;
+    Vector2D _target;
 
-    if (_vel.length() < 0.2) {
-        acc = (conf->AccMaxForward + conf->AccMaxNormal) / 2;
+    double tAgentVelTanjent =  tAgentVel.length() * cos(Vector2D::angleBetween(posT - _pos , _vel.norm()).radian());
+    double vXvirtual = (posT - _pos).x;
+    double vYvirtual = (posT - _pos).y;
+    double veltanV = (vXvirtual) * cos(tAgentDir.th().radian()) + (vYvirtual) * sin(tAgentDir.th().radian());
+    double velnormV = -1 * (vXvirtual) * sin(tAgentDir.th().radian()) + (vYvirtual) * cos(tAgentDir.th().radian());
+    double accCoef = 1, realAcc = 4;
+
+    accCoef = atan(fabs(veltanV) / fabs(velnormV)) / _PI * 2;
+    acc = accCoef * conf->AccMaxForward + (1 - accCoef) * conf->AccMaxNormal;
+
+    double tDec = conf->VelMax / dec;
+    double tAcc = (conf->VelMax - tAgentVelTanjent) / acc;
+    dist = posT.dist(_pos);
+    double dB = tDec * conf->VelMax / 2 + tAcc * (conf->VelMax + tAgentVelTanjent) / 2;
+
+    if (dist > dB) {
+        return tAcc + tDec + (dist - dB) / conf->VelMax;
     } else {
-        acc =  conf->AccMaxForward * (fabs(veltan) / _vel.length()) + conf->AccMaxNormal * (fabs(velnorm) / _vel.length());
+        return ((1 / dec) + (1 / acc)) * sqrt(dist * (2 * dec * acc / (acc + dec)) + (tAgentVelTanjent * tAgentVelTanjent / (2 * acc))) - (tAgentVelTanjent) / acc;
     }
 
-    double vMaxReal = sqrt(((_pos.dist(posT)  + (_vel.length() * _vel.length() / 2 * acc)) * 2 * acc * dec) / (acc + dec));
-    vMaxReal = min(vMaxReal, 4);
-    double vMax = conf->VelMax;
-    vMax = min(vMax, vMaxReal);
-    xSat = ((vMax * vMax) - (_vel.length() * _vel.length())) / acc + (vMax * vMax) / dec;
-    _x3 = (-1 * _vel.length() * _vel.length()) / (-2 * fabs(conf->DecMax)) ;
 
-    if (_pos.dist(posT) < _x3) {
-        return std::max(0.0, (_vel.length() / conf->DecMax - offset));
-    } else if (_vel.length() < (vMax)) {
-        if (_pos.dist(posT) < xSat) {
-            return std::max(0.0, (-1 * offset + vMax / dec + (vMax - _vel.length()) / acc + (_pos.dist(posT) - ((vMax * vMax / (2 * dec)) + ((vMax + _vel.length()) * (vMax - _vel.length()) / acc)) / 2) / vMax));
-        } else {
-            return std::max(0.0, (vMax / dec + (vMax - _vel.length()) / acc - offset));
-        }
-    } else {
-        return std::max(0.0, (vMax / dec + (_pos.dist(posT) - ((vMax * vMax / (2 * dec)))) / vMax - offset));
-    }
 
 }
 
@@ -493,8 +503,8 @@ void CPlanner::createObstacleProb(CObstacles &obs, Vector2D _pos, Vector2D _vel,
     double timeForObs = 0;
     ///TODO: should read from vartypes
     double maxA = 4;
-    double maxObstRad = 1;
-    double maxTime = 0.5;
+    double maxObstRad = 0.4;
+    double maxTime = 0.2;
     if (_vel.length() < 0.2) {
         _center = _pos;
         _rad = Robot::robot_radius_new;
@@ -506,7 +516,7 @@ void CPlanner::createObstacleProb(CObstacles &obs, Vector2D _pos, Vector2D _vel,
             timeForObs *= agentPos.dist(intersectPoint) / agentPos.dist(agentGoal);
             timeForObs *= 1;
             timeForObs  = min(maxTime, timeForObs);
-            for (double i = 0; i < maxTime ; i += 0.05) {
+            for (double i = 0; i < maxTime ; i += 0.1) {
 
                 timeForObs += i;
                 _center = _pos + _vel * timeForObs;
@@ -544,11 +554,11 @@ void CPlanner::generateObstacleSpace(CObstacles &obs, QList<int> &ourRelaxList, 
     agentPath.assign(agentPos, agentGoal);
     Vector2D _center , dummy1, dummy2;
     double rad = 0;
-
+    //TODO : command vel bug :!!
     ROS_INFO_STREAM("OUR" << wm->our.activeAgentsCount());
     for (int j = 0; j < wm->our.activeAgentsCount(); j++) {
         if ((ourRelaxList.contains(wm->our.active(j)->id) == false) && (ID != wm->our.active(j)->id)) {
-
+            drawer->draw(wm->our.active(j)->vel);
             createObstacleProb(obs, wm->our.active(j)->pos, wm->our.active(j)->vel, Vector2D(0, 0), _center, rad, agentPos, agentVel, agentGoal, Vector2D(1, 1));
             obs.add_circle(wm->our.active(j)->pos.x , wm->our.active(j)->pos.y , 0.17 , 0 , 0);
 

@@ -30,7 +30,7 @@
 #define _PENALTY_WIDTH          2.400
 #define _GOAL_RAD               1.200
 #define _STADIUM_WIDTH   13.80
-#define _STADIUM_HEIGHT  10.40
+#define _STADIUM_HEIGHT  10.4
 
 
 
@@ -70,6 +70,7 @@ namespace rqt_parsian_gui
         void resizeGL(int width, int height);
         QPainter painter;
         void mousePressEvent(QMouseEvent *event);
+
 
 
         void wheelEvent(QWheelEvent *event);

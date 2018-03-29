@@ -978,44 +978,44 @@ void CCoach::initPlayOffMode(const NGameOff::EMode _mode,
                              const POMODE _gameMode,
                              const QList<int>& _ourplayers) {
     switch (_mode) {
-    case NGameOff::StaticPlay:
-        ROS_INFO("HSHM: initPlayOffMode: initStaticPlay");
-        initStaticPlay(_gameMode, _ourplayers);
-        break;
-    case NGameOff::DynamicPlay:
-        ROS_INFO("HSHM: initPlayOffMode: initDynamicPlay");
-        initDynamicPlay(_ourplayers);
-        break;
-    case NGameOff::FastPlay:
-        ROS_INFO("HSHM: initPlayOffMode: initFastPlay");
-        initFastPlay(_ourplayers);
-        break;
-    case NGameOff::FirstPlay:
-        ROS_INFO("HSHM: initPlayOffMode: initFirstPlay");
-        initFirstPlay(_ourplayers);
-        break;
-    default:
-        ROS_INFO("HSHM: initPlayOffMode: initStaticPlay");
-        initStaticPlay(_gameMode, _ourplayers);
+        case NGameOff::StaticPlay:
+            ROS_INFO("HSHM: initPlayOffMode: initStaticPlay");
+            initStaticPlay(_gameMode, _ourplayers);
+            break;
+        case NGameOff::DynamicPlay:
+            ROS_INFO("HSHM: initPlayOffMode: initDynamicPlay");
+            initDynamicPlay(_ourplayers);
+            break;
+        case NGameOff::FastPlay:
+            ROS_INFO("HSHM: initPlayOffMode: initFastPlay");
+            initFastPlay(_ourplayers);
+            break;
+        case NGameOff::FirstPlay:
+            ROS_INFO("HSHM: initPlayOffMode: initFirstPlay");
+            initFirstPlay(_ourplayers);
+            break;
+        default:
+            ROS_INFO("HSHM: initPlayOffMode: initStaticPlay");
+            initStaticPlay(_gameMode, _ourplayers);
     }
 }
 
 void CCoach::setPlayOff(NGameOff::EMode _mode) {
     switch (_mode) {
-    case NGameOff::StaticPlay:
-        setStaticPlay();
-        break;
-    case NGameOff::DynamicPlay:
-        setDynamicPlay();
-        break;
-    case NGameOff::FastPlay:
-        setFastPlay();
-        break;
-    case NGameOff::FirstPlay:
-        setFirstPlay();
-        break;
-    default:
-        setStaticPlay();
+        case NGameOff::StaticPlay:
+            setStaticPlay();
+            break;
+        case NGameOff::DynamicPlay:
+            setDynamicPlay();
+            break;
+        case NGameOff::FastPlay:
+            setFastPlay();
+            break;
+        case NGameOff::FirstPlay:
+            setFirstPlay();
+            break;
+        default:
+            setStaticPlay();
     }
 }
 
@@ -1317,7 +1317,7 @@ void CCoach::decideStart(QList<int> &_ourPlayers) {
 }
 
 void CCoach::decideOurBallPlacement(QList<int> &_ourPlayers) {
-       selectedPlay = ourBallPlacement;
+    selectedPlay = ourBallPlacement;
 }
 
 void CCoach::decideTheirBallPlacement(QList<int> &_ourPlayers) {
@@ -1341,8 +1341,8 @@ void CCoach::decideNull(QList<int> &_ourPlayers) {
 ///HMD
 bool CCoach::checkOverdef() {
     if ((Vector2D::angleOf(wm->ball->pos, wm->field->ourGoal(), wm->field->ourCornerL()).abs() < 20 + overDefThr
-            || Vector2D::angleOf(wm->ball->pos, wm->field->ourGoal(), wm->field->ourCornerR()).abs() < 20 + overDefThr)
-            && !Circle2D((wm->field->ourGoal() - Vector2D(0.2, 0)), 1.60).contains(wm->ball->pos)) {
+         || Vector2D::angleOf(wm->ball->pos, wm->field->ourGoal(), wm->field->ourCornerR()).abs() < 20 + overDefThr)
+        && !Circle2D((wm->field->ourGoal() - Vector2D(0.2, 0)), 1.60).contains(wm->ball->pos)) {
         overDefThr = 5;
         return true;
     }
@@ -1357,7 +1357,7 @@ void CCoach::checkSensorShootFault() {
         if (ourPlayers.contains(i) != nullptr) {
             Agent* tempAgent = agents[i];
             if (tempAgent->shootSensor
-                    &&  wm->ball->pos.dist(tempAgent->pos() + tempAgent->dir().norm() * 0.08) > 0.2) {
+                &&  wm->ball->pos.dist(tempAgent->pos() + tempAgent->dir().norm() * 0.08) > 0.2) {
                 faultDetectionCounter[i]++;
 
             } else {
@@ -1577,27 +1577,48 @@ POffSkills CCoach::strToEnum(const std::string& _str) {
 
 void CCoach::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplayers) {
     MWBM matcher;
-    matcher.create(_plan->common.currentSize, _ourplayers.size());
+    matcher.create(_plan->common.currentSize-1, _ourplayers.size()-1);
 
-    for (int i = 0; i < _plan->common.currentSize; i++) {
+    int matchedID=-1;
+    double weight=0;
+    double minweight=100;
+
+    if(_plan->common.currentSize>2) {
         for (int j = 0; j < _ourplayers.size(); j++) {
 
-            double weight;
-            if (_plan->matching.initPos.agents.at(i).x == -100) {
-                weight = agents[_ourplayers.at(j)]->pos().dist(wm->ball->pos);
-            } else {
-                weight = _plan->matching.initPos.agents.at(i).dist(agents[_ourplayers.at(j)]->pos());
+            weight = agents[_ourplayers.at(j)]->pos().dist(wm->ball->pos);
+            if(weight < minweight) {
+                minweight = weight;
+                matchedID = j;
             }
-            matcher.setWeight(i, j, -(weight));
         }
-    }
-    qDebug() << "[Coach] matched plan with : " << matcher.findMatching();
-    for (size_t i = 0; i < _plan->common.currentSize; i++) {
-        int matchedID = matcher.getMatch(i);
-        _plan->common.matchedID.insert(i, _ourplayers.at(matchedID));
+        ROS_INFO_STREAM("nanapasser:"<<_ourplayers.at(matchedID)<<"__"<<matchedID);
+        if(matchedID!=-1) {
+            _plan->common.matchedID.insert(0, _ourplayers.at(matchedID));
+        }
+        for (int i = 1; i < _plan->common.currentSize; i++) {
+            for (int j = 0; j < _ourplayers.size(); j++) {
+                if (j != matchedID) {
+                double weight;
+                weight = _plan->matching.initPos.agents.at(i).dist(agents[_ourplayers.at(j)]->pos());
+                matcher.setWeight(i-1, j, -(weight));
+                    ROS_INFO_STREAM("nanaa:"<<j);
 
+            }
+            }
+        }
+        int nmatchedID=-1;
+        qDebug() << "[Coach] matched plan with : " << matcher.findMatching();
+        for (size_t i = 1; i < _plan->common.currentSize; i++) {
+            nmatchedID = matcher.getMatch(i-1);
+            if(nmatchedID>=matchedID)
+                nmatchedID++;
+            _plan->common.matchedID.insert(i, _ourplayers.at(nmatchedID));
+            ROS_INFO_STREAM("nana:"<<_ourplayers.at(nmatchedID)<<"__"<<i<<"__"<<nmatchedID);
+
+        }
+        qDebug() << "[Coach] matched by" << _plan->common.matchedID;
     }
-    qDebug() << "[Coach] matched by" << _plan->common.matchedID;
 }
 
 
@@ -1640,29 +1661,29 @@ void CCoach::sendBehaviorStatus() {
 parsian_msgs::parsian_ai_statusPtr CCoach::fillAIStatus()
 {
 
-        parsian_msgs::parsian_ai_statusPtr ai_status{new parsian_msgs::parsian_ai_status};
-        ai_status->GK = preferedGoalieID;
-        ai_status->playmake_id = playmakeId;
-        ai_status->supporter_id = supporterId;
+    parsian_msgs::parsian_ai_statusPtr ai_status{new parsian_msgs::parsian_ai_status};
+    ai_status->GK = preferedGoalieID;
+    ai_status->playmake_id = playmakeId;
+    ai_status->supporter_id = supporterId;
 
-        int _max{conf.numberOfDefenseEval > 0 ? preferedDefenseCounts + conf.numberOfDefenseEval : preferedDefenseCounts},
+    int _max{conf.numberOfDefenseEval > 0 ? preferedDefenseCounts + conf.numberOfDefenseEval : preferedDefenseCounts},
             _min{conf.numberOfDefenseEval <= 0 ? preferedDefenseCounts + conf.numberOfDefenseEval : preferedDefenseCounts};
 
 
-        for (int i {_min}; i < _max+ 1; i++)
-        {            
-            parsian_msgs::parsian_pair_roles prs;
-            ai_status->states.push_back(prs);
-            for (int j = 0; j < i; j++)
-            {
-                parsian_msgs::parsian_pair_role pr;
-                pr.id = defenseMatched[0][i][j].first;
-                pr.task = defenseMatched[0][i][j].second;
-                pr.role = parsian_msgs::parsian_pair_role::DEFENSE;
-                ai_status->states[i - _min].roles.push_back(pr);
-            }
+    for (int i {_min}; i < _max+ 1; i++)
+    {
+        parsian_msgs::parsian_pair_roles prs;
+        ai_status->states.push_back(prs);
+        for (int j = 0; j < i; j++)
+        {
+            parsian_msgs::parsian_pair_role pr;
+            pr.id = defenseMatched[0][i][j].first;
+            pr.task = defenseMatched[0][i][j].second;
+            pr.role = parsian_msgs::parsian_pair_role::DEFENSE;
+            ai_status->states[i - _min].roles.push_back(pr);
         }
-        return ai_status;
+    }
+    return ai_status;
 }
 
 void CCoach::findDefneders(const int& max_number, const int& min_number) {

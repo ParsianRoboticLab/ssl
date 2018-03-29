@@ -151,9 +151,9 @@ void Robot::newPredict(qint64 time, bool updateFuture, bool permanentUpdate, boo
     kalman->u(2) = 0;
     //TODO : must know is it simulator or not
     if (/*(!knowledge->isSimulMode) &&*/ applyCommand) {
-        kalman->u(3) = accel_s ;
-        kalman->u(4) =  accel_f;
-        kalman->u(5) = a_w * timeDiff;
+        kalman->u(3) = 0;//accel_s ;
+        kalman->u(4) = 0;//  accel_f;
+        kalman->u(5) = 0;//a_w * timeDiff;
     }
 
     // update covariance jacobian
@@ -268,12 +268,12 @@ void Robot::filter(int vanished) {
     ANGULAR_DIRECTION = observation->dir.th().degree();
     double kalmanDelayTime = 0.05;
 
-    if (inOurTeam) {
+    if (0 && inOurTeam) {
         if (vanished <= 0) {
 
 
             int nStep = kalmanDelayTime / 0.016;
-            while(lastCommands.count() > nStep) {
+            while(lastCommands.count() > nStep-1) {
                 lastCommands.removeAt(lastCommands.count() - 1);
             }
             ROS_INFO_STREAM("tedade ina : "<< lastCommands.count());

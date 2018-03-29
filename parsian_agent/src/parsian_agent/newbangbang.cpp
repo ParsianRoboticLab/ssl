@@ -81,7 +81,7 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
             angPid->kp = 1;
         }
     } else {
-        angPid->kp = 2;
+        angPid->kp = 4;
     }
     angPid->error = (dir2.th() -  agentDir.th()).radian();
 

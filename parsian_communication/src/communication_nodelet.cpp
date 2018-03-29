@@ -85,7 +85,7 @@ parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacket(const pa
             if (i == 1) {
                 robot_packet.packets[i] &= 0x0F;
             } else if (i == 8) {
-                robot_packet.packets[i] = 0x00;
+                robot_packet.packets[i] = 0x01;
             } else if (i != 11 && i != 0) {
                 robot_packet.packets[i] = 0;
             }
@@ -104,7 +104,7 @@ parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacketZero(cons
             if (i == 1) {
                 robot_packet.packets[i] &= 0x0F;
             } else if (i == 8) {
-                robot_packet.packets[i] = 0x01;
+                robot_packet.packets[i] = 0x00;
             } else if (i != 11 && i != 0) {
                 robot_packet.packets[i] = 0;
             }

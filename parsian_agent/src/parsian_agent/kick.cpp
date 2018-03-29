@@ -346,39 +346,23 @@ void CSkillKick::avoidOppPenalty() {
     Segment2D ballSeg;
     Segment2D ballPosSeg;
     Segment2D penaltyStraightLine;
-    penaltyStraightLine.assign(Vector2D(wm->field->_FIELD_WIDTH / 2 - wm->field->_FIELD_PENALTY_POINT - 0.1, 0.7), Vector2D(wm->field->_FIELD_WIDTH / 2 - wm->field->_FIELD_PENALTY_POINT - 0.1 , -0.7));
-    ballPosSeg.assign(wm->field->oppGoal(), wm->field->oppGoal() + tempVector.norm() * 2);
-    ballSeg.assign(ballPos, ballPos + wm->ball->vel.norm() * 10);
-    penaltyCircle.assign(wm->field->oppGoal() + Vector2D(0.15, 0), 1.4);
 
-    if (wm->ball->vel.length() > 0.5) {
-        penaltyCircle.intersection(ballSeg, &dummyPos1, &dummyPos);
-        if (!wm->field->isInField(dummyPos1)) {
-            penaltyCircle.intersection(ballPosSeg, &dummyPos1, &dummyPos);
-        }
+    Rect2D penalty = wm->field->oppPenaltyRect();
+    drawer->draw(penalty , QColor(Qt::red));
+    ballSeg.assign(wm->field->oppGoal(),wm->field->oppGoal() + (wm->ball->pos - wm->field->oppGoal()).norm()* 10);
 
+    if(wm->ball->vel.length() > 0.3 && !wm->field->isInOppPenaltyArea(wm->ball->getPosInFuture(1000))) {
+        ballSeg.assign(wm->ball->pos,wm->ball->pos + wm->ball->vel.norm()*10);
+    }
+    penalty.intersection(ballSeg,&dummyPos,&dummyPos1);
+    if(dummyPos == wm->field->oppGoal()) {
+        finalPos = dummyPos1 + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
     } else {
-        penaltyCircle.intersection(ballPosSeg, &dummyPos1, &dummyPos);
+        finalPos = dummyPos + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
     }
+    drawer->draw(finalPos , QColor(Qt::red));
 
-    if (wm->field->isInField(dummyPos1)) {
-        finalPos = dummyPos1;
-    }
-//    draw(finalPos);
-    if (ballPos.dist(agentPos) > 0.2) {
-        finalDirVec = target - agentPos;
-    }
-    gpa->setDivemode(false);
     gpa->setAvoidpenaltyarea(true);
-    gpa->setNoavoid(false);
-
-    //    if(!wm->field->isInOppPenaltyArea(finalPos + (wm->field->oppGoal() - finalPos).norm()*0.1))
-    //    {
-    //        if(penaltyStraightLine.intersection(ballPosSeg).isValid())
-    //        {
-    //            finalPos = penaltyStraightLine.intersection(ballPosSeg);
-    //        }
-    //    }
     gpa->init(finalPos, finalDirVec);
     gpa->execute();
 //    agent->setKick(kickSpeed); // TODO : Robot Command
@@ -620,7 +604,7 @@ void CSkillKick::jTurn() {
     if (wm->ball->vel.length() < 0.2) {
         posPid->kp = 0;
     }
-    speedPid->kp = 6 + 2.1 * agentPos.dist(ballPos) + dirReduce;
+    speedPid->kp = 6 + 4.1 * agentPos.dist(ballPos)*std::max(wm->ball->vel.length()*2,1.0) + dirReduce +max(wm->ball->vel.length()*2,0);
 
 
     if (!jTurnFromBack) {
@@ -867,7 +851,7 @@ void CSkillKick::findPosToGo() {
                 }
             }
 
-            if (posFound == false || /*intersectPos.dist(ballPos) > ballPath.nearestPoint(kickerPoint).dist(ballPos) ||*/ !wm->field->isInField(finalPos + addVec)) {
+            if (posFound == false  /*intersectPos.dist(ballPos) > ballPath.nearestPoint(kickerPoint).dist(ballPos) ||*/ /*!wm->field->isInField(finalPos + addVec)*/) {
                 finalPos = ballPath.nearestPoint(kickerPoint);
             }
 
@@ -897,7 +881,7 @@ void CSkillKick::findPosToGo() {
         //   drawer->draw(QString("agentT : %1").arg(agentTime) , Vector2D(1,-1));
         if ((ballPath.intersection(targetNormalSeg).isValid())  && (fabs(((ballPos - agentPos).th() - kickFinalDir).degree()) < 60)) {
             finalDir = target - agentPos;
-            finalPos = ballPos - (target - finalPos).norm() * 0.15;
+           // finalPos = ballPos - (target - finalPos).norm() * 0.15;
 
         }
 
@@ -928,7 +912,7 @@ void CSkillKick::findPosToGo() {
     drawer->draw(directPath);
     finalPosArea.assign(ballPos , 0.145);
 
-    if (finalPosArea.intersection(directPath, &s1, &s2)) {
+     if (!((ballPath.intersection(targetNormalSeg).isValid())  && (fabs(((ballPos - agentPos).th() - kickFinalDir).degree()) < 60) )&&(finalPosArea.intersection(directPath, &s1, &s2))) {
         finalPosArea.assign(ballPos , 0.245);
         finalPosArea.tangent(agentPos, &s1, &s2);
         if (s2.dist(target) >= s1.dist(target)) {
@@ -942,7 +926,9 @@ void CSkillKick::findPosToGo() {
     drawer->draw(finalPos);
 
     gpa->init(finalPos, finalDir);
-    gpa->setNoavoid(true);
+    gpa->setNoavoid(false);
+    gpa->setAvoidpenaltyarea(true);
+    gpa->setBallobstacleradius(0);
     gpa->setSlowmode(slow);
     gpa->setDivemode(false);
     gpa->setAvoidpenaltyarea(true);
@@ -996,6 +982,7 @@ void CSkillKick::findPosToGoAlt() {
 
 void CSkillKick::execute() {
 
+
     ballRealVel = wm->ball->vel.length();
     agentPos = agent->pos();
     kkDist = agentPos.dist(target);
@@ -1039,6 +1026,11 @@ void CSkillKick::execute() {
     }
 
 
+    if(kickerOn) {
+        agent->setRoller(spin);
+    } else {
+        agent->setRoller(0);
+    }
     if (dontKick) {
         agent->setKick(0);
         agent->setChip(0);

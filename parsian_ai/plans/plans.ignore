@@ -3,6 +3,7 @@
 /hello2.json
 # ignore all files and directories in /plans/sth:
 /sth/
+/old_plans/
 /another/sth
 /\w*/\w*MRL.*\.json
 /\w*MRL.*\.json

@@ -135,7 +135,7 @@ class Handler(FileSystemEventHandler):
                         print("empty: " + str(f) + " --> removed!")
                 else:
                     bad_files.append(f)
-                    print("not json: " + str(f) + " --> removed!")
+                    # print("not json: " + str(f) + " --> removed!")
 
         file_list2 = [f for f in file_list if f not in bad_files]
         # printfile_list2
@@ -229,6 +229,7 @@ class Handler(FileSystemEventHandler):
         if len(sublist) > 0:
             for plan in sublist:
                 if plan["isMaster"]:
+		    print(str(plan["filename"])+" is MASTER")
                     master_list.append(plan)
             if len(master_list) > 0:
                 active_list = master_list
@@ -241,6 +242,7 @@ class Handler(FileSystemEventHandler):
                 print ("There's No Active Plan!!!")
                 return
 
+	    print("#active_plans: "+str(len(active_list))+"\n")
             i = self.__shuffleCount % len(active_list)
             self.__shuffleCount += 1
             print ("\n" + active_list[i]["filename"].split("plans/")[1] + "  " + str(active_list[i]["planMode"]))
