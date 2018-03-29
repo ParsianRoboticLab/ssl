@@ -102,12 +102,12 @@ void CPlanner::runPlanner() {
         return;
     }
 
-    if (obst.check(Rgoal,goal)) {
-        result.clear();
-        Rresult.clear();
-        averageDir.assign(0, 0);
-        return;
-    }
+    //if (obst.check(Rgoal,goal)) {
+      //  result.clear();
+       // Rresult.clear();
+       // averageDir.assign(0, 0);
+    //    return;
+   // }
 
 
     state *nearestToGoal = nullptr , *nearest = nullptr;

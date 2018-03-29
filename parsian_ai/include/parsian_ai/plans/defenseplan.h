@@ -31,7 +31,7 @@ protected:
     Action* AHZSkills;
     CDefPos defPos;
     Vector2D pointForKick, oneToucherDir;    
-    Vector2D goalKeeperTarget, goalieDirection , defensePoints[12], defenseTargets[12];            
+    Vector2D goalKeeperTarget,lastTarget, goalieDirection , defensePoints[12], defenseTargets[12];
     void setPointToKick();
     void setGoalKeeperState();
     void setGoalKeeperTargetPoint();
@@ -254,6 +254,7 @@ private:
     double overDefThr;
     int decideNumOfMarksInPlayOff(int _defenseCount);
     bool FlagBesidePoles;
+    int f = 0;
 };
 
 #endif // DEFENSE_H

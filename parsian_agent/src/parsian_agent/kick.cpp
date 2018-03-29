@@ -826,7 +826,7 @@ void CSkillKick::findPosToGo() {
     Circle2D dribblerArea(agentPos + agentDir.norm() * 0.1, 0.25);
     Circle2D robotArea(agentPos, 1);
     gpa->setAddvel(Vector2D(0, 0));
-    kickerArea.assign(agentPos + agent->dir().norm() * 0.09 , 0.1);
+    kickerArea.assign(agentPos + agent->dir().norm() * 0.09 , 0.15);
     Segment2D kickerSeg(agentPos + agent->dir().norm() * 0.08 + agent->dir().rotate(90).norm() * 0.02 , agentPos + agent->dir().norm() * 0.08 - agent->dir().rotate(90).norm() * 0.02);
     Vector2D dummy;
     Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);

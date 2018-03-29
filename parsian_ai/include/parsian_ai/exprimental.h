@@ -35,7 +35,7 @@ public:
     GotopointavoidAction *mygpa;
     KickAction *myKick;
     KickAction *myKick2;
-
+    OnetouchAction *myOT;
     Exprimental(Agent** _agents) {
         agents = _agents;
         gpa = new GotopointavoidAction();
@@ -46,6 +46,7 @@ public:
         mygpa = new GotopointavoidAction();
         myKick = new KickAction;
         myKick2 = new KickAction;
+        myOT = new OnetouchAction;
     }
     ~Exprimental() {
 
@@ -111,6 +112,13 @@ public:
         ROS_INFO_STREAM("salam2");
         agents[5]->action = mygpa;
         agents[1]->action = myKick2;
+        myOT->setWaitpos(mousePos);
+        myOT->setKickspeed(800);
+        myOT->setFastestpoint(false);
+
+        myOT->setTarget(wm->field->oppGoal());
+        agents[0]->action = myOT;
+
     }
 private:
     int state;

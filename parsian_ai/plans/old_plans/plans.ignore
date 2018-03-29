@@ -1,0 +1,13 @@
+# use python regex; write your comments and data in seperate lines.
+/NewPlan.json
+/hello2.json
+# ignore all files and directories in /plans/sth:
+/sth/
+/old_plans/
+/another/sth
+/\w*/\w*MRL.*\.json
+/\w*MRL.*\.json
+/blabla/
+/mahi.json
+/2pass.json
+/hshm2.json

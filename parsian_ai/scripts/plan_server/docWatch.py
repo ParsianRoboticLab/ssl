@@ -66,6 +66,8 @@ class Handler(FileSystemEventHandler):
         self.__ignore = []
         self.__shuffleCount = 0
         self.__final_dict = []
+        self.__all_master_plans = {}
+        self.__all_active_plans = {}
 
         global final_list, shuffleCount, path
         path = p
@@ -229,8 +231,9 @@ class Handler(FileSystemEventHandler):
         if len(sublist) > 0:
             for plan in sublist:
                 if plan["isMaster"]:
-		    print(str(plan["filename"])+" is MASTER")
+                    print(str(plan["filename"])+" is MASTER")
                     master_list.append(plan)
+
             if len(master_list) > 0:
                 active_list = master_list
             else:
@@ -239,10 +242,10 @@ class Handler(FileSystemEventHandler):
                         active_list.append(plan)
 
             if len(active_list) == 0:
-                print ("There's No Active Plan!!!")
+                print ("[Plan Server] There's No Active Plan!!!")
                 return
 
-	    print("#active_plans: "+str(len(active_list))+"\n")
+            print("#active_plans: "+str(len(active_list))+"\n")
             i = self.__shuffleCount % len(active_list)
             self.__shuffleCount += 1
             print ("\n" + active_list[i]["filename"].split("plans/")[1] + "  " + str(active_list[i]["planMode"]))
@@ -329,12 +332,14 @@ class Handler(FileSystemEventHandler):
             plans_msg.append(self.gui_message_generator(plan))
         return plans_msg
 
-    def update_master_active(self, name_list, plan_index, is_master, is_active):
+    def update_master_active(self, name_list, plan_index_list, is_master, is_active):
         for plan in self.__final_dict:
             for i in range(0, len(name_list)):
-                if plan["filename"] == name_list[i] and plan["index"] == plan_index[i]:
+                if plan["filename"] == name_list[i] and plan["index"] == plan_index_list[i]:
                     plan["isMaster"] = is_master
                     plan["isActive"] = is_active
+                    self.__all_active_plans[(plan["filename"], plan_index_list[i])] = is_active
+                    self.__all_master_plans[(plan["filename"], plan_index_list[i])] = is_master
 
         for plan in self.__final_dict:
             print(plan["filename"] + ": " + "master: " + str(plan["isMaster"]) + " , " + "active: " + str(plan["isActive"]))
@@ -351,12 +356,22 @@ class Handler(FileSystemEventHandler):
                     dict1 = tmp["plans"][i]
                     dict1.update({"index": i})
                     dict1.update({"filename": str(plan)})
-                    dict1.update({"isMaster": False})
-                    dict1.update({"isActive": True})
                     dict1.update({"successRate": 0})
                     dict1.update({"planRepeat": 0})
                     dict1.update({"symmetry": False})
+
+                    if (dict1["filename"], dict1["index"]) in self.__all_active_plans:
+                        dict1.update({"isActive": self.__all_active_plans[dict1["filename"], dict1["index"]]})
+                    else:
+                        dict1.update({"isActive": True})
+
+                    if (dict1["filename"], dict1["index"]) in self.__all_master_plans:
+                        dict1.update({"isMaster": self.__all_master_plans[dict1["filename"], dict1["index"]]})
+                    else:
+                        dict1.update({"isMaster": False})
+
                     self.__final_dict.append(dict1)
+
         return self.__final_dict
 
     def gui_message_generator(self, plan_dict):

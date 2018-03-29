@@ -112,7 +112,7 @@ void CSkillKickOneTouch::execute() {
     Vector2D agentPos = agent->pos();
 
     Segment2D ballPath;
-    double stopParam = 0.08;
+    double stopParam = 0.09;
     ballPath.assign(ballPos, ballPos + wm->ball->vel.norm() * 15);
     Segment2D ballLine;
     ballLine.assign(ballPos, ballPos + wm->ball->vel.norm() * (15));
@@ -125,11 +125,12 @@ void CSkillKickOneTouch::execute() {
     drawer->draw(QString("vball :%1").arg(conf->Landa), Vector2D(0, 0));
     //drawer->draw(Segment2D(Vector2D(0,0), Vector2D(0,0)+oneTouchDir.norm()), QColor(Qt::red));
 
-    Vector2D addVec = (agentPos - target).norm() * stopParam;
     Vector2D intersectPos;
     Vector2D sol1, sol2;
-    double onetouchRad = 1.5;
+    double onetouchRad = 2;
     double onetouchKickRad = 0.5;
+
+    Vector2D addVec ;
     Circle2D oneTouchArea;
     Circle2D oppPenaltyArea(wm->field->oppGoal() + Vector2D(0.15, 0), 1.45);
     Circle2D oppPenaltyAreaWP(wm->field->oppGoal() + Vector2D(0.15, 0), 1.55);
@@ -150,7 +151,7 @@ void CSkillKickOneTouch::execute() {
         gotopointavoid->execute();
         agent->setRoller(0);
     } else if ((oneTouchArea.intersection(ballPath, &sol1, &sol2) != 0) && wm->ball->vel.length() > 0.1) {
-        gotopointavoid->setNoavoid(false);
+        gotopointavoid->setNoavoid(true);
         double agentTime = 0 ;
         drawer->draw(QString("agentT dif : %1").arg(kickerPoint.dist(wm->ball->getPosInFuture(0.5))) , Vector2D(2.5, -1));
         Vector2D dummy;
@@ -162,6 +163,7 @@ void CSkillKickOneTouch::execute() {
 
                 intersectPos = wm->ball->getPosInFuture(i);// - (target-wm->ball->getPosInFuture(i)).norm()*0.15;
                 QList <int> dummy;
+                (intersectPos - target).norm() * stopParam;
                 agentTime = CSkillGotoPointAvoid::timeNeeded(agent, intersectPos + addVec, conf->VelMax, dummy, dummy, false, 0, true);
 
 
@@ -188,10 +190,11 @@ void CSkillKickOneTouch::execute() {
             }
         }
 
+        Vector2D addVec = (intersectPos - target).norm() * stopParam;
 
         gotopointavoid->init(intersectPos + addVec, oneTouchDir);
         gotopointavoid->setNoavoid(true);
-        gotopointavoid->setOnetouchmode(false);
+        gotopointavoid->setOnetouchmode(true);
         gotopointavoid->execute();
         drawer->draw(intersectPos);
         if (agentPos.dist(ballPos) < 1) {
@@ -201,7 +204,7 @@ void CSkillKickOneTouch::execute() {
                 agent->setKick(kickSpeed);
             }
         }
-        agent->setRoller(3);
+        agent->setRoller(49);
     } else if (ballPos.dist(agentPos) < onetouchKickRad) {
         kick->setAgent(agent);
         kick->setTarget(target);

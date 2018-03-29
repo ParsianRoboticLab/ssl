@@ -43,7 +43,7 @@ void AINodelet::onInit() {
 
 }
 void AINodelet::mousePosCb(const parsian_msgs::vector2DConstPtr &_mousePos) {
-    mousePos.assign(_mousePos.get()->y ,_mousePos.get()->x );
+    mousePos.assign(_mousePos.get()->x ,_mousePos.get()->y );
 }
 void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf) {
     teamConfig = *_conf;
