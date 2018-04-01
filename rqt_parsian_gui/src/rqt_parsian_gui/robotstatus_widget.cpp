@@ -8,8 +8,6 @@
 namespace rqt_parsian_gui {
 RobotStatusWidget::RobotStatusWidget(int team_color) : QWidget() {
 
-    this->setFixedSize(400, 250);
-
     std::string s;
     s = ros::package::getPath("rqt_parsian_gui");
     QFile *file = new QFile((s + "/resource/style_sheet/check_box_fault.ssh").c_str());
@@ -47,14 +45,6 @@ RobotStatusWidget::RobotStatusWidget(int team_color) : QWidget() {
     robot_vel = new QGroupBox("Robot Vel", this);
     status = new QGroupBox("Status", this);
     faults = new QGroupBox("Faults", this);
-
-    battery->setFixedHeight(30);
-    data_loss->setFixedHeight(30);
-    cap_charge ->setFixedHeight(30);
-
-    robot_vel->setFixedSize(80, 120);
-    status->setFixedSize(120, 120);
-    faults->setFixedSize(120, 120);
 
     cap_charge->setFont(QFont("serif", 7));
     battery->setFont(QFont("serif", 7));
@@ -210,13 +200,14 @@ void RobotStatusWidget::setVel(const parsian_msgs::parsian_robot_command& msg) {
 
 }
 void RobotStatusWidget::draw_dir(double ang) {
-    agent_i = new QPixmap(QPixmap::fromImage(QImage(getFileName())));
+    agent_i.reset(new QPixmap(QPixmap::fromImage(QImage(getFileName()))));
     if(ang != -1000) {
-        agent_p = new QPainter(agent_i);
+        agent_p.reset(new QPainter(agent_i.get()));
         agent_p->drawLine(25, 25, static_cast<int>(25 * (1 + std::cos(ang))),
                           static_cast<int>(25 * (1 - std::sin(ang))));
 
-    }vel_dir->setPixmap(*agent_i);
+    }
+    vel_dir->setPixmap(*agent_i.get());
 }
 
 }

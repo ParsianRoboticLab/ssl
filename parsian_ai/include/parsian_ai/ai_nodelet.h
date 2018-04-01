@@ -29,12 +29,12 @@ class AINodelet : public nodelet::Nodelet {
 
 private:
     boost::shared_ptr<AI> ai;
-    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, behaviorSub, mousePosSub;
+    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, behaviorSub, mousePosSub,forceRefereeSub;
     ros::Publisher drawPub;
 
-        ros::Publisher *robTask;
-        ros::Publisher behaviorPub;
-        ros::Timer timer_;
+    ros::Publisher *robTask;
+    ros::Publisher behaviorPub;
+    ros::Timer timer_;
 
     ros::ServiceClient plan_client;
 
@@ -46,6 +46,7 @@ private:
 
     void worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm);
     void refereeCallBack(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref);
+    void forceRefereeCallBack(const parsian_msgs::ssl_refree_commandConstPtr & _command);
     void robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & _rs);
     void teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf);
     void behaviorCb(const parsian_msgs::parsian_behaviorConstPtr& _behavior);

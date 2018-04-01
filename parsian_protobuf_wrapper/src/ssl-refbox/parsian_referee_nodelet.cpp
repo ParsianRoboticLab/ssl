@@ -13,12 +13,12 @@ void RefreeNodelet::onInit() {
     ros::NodeHandle &nh = getNodeHandle();
     ros::NodeHandle& nh_private = getPrivateNodeHandle();
 
-    //ros::param::get("/team_color", teamColor);
-    timer = nh.createTimer(ros::Duration(.010), boost::bind(&RefreeNodelet::timerCb, this, _1));
-
+    team_config_sub = nh.subscribe<parsian_msgs::parsian_team_config>("/team_config", 1000, boost::bind(& RefreeNodelet::teamConfigCb, this, _1));
     ssl_referee_pub  = nh_private.advertise<parsian_msgs::ssl_refree_wrapper>("/referee", 1000);
 
-    team_config_sub = nh.subscribe<parsian_msgs::parsian_team_config>("/team_config", 1000, boost::bind(& RefreeNodelet::teamConfigCb, this, _1));
+    //ros::param::get("/team_color", teamColor);
+
+
 
     refBox = nullptr;
     networkConfig.port = 10003;
@@ -30,6 +30,7 @@ void RefreeNodelet::onInit() {
     dynamic_reconfigure::Server<protobuf_wrapper_config::refereeConfig>::CallbackType f;
     f = boost::bind(&RefreeNodelet::callback, this, _1, _2);
     server->setCallback(f);
+    timer = nh.createTimer(ros::Duration(.010), boost::bind(&RefreeNodelet::timerCb, this, _1));
 
 }
 

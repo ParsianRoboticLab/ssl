@@ -26,9 +26,10 @@ public:
     void updateWM(const parsian_msgs::parsian_world_modelConstPtr&);
     void updateRobotStatus(const parsian_msgs::parsian_robotConstPtr&);
     void updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr&);
+    void forceUpdateReferee(const parsian_msgs::ssl_refree_commandConstPtr & _command);
     CSoccer* getSoccer();
 
-    parsian_msgs::parsian_draw   getDraw() {
+    parsian_msgs::parsian_draw getDraw() {
         return drawer->draws;
     }
 

@@ -1069,7 +1069,7 @@ void CDynamicAttack::chooseReceiverAndBestPosForPass() {
 
 
         //        drawer->draw(Circle2D(searchCircleCenter, searchCircleRadius), QColor("orange"));
-//    }
+    }
 
 
 

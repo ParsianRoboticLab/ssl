@@ -89,7 +89,7 @@ public:
     bool ourTimeOut();
     bool theirTimeOut();
     bool timeOut();
-
+    void setReady(bool ready);
     States getState();
     void setState(const States& s, bool isReady = false);
 };

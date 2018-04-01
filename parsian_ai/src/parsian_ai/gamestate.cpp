@@ -254,3 +254,7 @@ bool GameState::ourTimeOut() {
 bool GameState::timeOut() {
     return theirTimeOut() || ourTimeOut();
 }
+
+void GameState::setReady(bool ready){
+    isReady = ready;
+}

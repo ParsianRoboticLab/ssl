@@ -45,7 +45,7 @@ void CBaseCommunicator::readData() {
     if (recDataFlow.size()) {
 
         for (int i = 0 ; i < recDataFlow.size() ; i++) {
-            if (recDataFlow[i] == static_cast<unsigned char>(0x99)) {
+            if (recDataFlow[i] == static_cast<char>(0x99)) {
 
                 if (i >= 12) {
 
@@ -172,10 +172,10 @@ void CCommunicator::packetCallBack(const parsian_msgs::parsian_packetsConstPtr &
     char test[100];
     for (const auto &robotPacket : _packet->value) {
         tempStr = new char[robotPacket.packets.size()];
-        for (int j = 0 ; j < robotPacket.packets.size() ; j++) {
+        for (unsigned int j = 0 ; j < robotPacket.packets.size() ; j++) {
             tempStr[j] = robotPacket.packets.at(j);
         }
-        sprintf(test, "packet :%lu", robotPacket.packets.size());
+        sprintf(test, "packet :%u", robotPacket.packets.size());
         ROS_INFO_STREAM(test);
         tempStr[0] = static_cast<char>(0x99);
 

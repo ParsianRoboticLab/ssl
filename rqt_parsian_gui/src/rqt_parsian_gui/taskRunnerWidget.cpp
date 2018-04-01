@@ -7,7 +7,6 @@ namespace rqt_parsian_gui
         task.reset(new parsian_msgs::parsian_robot_task());
         task->select = 255;
         client = new parsian_msgs::grsim_ball_replacement();
-        this->setFixedSize(300,200);
         gridLayout = new QGridLayout();
 
         toolButton = new QToolButton();
