@@ -28,9 +28,6 @@ public:
     void updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr&);
     CSoccer* getSoccer();
 
-    parsian_msgs::parsian_debugs getDebugs() {
-        return debugger->debugs;
-    }
     parsian_msgs::parsian_draw   getDraw() {
         return drawer->draws;
     }

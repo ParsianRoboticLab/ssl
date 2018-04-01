@@ -6,7 +6,6 @@ using namespace parsian_agent;
 void AgentNodelet::onInit() {
     ROS_INFO("%s oninit", getName().c_str());
 
-    debugger = new Debugger;
     drawer   = new Drawer;
     wm = new CWorldModel;
 
@@ -21,16 +20,15 @@ void AgentNodelet::onInit() {
     oneTouch = new CSkillKickOneTouch(agent.get());
     receivePass = new CSkillReceivePass(agent.get());
 
-    common_config_sub = nh.subscribe("/commonconfig/parameter_updates", 1000, &AgentNodelet::commonConfigCb, this);
-    world_model_sub   = nh.subscribe("world_model", 10000, &AgentNodelet::wmCb, this);
+    common_config_sub = nh.subscribe("/commonconfig/parameter_updates", 10, &AgentNodelet::commonConfigCb, this);
+    world_model_sub   = nh.subscribe("world_model", 10, &AgentNodelet::wmCb, this);
     robot_task_sub    = private_nh.subscribe("task", 10, &AgentNodelet::rtCb, this);
-    planner_sub       = nh.subscribe(QString("planner_%1/path").arg(agent->id()).toStdString(), 5, &AgentNodelet::plannerCb, this);
+    planner_sub       = nh.subscribe(QString("planner_%1/path").arg(agent->id()).toStdString(), 10, &AgentNodelet::plannerCb, this);
 
-    debug_pub = nh.advertise<parsian_msgs::parsian_debugs>("debugs", 1000);
     draw_pub  = nh.advertise<parsian_msgs::parsian_draw>("draws", 1000);
 
-    parsian_robot_command_pub = private_nh.advertise<parsian_msgs::parsian_robot_command>("command", 1000);
-    agent->planner_pub = private_nh.advertise<parsian_msgs::parsian_get_plan>("plan", 5);
+    parsian_robot_command_pub = private_nh.advertise<parsian_msgs::parsian_robot_command>("command", 10);
+    agent->planner_pub = private_nh.advertise<parsian_msgs::parsian_get_plan>("plan", 10);
 
     timer_ = nh.createTimer(ros::Duration(0.01), &AgentNodelet::timerCb, this);
     watchdog = 0;
@@ -63,14 +61,10 @@ void AgentNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
 }
 
 void AgentNodelet::timerCb(const ros::TimerEvent& event) {
-    if (debugger != nullptr) {
-        debug_pub.publish(debugger->debugs);
-    }
     if (drawer   != nullptr) {
         // ROS_INFO_STREAM("agent drawer"<<drawer);
         draw_pub.publish(drawer->draws);
         drawer->draws.texts.clear();
-
         drawer->draws.circles.clear();
         drawer->draws.segments.clear();
         drawer->draws.vectors.clear();
@@ -109,11 +103,12 @@ CSkill* AgentNodelet::getSkill(const parsian_msgs::parsian_robot_taskConstPtr &_
                     skillKick->setKickspeed(_task->kickTask.kickchargetime);
                 }
             }
-            else
+            if(_task->kickTask.chip)
             {
                 if (!_task->kickTask.iskickchargetime)
-                    skillKick->setKickspeed(agent->chipDistanceValue(_task->kickTask.kickSpeed,_task->kickTask.spin));
-                else {
+                    skillKick->setKickspeed(agent->chipDistanceValue(_task->kickTask.chipDist,_task->kickTask.spin));
+                if (_task->kickTask.iskickchargetime)
+                {
                     skillKick->setKickspeed(_task->kickTask.kickchargetime);
                 }
             }

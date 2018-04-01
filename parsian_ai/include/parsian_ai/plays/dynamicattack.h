@@ -2,29 +2,90 @@
 #define DYNAMICATTACK_H
 
 #include <parsian_ai/plays/masterplay.h>
+#include <ctime>
 
 //#define _MAX_REGION 7
 
+// NEW PASS ZONE
+#define KILL_ZONE 5
+#define _GOAL_STEP 35
+#define _GOAL_WIDTH 1.2
+#define ROBOT_RADIUS 0.0890
 
-struct SDynamicAgent {
 
-    void init(DynamicSkill _skill,
-              DynamicRegion _region) {
-        skill  = _skill;
-        region = _region;
+struct FieldRegion
+{
+    Rect2D rectangle;
+    QList<Vector2D> points;
+    int id;
+
+    FieldRegion(){};
+
+    FieldRegion(Rect2D r, QList<Vector2D> p)
+    {
+        rectangle = r;
+        for(auto& point : p)
+            points.push_back(point);
     }
-
-    DynamicSkill skill;
-    DynamicRegion region;
 };
+
+
+// END NEW PASS ZONE
+
+
+namespace AttackAgent{
+    struct SPositioningAgent {
+
+        void init(PositionSkill _skill,
+                  DynamicRegion _region) {
+            skill  = _skill;
+            region = _region;
+        }
+
+        PositionSkill skill;
+        DynamicRegion region;
+    };
+
+    struct SPlayMakeAgent {
+
+        void init(PlayMakeSkill _skill,
+                  DynamicRegion _region) {
+            skill  = _skill;
+            region = _region;
+        }
+
+        PlayMakeSkill skill;
+        DynamicRegion region;
+    };
+}
 
 struct SDynamicPlan {
     int agentSize;
     DynamicMode mode;
-    SDynamicAgent positionAgents[6];
-    SDynamicAgent playmake;
+    AttackAgent::SPositioningAgent positionAgents[_NUM_PLAYERS];
+    AttackAgent::SPlayMakeAgent playmake;
     Vector2D passPos;
     int passID;
+    void reset() {
+        agentSize = -1;
+        mode = DynamicMode::NoMode;
+        passID = -1;
+        passPos.invalidate();
+    }
+    void set(const int& _agentSize,
+             const DynamicMode& _mode,
+             const PlayMakeSkill& _pm,
+             const DynamicRegion& _pmreg,
+             const PositionSkill& _ps,
+             const DynamicRegion& _reg) {
+        agentSize = _agentSize;
+        mode = _mode;
+        for (auto& p : positionAgents) {p.region = _reg, p.skill = _ps;}
+        playmake.region = _pmreg; playmake.skill = _pm;
+        passPos.invalidate();
+        passID = -1;
+
+    }
 };
 
 
@@ -34,6 +95,30 @@ class CDynamicAttack : public CMasterPlay {
 
 public:
 
+    // NEW PASS ZONE
+    void chooseBestPositons_new();
+    void assignId_new();
+    void chooseBestPosForPass_new(QList<Vector2D> semiDynamicPosition);
+    void assignTasks_new();
+    bool getPMfromCaoch(){return PMfromCoach;};
+    int getReceiverID(){return receiver->id();};
+
+
+    void createRegions(); // splits the opp field into a grid of regions
+    Vector2D getBestPosToShootToGoal(Vector2D from, double &regionWidth, bool oppGaol );
+    bool isPathClear(Vector2D point, Vector2D from, double rad, bool considerRelaxedIDs);
+    Vector2D getEmptyPosOnPoints(Vector2D from, double &regionWidth, QList<Vector2D> points);
+    int getNearestOppToPoint(Vector2D point);
+    void clearRobotsRegionsWeights();
+    int getNearestRegionToRobot(Vector2D agentPos);
+
+    double calcReceiverDistanceFactor(Vector2D point, int passReceiverID, int region_id);
+    double calcSenderDistanceFactor(Vector2D passSenderPos, Vector2D point);
+    double caclClearPathFactor(Vector2D point, Vector2D passSenderPos, double robot_raduis_new);
+    double calcOneTouchAngleFactor(Vector2D point, Vector2D passSenderPos);
+    double calcWidenessFactor(Vector2D passSenderPos, Vector2D point);
+    void hamidDebug();
+    // END NEW PASS ZONE
 
     CDynamicAttack();
     ~CDynamicAttack() override;
@@ -50,12 +135,29 @@ public:
     void setPlayMake(Agent* _playMake);
     void setCritical(bool _critical);
     void setBallInOppJaw(bool _ballInOppJaw);
+    void choosePlan();
+    void swapPlaymakeInPass();
+    bool isInpass();
 
     SDynamicPlan currentPlan;
+    SDynamicPlan* nextPlanA;
+    SDynamicPlan* nextPlanB;
 
     Agent* getMahiPlayMaker();
 
 private:
+    // NEW PASS ZONE
+    FieldRegion regions[3][3];
+    QList<int> ourRelaxedIDs, oppRelaxedIDs;
+    double robotRegionsWeights[11][9];
+    Vector2D bestPointForRobotsInRegions[11][9];
+    QList<int> matchingIDs;
+    QList<int> matchingRegions;
+    QList<QPair<int, Vector2D>> optimalPositionsForRecivers;
+    int bestReceiver;
+    // END NEW PASS ZONE
+
+
     double thrshDribble = 0;
     bool lastPMInitWasDribble;
     Vector2D oppRob;
@@ -65,6 +167,7 @@ private:
     int guardSize;
     QTime positioningIntention;
     QTime dribbleIntention;
+    QTime playmakeIntention;
     double positioningIntentionInterval;
     bool shotInPass;
 
@@ -77,6 +180,12 @@ private:
     void assignId();
     void assignTasks();
     ///////////////////////30em 2015
+
+    bool evalmovefwd();
+    void swap(Segment2D *xp, Segment2D *yp);
+    void sortobstacles(QList<Segment2D> &obstacles);
+    double angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp);
+    double findmax(const QList<double> &list);
 
     //[RegionCount][RegionIndex]
     Rect2D* guards[7];
@@ -106,7 +215,7 @@ private:
     void assignLocations_6();
     bool isRightTimeToPass();
     int farGuardFromPoint(const int& _guardIndex, const Vector2D& _point);
-    void chooseBestPosForPass(QList<Vector2D>);
+    void chooseReceiverAndBestPosForPass();
     void chooseBestPositons();
     void chooseMarkPos();
     double getDynamicValue(const Vector2D& _dynamicPos) const;
@@ -128,12 +237,9 @@ private:
     void managePasser();
     bool isPlayMakeChanged();
 
-
-    void ballLocation();
-
     QString getString(const DynamicMode& _mode) const;
 
-    CRoleDynamic *roleAgents[5];
+    CRoleDynamic *roleAgents[8];
     CRoleDynamic *roleAgentPM;
 
     ////////Plan Making
@@ -149,30 +255,31 @@ private:
     QList<Vector2D> dynamicPosition;
     QList<int> regionsList;
     Agent* mahiPlayMaker;
-    int mahiAgentsID[5];
+    int mahiAgentsID[8];
     bool isBallInOurField;
 
     int playmakeID = -1;
     Agent* playmake;
 
-    Vector2D ballPos;
-    Vector2D ballVel;
-    Vector2D OppGoal;
-
     bool goToDynamic[5];
     int lastPlayMakerId;
 
-
     bool keepOrNot();
+    bool isPlanDone();
+    bool isPlanFailed();
     int lastPassPos;
+    Segment2D left;
+    Vector2D move_fwd_target;
+    Vector2D last_move_fwd_target;
+    Agent* receiver;
+
+    QList<int> kianmatchedIDList;
+    bool PMfromCoach;
     /////////Intentions
 //    int intenHighProb;
 
-
 protected:
     void reset() override;
-
-
 };
 
 #endif // DYNAMICATTACK_H

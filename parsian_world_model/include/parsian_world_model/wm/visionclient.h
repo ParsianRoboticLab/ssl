@@ -19,7 +19,7 @@
 #include <parsian_msgs/parsian_team_config.h>
 
 
-#define CAMERA_NUM 4
+#define CAMERA_NUM 8
 #define OUT_OF_SIGHT_THRESHOLD 40
 
 class CVisionClient {

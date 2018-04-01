@@ -18,11 +18,7 @@ public:
     QList <QString> markRoles;
     void findOppAgentsToMark();
 
-    double ballCircleR = 0.5;
-    ///////////////////////////////////////////////////
-    ////Filtered Variables
-    //bool weOwnBall; del
-    //bool stopMode; del
+    double ballCircleR = 0.5; 
     int ourBallOwner, oppBallOwner;    //Agent Id del
     Agent* supporter;
     int lastFrameInSupportMode;
@@ -61,13 +57,11 @@ public:
     Vector2D posvel(CRobot* opp);
     void markPosesRefinePlayon();
     QList<Vector2D> ShootBlockRatio(double, Vector2D);
-    QList<Vector2D> PassBlockRatio(double ratio, Vector2D opp);
-    bool sortBy(const Vector2D &robot1, const Vector2D &robot2);
+    QList<Vector2D> PassBlockRatio(double ratio, Vector2D opp); 
     QList<CRobot*> sortdanger(const QList<CRobot*> oppagent);
     QList<QPair<Vector2D, double> > sortdangerpassplayoff(QList<Vector2D> oppposdanger);
     QList<QPair<Vector2D, double> > sortdangerpassplayon(QList<Vector2D> oppposdanger);
-    QList<QPair<Vector2D, double> > sortdangershoot(double radius, double treshold);
-    QList<Vector2D> ZoneMark(QList<QPair<Vector2D, double> > Posdanger , int marknum);
+    QList<QPair<Vector2D, double> > sortdangershoot(double radius, double treshold); 
     Vector2D findcenterdefence();
 
     QList<CRobot*> oppAgentsToMark;

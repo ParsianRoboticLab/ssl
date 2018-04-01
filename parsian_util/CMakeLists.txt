@@ -163,7 +163,6 @@ add_library(${PROJECT_NAME}_math
 
 add_library(${PROJECT_NAME}_tools
         src/tools/drawer.cpp
-        src/tools/debuger.cpp
         src/tools/filewatcher.cpp
         )
 

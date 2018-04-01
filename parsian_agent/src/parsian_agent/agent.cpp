@@ -373,19 +373,21 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
     //        lastVn = velnorm;
     //    }
 
-    /* if(vel().length() > 0.2)
-     {
-         agentStopTime.restart();
-         timerReset = false;
-     }
-     if(agentStopTime.elapsed() > 100 && ! timerReset)
-     {
-         lastVn = velnorm;
-         lastVf = veltan;
-         agentStopTime.restart();
-         timerReset = true;
-     }
-    */
+//    if(vel().length() > 0.2)
+//     {
+//         agentStopTime.restart();
+//         timerReset = false;
+//     }
+//     if(agentStopTime.elapsed() > 100 && ! timerReset)
+//     {
+//         lastVn = velnorm;
+//         lastVf = veltan;
+//         agentStopTime.restart();
+//         timerReset = true;
+//     }
+    if(vel().length() < 0.5  && diveMode) {
+        return;
+    }
     double lastV, commandV;
     double vCoef = 1;
     double tempVf = vforward , tempVn = vnormal;
@@ -468,6 +470,7 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
     if (vforward - lastVf < - 1) {
         vforward = lastVf - 0.085;
     }
+
 
 
     lastVf = vforward;

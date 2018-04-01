@@ -277,7 +277,7 @@ void CMasterPlay::execute() {
         }
     }
     execPlay();
-    DBUG(QString("MasterPlay agents invalid size: %1!").arg(agents.count()) , D_ERROR);
+    DBUG(QString("MasterPlay size: %1").arg(agents.count()) , D_ERROR);
 }
 
 void CMasterPlay::execPlay() {

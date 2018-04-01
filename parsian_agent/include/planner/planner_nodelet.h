@@ -4,10 +4,9 @@
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
-#include <parsian_util/tools/debuger.h>
+#include <parsian_util/tools/blackboard.h>
 #include <parsian_util/tools/drawer.h>
 #include <parsian_msgs/parsian_world_model.h>
-#include <parsian_msgs/parsian_debugs.h>
 #include <parsian_msgs/parsian_draw.h>
 #include <planner/planner.h>
 #include <parsian_agent/config.h>
@@ -30,7 +29,6 @@ private:
     ros::Subscriber common_config_sub;
     ros::Subscriber planner_sub;
 
-    ros::Publisher debug_pub;
     ros::Publisher draw_pub;
 
     ros::Timer timer_;

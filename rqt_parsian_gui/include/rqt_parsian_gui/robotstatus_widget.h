@@ -22,8 +22,8 @@ class RobotStatusWidget : public QWidget {
     Q_OBJECT
 public:
     explicit RobotStatusWidget(int color);
-    void setMessage(const parsian_msgs::parsian_robot_status msg);
-    void setVel(const parsian_msgs::parsian_robot_command msg);
+    void setMessage(const parsian_msgs::parsian_robot_status& msg);
+    void setVel(const parsian_msgs::parsian_robot_command &msg);
 private:
 
     QString getFileName();

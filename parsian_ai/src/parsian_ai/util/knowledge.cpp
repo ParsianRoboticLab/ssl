@@ -595,7 +595,6 @@ Vector2D Knowledge::getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double t
     return target;
 }
 
-
 bool Knowledge::isPointClear(Vector2D point, Vector2D from, double rad, bool considerRelaxedIDs, QList<int> ourRelaxedIDs, QList<int> oppRelaxedIDs) {
     Vector2D posIntersect1(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
     Vector2D posIntersect2(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
@@ -664,7 +663,6 @@ bool Knowledge::isPointClear(Vector2D point, Vector2D from, double radBig, doubl
     }
     return true;
 }
-
 
 NewFastestToBall Knowledge::newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList, const CWorldModel*& wm) {
     ////
@@ -851,7 +849,6 @@ FastestToBall Knowledge::findFastestToBall(QList<int> ourList, QList<int> oppLis
     return f;
 }
 
-
 NewFastestToBall Knowledge::newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList) {
     ////
     ////Code By Sepehr
@@ -1028,6 +1025,5 @@ double Knowledge::chipGoalPropability(bool isOurChip) {
 
 
 }
-
 
 Knowledge * know = new Knowledge();

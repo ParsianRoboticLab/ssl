@@ -23,20 +23,13 @@ CMarkPlan::CMarkPlan() {
     ourFastest = -1;
     supporter = nullptr;
     lastFrameInSupportMode = -1;
-
-
-    /// --- HMD---///
     segmentpershoot = 0.5;
     segmentperpass = 0.1;
     markRadius = 1.5;
     markRadiusStrict = 1.43;
-
-
     for (auto &i : markGPA) {
         i = new GotopointavoidAction;
     }
-    /////////////////////
-
 }
 
 CMarkPlan::~CMarkPlan() {
@@ -45,11 +38,6 @@ CMarkPlan::~CMarkPlan() {
     }
 }
 
-#define Ball_Ours_History 25
-#define Our_Fastest_History 25
-#define Opp_Fastest_History 25
-
-//////////////////////////////// AHZ //////////////////////////////////////////
 bool CMarkPlan::isInIndirectArea(Vector2D aPoint) {
     //// check that a point is in the circle around the ball
     //// with 50cm radius or not.
@@ -62,6 +50,7 @@ Line2D CMarkPlan::getBisectorLine(Vector2D firstPoint , Vector2D originPoint , V
     Line2D bisectorLine(originPoint , AngleDeg::bisect((firstPoint - originPoint).th() , (thirdPoint - originPoint).th()));
     return bisectorLine;
 }
+
 Segment2D CMarkPlan::getBisectorSegment(Vector2D firstPoint , Vector2D originPoint , Vector2D thirdPoint) {
     Line2D bisectorLine(originPoint , AngleDeg::bisect((firstPoint - originPoint).th() , (thirdPoint - originPoint).th()));
     Segment2D bisectorSegment(originPoint , Segment2D(thirdPoint , firstPoint).intersection(bisectorLine));
@@ -368,375 +357,6 @@ void CMarkPlan::manToManMarkInPlayOnBlockPass(QList<Vector2D> opponentAgentsToBe
         drawer->draw(markRoles.at(i) , markPoses.at(i) - Vector2D(0, 0.4) , "white");
     }
 }
-//////////////////////////////// end of AHZ ///////////////////////////////////
-
-//-------//mhsh - HMD//----------//
-
-
-QList<Vector2D> CMarkPlan::ZoneMark(QList<QPair<Vector2D, double> > Posdanger , int marknum) {
-    //input is sorted Dangerious Weigth
-    double zoneradius = .2;
-    double limitradus = 1.5;
-    double manTomanRadius = 1.0;
-    Vector2D sol1, sol2, sol;
-    Line2D tempLine(Vector2D(0, 0), Vector2D(1, 1));
-    Segment2D tempseg;
-    Circle2D circlemilde;
-    Circle2D circlelimit;
-    Circle2D manTomanArea(wm->ball->pos, manTomanRadius);
-    Vector2D midle;
-    QList<Vector2D> output;
-    output.clear();
-    segmentpershoot = conf.ShootRatioBlock / 100;
-    if (marknum == 1) {
-        //  Vector2D::angleOf(Posdanger[0].first, wm->field->ourGoal(), posdanger[1]).degree();
-        if (Posdanger.size() == 1) {
-            //Shoot block
-            tempseg.assign(Posdanger[0].first, wm->field->ourGoal());
-            markPoses.append(Posdanger[0].first + (wm->field->ourGoal() - Posdanger[0].first) * segmentpershoot);
-            markAngs.append(Posdanger[0].first - wm->field->ourGoal());
-
-        }
-        if (Posdanger.size() > 1) {
-            /* real Zone
-
-            tempseg.assign(Posdanger[0].first, Posdanger[1].first);
-
-            drawer->draw(tempseg,QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(),midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length())
-            {
-                sol = sol1;
-            }
-
-            if(!circlelimit.contains(sol))
-            {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-            else
-            {
-
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if(sol1.x > -1.0 * _FIELD_WIDTH / 2)
-                {
-                    sol = sol1;
-                }
-                else
-                {
-                    sol = sol2;
-                }
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-            */
-
-
-            // man to man
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).last());
-
-        }
-    }
-
-    else if (marknum == 2) {
-        if (Posdanger.size() == 1) {
-            //Shoot block
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).last());
-
-            //block pass
-            tempseg.assign(wm->ball->pos, Posdanger[0].first);
-            markPoses.append(tempseg.intersection(tempseg.perpendicularBisector()));
-            markAngs.append(Posdanger[0].first - markPoses.last());
-
-
-
-
-        }
-        if (Posdanger.size() == 2) {
-
-            //shoot block
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).last());
-
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[1].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[1].first).last());
-
-
-
-        }
-        if (Posdanger.size() > 2) {
-            /* zone mark
-            ////fisrt one
-            tempseg.assign(Posdanger[0].first, Posdanger[1].first);
-
-            drawer->draw(tempseg,QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(),midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length())
-            {
-                sol = sol1;
-            }
-            else
-            {
-                sol = sol2;
-            }
-
-            if(!circlelimit.contains(sol))
-            {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-            else
-            {
-                debug(QString("Going to penalty Area"), D_MAHI);
-                debug(QString("sol1:x:%1y:%2 sol2:x:%3y:%4").arg(sol1.x).arg(sol1.y).arg(sol2.x).arg(sol2.y),D_MAHI);
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if(sol1.x > -1.0 * _FIELD_WIDTH / 2)
-                {
-                    sol = sol1;
-                }
-                else
-                {
-                    sol = sol2;
-                }
-
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-
-            ///second one
-
-            tempseg.assign(Posdanger[1].first, Posdanger[2].first);
-
-            drawer->draw(tempseg,QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(),midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length())
-            {
-                sol = sol1;
-            }
-            else
-            {
-                sol = sol2;
-            }
-
-            if(!circlelimit.contains(sol))
-            {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-            else
-            {
-                debug(QString("Going to penalty Area"), D_MAHI);
-                debug(QString("sol1:x:%1y:%2 sol2:x:%3y:%4").arg(sol1.x).arg(sol1.y).arg(sol2.x).arg(sol2.y),D_MAHI);
-
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if(sol1.x > -1.0 * _FIELD_WIDTH / 2)
-                {
-                    sol = sol1;
-                }
-                else
-                {
-                    sol = sol2;
-                }
-
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-            */
-            // man to man
-
-            //shoot block
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[0].first).last());
-
-            markPoses.append(ShootBlockRatio(segmentpershoot, Posdanger[1].first).first());
-            markAngs.append(ShootBlockRatio(segmentpershoot, Posdanger[1].first).last());
-
-
-        }
-    } else if (marknum == 3) {
-        if (Posdanger.size() > 3) {
-            tempseg.assign(Posdanger[0].first, Posdanger[1].first);
-
-            drawer->draw(tempseg, QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(), midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if ((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length()) {
-                sol = sol1;
-            } else {
-                sol = sol2;
-            }
-
-            if (!circlelimit.contains(sol)) {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            } else {
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if (sol1.x > -1.0 * wm->field->_FIELD_WIDTH / 2) {
-                    sol = sol1;
-                } else {
-                    sol = sol2;
-                }
-
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-            ///second one
-
-            tempseg.assign(Posdanger[1].first, Posdanger[2].first);
-
-            drawer->draw(tempseg, QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(), midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if ((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length()) {
-                sol = sol1;
-            } else {
-                sol = sol2;
-            }
-
-            if (!circlelimit.contains(sol)) {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            } else {
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if (sol1.x > -1.0 * wm->field->_FIELD_WIDTH / 2) {
-                    sol = sol1;
-                } else {
-                    sol = sol2;
-                }
-
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-            //third one
-
-
-            tempseg.assign(Posdanger[2].first, Posdanger[3].first);
-
-            drawer->draw(tempseg, QColor(Qt::green));
-            midle = tempseg.intersection(tempseg.perpendicularBisector());
-            tempseg.assign(wm->field->ourGoal(), midle);
-            tempLine.assign(wm->field->ourGoal(), midle);
-            drawer->draw(tempseg, QColor(Qt::green));
-
-            circlemilde.assign(midle, zoneradius);
-            circlemilde.intersection(tempLine, &sol1, &sol2);
-            circlelimit.assign(wm->field->ourGoal(), limitradus);
-
-
-            //cheking which on is nearest
-            if ((wm->field->ourGoal() - sol1).length() < (wm->field->ourGoal() - sol2).length()) {
-                sol = sol1;
-            } else {
-                sol = sol2;
-            }
-
-            if (!circlelimit.contains(sol)) {
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            } else {
-                circlelimit.intersection(tempLine, &sol1, &sol2);
-                if (sol1.x > -1.0 * wm->field->_FIELD_WIDTH / 2) {
-                    sol = sol1;
-                } else {
-                    sol = sol2;
-                }
-
-
-
-                markPoses.append(sol);
-                markAngs.append(Vector2D(midle - wm->field->ourGoal()));
-                output.append(markPoses.last());
-            }
-
-
-        }
-
-    }
-    return output;
-
-
-}
 
 QList<QPair<Vector2D, double> > CMarkPlan::sortdangershoot(double _radius, double treshold) {
 
@@ -746,14 +366,14 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangershoot(double _radius, doubl
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
     Circle2D(_pos2, _radius + treshold).
-    intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
 
 
     _poly.addVertex(sol1);
     sol3 = sol1;
     _poly.addVertex(sol2);
     Circle2D(_pos1, Robot::robot_radius_new + treshold).
-    intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
 
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
@@ -823,7 +443,6 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangershoot(double _radius, doubl
     return output;
 }
 
-
 QList<CRobot*> CMarkPlan::sortdanger(const QList<CRobot*> oppagent) {
     const QList<CRobot*> &sorted = oppagent;
     for (int i = 0; i < sorted.count(); i++) {
@@ -843,8 +462,6 @@ QList<CRobot*> CMarkPlan::sortdanger(const QList<CRobot*> oppagent) {
 }
 
 QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayoff(QList<Vector2D> oppposdanger) {
-
-
 
     ///////////////
     double KA = 1; //Angle Coefficient
@@ -935,7 +552,6 @@ Vector2D CMarkPlan::findcenterdefence() {
 
 }
 
-
 QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayon(QList<Vector2D> oppposdanger) {
 
     double KA = 1; //Angle Coefficient
@@ -982,38 +598,15 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayon(QList<Vector2D> 
     return output;
 }
 
-
-bool CMarkPlan::sortBy(const Vector2D &robot1, const Vector2D &robot2) {
-    double dist2BallW = -1;
-    double dist2GoalW = 1;
-    double thetaW = 2;
-    AngleDeg thetaMin = 15;
-
-    double ballW1 = (dist2BallW / (robot1.dist(wm->ball->pos)));
-    double ballW2 = (dist2BallW / (robot2.dist(wm->ball->pos)));
-    double goalW1 = (dist2GoalW / (robot1.dist(wm->field->ourGoal())));
-    double goalW2 = (dist2GoalW / (robot2.dist(wm->field->ourGoal())));
-    double theta1 = (robot1 - wm->field->ourGoal()).th().degree();
-    if (fabs(theta1) < thetaMin.degree()) {
-        theta1 = thetaMin.degree();
-    }
-    double theta2 = (robot2 - wm->field->ourGoal()).th().degree();
-    if (fabs(theta2) < thetaMin.degree()) {
-        theta2 = thetaMin.degree();
-    }
-
-
-    return ballW1  + goalW1 + (thetaW / theta1) > ballW2  + goalW2 + (thetaW / theta2);
-
-}
-
 Vector2D CMarkPlan::posvel(CRobot* opp) {
-    if (opp->vel.length() > 0.5 && opp->vel.x < 0) {
-        return opp->pos + 0.5 * opp->vel;
-    } else {
+    if (opp->vel.length() > 0.3 && opp->vel.x < 0) {
+        return opp->pos + (conf.VelReliability * opp->vel);
+    }
+    else {
         return opp->pos;
     }
 }
+
 void CMarkPlan::findOppAgentsToMark() {
     oppAgentsToMark.clear();
     oppAgentsMarkedByDef.clear();
@@ -1035,60 +628,46 @@ void CMarkPlan::findOppAgentsToMark() {
                 i--;
             }
         }
-
-        if (conf.OmmitNearestToBallPlayon) {
-            DBUG(QString("Ommit nearest to ball"), D_MAHI);
+        if(conf.OmmitNearestToBallPlayon){
             int nearestToBall = -1;
             double nearestToBallDist = 100000;
-
             for (int i = 0 ; i < oppAgentsToMark.count() ; i++) {
                 if ((oppAgentsToMark[i]->pos).dist(wm->ball->pos) < nearestToBallDist) {
                     nearestToBall = i;
                     nearestToBallDist = oppAgentsToMark[i]->pos.dist(wm->ball->pos);
-                    DBUG(QString("the nearest id is:%1").arg(oppAgentsToMark[i]->id), D_MAHI);
-                    drawer->draw(oppAgentsToMark[i]->pos + oppAgentsToMark[i]->vel);
                 }
             }
             if (nearestToBall != -1) {
                 oppAgentsToMark.removeOne(oppAgentsToMark[nearestToBall]);
             }
         }
-    } else if (gameState->theirKickoff()) {
+    }
+    else if(gameState->theirKickoff()){
         for (int i = 0; i < oppAgentsToMark.count(); i++) {
             if (posvel(oppAgentsToMark[i]).x > conf.OppOmitLimitKickOff) {
                 oppAgentsToMark.removeOne(oppAgentsToMark[i]);
                 i--;
             }
         }
-
-        //ommiting nearest to ball
-        DBUG(QString("Ommit nearest to ball kick off"), D_MAHI);
         int nearestToBall = -1;
         double nearestToBallDist = 100000;
-
         for (int i = 0 ; i < oppAgentsToMark.count() ; i++) {
-            if ((oppAgentsToMark[i]->pos/*+ oppAgentsToMark[i]->vel*/).dist(wm->ball->pos /*+  wm->ball->vel*/) < nearestToBallDist) {
+            if((oppAgentsToMark[i]->pos).dist(wm->ball->pos) < nearestToBallDist) {
                 nearestToBall = i;
                 nearestToBallDist = oppAgentsToMark[i]->pos.dist(wm->ball->pos);
-                DBUG(QString("the nearest id is:%1").arg(oppAgentsToMark[i]->id), D_MAHI);
-                drawer->draw(oppAgentsToMark[i]->pos + oppAgentsToMark[i]->vel);
             }
         }
         if (nearestToBall != -1) {
             oppAgentsToMark.removeOne(oppAgentsToMark[nearestToBall]);
         }
-
     }
 
     //setting the positions
-    for (int i = 0; i < oppAgentsToMark.count(); i++) {
-        if (gameState->isStart()) {
-            oppAgentsToMarkPos.append(oppAgentsToMark[i]->pos);
-        } else if (gameState->theirKickoff()) {
+    for(int i = 0; i < oppAgentsToMark.count(); i++){
+        if(gameState->isStart() || gameState->theirKickoff()){
             oppAgentsToMarkPos.append(posvel(oppAgentsToMark[i]));
         }
     }
-
 
 }
 
@@ -1132,8 +711,7 @@ void CMarkPlan::markPosesRefinePlayon() {
     //Vector2D sol1,sol2,sol;
     indirect.assign(Vector2D(0, 0), .5);
     Segment2D tempMarkSeg;
-    if ( /* knowledge->getGameState() == CKnowledge::TheirKickOff */
-        gameState->theirKickoff()) {
+    if (gameState->theirKickoff()) {
         // Not positioning the Center circle
         for (int i = 0; i < markPoses.count(); i++) {
 
@@ -1159,225 +737,210 @@ void CMarkPlan::markPosesRefinePlayon() {
 }
 
 QList<Vector2D> CMarkPlan::ShootBlockRatio(double ratio, Vector2D opp) {
-    Segment2D tempMarkSeg;
+    //// This function produces a point between opponent agents to be mark &&
+    //// ourGoal to block the shot path. Also checks if this point is in the
+    //// penalty area, produces a point that is intersection of penalty area with
+    //// shot path.
+    ///
     QList<Vector2D> tempQlist;
     Circle2D indirect;
     Vector2D sol1, sol2, sol;
-    Segment2D sag;
-    sag.assign(Vector2D(0, -3) , Vector2D(0, 3));
-    indirect.assign(Vector2D(0, 0), .7);
+    Vector2D solutions[2];
+    Segment2D centerLineOfField;
+    Vector2D intersectionWithOurGoalLine;
+    Vector2D intersectionWithOppGoalLine;
+    centerLineOfField.assign(Vector2D(0, -4.5) , Vector2D(0, 4.5));
+    indirect.assign(Vector2D(0, 0), 0.7);
     tempQlist.clear();
-    tempMarkSeg.assign(opp, wm->field->ourGoal());
-
-    if (gameState->theirKickoff()) {
-        if ((opp + (wm->field->ourGoal() - opp) * ratio).x < 0) {
-            if (indirect.contains(opp + (wm->field->ourGoal() - opp) * ratio)) {
-                indirect.intersection(tempMarkSeg, &sol1, &sol2);
-                if (sol1.x < sol2.x) {
-                    sol = sol1;
-                } else {
-                    sol = sol2;
+    Line2D tempLine = getBisectorLine(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
+    intersectionWithOurGoalLine = Segment2D(wm->field->ourGoalL() , wm->field->ourGoalR()).intersection(tempLine);
+    intersectionWithOppGoalLine = Segment2D(wm->field->oppGoalL() , wm->field->oppGoalR()).intersection(tempLine);
+    Vector2D markPos = know->getPointInDirection(intersectionWithOurGoalLine , opp , ratio);
+    if(gameState->theirKickoff()){
+        if(indirect.contains(markPos)){
+            indirect.intersection(tempLine, &sol1, &sol2);
+            if(sol1.x < sol2.x){
+                sol = sol1;
+            }
+            else{
+                sol = sol2;
+            }
+            tempQlist.append(sol);
+            tempQlist.append(opp - intersectionWithOurGoalLine);
+        }
+        else{
+            if(wm->field->isInOurPenaltyArea(opp)){
+                wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
+            }
+            else if(wm->field->isInOppPenaltyArea(opp)){
+                wm->field->oppBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                tempQlist.append(intersectionWithOppGoalLine - tempQlist.first());
+            }
+            else{
+                if(wm->field->isInOurPenaltyArea(markPos)){
+                    wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                    tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                    tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
                 }
-
-                tempQlist.append(sol);
-                tempQlist.append(opp - wm->field->ourGoal());
-            } else {
-                tempQlist.append(opp + (wm->field->ourGoal() - opp) * ratio);
-                tempQlist.append(opp - wm->field->ourGoal());
-
+                else if(wm->field->isInOppPenaltyArea(markPos)){
+                    wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                    tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                    tempQlist.append(intersectionWithOppGoalLine - tempQlist.first());
+                }
+                else{
+                    tempQlist.append(markPos);
+                    tempQlist.append(opp - intersectionWithOurGoalLine);
+                }
             }
         }
-
-        else {
-            if (indirect.contains(opp + (wm->field->ourGoal() - opp) * ratio)) {
-                indirect.intersection(tempMarkSeg, &sol1, &sol2);
-                if (sol1.x < sol2.x) {
-                    sol = sol1;
-                } else {
-                    sol = sol2;
-                }
-
-                tempQlist.append(sol);
-                tempQlist.append(opp - wm->field->ourGoal());
-            } else {
-                tempQlist.append(tempMarkSeg.intersection(sag));
-                tempQlist.append(opp - wm->field->ourGoal());
-            }
-
+    }
+    else{
+        if(wm->field->isInOurPenaltyArea(opp)){
+            wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
+            tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+            tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
         }
-    } else {
-        tempQlist.append(opp + (wm->field->ourGoal() - opp) * ratio);
-        tempQlist.append(opp - wm->field->ourGoal());
+        else if(wm->field->isInOppPenaltyArea(opp)){
+            wm->field->oppBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
+            tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+            tempQlist.append(intersectionWithOppGoalLine - tempQlist.first());
+        }
+        else{
+            if(wm->field->isInOurPenaltyArea(markPos)){
+                wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
+            }
+            else if(wm->field->isInOppPenaltyArea(markPos)){
+                wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0] , &solutions[1]);
+                tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+                tempQlist.append(intersectionWithOppGoalLine - tempQlist.first());
+            }
+            else{
+                tempQlist.append(markPos);
+                tempQlist.append(opp - intersectionWithOurGoalLine);
+            }
+        }
     }
 
     return tempQlist;
 }
 
 QList<Vector2D> CMarkPlan::PassBlockRatio(double ratio, Vector2D opp) {
-    Segment2D tempSeg;
-    Segment2D isInPenaltyArea;
-    Vector2D sol;
-    Vector2D sol1[2];
-    for (int i = 0 ; i < 2 ; i++) {
-        sol1[i].invalidate();
-    }
-    QList<Vector2D> tempQlist;
-    tempQlist.clear();
-    tempSeg.assign(wm->ball->pos, wm->ball->pos + (opp - wm->ball->pos) * 20);
-    Vector2D pos = wm->ball->pos + (opp - wm->ball->pos) * ratio;
-    isInPenaltyArea.assign(opp, wm->ball->pos);
-    QList<Vector2D> tempVec;
-    tempVec.clear();
-    if (wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(isInPenaltyArea , &sol1[0] , &sol1[1])) {
-        for (int i = 0 ; i < 2 ; i++) {
-            if (sol1[i].isValid()) {
-                tempVec.append(sol1[i]);
-            }
+    //// This function produces a point that block the pass path.Also if the
+    //// resulted point is in the penalty area, this function generates a suitable
+    //// point.
+    ///
+    QList<Vector2D> passBlocker;
+    Vector2D sol1,sol2,sol3,sol4,sol5,sol6,sol7,sol8;
+    double opponentAgentsCircleR = 0.2;
+    Circle2D opponentAgentsToBeMarkCircle = Circle2D(opp , opponentAgentsCircleR);
+    if(wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Segment2D(wm->ball->pos , opp) , &sol7,  &sol8)){
+        if(!wm->field->isInOurPenaltyArea(opp)){
+            opponentAgentsToBeMarkCircle.intersection(Segment2D(wm->ball->pos , opp), &sol1 , &sol2);
+            Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(wm->ball->pos , opp), &sol3 , &sol4);
+            wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Segment2D(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2, Segment2D(sol3 , opp).length() < Segment2D(sol4 , opp).length() ? sol3 : sol4) , &sol5 , &sol6);
+            passBlocker.append(know->getPointInDirection(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2 , Segment2D(sol5 , opp).length() < Segment2D(sol6 , opp).length() ? sol5 : sol6 , ratio));
         }
-        if (tempVec.size() == 1) {
-            tempQlist.append(tempVec.first());
-        } else if (tempVec.size() == 2) {
-            if ((tempVec.first() - wm->ball->pos).length() > (tempVec.last() - wm->ball->pos).length()) {
-                sol = tempVec.first();
-            } else if ((tempVec.last() - wm->ball->pos).length() > (tempVec.first() - wm->ball->pos).length()) {
-                sol = tempVec.last();
-            }
-            tempQlist.append(sol);
+        else{
+            wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Line2D(wm->field->ourGoal() , opp) , &sol1 , &sol2);
+            passBlocker.append(Segment2D(sol1 , opp).length() < Segment2D(sol2 , opp).length() ? sol1 : sol2);
         }
-
-        tempQlist.append(wm->ball->pos - opp);
-
-
-        drawer->draw(tempSeg, "red");
-        DBUG(QString("this is in the penalty area, Block pass Mode"), D_HAMED);
-    } else {
-        tempQlist.clear();
-        tempQlist.append(pos);
-        tempQlist.append(wm->ball->pos - opp);
-        DBUG(QString("sag"), D_HAMED);
-        drawer->draw(tempSeg, "blue");
     }
-    return tempQlist;
+    else if(wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Segment2D(wm->ball->pos , opp) , &sol7,  &sol8)){
+        if(!wm->field->isInOppPenaltyArea(opp)){
+            opponentAgentsToBeMarkCircle.intersection(Segment2D(wm->ball->pos , opp), &sol1 , &sol2);
+            Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(wm->ball->pos , opp), &sol3 , &sol4);
+            wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Segment2D(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2, Segment2D(sol3 , opp).length() < Segment2D(sol4 , opp).length() ? sol3 : sol4) , &sol5 , &sol6);
+            passBlocker.append(know->getPointInDirection(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2 , Segment2D(sol5 , opp).length() < Segment2D(sol6 , opp).length() ? sol5 : sol6 , ratio));
+        }
+        else{
+            wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(Line2D(wm->field->oppGoal() , opp) , &sol1 , &sol2);
+            passBlocker.append(Segment2D(sol1 , opp).length() < Segment2D(sol2 , opp).length() ? sol1 : sol2);
+        }
+    }
+    else{
+        opponentAgentsToBeMarkCircle.intersection(Segment2D(wm->ball->pos , opp), &sol1 , &sol2);
+        Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(wm->ball->pos , opp), &sol3 , &sol4);
+        passBlocker.append(know->getPointInDirection(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2, Segment2D(sol3 , opp).length() < Segment2D(sol4 , opp).length() ? sol3 : sol4, ratio));
+    }
+    passBlocker.append(wm->ball->pos - passBlocker.first());
+    return passBlocker;
 
 }
 
-
-void CMarkPlan::execute() {
-    DBUG(QString(" Mark play on Execute is runninng "), D_MAHI);
+void CMarkPlan::execute(){
     findOppAgentsToMark();
-    //sortdangerpass(oppAgentsToMarkPos);
-
-    Circle2D MarkArea(wm->field->ourGoal(), markRadius);
     oppmarkedpos.clear();
     markPoses.clear();
-    drawer->draw(MarkArea, QColor(Qt::blue));
     markAngs.clear();
     segmentpershoot = conf.ShootRatioBlock / 100;
-    segmentperpass = (100 - conf.PassRatioBlock) / 100;
+    segmentperpass = conf.PassRatioBlock / 100;
     QList<int> matchPoints;
-
-    //////----------HMD Play on Mark-------------////
-
-
-    if (gameState->isStart()) {
-        if (conf.PlayOnManToMan) {
-            manToManMarkInPlayOnBlockPass(oppAgentsToMarkPos , agents.count() , conf.PassRatioBlock / 100);
-        } else {
+    if (gameState->isStart()){
+        if(conf.PlayOnManToMan){
+            manToManMarkInPlayOnBlockPass(oppAgentsToMarkPos , agents.count() , segmentperpass);
+        }
+        else{
             markPoses.clear();
             markAngs.clear();
-            if (agents.count() == oppAgentsToMarkPos.count()) {
+            if(agents.count() == oppAgentsToMarkPos.count()){
                 for (int i = 0; i < oppAgentsToMarkPos.count(); i++) {
                     markPoses.append(ShootBlockRatio(segmentpershoot, oppAgentsToMarkPos[i]).first());
                     markAngs.append(ShootBlockRatio(segmentpershoot, oppAgentsToMarkPos[i]).last());
                 }
             }
-
-            else if (agents.count() < oppAgentsToMarkPos.count()) {
+            else if(agents.count() < oppAgentsToMarkPos.count()){
                 QList<QPair<Vector2D, double> >tempQlistQpair = sortdangerpassplayon(oppAgentsToMarkPos);
                 for (int i = 0; i < agents.count(); i++) {
                     markPoses.append(ShootBlockRatio(segmentpershoot, tempQlistQpair[i].first).first());
                     markAngs.append(ShootBlockRatio(segmentpershoot, tempQlistQpair[i].first).last());
                 }
-                DBUG(QString("size of temp qlist pair %1").arg(tempQlistQpair.size()), D_HAMED);
             }
-
-            else if (agents.count() > oppAgentsToMarkPos.count()) {
+            else if(agents.count() > oppAgentsToMarkPos.count()){
                 QList<QPair<Vector2D, double> >tempQlistQpair = sortdangerpassplayon(oppAgentsToMarkPos);
-
-                for (int i = 0; i < oppAgentsToMarkPos.count(); i++) {
+                for(int i = 0; i < oppAgentsToMarkPos.count(); i++){
                     markPoses.append(ShootBlockRatio(segmentpershoot, oppAgentsToMarkPos[i]).first());
                     markAngs.append(ShootBlockRatio(segmentpershoot, oppAgentsToMarkPos[i]).last());
                 }
-
-                for (int i = 0; i < min(agents.count() - oppAgentsToMarkPos.count(), oppAgentsToMarkPos.count()); i++) {
-
+                for(int i = 0; i < min(agents.count() - oppAgentsToMarkPos.count(), oppAgentsToMarkPos.count()); i++) {
                     markPoses.append(PassBlockRatio(segmentperpass, tempQlistQpair[i].first).first());
                     markAngs.append(PassBlockRatio(segmentperpass, tempQlistQpair[i].first).last());
-
-                    DBUG(QString("size of temp qlist pair %1").arg(tempQlistQpair.size()), D_HAMED);
-
-                    /*markPoses.append(Vector2D(-1,-1));
-                    markAngs.append(Vector2D(0,1));
-                    */
                 }
-
             }
-
-
-            for (int i = 0; i < agents.count(); i++) {
-                drawer->draw(QString("I am Mark"), agents[i]->pos(), QColor(Qt::black));
-            }
-
-
-            drawer->draw(QString("Number of Mark %1").arg(agents.count()), Vector2D(-3, 3));
             int count = 0;
             for (int i = 0; i < agents.count(); i++) {
                 if (markPoses.size() < agents.count()) {
-                    DBUG("EXTRA PLAY ON", D_HAMED);
                     markPoses.append(Vector2D(0, count));
                     markAngs.append(Vector2D(1, 0));
                     count ++;
                 }
             }
         }
-
-
         //Checking Not Going To Penalty Area
         markPosesRefinePlayon();
-
         matchPoints.clear();
         matchPoints.append(0);
         matchPoints.append(1);
         matchPoints.append(2);
         matchPoints.append(3);
-
         know->Matching(agents, markPoses, matchPoints); // todo : knowledge
-        if (agents.count() == markPoses.count()) {
-            DBUG(QString("agnet count %1").arg(agents.count()) , D_AHZ);
-            DBUG(QString("markpos %1").arg(markPoses.count()) , D_AHZ);
-            DBUG(QString("match point %1").arg(matchPoints.size()) , D_AHZ);
-            for (int i = 0; i < markPoses.count(); i++) {
+        if(agents.count() == markPoses.count()){
+            for(int i = 0; i < markPoses.count(); i++){
                 if (i < matchPoints.size()) {
-
-                    //markGPA[i]->init(markPoses[matchPoints[i]],markAngs[matchPoints[i]]);
-
                     markGPA[i]->setTargetpos(markPoses[matchPoints[i]]); //HINT : gpa->init
                     markGPA[i]->setTargetdir(markAngs[matchPoints[i]]);
-
                     markGPA[i]->setAvoidpenaltyarea(true);
-                    //markGPA[i]->execute();
                     agents[i]->action = markGPA[i];
                 }
             }
-
         }
-
-
-
-
-    } else if ( /*knowledge->getGameState() == CKnowledge::TheirKickOff */
-        gameState->theirKickoff()) {
-        segmentpershoot = 0.3;
+    }
+    else if(gameState->theirKickoff()) {
+        segmentpershoot = 0.7;
         markPoses.clear();
         markAngs.clear();
         DBUG(QString("Its TheirKickoff"), D_MAHI);
@@ -1444,6 +1007,5 @@ void CMarkPlan::execute() {
 
 
     }
-
 }
 

@@ -55,8 +55,8 @@
                                 {
                                     "flag": false,
                                     "name": "PassSkill",
-                                    "primary": 700,
-                                    "secondary": 800,
+                                    "primary": 450,
+                                    "secondary": -1,
                                     "target": {
                                         "agent": 1,
                                         "index": 1
@@ -138,8 +138,8 @@
                                 {
                                     "flag": false,
                                     "name": "PassSkill",
-                                    "primary": 650,
-                                    "secondary": 700,
+                                    "primary": 333,
+                                    "secondary": -1,
                                     "target": {
                                         "agent": 2,
                                         "index": 1
@@ -169,7 +169,7 @@
                         },
                         {
                             "angel": -22.782405730481688,
-                            "pos-x": 2.5966850828729271,
+                            "pos-x": 2.5856353591160222,
                             "pos-y": -2.0700000000000003,
                             "skills": [
                                 {
@@ -222,8 +222,8 @@
                         },
                         {
                             "angel": 0,
-                            "pos-x": 1.0607734806629834,
-                            "pos-y": -3.6787499999999991,
+                            "pos-x": 1.5027624309392262,
+                            "pos-y": -3.2512499999999998,
                             "skills": [
                                 {
                                     "flag": false,

@@ -9,7 +9,7 @@
 //#include "parsian_msgs/grsim_robot_command.h"
 #include "parsian_msgs/parsian_robot_command.h"
 //#include "parsian_msgs/grsim_replacement.h"
-#include <parsian_msgs/ssl_vision_detection.h>
+#include <parsian_msgs/parsian_world_model.h>
 #include "parsian_protobuf_wrapper/grSim_Packet.pb.h"
 #include "parsian_protobuf_wrapper/grSim_Commands.pb.h"
 #include "parsian_protobuf_wrapper/grSim_Replacement.pb.h"
@@ -32,7 +32,7 @@ public:
     ~GrsimNodelet();
 
     virtual void onInit();
-    void visionCB(const parsian_msgs::ssl_vision_detectionConstPtr & msg);
+    void visionCB(const parsian_msgs::parsian_world_modelConstPtr & msg);
     //void timerCb(const ros::TimerEvent& event);
     void GrsimBotCmd(const parsian_msgs::parsian_robot_command::ConstPtr& msg);
 

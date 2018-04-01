@@ -32,6 +32,7 @@ class CMasterPlay {
 public:
 
     bool playOnFlag;
+    int playoff_badPasserID;
     bool lockAgents;
     CMasterPlay();
     virtual ~CMasterPlay();

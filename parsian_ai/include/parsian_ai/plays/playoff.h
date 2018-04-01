@@ -327,6 +327,8 @@ public:
     EMode getMasterMode();
     void reset();
     void setInitial(bool _init);
+
+    void kickoffPositioning(int playersNum);
 private:
 
 
@@ -352,7 +354,7 @@ private:
     SPositioningAgent positionAgent[_NUM_PLAYERS];
 
     int agentSize;
-    Vector2D getEmptyTarget(Vector2D _position, double _radius);
+    Vector2D getEmptyTarget(const Vector2D& _position, const double& _radius);
     QList<POOwnerReceive> ownerReceiveList;
 
     /////////////////////////////////////////////////////////////////////
@@ -456,6 +458,7 @@ private:
     ////////////////////////////
 
     bool isKickDone(CRolePlayOff*);
+    bool firstKickFailed();
     bool isOneTouchDone(CRolePlayOff*);
     bool isMoveDone(const CRolePlayOff*);
     bool isReceiveDone(const CRolePlayOff*);
@@ -499,7 +502,7 @@ private:
     int dynamicAgentSize;
     bool ready, pass, shot;
     int dynamicState;
-    long dynamicStartTime;
+    unsigned int dynamicStartTime;
 
 ////////////First
 public:

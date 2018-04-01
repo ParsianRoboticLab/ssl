@@ -25,6 +25,7 @@ KickAction::KickAction() {
        kickWithCenterOfDribbler = false;
        playMakeMode = false;
        isPlayoff = false;
+       isKhafan = false;
 }
 
 void KickAction::setMessage(const void* _msg) {
@@ -51,6 +52,7 @@ void KickAction::setMessage(const void* _msg) {
         kickWithCenterOfDribbler = msg.kickWithCenterOfDribbler;
         playMakeMode = msg.playMakeMode;
         isPlayoff = msg.isPlayoff;
+        isKhafan = msg.isKhafan;
         target = msg.target;
 
 }
@@ -79,6 +81,7 @@ void* KickAction::getMessage() {
     _msg->kickWithCenterOfDribbler = kickWithCenterOfDribbler;
     _msg->playMakeMode = playMakeMode;
     _msg->isPlayoff = isPlayoff;
+    _msg->isKhafan = isKhafan;
     _msg->target = target.toParsianMessage();
     return _msg;
 

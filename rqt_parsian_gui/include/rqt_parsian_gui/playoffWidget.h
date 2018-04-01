@@ -13,7 +13,6 @@
 #include <QList>
 #include <QStandardItemModel>
 #include <parsian_msgs/parsian_update_plans.h>
-#include <parsian_util/tools/debuger.h>
 #include <QWidget>
 #include <ros/ros.h>
 namespace rqt_parsian_gui {

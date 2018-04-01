@@ -81,11 +81,9 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
             angPid->kp = 1;
         }
     } else {
-        angPid->kp = 4;
+        angPid->kp = 3;
     }
     angPid->error = (dir2.th() -  agentDir.th()).radian();
-
-//    drawer->draw(QString("vel2 : %1 , realVel : %2").arg(Vel2).arg(agentVel.length()),Vector2D(2,1.5));
     agentMovementTh = movementTh.th();
 
     if (oneTouch || diveMode) {
@@ -94,7 +92,7 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
         posPidDist = 0.15;
     }
     if (slow) {
-        posPid->kp = (conf->posKP) * (0.001 / (agentPos.dist(pos2) * agentPos.dist(pos2)));
+        posPid->kp = (conf->posKP) * (0.0015 / (agentPos.dist(pos2) * agentPos.dist(pos2)));
         posPid->kp = min(posPid->kp, 2.5);
         posPid->kp = max(posPid->kp, 1.5);
 

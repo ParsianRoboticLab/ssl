@@ -15,7 +15,8 @@
 #include <parsian_util/geom/polygon_2d.h>
 
 #define LOOP_TIME_BYKK 0.016
-#define MIN_ROBOTS_DIST 0.02
+#define MIN_TWO_ROBOTS_DIST 0.02
+#define MIN_MORE_ROBOTS_DIST 0.05
 struct velAndAccByKK {
     double vel;
     double acc;
@@ -50,13 +51,13 @@ protected:
     void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
 
     bool isInIndirectArea(Vector2D);
-    int findNeededDefense();
     int defenseNumber();
     double findBestOffsetForDefenseArea(Line2D bestLineWithTalles, double downLimit , double upLimit);
     double findBestRadiusForDefenseArea(Line2D bestLineWithTalles , double downLimit , double upLimit);
     Line2D getBestLineWithTallesForRecatngularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     Line2D getBestLineWithTallesForCircularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     Segment2D getBestSegmentWithTallesForRectangularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
+    Segment2D getBestSegmentWithTallesForCircularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     QList<Segment2D> getLinesOfBallTriangle();
     QList<Vector2D> defenseFormationForRectangularPositioning(int neededDefenseAgents , int allOfDefenseAgents , double downLimit, double upLimit);
     QList<Vector2D> defenseFormationForCircularPositioning(int neededDefenseAgents, int allOfDefenseAgents , double downLimit , double upLimit);
@@ -67,6 +68,8 @@ protected:
     Vector2D oneDefenseFormationForRecatngularPositioning(double downLimit , double upLimit);
     Vector2D oneDefenseFormationForCircularPositioning(double downLimit , double upLimit);
     QList<Vector2D> defenseFormation(QList<Vector2D> circularPositions, QList<Vector2D> rectangularPositions);
+    double timeNeeded(Agent *_agentT, Vector2D posT, double vMax, QList <int> _ourRelax, QList <int> _oppRelax , bool avoidPenalty, double ballObstacleReduce, bool _noAvoid);
+    QPair<Vector2D, Vector2D> avoidRectangularPenaltyAreaByMhmmd(Vector2D finalPosition , Vector2D agentPosition , Vector2D agentDirection , Vector2D agentVelocity);
     //atousa
     Vector2D getGoaliePositionInOneDef(Vector2D _ballPos, double _limit1, double _limit2);
     double goalieThr;
@@ -105,7 +108,7 @@ protected:
     ///////////////////////////////////////////////////
     void executeGoalKeeper();
     Vector2D strictFollowBall(Vector2D _ballPos);
-    Vector2D checkDefensePoint(Agent* agent, const Vector2D& point);    
+    QPair<Vector2D , Vector2D> avoidCircularPenaltyAreaByArash(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
     kkDefPos tempDefPos;
     void matchingDefPos(int _defenseNum);
@@ -150,16 +153,19 @@ public:
     void initGoalKeeper(Agent *_goalieAgent = NULL);
     void initDefense(QList <Agent*> _defenseAgents = QList<Agent*>());
     void fillDefencePositionsTo(Vector2D *poses);
-
+    ////////////////////// AHZ ////////////////
+    int findNeededDefense();
     //////////////////HMD/////////////////
     QList<Vector2D> markPoses;
     QList<Vector2D> markAngs;
-    double markRadius;
-    double markRadiusStrict;
+    double markRadius; 
     double segmentpershoot;
     double segmentperpass;
     bool MantoManAllTransientFlag;
     Vector2D dir;
+    /// ALI GAVAHI
+    bool ballIsBounced;
+    Vector2D ballBouncePos, playOffStartBallPos, playOffPassDir,beforeTransientPassDir;
     ///////////////////////////////////
 
 
@@ -180,6 +186,7 @@ private:
     Vector2D posvel(CRobot*, double);
     QList<QPair<Vector2D, double> > sortdangerpassplayon(QList<Vector2D> oppposdanger);
     QList<QPair<Vector2D, double> > sortdangerpassplayoff(QList<Vector2D> oppposdanger);
+    Vector2D getMarkPlayoffPredictWaitPos();
     ////////////////////////////////////////
     rcsc::Circle2D defenseAreaBottomCircle, defenseAreaTopCircle;
     rcsc::Segment2D defenseAreaLine;
@@ -254,7 +261,10 @@ private:
     double overDefThr;
     int decideNumOfMarksInPlayOff(int _defenseCount);
     bool FlagBesidePoles;
-    int f = 0;
+    int f = 0 , counterBallWasBesidePoles = 0;
+    bool firstTimeGoalKeeperOneTouch = false;
+    Vector2D oneTouchDir;
+    Vector2D playoffMarkPredictPos;
 };
 
 #endif // DEFENSE_H

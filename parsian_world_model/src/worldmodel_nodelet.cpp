@@ -11,13 +11,13 @@ void WMNodelet::onInit() {
     wm.reset(new WorldModel);
     drawer = new Drawer;
 //    timer = nh.createTimer(ros::Duration(.062), boost::bind(&WMNodelet::timerCb, this, _1));
-    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 1000);
+    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 3);
     team_config_sub = nh.subscribe("/team_config", 1000, & WMNodelet::teamConfigCb, this);
-    vision_detection_sub = nh.subscribe("vision_detection", 1000, &WMNodelet::detectionCb, this);
+    vision_detection_sub = nh.subscribe("vision_detection", 8, &WMNodelet::detectionCb, this);
     QString robotCommandSubName;
     for (int i = 0 ; i < 12 ; i++) {
         robotCommandSubName = QString("/agent_%1/command").arg(i);
-        robots_command_sub[i] = nh.subscribe(robotCommandSubName.toStdString(), 1000, &WMNodelet::robotsCommandCb, this);
+        robots_command_sub[i] = nh.subscribe(robotCommandSubName.toStdString(), 3, &WMNodelet::robotsCommandCb, this);
     }
 //    vision_geom_sub = nh.subscribe("vision_geom", 10, boost::bind(& WMNodelet::geomCb, this, _1));
 
@@ -44,7 +44,7 @@ void WMNodelet::detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr &_d
     wm->execute();
     frame ++;
     packs ++;
-    if (packs >= 4) {
+    if (packs >= m_config.cam_num) {
         packs = 0;
         wm->merge(frame);
         parsian_msgs::parsian_world_modelPtr temp = wm->getParsianWorldModel();
@@ -59,13 +59,8 @@ void WMNodelet::detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr &_d
 void WMNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
     isOurSideLeft = msg->side == parsian_msgs::parsian_team_config::LEFT;
     wm->setMode(msg->mode == parsian_msgs::parsian_team_config::SIMULATION);
-    NODELET_INFO("team config received!");
 }
 
 void WMNodelet::ConfigServerCallBack(const world_model_config::world_modelConfig &config, uint32_t level) {
-    m_config.active_cam_num = config.active_cam_num;
-    m_config.camera_one_active = config.camera_one_active;
-    m_config.camera_two_active = config.camera_two_active;
-    m_config.camera_three_active = config.camera_three_active;
-    m_config.camera_four_active = config.camera_four_active;
+    m_config = config;
 }

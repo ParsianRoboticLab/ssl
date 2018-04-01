@@ -266,9 +266,9 @@ void Robot::filter(int vanished) {
     }
 
     ANGULAR_DIRECTION = observation->dir.th().degree();
-    double kalmanDelayTime = 0.05;
+    double kalmanDelayTime = 0.1;
 
-    if (0 && inOurTeam) {
+    if (inOurTeam && false) {
         if (vanished <= 0) {
 
 

@@ -8,7 +8,7 @@
 namespace rqt_parsian_gui {
 RobotStatusWidget::RobotStatusWidget(int team_color) : QWidget() {
 
-    this->setFixedSize(400, 150);
+    this->setFixedSize(400, 250);
 
     std::string s;
     s = ros::package::getPath("rqt_parsian_gui");
@@ -48,9 +48,9 @@ RobotStatusWidget::RobotStatusWidget(int team_color) : QWidget() {
     status = new QGroupBox("Status", this);
     faults = new QGroupBox("Faults", this);
 
-    battery->setFixedHeight(25);
-    data_loss->setFixedHeight(25);
-    cap_charge ->setFixedHeight(25);
+    battery->setFixedHeight(30);
+    data_loss->setFixedHeight(30);
+    cap_charge ->setFixedHeight(30);
 
     robot_vel->setFixedSize(80, 120);
     status->setFixedSize(120, 120);
@@ -167,13 +167,13 @@ QString RobotStatusWidget::getFileName() {
     s = QString::fromStdString(ros::package::getPath("rqt_parsian_gui"));
     return QString(s + "/resource/images/" + color + robot_id + ".png");
 }
-void RobotStatusWidget::setMessage(const parsian_msgs::parsian_robot_status msg) {
+void RobotStatusWidget::setMessage(const parsian_msgs::parsian_robot_status& msg) {
     robot_id = QString::number(msg.id);
     board_id = QString::number(msg.boardId);
 
-    battery_percentage->setValue(msg.battery);
+    battery_percentage->setValue(msg.battery * 4);
     data_loss_percentage->setValue(msg.dataLoss);
-
+    cap_charge_percentage->setValue(msg.capCharge * 2);
     motors_f[0]->setChecked(msg.m1Fault);
     motors_f[1]->setChecked(msg.m2Fault);
     motors_f[2]->setChecked(msg.m3Fault);
@@ -197,22 +197,26 @@ void RobotStatusWidget::setMessage(const parsian_msgs::parsian_robot_status msg)
 
 }
 
-void RobotStatusWidget::setVel(const parsian_msgs::parsian_robot_command msg) {
-    vel->setText("vel: " + QString::number(std::hypot(msg.vel_F, msg.vel_N)));
-    vel_ang->setText("vel ang: " + QString::number(msg.vel_w));
+void RobotStatusWidget::setVel(const parsian_msgs::parsian_robot_command& msg) {
+
+     vel->setText("vel: " + QString("%1").arg(std::hypot(msg.vel_F, msg.vel_N)));
+
+    vel_ang->setText("vel ang: " + QString("%1").arg(msg.vel_w));
     if (msg.vel_F == 0 && msg.vel_N == 0) {
-        draw_dir(0);
+        draw_dir(-1000);
     } else {
-        draw_dir(std::atan2(msg.vel_F, msg.vel_N));
+        draw_dir(std::atan2(msg.vel_F, -1*msg.vel_N));
     }
 
 }
 void RobotStatusWidget::draw_dir(double ang) {
     agent_i = new QPixmap(QPixmap::fromImage(QImage(getFileName())));
-    agent_p = new QPainter(agent_i);
-    agent_p->drawLine(25, 25, static_cast<int>(25 * (1 + std::cos(ang))),
-                      static_cast<int>(25 * (1 - std::sin(ang))));
-    vel_dir->setPixmap(*agent_i);
+    if(ang != -1000) {
+        agent_p = new QPainter(agent_i);
+        agent_p->drawLine(25, 25, static_cast<int>(25 * (1 + std::cos(ang))),
+                          static_cast<int>(25 * (1 - std::sin(ang))));
+
+    }vel_dir->setPixmap(*agent_i);
 }
 
 }

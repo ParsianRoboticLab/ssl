@@ -144,7 +144,7 @@ void WorldModel::merge(int frame) {
     }
 
     if (vc->lastCamera < CAMERA_NUM && vc->lastCamera >= 0) {
-        vc->merge(4);
+        vc->merge(m_config.cam_num);
         mergedHalfWorld.currentFrame = frame;
         mergedHalfWorld.update(&(vc->res));
         mergedHalfWorld.vanishOutOfSights();

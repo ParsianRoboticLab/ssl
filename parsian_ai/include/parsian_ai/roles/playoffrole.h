@@ -47,7 +47,7 @@ public:
     ClassProperty(CRolePlayOff, bool, AvoidCenterCircle, avoidCenterCircle, updated);
     ClassProperty(CRolePlayOff, double, Tolerance, tolerance, updated);
     ClassProperty(CRolePlayOff, bool, Chip, chip, updated);
-    ClassProperty(CRolePlayOff, int, KickSpeed, kickSpeed, updated);
+    ClassProperty(CRolePlayOff, double, KickSpeed, kickSpeed, updated);
     ClassProperty(CRolePlayOff, bool, Slow, slow, updated);
     ClassProperty(CRolePlayOff, float, ReceiveRadius, receiveRadius, updated);
     ClassProperty(CRolePlayOff, Vector2D, WaitPos, waitPos, updated);

@@ -25,7 +25,6 @@
 <node name="agent_10" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
 <node name="agent_11" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
 
-
 <node name="planner_6"		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />
 <node name="planner_7"		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />
 <node name="planner_8"		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />

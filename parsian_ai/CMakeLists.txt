@@ -61,7 +61,9 @@ generate_dynamic_reconfigure_options(
 	###	cfg/pass.cfg
 		cfg/direct.cfg
 		cfg/mahi.cfg
+                cfg/move_forward.cfg
 		cfg/ai.cfg
+		cfg/def_test.cfg
 		cfg/behavior_server.cfg
 )
 
@@ -113,6 +115,7 @@ add_library(${PROJECT_NAME}_plays
 		src/parsian_ai/plays/theirdirect.cpp
 		src/parsian_ai/plays/theirballplacement.cpp
 		src/parsian_ai/plays/stopplay.cpp
+		src/parsian_ai/plays/halftimelineup.cpp
 		)
 
 add_library(${PROJECT_NAME}_plans
@@ -155,6 +158,7 @@ add_executable(${PROJECT_NAME}_node
 #####include(./pass_CMakeLists.txt)
 include(./direct_CMakeLists.txt)
 include(./mahi_CMakeLists.txt)
+include(./move_forward_CMakeLists.txt)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -230,6 +234,7 @@ target_link_libraries(${PROJECT_NAME}
 		${PROJECT_NAME}_roles
 		${PROJECT_NAME}_util
 		mahi_nodelet
+		direct_nodelet
 		)
 
 target_link_libraries(${PROJECT_NAME}_plays
@@ -255,6 +260,7 @@ target_link_libraries(${PROJECT_NAME}_roles
 		${catkin_LIBRARIES}
 		${QJSON_LIBRARIES}
 		)
+
 
 #############
 ## Install ##
@@ -291,8 +297,10 @@ install(FILES
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 		)
 
-catkin_install_python(PROGRAMS scripts/plan_server/planserver_node.py
-						       scripts/behavior_server/behavior_server_node.py
+catkin_install_python(PROGRAMS
+scripts/plan_server/planserver_node.py
+scripts/behavior_server/behavior_server_node.py
+scripts/auto_defense_test/def_test_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############

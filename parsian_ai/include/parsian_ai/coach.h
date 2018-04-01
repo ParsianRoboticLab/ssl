@@ -21,6 +21,7 @@
 #include <parsian_ai/plays/plays.h>
 #include <parsian_ai/roles/stop.h>
 #include <behavior/mahi/mahi.h>
+#include <behavior/direct/direct.h>
 #include <parsian_msgs/plan_service.h>
 #include <parsian_msgs/parsian_ai_status.h>
 #include <parsian_msgs/parsian_pair_roles.h>
@@ -68,7 +69,7 @@ public:
 
     void setBehaviorPublisher(ros::Publisher &_behaver_publisher);
 
-    int findGoalieID();
+    int findGoalie();
 
     parsian_msgs::plan_serviceResponse getLastPlan();
 
@@ -114,6 +115,7 @@ private:
     CTheirBallPlacement *theirBallPlacement;
     CDynamicAttack *dynamicAttack;
     CStopPlay *stopPlay;
+    CHalftimeLineup *halftimeLineup;
 
     Behavior *selectedBehavior;
 
@@ -150,7 +152,7 @@ private:
 
     void checkGoalieInsight();
 
-    void decidePreferredDefenseAgentsCountAndGoalieAgent();
+    void decidePreferredDefenseAgentsCount();
 
     void decideAttack();
 
@@ -165,7 +167,6 @@ private:
 
     void virtualTheirPlayOffState();
 
-    bool transientFlag;
     QTime trasientTimeOut;
     int translationTimeOutTime;
 
@@ -225,9 +226,18 @@ private:
     int preferedShotSpot;
 
     QList<int> lastPlayers;
-    Vector2D lastBallVel;
+
+    //////////////////////////////////// ALI GAVAHI
+    double lastNearestBallDist;
+    double averageVel;
+    QList<Vector2D> lastBallVels;
+    Vector2D startTransientBallPos;
+
+    void removeLastBallVel();
+    void clearBallVels();
 
     //////////////Decide Attack functions
+
     void decideHalt(QList<int> &);
 
     void decideStop(QList<int> &);
@@ -263,8 +273,9 @@ private:
 
     bool isFastPlay();
 
-    ///HMD
-    bool checkOverdef();
+    ///////////////////////// AHZ //////////
+    int findNeededDefense();
+
 
     double overDefThr;
 
@@ -288,6 +299,6 @@ private:
     parsian_msgs::parsian_ai_statusPtr fillAIStatus();
 
     void findDefneders(const int &max_number, const int& min_number);
-
+    NoAction* haltAction;
 };
 #endif //PARSIAN_AI_COACH_H

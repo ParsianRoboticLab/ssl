@@ -218,42 +218,42 @@ class Handler(FileSystemEventHandler):
         elif game_mode == 3:
             plan_mode = "KICKOFF"
 
-        # get a sublist from final_list based on player_num, game_mode and ball_pos
         sublist = []
-        rad = 0.9
-        master_list = []
-        active_list = []
+        rad = 1
 
-        for plan in self.__final_dict:
+        active_list = self.get_master_active_plans(self.__final_dict)
+
+        for plan in active_list:
             if self.check_plan(plan, ball_x, ball_y, rad, player_num, plan_mode):
                 sublist.append(plan)
 
         if len(sublist) > 0:
-            for plan in sublist:
-                if plan["isMaster"]:
-                    print(str(plan["filename"])+" is MASTER")
-                    master_list.append(plan)
-
-            if len(master_list) > 0:
-                active_list = master_list
-            else:
-                for plan in sublist:
-                    if plan["isActive"]:
-                        active_list.append(plan)
-
-            if len(active_list) == 0:
-                print ("[Plan Server] There's No Active Plan!!!")
-                return
-
-            print("#active_plans: "+str(len(active_list))+"\n")
-            i = self.__shuffleCount % len(active_list)
+            print("# active and valid plans: "+str(len(sublist))+"\n")
+            i = self.__shuffleCount % len(sublist)
             self.__shuffleCount += 1
-            print ("\n" + active_list[i]["filename"].split("plans/")[1] + "  " + str(active_list[i]["planMode"]))
-            return self.ai_message_generator(active_list[i])
-
+            print ("\n" + sublist[i]["filename"].split("plans/")[1] +
+                   ": "+str(sublist[i]["index"]) + "   " + str(sublist[i]["planMode"]))
+            return self.ai_message_generator(sublist[i])
         else:
-            print ("of invalid plans")
-            return self.nearest_plan(player_num, game_mode, ball_x, ball_y)
+            print ("of invalid plans ...")
+            return self.nearest_plan(player_num, ball_x, ball_y)
+
+    def get_master_active_plans(self, plan_list):
+        master_list = []
+        active_list = []
+
+        for plan in plan_list:
+            if plan["isMaster"]:
+                master_list.append(plan)
+
+        if len(master_list) > 0:
+            active_list = master_list
+        else:
+            for plan in plan_list:
+                if plan["isActive"]:
+                    active_list.append(plan)
+
+        return active_list
 
     def check_plan(self, plan, ball_x, ball_y, rad, player_num, plan_mode):
         DIRECT = 1
@@ -275,37 +275,26 @@ class Handler(FileSystemEventHandler):
                 return True
         return False
 
-    def nearest_plan(self, player_num, game_mode, ball_x, ball_y):
-        new_list = sorted(self.__final_dict, key=lambda x: self.ball_dist(x, x["ballInitPos"]["x"], x["ballInitPos"]["y"],
-                                                                          ball_x, ball_y))
-        sublist = []
-        master_list = []
-        active_list = []
+    def nearest_plan(self, player_num, ball_x, ball_y):
+        player_num_filter = []
 
-        for plan in new_list:
-            if len(plan["agentInitPos"]) >= player_num \
-                    and plan["chance"] > 0 and plan["lastDist"] >= 0:
-                sublist.append(plan)
+        for plan in self.__final_dict:
+            if len(plan["agentInitPos"]) >= player_num:
+                player_num_filter.append(plan)
+
+        active_list = self.get_master_active_plans(player_num_filter)
+
+        sublist = sorted(active_list, key=lambda x: self.ball_dist(
+            x, x["ballInitPos"]["x"], x["ballInitPos"]["y"], ball_x, ball_y))
 
         if len(sublist) > 0:
-            for plan in sublist:
-                if plan["isMaster"]:
-                    master_list.append(plan)
-            if len(master_list) > 0:
-                active_list = master_list
-            else:
-                for plan in sublist:
-                    if plan["isActive"]:
-                        active_list.append(plan)
+            print("# active and valid plans: " + str(len(sublist)) + "\n")
 
-            if len(active_list) == 0:
-                print ("There's No Active Plan!!!")
-                return
-
-            print ("\n" + active_list[0]["filename"].split("plans/")[1] + " : " + str(active_list[0]["planMode"]))
-            return self.ai_message_generator(active_list[0])
+            print ("\n" + sublist[0]["filename"].split("plans/")[1] +
+                   ": " + str(sublist[0]["index"]) + "   " + str(sublist[0]["planMode"]))
+            return self.ai_message_generator(sublist[0])
         else:
-            print ("\nNO PLAN MATCHED!\n")
+            print ("There is No master or active plan with proper number of players :/")
             return None
 
     @staticmethod
@@ -327,6 +316,7 @@ class Handler(FileSystemEventHandler):
             return math.sqrt(b)
 
     def get_all_plans_gui_msgs(self):
+        self.refresh();
         plans_msg = []
         for plan in self.__final_dict:
             plans_msg.append(self.gui_message_generator(plan))

@@ -35,7 +35,6 @@ public:
     void updateGoaliID(int id);
 
 private:
-    QMutex wmMutex;
 
 };
 

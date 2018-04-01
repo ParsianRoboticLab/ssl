@@ -87,10 +87,10 @@ void CBaseCommunicator::readData() {
 //
     for (int i = 0; i < _MAX_NUM_PLAYERS; i++) {
         robotStat[i].id                    = static_cast<unsigned char>(i);
-        robotStat[i].shootSensor           = static_cast<unsigned char>(robotPacket[i][1] & 0x01);
+        robotStat[i].shootSensor           = static_cast<unsigned char>( robotPacket[i][1] & 0x01);
         robotStat[i].battery               = static_cast<unsigned char>((robotPacket[i][1] & 0b11111100) >> 2);
-        robotStat[i].capCharge             = static_cast<unsigned char>(robotPacket[i][2] & 0b00111111);
-        robotStat[i].dataLoss              = static_cast<unsigned char>(robotPacket[i][4] & 0b00001111);
+        robotStat[i].capCharge             = static_cast<unsigned char>( robotPacket[i][2] & 0b00111111);
+        robotStat[i].dataLoss              = static_cast<unsigned char>( robotPacket[i][4] & 0b00001111);
         robotStat[i].spinCatchBall         = static_cast<unsigned char>((robotPacket[i][1] & 0b00000010) >> 1);
         robotStat[i].shootBoardFault       = static_cast<unsigned char>((robotPacket[i][5] & 0b01000000) >> 6);
         robotStat[i].kickFault             = static_cast<unsigned char>((robotPacket[i][5] & 0b00100000) >> 5);
@@ -98,8 +98,8 @@ void CBaseCommunicator::readData() {
         robotStat[i].En1Fault              = static_cast<unsigned char>((robotPacket[i][5] & 0b00001000) >> 3);
         robotStat[i].En2Fault              = static_cast<unsigned char>((robotPacket[i][5] & 0b00000100) >> 2);
         robotStat[i].En3Fault              = static_cast<unsigned char>((robotPacket[i][5] & 0b00000010) >> 1);
-        robotStat[i].En4Fault              = static_cast<unsigned char>(robotPacket[i][5] & 0b00000001);
-        robotStat[i].m1Fault               = static_cast<unsigned char>(robotPacket[i][6] & 0b00000001);
+        robotStat[i].En4Fault              = static_cast<unsigned char>( robotPacket[i][5] & 0b00000001);
+        robotStat[i].m1Fault               = static_cast<unsigned char>( robotPacket[i][6] & 0b00000001);
         robotStat[i].m2Fault               = static_cast<unsigned char>((robotPacket[i][6] & 0b00000010) >> 1);
         robotStat[i].m3Fault               = static_cast<unsigned char>((robotPacket[i][6] & 0b00000100) >> 2);
         robotStat[i].m4Fault               = static_cast<unsigned char>((robotPacket[i][6] & 0b00001000) >> 3);

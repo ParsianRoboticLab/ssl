@@ -17,29 +17,10 @@ CVisionClient::~CVisionClient() {
 void CVisionClient::parse(const parsian_msgs::ssl_vision_detectionConstPtr& packet) {
     lastCamera = -1;
     float ourTeamSide = (isOurSideLeft == parsian_msgs::parsian_team_config::LEFT) ? -1.0f : 1.0f;
-
-    if (!m_config.camera_one_active) {
-        if (packet->camera_id == 0) {
-            return;
-        }
-    }
-    if (!m_config.camera_two_active) {
-        if (packet->camera_id == 1) {
-            return;
-        }
-    }
-    if (!m_config.camera_three_active) {
-        if (packet->camera_id == 2) {
-            return;
-        }
-    }
-    if (!m_config.camera_four_active) {
-        if (packet->camera_id == 3) {
-            return;
-        }
-    }
+    v[packet->camera_id].updated = false;
 
 
+    qDebug() << "M" << packet->camera_id;
     frameCnt ++;
     int id = packet->camera_id;
     lastCamera = id;
@@ -77,6 +58,33 @@ void CVisionClient::parse(const parsian_msgs::ssl_vision_detectionConstPtr& pack
     v[id].timeStep = dt;
     v[id].ltcapture = t;
     v[id].visionLatency = (packet->t_sent - packet->t_capture);
+
+    if (!m_config.camera_0) {
+        if (packet->camera_id == 0) return;
+    }
+    if (!m_config.camera_1) {
+        if (packet->camera_id == 1) return;
+    }
+    if (!m_config.camera_2) {
+        if (packet->camera_id == 2) return;
+    }
+    if (!m_config.camera_3) {
+        if (packet->camera_id == 3) return;
+    }
+    if (!m_config.camera_4) {
+        if (packet->camera_id == 4) return;
+    }
+    if (!m_config.camera_5) {
+        if (packet->camera_id == 5) return;
+    }
+    if (!m_config.camera_6) {
+        if (packet->camera_id == 6) return;
+    }
+    if (!m_config.camera_7) {
+        if (packet->camera_id == 7) return;
+    }
+
+
     v[id].updated = true;
     for (int i = 0; i < std::min(MAX_OBJECT, static_cast<int>(packet->balls.size())); i++) {
         if (packet->balls[i].confidence != -1
@@ -135,7 +143,7 @@ void CVisionClient::parse(const parsian_msgs::ssl_vision_detectionConstPtr& pack
         }
         v[id].oppTeam[rob_id].append(raw);
         v[id].outofsight_oppTeam[rob_id] = 0;
-        our_insight[rob_id] = true;
+        opp_insight[rob_id] = true;
     }
 
 
@@ -165,6 +173,7 @@ void CVisionClient::merge(int camera_count) {
     res.timeStep = 0;
     res.ltcapture = 0;
     for (int i = 0; i < camera_count; i++) {
+        if (! v[i].updated ) continue;
         res.time += v[i].time;
         res.timeStep += v[i].timeStep;
         res.ltcapture += v[i].ltcapture;

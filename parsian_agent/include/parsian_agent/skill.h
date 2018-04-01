@@ -13,7 +13,7 @@
 #include <QtCore/QStringList>
 #include <parsian_util/action/action.h>
 #include <parsian_agent/agent.h>
-#include <parsian_util/tools/debuger.h>
+#include <parsian_util/tools/blackboard.h>
 #include <parsian_util/tools/drawer.h>
 
 using namespace rcsc;
