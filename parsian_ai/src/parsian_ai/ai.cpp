@@ -71,6 +71,31 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 
 }
 
+void AI::updateRobotFaults(const parsian_msgs::parsian_robot_fault & _rs)
+{
+    if(_rs.select == 0)
+        {
+            soccer->agents[_rs.robot_id]->fault = false;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
+        }
+        if(_rs.select == 1)
+        {
+            ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
+        }
+        if(_rs.select == 2)
+        {
+            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " damaged");
+            soccer->agents[_rs.robot_id]->fault = true;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
+        }
+        if(_rs.select == 3)
+        {
+            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " destroyed");
+            soccer->agents[_rs.robot_id]->fault = true;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
+        }
+}
+
 void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {
     wm->update(_wm);
     for (int i = 0 ; i < _MAX_NUM_PLAYERS ; i++) {
@@ -83,9 +108,9 @@ void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
     wm->updateRef(_ref);
 }
 
-void AI::forceUpdateReferee(const parsian_msgs::ssl_refree_commandConstPtr & _command){
+void AI::forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command){
     States state;
-    switch (_command->command){
+    switch (_command->command.command){
         case ssl_refree_command::BALL_PLACEMENT_US:
             state = States::OurBallPlacement;
             break;
@@ -132,6 +157,7 @@ void AI::forceUpdateReferee(const parsian_msgs::ssl_refree_commandConstPtr & _co
             return;
     }
     gameState->setState(state);
+    wm->setBallplacementPoin(_command->ballPlacementPos);
 }
 
 CSoccer* AI::getSoccer() {

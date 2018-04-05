@@ -68,7 +68,8 @@ enum DynamicSelect {
     NOSELECT = 0,
     KHAFAN = 1,
     CHIP = 2,
-    BLOCKER = 3
+    KICK = 3,
+    BLOCKER = 4
 };
 
 struct STuneParams {
@@ -340,6 +341,7 @@ private:
     bool initial;
 
     bool firstPass;
+    bool isOnetouch;
 
     SPlan* masterPlan;
     EMode masterMode;
@@ -412,7 +414,7 @@ private:
     bool isFinalShotDone();
 
     Vector2D lastBallPos;
-    long lastTime;
+    unsigned int lastTime;
     bool decidePlan;
     int kkAgentsID[_NUM_PLAYERS];
 
@@ -452,7 +454,7 @@ private:
     SFail isAnyTaskFaild();
     bool isAllTasksDone();
     bool isPlanDone();
-    bool isPlanFaild();
+    bool isPlanFailed();
     bool setTimer;
     unsigned int tempStart;
     ////////////////////////////
@@ -492,7 +494,7 @@ private:
     void dynamicAssignID();
     void dynamicPlayKhafan();
     void dynamicPlayBlocker();
-    void dynamicPlayChipToGoal();
+    void dynamicPlayChipToGoal(bool isChip);
 
     void checkEndKhafan();
     void checkEndBlocker();

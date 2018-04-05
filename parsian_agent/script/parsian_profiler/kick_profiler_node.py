@@ -182,12 +182,12 @@ class KickProfiler():
         elif self.state == State.KICK:
             if self.kick():
                 self.state = State.RETREAT
-        #the kicker gert back to its origin position --> just one gotopointAvoidTask --> no till condition
         elif self.state == State.RETREAT:
             self.retreat()
             self.state = State.RECEIVE
         #time for receive the ball --> receiveTask --> till the ball vel equal to 0(approximately)
         elif self.state == State.RECEIVE:
+        #the kicker gert back to its origin position --> just one gotopointAvoidTask --> no till condition
             if self.receive():
                 self.state = State.CALCULATING
         #calculating the max vel of the ball --> no till condition
@@ -252,9 +252,9 @@ class KickProfiler():
             self.startingkickspeed = 5
             self.endingkickspeed = 15
             self.current_speed = self.startingkickspeed
+            self.startingkickspeed = 200
             self.speed_step = 1
         elif not self.istest:
-            self.startingkickspeed = 400
             self.endingkickspeed = 1023
             self.current_speed = self.startingkickspeed
             self.speed_step = 100
@@ -506,9 +506,12 @@ class KickProfiler():
                 task2.target.y = self.startingpoint2.y
                 current_task2.receivePassTask = task2
                 self.task_pub2.publish(current_task2)
-                return True
+                if self.robotarrived(self.my_robot2, self.startingpoint2, 0.2):
+                    return True
+                else:
+                    return False
             else:
-                return  False
+                return False
 
         if self.kickstat == KickStat.ROBOT2KICKING:
             current_task2 = parsian_robot_task()
@@ -530,9 +533,12 @@ class KickProfiler():
                 task1.target.y = self.startingpoint1.y
                 current_task1.receivePassTask = task1
                 self.task_pub1.publish(current_task1)
-                return True
+                if self.robotarrived(self.my_robot1, self.startingpoint1, 0.2):
+                    return True
+                else:
+                    return False
             else:
-                return  False
+                return False
 
 
 
@@ -696,8 +702,10 @@ class KickProfiler():
                 self.speed_step = 23
             if not self.bad_flag:
                 rospy.loginfo(self.robot1_vels[self.current_speed]);
-                self.last_speed1 = self.robot1_vels[self.current_speed][0]
-                self.last_speed2 = self.robot2_vels[self.current_speed][0]
+		if self.robot1_vels[self.current_speed]:
+                    self.last_speed1 = self.robot1_vels[self.current_speed][0]
+		if self.robot2_vels[self.current_speed]:
+                    self.last_speed2 = self.robot2_vels[self.current_speed][0]
             self.bad_flag = False
             self.current_speed += self.speed_step
 

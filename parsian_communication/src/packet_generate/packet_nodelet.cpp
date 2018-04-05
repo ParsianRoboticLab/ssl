@@ -24,7 +24,6 @@ void PacketNodelet::onInit() {
     for (int i = 0 ; i < _MAX_ROBOT_NUM; i++) {
         robotPacketSub[i]   = n.subscribe(QString("/agent_%1/command").arg(i).toStdString(), 100, &PacketNodelet::callBack, this);
     }
-
     wmSub  = n.subscribe("world_model" , 100, &PacketNodelet::syncData, this);
 
     for (auto &robotPacket : robotPackets) {

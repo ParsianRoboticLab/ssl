@@ -12,5 +12,6 @@
 #include "parsian_ai/plays/theirballplacement.h"
 #include "parsian_ai/plays/stopplay.h"
 #include "parsian_ai/plays/halftimelineup.h"
+#include "parsian_ai/plays/ourpenaltyshootout.h"
 
 #endif // PLAYS_H

@@ -1,0 +1,4 @@
+<library path="libparsian_agent_auto_decider_nodelet">
+<class name="auto_decider/Decider" type="auto_decider::Decider" base_class_type="nodelet::Nodelet">
+</class>
+</library>

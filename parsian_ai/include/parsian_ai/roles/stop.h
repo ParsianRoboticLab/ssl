@@ -8,12 +8,15 @@ public:
     explicit CRoleStopInfo(QString _roleName);
     void findPositions();
     Vector2D getEmptyTarget(const Vector2D& _position, const double& _radius);
+    void setAgentBehindBall(int agentId);
     int inCorner;
     Vector2D TA;
     QList <Vector2D> Ps;
     QList <double> thR;
     QList <double> thP;
     QList <int> robotId;
+
+    int agentIDBehindBall;
 };
 
 class CRoleStop : public CRole {

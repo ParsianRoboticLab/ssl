@@ -289,5 +289,5 @@ Vector2D CBall::ballSpeedAt(double dist) {
 double CBall::getBallAcc() {
     // return Gravity*BallFriction();
 //    return this->acc.length();
-    return 0.17;
+    return 0.12;
 }

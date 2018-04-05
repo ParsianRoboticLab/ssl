@@ -233,11 +233,13 @@ add_dependencies(${PROJECT_NAME}_actions
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_geom
         ${catkin_LIBRARIES}
-        )
+        ${QT_LIBRARIES}
+	)
 
 target_link_libraries(${PROJECT_NAME}_math
         ${catkin_LIBRARIES}
         ${QT_LIBRARIES}
+	${PROJECT_NAME}_geom
         )
 
 target_link_libraries(${PROJECT_NAME}_tools

@@ -74,7 +74,7 @@ void COurBallPlacement::execute_x(){
     }
     ROS_INFO("Executaion 1.5");
 
-    Vector2D behindBall = ballpos - Vector2D(pos - ballpos).norm() * 0.15;
+    Vector2D behindBall = ballpos - Vector2D(pos - ballpos).norm() * 0.20;
     Circle2D validcir{pos , 0.2};
     Circle2D invalidcir{pos, 1 - 0.1};
     Vector2D sol1, sol2;
@@ -123,16 +123,18 @@ void COurBallPlacement::execute_x(){
     auto *gpa = new GotopointavoidAction;
     gpa->setTargetpos(behindBall);
     gpa->setSlowmode(true);
-    gpa->setBallobstacleradius(0.18);
+    gpa->setBallobstacleradius(0.15);
     gpa->setLookat(pos);
 
     //PASS
     auto *pass = new KickAction();
     pass->setTarget(pos);
-    int power = (int)(50 * pos.dist(ballpos));
-    ROS_INFO_STREAM(power);
+    double power = .3 * pos.dist(ballpos);
+    if(power<.5) power = .5;
+    if(power>1.5) power = 1.5;
+    ROS_INFO_STREAM("shoot speed:"<< power);
     pass->setKickspeed(power);
-    pass->setSpin(5);
+//    pass->setSpin(1);
     pass->setSlow(true);
 
     //GO_FOR_VALID_PASS
@@ -155,7 +157,7 @@ void COurBallPlacement::execute_x(){
     gpas->setTargetpos(pos);
     gpas->setLookat(ballpos);
     gpas->setSlowmode(true);
-    gpas->setRoller(4);
+//    gpas->setRoller(1);
 
     switch(state){
         case BallPlacement :: NoState:

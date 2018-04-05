@@ -37,7 +37,6 @@ class Attack_Plan(Enum):
 
 ##------------------------------Main Node------------------------------------##
 class AutoDefenseTest():
- 
     def __init__(self):
 
         self.wm = parsian_world_model

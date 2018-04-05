@@ -17,6 +17,7 @@ public:
     bool isInIndirectArea(Vector2D aPoint);
     QList <QString> markRoles;
     void findOppAgentsToMark();
+    int findNeededMark();
 
     double ballCircleR = 0.5; 
     int ourBallOwner, oppBallOwner;    //Agent Id del

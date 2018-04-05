@@ -56,6 +56,9 @@ CDynamicAttack::CDynamicAttack() {
 
     assignRegions();
     assignLocations();
+
+    lastAgentCount = -1;
+    playmake = nullptr;
 }
 
 CDynamicAttack::~CDynamicAttack() {
@@ -102,6 +105,9 @@ void CDynamicAttack::reset() {
 void CDynamicAttack::execute_x() {
     ROS_INFO_STREAM("Dynamic Attack : " << agents.size());
     globalExecute(agents.size());
+    for (auto& p : semiDynamicPosition) {
+        drawer->draw(Circle2D(p, .1), QColor(Qt::red), true);
+    }
 }
 
 void CDynamicAttack::globalExecute(int agentSize) {
@@ -163,7 +169,7 @@ bool CDynamicAttack::evalmovefwd()
         double ang{angsum[angsum.size()] + angles[i]/2.0};
         //ROS_INFO_STREAM("kian: " << angsum*180/3.14);
         Vector2D tmp1{};
-        tmp1.setPolar(1, AngleDeg{-90 + ang*180/3.14});
+        tmp1.setPolar(10, AngleDeg{-90 + ang*180/3.14});
         tmp.first = tmp1;
         tmp.first.x += wm->ball->pos.x + wm->ball->vel.x;
         tmp.first.y += wm->ball->pos.y + wm->ball->vel.y;
@@ -239,7 +245,7 @@ void CDynamicAttack::swap(Segment2D *xp, Segment2D *yp)
 
 void CDynamicAttack::sortobstacles(QList<Segment2D> &obstacles)
 {
-    int j{}, n{obstacles.size()};
+    int n{obstacles.size()};
     for (int i{}; i < n-1; i++)
         for (int j{}; j < n-i-1; j++)
             if(angleOfTwoSegment(obstacles[j], left) > angleOfTwoSegment(obstacles[j+1], left))
@@ -269,144 +275,58 @@ double CDynamicAttack::findmax(const QList<double> &list)
 void CDynamicAttack::makePlan(int agentSize) {
 
     //// Initialize Plan with null values
-    nextPlanA->mode = DynamicMode::NoMode;
-    nextPlanA->agentSize = agentSize;
-    for (auto &positionAgent : nextPlanA->positionAgents) {
+    currentPlan.mode = DynamicMode::NoMode;
+    currentPlan.agentSize = agentSize;
+    for (auto &positionAgent : currentPlan.positionAgents) {
         positionAgent.region = DynamicRegion::NoMatter;
         positionAgent.skill  = PositionSkill::NoSkill;
-        }
-
-
-    //// Initialize Plan with null values
-    nextPlanB->mode = DynamicMode::NoMode;
-    nextPlanB->agentSize = agentSize;
-    for (auto &positionAgent : nextPlanB->positionAgents) {
-        positionAgent.region = DynamicRegion::NoMatter;
-        positionAgent.skill  = PositionSkill::NoSkill;
-    }
-
-    if(true) {
-        ROS_INFO_STREAM("kian: nomode");
-        nextPlanA->mode = DynamicMode::NoMode;
-        nextPlanA->playmake.init(PlayMakeSkill::Pass, DynamicRegion::Best);
-        for (size_t i = 0; i < agentSize; i++) {
-            nextPlanA->positionAgents[i].region = DynamicRegion::Best;
-            nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
-        }
-        currentPlan = *nextPlanA;
-        return;
     }
 
     //// We Don't have the ball -- counter-attack, blocking, move forward
     //// And Ball is in our field
-    if (wm->ball->pos.x < 0) {
+    if (isBallInOurField) {
         ROS_INFO_STREAM("kian: dont have the ball");
-        nextPlanA->mode = DynamicMode::NotWeHaveBall;
-        if (conf.ChipForward && evalmovefwd()) {
-            nextPlanA->playmake.init(PlayMakeSkill::Chip, DynamicRegion::Forward);
+        currentPlan.mode = DynamicMode::NotWeHaveBall;
+        if (conf.ChipForward
+//            && evalmovefwd()
+                ) {
+            currentPlan.playmake.init(PlayMakeSkill::Chip, DynamicRegion::Forward);
         } else {
-            nextPlanA->playmake.init(PlayMakeSkill::Chip, DynamicRegion::Goal);
+            currentPlan.playmake.init(PlayMakeSkill::Chip, DynamicRegion::Goal);
         }
         for (size_t i = 0; i < agentSize; i++) {
-            nextPlanA->positionAgents[i].region = DynamicRegion::Near;
-            nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
+            currentPlan.positionAgents[i].region = DynamicRegion::Near;
+            currentPlan.positionAgents[i].skill  = PositionSkill::Ready;
         }
     }
-    //// we have ball and
-    //// shot prob is more than 50%
+        //// we have ball and
+        //// shot prob is more than 50%
     else if (directShot) {
         ROS_INFO_STREAM("kian: diret shot");
-        nextPlanA->mode = DynamicMode::DirectKick;
-        nextPlanA->playmake.init(PlayMakeSkill::Shot, DynamicRegion::Goal);
+        currentPlan.mode = DynamicMode::DirectKick;
+        currentPlan.playmake.init(PlayMakeSkill::Shot, DynamicRegion::Goal);
         for (size_t i = 0; i < agentSize; i++) {
-            nextPlanA->positionAgents[i].region = DynamicRegion::Best;
-            nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
+            currentPlan.positionAgents[i].region = DynamicRegion::Best;
+            currentPlan.positionAgents[i].skill  = PositionSkill::Ready;
         }
     }
-    else if (critical) {
-        ROS_INFO_STREAM("kian: critical");
-        nextPlanA->mode = DynamicMode::Critical;
-        {
-            oppRob = wm->field->oppGoal();
-            lastPMInitWasDribble = true;
-            if (conf.DribbleInFast) {
-                nextPlanA->playmake.init(PlayMakeSkill::Dribble, DynamicRegion::Goal);
-            } else {
-                nextPlanA->playmake.init(PlayMakeSkill::Shot, DynamicRegion::Goal);
-            }
-            for (size_t i = 0; i < agentSize; i++) {
-                nextPlanA->positionAgents[i].region = DynamicRegion::Best;
-                nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
-            }
-        }
-
-    }
-    //// if Defense isn't clearing and
-    //// we have ball and
-    //// shot prob isn't more than 50% and
-    //// there isn't a critical situation and
-    //// we don't have positioning agent
-    else if (agentSize == 0) {
-        ROS_INFO_STREAM("kian: no positioning");
-        nextPlanA->mode = DynamicMode::NoPositionAgent;
-        nextPlanA->playmake.init(PlayMakeSkill::Shot, DynamicRegion::Goal);
-    }
-    // we have ball and
-    // shot prob isn't more than 50% and
-    // there isn't a critical situation and
-    // we have positioning agents
-    // it's needed to be fast
-    else if (fast) {
-        ROS_INFO_STREAM("kian: fast");
-        oppRob = wm->field->oppGoal();
-        nextPlanA->mode = DynamicMode ::Fast;
-        if (conf.DribbleInFast) {
-            nextPlanA->playmake.init(PlayMakeSkill::Dribble, DynamicRegion ::Goal);
-        } else {
-            nextPlanA->playmake.init(PlayMakeSkill::Shot, DynamicRegion ::Goal);
-        }
-        for (size_t i = 0; i < agentSize; i++) {
-            nextPlanA->positionAgents[i].region = DynamicRegion::Best;
-            nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
-        }
-    }
-    // if Defense isn't clearing and
-    // we have ball and
-    // shot prob isn't more than 50% and
-    // there isn't a critical situation and
-    // we have positioning agents
-    // there's no need to be fast and
-    // there is no plan for this situation
-    ///the correct mode is as below but the ::choosebesrtposforpass:: giving a  bad position
-    /////////TODO: fix the pos
     else {
         ROS_INFO_STREAM("kian: nomode");
-        nextPlanA->mode = DynamicMode::NoMode;
-        nextPlanA->playmake.init(PlayMakeSkill::Pass, DynamicRegion::Best);
+        currentPlan.mode = DynamicMode::NoMode;
+        currentPlan.playmake.init(PlayMakeSkill::Pass, DynamicRegion::Best);
         for (size_t i = 0; i < agentSize; i++) {
-            nextPlanA->positionAgents[i].region = DynamicRegion::Best;
-            nextPlanA->positionAgents[i].skill  = PositionSkill::Ready;
+            currentPlan.positionAgents[i].region = DynamicRegion::Best;
+            currentPlan.positionAgents[i].skill  = PositionSkill::Ready;
         }
     }
-    currentPlan = *nextPlanA;
-}
-
-Agent* CDynamicAttack::getMahiPlayMaker() {
-    return mahiPlayMaker;
 }
 
 void CDynamicAttack::assignId() {
-
-    mahiPlayMaker = nullptr;
-    if (playmakeID != -1) {
-        mahiPlayMaker = playmake;
-    }
 
     int tempIndex;
     QList<int> matchedIDList;
     mahiPositionAgents.clear();
     guardIndexList.clear();
-
     MWBM matcher;
     int n = agents.size();
     matcher.create(n, n);
@@ -430,7 +350,7 @@ void CDynamicAttack::assignId() {
 }
 
 void CDynamicAttack::assignTasks() {
-    if (mahiPlayMaker != nullptr) {
+    if (playmake != nullptr) {
         playMake();
     }
     if (currentPlan.agentSize > 0) {
@@ -444,42 +364,38 @@ void CDynamicAttack::assignTasks() {
  * @param agentSize number of positioning Agents
  */
 void CDynamicAttack::dynamicPlanner(int agentSize) {
-    //HAMID HERE
 
     for (size_t i = 0; i < 8; i++) {
         mahiAgentsID[i] = -1;
     }
 
-    makePlan(agentSize);
+    if (inTimePlan() || true) {
+        makePlan(agentSize);
+    }
 
-    for (int i = 0; i < agents.size(); i++) {
-        if (agents[i]->isVisible() && agents[i]->action != nullptr) {
-            Action *mahi = agents[i]->action;
-            ROS_INFO_STREAM(i << ": " << mahi->getActionName().toStdString().c_str());
-        }
-    }
-    if (agentSize > 0) {
+    if (agentSize > 0 && (lastAgentCount != agentSize || isPlayMakeChanged())) {
         chooseBestPositons_new();
-    }
-    assignId_new();
-    if (agentSize > 0) {
+        assignId_new();
         chooseReceiverAndBestPosForPass();
     }
-    if(isInpass())
-    {
-        ROS_INFO_STREAM("ispassed" << playmakeIntention.elapsed());
-        playmakeIntention.restart();
-    }
-    if(playmakeIntention.elapsed() > 1000 || playmake == nullptr)
-    {
-        PMfromCoach = true;
-    }
-    if(playmakeIntention.elapsed() <= 1000 && playmake != nullptr)
-    {
-        PMfromCoach = false;//change to false later
-        ROS_INFO_STREAM("playmake PMfromCoach is false");
-    }
+
+//    if(isInpass())
+//    {
+//        ROS_INFO_STREAM("ispassed" << playmakeIntention.elapsed());
+//        playmakeIntention.restart();
+//    }
+//    if(playmakeIntention.elapsed() > 1000 || playmake == nullptr)
+//    {
+//        PMfromCoach = true;
+//    }
+//    if(playmakeIntention.elapsed() <= 1000 && playmake != nullptr)
+//    {
+//        PMfromCoach = false;//change to false later
+//        ROS_INFO_STREAM("playmake PMfromCoach is false");
+//    }
     assignTasks();
+    ROS_INFO("MAHI");
+
     for(size_t i = 0;i < currentPlan.agentSize;i++) {
         if(mahiAgentsID[i] >= 0) {
             roleAgents[i]->execute();
@@ -487,116 +403,99 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
             DBUG(QString("[dynamicAttack - %1] mahiAgentID buged").arg(__LINE__), D_MAHI);
         }
     }
-    if (playmakeID != -1) {
+    if (playmake != nullptr && playmake->id() != -1) {
         roleAgentPM->execute();
     }
+    lastAgentCount = agentSize;
 
-    // TODO : remove this
-    if (isPlayMakeChanged()) {
-        for (bool &i : goToDynamic) {
-            i = false;
-        }
-    }
 }
 
 void CDynamicAttack::playMake() {
 
-    drawer->draw(Circle2D(mahiPlayMaker->pos(), 0.1), QColor(Qt::red), true);
+    drawer->draw(Circle2D(playmake->pos(), 0.1), QColor(Qt::red), true);
     if (teamConfig.color == teamConfig.BLUE) {
-        drawer->draw(Circle2D(mahiPlayMaker->pos() + mahiPlayMaker->dir() * 0.08, 0.06), QColor(Qt::blue), true);
+        drawer->draw(Circle2D(playmake->pos() + playmake->dir() * 0.08, 0.06), QColor(Qt::blue), true);
     } else {
-        drawer->draw(Circle2D(mahiPlayMaker->pos() + mahiPlayMaker->dir() * 0.08, 0.06), QColor(Qt::yellow), true);
+        drawer->draw(Circle2D(playmake->pos() + playmake->dir() * 0.08, 0.06), QColor(Qt::yellow), true);
     }
 
-    roleAgentPM->setAgent(mahiPlayMaker);
+    roleAgentPM->setAgent(playmake);
     roleAgentPM->setAvoidPenaltyArea(true);
 
     Vector2D og = wm->ball->pos - wm->field->ourGoal();
     switch (currentPlan.playmake.skill) {
-    case PlayMakeSkill ::Dribble:
-        ROS_INFO_STREAM("kian: drrible");//<< currentPlan.playmake.skill);
-        ROS_INFO_STREAM("kian: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y << "//////////////////");
-        roleAgentPM -> setTargetDir(currentPlan.passPos);
-        roleAgentPM -> setTarget(oppRob);
-        roleAgentPM -> setChip(false);
-        roleAgentPM -> setNoKick(true);
-        roleAgentPM -> setSelectedPlayMakeSkill(PlayMakeSkill ::Dribble); // skill Dribble
-        break;
-    case PlayMakeSkill ::Pass:
-        ROS_INFO_STREAM("kian: pass");
-        ROS_INFO_STREAM("kian: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y << "//////////////////");
-        roleAgentPM -> setChip(chipOrNot(currentPlan.passPos, 0.5, 0.1));
-        roleAgentPM -> setTarget(currentPlan.passPos);
-        roleAgentPM -> setEmptySpot(false);
-        roleAgentPM -> setNoKick(false);
-        if (roleAgentPM->getChip()) {
-//            roleAgentPM->setChipDist(appropriateChipSpeed());       //TODO: set chip distanse not speed
-            roleAgentPM->setChipDist(7);
-        } else {
-//            roleAgentPM->setKickSpeed(appropriatePassSpeed());
-            roleAgentPM->setKickSpeed(6);
-        }
-
-        roleAgentPM -> setSelectedPlayMakeSkill(PlayMakeSkill ::Pass);// Skill Kick
-
-        /////////////////////////////// I HATE PARSA
-        //        for(int i = 0; i < wm->opp.activeAgentsCount(); i++)
-        //            if(ballPos.dist(wm->field->oppGoal()) < 0.7 && Circle2D(wm->opp[wm->opp.activeAgentID(i)]->pos + wm->opp[wm->opp.activeAgentID(i)]->dir.norm()*0.08,0.07).contains(ballPos))
-        //                roleAgentPM -> setSelectedSkill(DynamicEnums::Dribble); // skill Dribble
-        //            else
-        //                roleAgentPM -> setSelectedSkill(DynamicEnums::Pass);// Skill Kick
-        // TODO : fix this dastan
-        /*if(isRightTimeToPass()) {
-                roleAgentPM->setNoKick(false); //TEST
+        case PlayMakeSkill ::Dribble:
+            ROS_INFO_STREAM("kian: drrible");//<< currentPlan.playmake.skill);
+            ROS_INFO_STREAM("kian: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y << "//////////////////");
+            roleAgentPM -> setTargetDir(currentPlan.passPos);
+            roleAgentPM -> setTarget(oppRob);
+            roleAgentPM -> setChip(false);
+            roleAgentPM -> setNoKick(false);
+            roleAgentPM -> setSelectedPlayMakeSkill(PlayMakeSkill ::Dribble); // skill Dribble
+            break;
+        case PlayMakeSkill ::Pass:
+            ROS_INFO_STREAM("kian: pass");
+            ROS_INFO_STREAM("kian: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y << "//////////////////");
+            roleAgentPM -> setChip(chipOrNot(currentPlan.passPos, 0.5, 0.1));
+            roleAgentPM -> setTarget(currentPlan.passPos);
+            roleAgentPM -> setEmptySpot(false);
+            roleAgentPM -> setNoKick(false);
+            if (roleAgentPM->getChip()) {
+                roleAgentPM->setChipDist(appropriateChipSpeed());       //TODO: set chip distanse not speed
+//                roleAgentPM->setChipDist(conf.MediumDistChip);
             } else {
-                roleAgentPM->setNoKick(true);
-            }*/
-//        if(isInpass())
-//            swapPlaymakeInPass();
-        break;
-
-    case PlayMakeSkill ::Chip:
-        ROS_INFO_STREAM("chip");
-        roleAgentPM->setNoKick(false);
-        if (currentPlan.playmake.region == DynamicRegion ::Goal) {
-            roleAgentPM ->setTarget(wm->field->oppGoal());
-            roleAgentPM->setChip(true);
-            if (wm->ball->pos.x < -2) {
-                roleAgentPM ->setChipDist(conf.HighDistChip);
-            } else {
-                roleAgentPM ->setChipDist(conf.MediumDistChip);
-
+                roleAgentPM->setKickSpeed(appropriatePassSpeed());
+//                roleAgentPM->setKickSpeed(conf.MediumSpeedPass);
             }
-        } else if (currentPlan.playmake.region == DynamicRegion ::Forward) {
-            roleAgentPM->setTarget(move_fwd_target);
+
+            roleAgentPM -> setSelectedPlayMakeSkill(PlayMakeSkill ::Pass);// Skill Kick
+            break;
+
+        case PlayMakeSkill ::Chip:
+            ROS_INFO_STREAM("chip");
+            roleAgentPM->setNoKick(false);
+            if (currentPlan.playmake.region == DynamicRegion ::Goal) {
+                roleAgentPM ->setTarget(wm->field->oppGoal());
+                roleAgentPM->setChip(true);
+                if (wm->ball->pos.x < -2) {
+                    roleAgentPM->setChipDist(conf.HighDistChip);
+                } else if (wm->ball->pos.x > 4) {
+                    roleAgentPM->setChipDist(conf.LowDistChip);
+                } else {
+                    roleAgentPM ->setChipDist(conf.MediumDistChip);
+
+                }
+            } else if (currentPlan.playmake.region == DynamicRegion ::Forward) {
+//                roleAgentPM->setTarget(move_fwd_target);
+                roleAgentPM->setTarget(Vector2D(1000, 0));
+                roleAgentPM->setChip(false);
+                roleAgentPM->setKickSpeed(conf.LowDistChip);
+            } else {
+                roleAgentPM->setChip(true);
+                roleAgentPM->setTarget(wm->field->oppGoal());
+                roleAgentPM->setChipDist(conf.LowDistChip);
+            }
+            roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill::Chip);// Skill Chip
+            break;
+        case PlayMakeSkill::Shot : {
+            roleAgentPM->setEmptySpot(true);
             roleAgentPM->setChip(false);
-            roleAgentPM->setKickSpeed(conf.LowSpeedPass);
-        } else {
-            roleAgentPM->setChip(true);
+            roleAgentPM->setNoKick(false);
             roleAgentPM->setTarget(wm->field->oppGoal());
-            roleAgentPM->setChipDist(conf.LowDistChip);
+            roleAgentPM->setKickSpeed(conf.HighSpeedPass); // TODO : 8m/s by profiller
+            roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill ::Shot); // Skill Kick
+            break;
         }
-        roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill ::Chip);// Skill Chip
-        break;
-    case PlayMakeSkill ::Shot: {
-        roleAgentPM->setEmptySpot(true);
-        roleAgentPM->setChip(false);
-        roleAgentPM->setNoKick(false);
-        roleAgentPM->setTarget(wm->field->oppGoal());
-        roleAgentPM->setKickSpeed(6); // TODO : 8m/s by profiller
-        roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill ::Shot); // Skill Kick
-        break;
-    }
-    default:
-        ROS_INFO_STREAM("default");
-        roleAgentPM->setEmptySpot(true);
-        roleAgentPM->setChip(false);
-        roleAgentPM->setNoKick(false);
-        roleAgentPM->setTarget(wm->field->oppGoal());
-        // Parsa : ino hamintory avaz kardam kar kard...
-        roleAgentPM->setKickSpeed(6); // TODO : 8m/s by profiller
-        roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill ::Shot); // Skill Kick
-        break;
+        default:
+            ROS_INFO_STREAM("default");
+            roleAgentPM->setEmptySpot(true);
+            roleAgentPM->setChip(false);
+            roleAgentPM->setNoKick(false);
+            roleAgentPM->setTarget(wm->field->oppGoal());
+            // Parsa : ino hamintory avaz kardam kar kard...
+            roleAgentPM->setKickSpeed(conf.MediumSpeedPass); // TODO : 8m/s by profiller
+            roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill ::Shot); // Skill Kick
+            break;
     }
 }
 
@@ -604,54 +503,62 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
     // hamid pos
     ROS_INFO_STREAM("hamid inside positioning2");
     bool check = false;
+    for (auto p : _points) {
+        ROS_INFO_STREAM("POINTS: " << p.x << p.y);
+    }
+    ROS_INFO_STREAM("SKILL: " << static_cast<int>(currentPlan.positionAgents[0].skill));
+    for (auto a : mahiPositionAgents) {
+        ROS_INFO_STREAM("Agents: " << a->id());
+    }
+
     for (int i = 0 ; i < currentPlan.agentSize; i++) {
         if (mahiAgentsID[i] >= 0) {
             roleAgents[i]->setAgent(mahiPositionAgents.at(i));
             roleAgents[i]->setAvoidPenaltyArea(true);
             if (i < _points.size()) {
                 switch (currentPlan.positionAgents[i].skill) {
-                case PositionSkill ::Ready: // Ready For Pass
-                    ROS_INFO_STREAM("kian: too switch set : skill: ready");
-                    roleAgents[i]->setTarget(_points.at(i));
-                    roleAgents[i]->setReceiveRadius(
+                    case PositionSkill ::Ready: // Ready For Pass
+                        ROS_INFO_STREAM("kian: too switch set : skill: ready");
+                        roleAgents[i]->setTarget(_points.at(i));
+                        roleAgents[i]->setReceiveRadius(
                                 std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
-                                         .dist(roleAgents[i]->getTarget())));
-                    roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Ready);// Receive Skill
+                                        .dist(roleAgents[i]->getTarget())));
+                        roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Ready);// Receive Skill
 
-                    break;
-                case PositionSkill ::OneTouch: // OneTouch Reflects
-                    ROS_INFO_STREAM("kian: too switch set : skill: onetouch");
-                    roleAgents[i]->setWaitPos(_points.at(i));
-                    roleAgents[i]->setReceiveRadius(
+                        break;
+                    case PositionSkill ::OneTouch: // OneTouch Reflects
+                        ROS_INFO_STREAM("kian: too switch set : skill: onetouch");
+                        roleAgents[i]->setWaitPos(_points.at(i));
+                        roleAgents[i]->setReceiveRadius(
                                 std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
-                                         .dist(roleAgents[i]->getTarget())));
+                                        .dist(roleAgents[i]->getTarget())));
 
-                    // TODO : fix the target
-                    roleAgents[i]->setTarget(wm->field->oppGoal());
-                    roleAgents[i]->setSelectedPositionSkill(PositionSkill ::OneTouch);// Receive Skill
+                        // TODO : fix the target
+                        roleAgents[i]->setTarget(wm->field->oppGoal());
+                        roleAgents[i]->setSelectedPositionSkill(PositionSkill ::OneTouch);// Receive Skill
 
-                    break;
-                case PositionSkill ::Move:
-                    ROS_INFO_STREAM("kian: too switch set : skill: move");
-                    roleAgents[i]->setReceiveRadius(
+                        break;
+                    case PositionSkill ::Move:
+                        ROS_INFO_STREAM("kian: too switch set : skill: move");
+                        roleAgents[i]->setReceiveRadius(
                                 std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
-                                         .dist(roleAgents[i]->getTarget())));
-                    roleAgents[i]->setTarget(_points.at(i));
-                    roleAgents[i]->setTargetDir(wm->ball->pos - roleAgents[i]->getAgent()->pos());
-                    roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Move);
+                                        .dist(roleAgents[i]->getTarget())));
+                        roleAgents[i]->setTarget(_points.at(i));
+                        roleAgents[i]->setTargetDir(wm->ball->pos - roleAgents[i]->getAgent()->pos());
+                        roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Move);
 
-                    break;
-                case PositionSkill ::NoSkill:
-                    ROS_INFO_STREAM("kian: too switch set : skill: noskill");
-                    roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Ready);// Receive Skill
+                        break;
+                    case PositionSkill ::NoSkill:
+                        ROS_INFO_STREAM("kian: too switch set : skill: noskill");
+                        roleAgents[i]->setSelectedPositionSkill(PositionSkill ::Ready);// Receive Skill
 
-                    break;
-                    //                    case PositionSkill::Pass:break;
-                    //                    case PositionSkill::CatchBall:break;
-                    //                    case PositionSkilll::Shot:break;
-                    //                    case PositionSkill::Keep:break;
-                    //                    case PositionSkill::Chip:break;
-                    //                    case PositionSkill::Dribble:break;
+                        break;
+                        //                    case PositionSkill::Pass:break;
+                        //                    case PositionSkill::CatchBall:break;
+                        //                    case PositionSkilll::Shot:break;
+                        //                    case PositionSkill::Keep:break;
+                        //                    case PositionSkill::Chip:break;
+                        //                    case PositionSkill::Dribble:break;
                 }
 
                 if (roleAgents[i]->getTarget() == currentPlan.passPos) {
@@ -670,7 +577,7 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
 
 inline bool CDynamicAttack::chipOrNot(Vector2D target,
                                       double _radius, double _treshold) {
-    return !isPathClear(wm->ball->pos, target, _radius, _treshold);
+    return !isPathClearFromOpp(wm->ball->pos, target, _radius, _treshold);
 }
 
 bool CDynamicAttack::keepOrNot() {
@@ -695,21 +602,26 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
 
-    drawer->draw(_poly, "red");
+    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+        if (_poly.contains(wm->opp.active(i)->pos)) {
+            return false;
+        }
+    }
 
     for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
         if (_poly.contains(wm->opp.active(i)->pos)) {
             return false;
         }
     }
+
     return true;
 }
 
 bool CDynamicAttack::isPlayMakeChanged() {
 
-    if (mahiPlayMaker != nullptr) {
-        if (mahiPlayMaker->id() != lastPlayMakerId) {
-            lastPlayMakerId = mahiPlayMaker->id();
+    if (playmake != nullptr) {
+        if (playmake->id() != lastPlayMakerId) {
+            lastPlayMakerId = playmake->id();
             return true;
         }
     }
@@ -720,34 +632,21 @@ int CDynamicAttack::appropriatePassSpeed() {
 
     double tempDistance = 0;
     double speed = 0;
-    if (mahiPlayMaker != nullptr) {
-        tempDistance = mahiPlayMaker->pos().dist(currentPlan.passPos);
+    if (playmake != nullptr) {
+        tempDistance = playmake->pos().dist(currentPlan.passPos);
 
-        if (false) { // dynamic pass Speed // FALSED IN ROS
-            //            if (tempDistance < 2) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_LowSpeedPass();
-            //
-            //            } else if(tempDistance > 4) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_HighSpeedPass();
-            //
-            //            } else {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_MediumSpeedPass();
-            //
-            //            }
+        if (tempDistance < 2) {
+            speed = conf.LowSpeedPass;
+
+        } else if (tempDistance > 4) {
+            speed = conf.HighSpeedPass;
 
         } else {
-            if (tempDistance < 2) {
-                speed = conf.LowSpeedPass;
-
-            } else if (tempDistance > 4) {
-                speed = conf.HighSpeedPass;
-
-            } else {
-                speed = conf.MediumSpeedPass;
-
-            }
+            speed = conf.MediumSpeedPass;
 
         }
+
+
     } else {
         speed = conf.MediumSpeedPass;
     }
@@ -759,34 +658,19 @@ int CDynamicAttack::appropriateChipSpeed() {
 
     double tempDistance = 0;
     double speed = 0;
-    if (mahiPlayMaker != nullptr) {
-        tempDistance = mahiPlayMaker->pos().dist(currentPlan.passPos);
+    if (playmake != nullptr) {
+        tempDistance = playmake->pos().dist(currentPlan.passPos);
 
-        if (false) { // dynamic chip Speed
-            //            if (tempDistance < 2) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_LowSpeedChip();
-            //
-            //            } else if(tempDistance > 4) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_HighSpeedChip();
-            //
-            //            } else {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_MediumSpeedChip();
-            //
-            //            }
+        if (tempDistance < 2) {
+            speed = conf.LowDistChip;
+
+        } else if (tempDistance > 4) {
+            speed = conf.HighDistChip;
 
         } else {
-            if (tempDistance < 2) {
-                speed = conf.LowDistChip;
-
-            } else if (tempDistance > 4) {
-                speed = conf.HighDistChip;
-
-            } else {
-                speed = conf.MediumDistChip;
-
-            }
-
+            speed = conf.MediumDistChip;
         }
+
     } else {
         speed = conf.MediumSpeedPass;
     }
@@ -814,7 +698,7 @@ void CDynamicAttack::chooseBestPositons() {
 
     semiDynamicPosition.clear();
 
-    if (mahiPlayMaker != nullptr && wm->ball->pos.dist(mahiPlayMaker->pos()) < 0.15) {
+    if (playmake != nullptr && wm->ball->pos.dist(playmake->pos()) < 0.15) {
         passPos        = currentPlan.passPos;
         lastPassPosLoc = currentPlan.passPos;
     } else {
@@ -825,7 +709,7 @@ void CDynamicAttack::chooseBestPositons() {
     for (int i = 0; i < agentSize; i++) {
         //if it wants to get a dribble position:
         if (currentPlan.positionAgents[i].region == DynamicRegion ::Supporter ||
-                (i <= 1 && dribbleIntention.elapsed() < 3000)) {
+            (i <= 1 && dribbleIntention.elapsed() < 3000)) {
             cntD++;
             double x, y;
             if (cntD == 1) {
@@ -898,7 +782,7 @@ void CDynamicAttack::chooseBestPositons() {
                 semiDynamicPosition.append(guardLocations[agentSize][0][lastGuards[0]]);
             }
         }
-        //third if we have more than one positioning :
+            //third if we have more than one positioning :
         else {
             lastYDrib = 10;
             int best = -1;
@@ -913,9 +797,9 @@ void CDynamicAttack::chooseBestPositons() {
             for (int j = 0; j < guardSize; j++) {
                 points[j]    = guardLocations[agentSize][i][j];
                 tooNearToBall[j] = ((wm->ball->pos + wm->ball->vel * ballVelCoef).
-                                    dist(points[j]) <= 1.2);
+                        dist(points[j]) <= 1.2);
                 tooFarToBall[j] = ((wm->ball->pos + wm->ball->vel * ballVelCoef).
-                                   dist(points[j]) > 4.7);
+                        dist(points[j]) > 4.7);
                 tempAngle[j] = Vector2D::angleOf(wm->field->oppGoal(),
                                                  points[j], wm->ball->pos + 0.2 * wm->ball->vel).degree();
                 //            debug(QString("angle   is  : %1").arg(tempAngle    [j]), D_PARSA);
@@ -949,7 +833,7 @@ void CDynamicAttack::chooseBestPositons() {
             }
             //        debug(QString("best is : %1").arg(best), D_PARSA);
             if (agentSize == 3 && best == guardSize - 1 && i == 1
-                    && points[best].x > wm->ball->pos.x + 1) { //exception for 3 positionings
+                && points[best].x > wm->ball->pos.x + 1) { //exception for 3 positionings
                 Line2D l = Line2D(wm->ball->pos, points[best]);
                 Vector2D dummy;
                 Segment2D s = Segment2D(wm->field->oppGoalR() - Vector2D(0, 0.3),
@@ -983,8 +867,8 @@ void CDynamicAttack::chooseBestPositons() {
                 ans = Vector2D(0, 0);
             } else
                 ans = guardLocations[currentPlan.agentSize]
-                        [currentPlan.agentSize - 1]
-                        [best];
+                [currentPlan.agentSize - 1]
+                [best];
 
             int matchId = -1;
             for (int j = 0; j < guardSize; j++)
@@ -1000,7 +884,7 @@ void CDynamicAttack::chooseBestPositons() {
                 lastGuards[i] = -1;
             } else if (matchId != lastGuards[i]) {
                 if (lastGuards[i] == -1 || farChoice ||
-                        positioningIntention.msec() > positioningIntentionInterval) {
+                    positioningIntention.msec() > positioningIntentionInterval) {
                     semiDynamicPosition.append(ans);
                     positioningIntention.restart();
                     lastGuards[i] = matchId;
@@ -1021,10 +905,10 @@ void CDynamicAttack::swapPlaymakeInPass()
 {
     if(playmakeIntention.elapsed() <= 1000)
     {
-//        agents.append(playmake);
-//        playmakeID = receiver->id();
-//        playmake = receiver;
-//        agents.removeOne(receiver);
+        //        agents.append(playmake);
+        //        playmakeID = receiver->id();
+        //        playmake = receiver;
+        //        agents.removeOne(receiver);
     }
 }
 
@@ -1034,8 +918,10 @@ bool CDynamicAttack::isInpass()
     Circle2D receiverRegion(currentPlan.passPos, 1.3);
     Vector2D sol1;
     Vector2D sol2;
-    if(receiverRegion.intersection(ballpath, &sol1, &sol2) && mahiPlayMaker->pos().dist(wm->ball->pos) > 0.7 && wm->ball->vel.length() > 1.2)
-        return true;
+    if (playmake->pos().dist(wm->ball->pos) > 0.7) {
+        if (receiverRegion.intersection(ballpath, &sol1, &sol2) != 0 && wm->ball->vel.length() > 1.2)
+            return true;
+    }
     return false;
 }
 
@@ -1046,88 +932,81 @@ double fRand(double fMin, double fMax)
 }
 
 void CDynamicAttack::chooseReceiverAndBestPosForPass() {
-    // hamid working here
 
-
-    // 1) first find a optimal position for each of the robots to receive the pass
-        // what we have: the optimal waiting pos for each robot
-        // what we need: an optimal position in the robots region, where they can receive the pass
     optimalPositionsForRecivers.clear();
-    for(auto& robotID : matchingIDs)
-    {
-//        auto robotPos = wm->our[robotID]->pos;
-//        auto robotVel = wm->our[robotId]->vel;
-
-//        auto playmakePos = playmake->pos;
-
-//        double searchCircleRadius = 0;
-//        Vector2D searchCircleCenter = Vector2D(0, 0);
+    QList<double> probs;
+    QList<Vector2D> points;
+    double oppRed{1};
 
 
 
 
 
+    for(auto& robotID : matchingIDs) {
 
-        //        drawer->draw(Circle2D(searchCircleCenter, searchCircleRadius), QColor("orange"));
+        QList <Circle2D> obstacles;
+        for (int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
+            obstacles.append(Circle2D(wm->opp.active(i)->pos, oppRed));
+        }
+
+        for (int i = 0 ; i < wm->our.activeAgentsCount() ; i++) {
+            if (wm->our.active(i)->id == playmake->id() || wm->our.active(i)->id == robotID) continue;
+            obstacles.append(Circle2D(wm->our.active(i)->pos + wm->our.active(i)->vel, 0.1));
+
+        }
+
+        if (!wm->field->isInField(wm->our[robotID]->pos)) continue;
+        Circle2D c{wm->our[robotID]->pos, 4};
+        Line2D path{playmake->pos(), wm->our[robotID]->pos};
+        Vector2D sol1,sol2; sol1.invalidate(); sol2.invalidate();
+        c.intersection(path.perpendicular(wm->our[robotID]->pos), &sol1, &sol2);
+        Segment2D recieveSegment{sol1, sol2};
+
+        validateSegment(recieveSegment);
+        double angle = 0, biggestAngle = 0, prob = 0;
+
+        CKnowledge::getEmptyAngle(*wm->field, playmake->pos(), recieveSegment.a(), recieveSegment.b(), obstacles, prob, angle, biggestAngle);
+        points.append(recieveSegment.intersection(Line2D(playmake->pos(), angle)));
+        probs.append(prob);
+
     }
 
-
-
-
-
-    // 2) then determine which robot is to receive the pass
-        // what we have: the optimal positions for robots where they can recieve the pass cominng fromm the playmake
-        // what we need: the id of the optimal robot that can receive the pass better than the others
-
-    if(semiDynamicPosition.isEmpty() || matchingIDs.isEmpty())
-    {
+    if (points.isEmpty()) {
         currentPlan.passPos = wm->field->oppGoal();
-        receiver = nullptr;
-        ROS_INFO_STREAM("segment receiver is null");
+        currentPlan.passID = -1;
         return;
     }
 
+    Vector2D bestPoint = wm->field->oppGoal();
+    double bestOneTouchFactor = -100;
+    int bestReceiver = -1;
+    for (int i = 0; i < points.count(); i++) {
+        QList <Circle2D> obstacles;
+        for (int j = 0 ; j < wm->opp.activeAgentsCount() ; j++) {
+            obstacles.append(Circle2D(wm->opp.active(j)->pos, oppRed));
+        }
 
-    int lastReceiver = -1;
-    double maxDist = -1000;
-    for(auto& id : matchingIDs)
-    {
-        double tempDist = wm->our[id]->pos.dist(wm->our[playmakeID]->pos);
-        if(tempDist > maxDist)
-        {
-            maxDist = tempDist;
-            lastReceiver = id;
+        for (int j = 0 ; j < wm->our.activeAgentsCount() ; j++) {
+            if (wm->our.active(j)->id == playmake->id() || wm->our.active(j)->id == matchingIDs[j]) continue;
+            obstacles.append(Circle2D(wm->our.active(j)->pos + wm->our.active(j)->vel, 0.1));
+
+        }
+        if (probs[i] < 0.5) continue;
+        double tempOverall = calcOneTouchAngleFactor(points[i]);
+        tempOverall*= 0.2;
+        double prob, angle, biggestAngle;
+        CKnowledge::getEmptyAngle(*wm->field, points[i], wm->field->oppGoalL(), wm->field->oppGoalR(), obstacles, prob, angle, biggestAngle);
+        tempOverall += 0.8*prob;
+        if (tempOverall > bestOneTouchFactor) {
+            bestReceiver = matchingIDs[i];
+            bestOneTouchFactor = tempOverall;
+            bestPoint = points[i];
         }
     }
-    if(lastReceiver == -1)
-    {
-        receiver = nullptr;
-        ROS_INFO_STREAM("segment lastReceiver -1");
-        currentPlan.passPos = /*semiDynamicPosition[0]*/wm->field->ourGoal();
-        return;
-    }
-    currentPlan.passID = lastReceiver;
-    ROS_INFO_STREAM("segment passID is " << lastReceiver);
-    for(auto& agent : agents)
-    {
-        ROS_INFO_STREAM("segment inside for");
-        if(agent->id() == currentPlan.passID)
-        {
-            receiver = agent;
-            ROS_INFO_STREAM("segment receiver is set to " << receiver->id());
-        }
-    }
-    ROS_INFO_STREAM("segment bala");
-    int index;
-    for(int i{0}; i<matchingIDs.count(); i++)
-    {
-        if(matchingIDs[i] == lastReceiver)
-            index = i;
-    }
-    currentPlan.passPos = semiDynamicPosition[index];
-    ROS_INFO_STREAM("segment paeen");
+    currentPlan.passPos = bestPoint;
+    currentPlan.passID = bestReceiver;
 
-    lastPassPosLoc = currentPlan.passPos;
+
 }
 
 double CDynamicAttack::getDynamicValue(const Vector2D &_dynamicPos) const {
@@ -1172,67 +1051,11 @@ bool CDynamicAttack::isRightTimeToPass() {
     }
     if (semiDynamicPosition.size() > tempDefIndex) {
         if (mahiPositionAgents.at(tempDefIndex)->pos()
-                .dist(semiDynamicPosition.at(tempDefIndex)) < conf.Area) {
+                    .dist(semiDynamicPosition.at(tempDefIndex)) < conf.Area) {
             return true;
         }
     }
     return false;
-}
-
-void CDynamicAttack::managePasser() {
-
-    //    Vector2D sol1,sol2;
-
-    //    if(!repeatFlag) {
-    //        if(currentPlan.agents[0].role == DynamicEnums::PlayMaker) {
-    //            if(currentPlan.agents[0].skill == DynamicEnums::Pass) {
-    //                if(Circle2D(mahiPlayMaker->pos() + mahiPlayMaker->dir()*0.08,
-    //                            0.08).contains(ballPos)) {
-    //                    passFlag = true;
-    //                }
-    //                else if(!Circle2D(mahiPlayMaker->pos(),0.3).contains(ballPos)) {
-    //                    if(Circle2D(currentPlan.passPos,1)
-    //                            .intersection(Ray2D(ballPos,
-    //                                                ballPos + ballVel),
-    //                                          &sol1, &sol2)) {
-    //                        if(passFlag) {
-    //                            passFlag   = false;
-    //                            repeatFlag = true;
-    //                            passerID   = mahiPlayMaker->id();
-    //                        }
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }        /////////ISPASSNOTDONE///////////
-    //    if(repeatFlag && (counter < 100)) {
-    //        counter++;
-    //        repeatFlag = true;
-    //        for(size_t i = 0; i  < agents.size();i++) {
-    //            if(roleAgents[i]->getAgent()->id() == passerID)
-    //                lastPasserRoleIndex = i;
-    //        }
-
-    //        roleAgents[lastPasserRoleIndex]->setAgent(knowledge->getAgent(passerID));
-    //        roleAgents[lastPasserRoleIndex]->setAgentID(passerID);
-    //        roleAgents[lastPasserRoleIndex]->setAvoidPenaltyArea(true);
-    //        roleAgents[lastPasserRoleIndex]->setTarget(Vector2D(0,0));
-    //        roleAgents[lastPasserRoleIndex]->setReceiveRadius(0.1);
-    //        roleAgents[lastPasserRoleIndex]->setSelectedSkill(DynamicEnums::Mark);
-
-    ////        counter    = 0;
-    ////        repeatFlag = false;
-    ////        passerID   = -1;
-    //    }
-    //    else {
-    //        passerID = -1;
-    //    }
-
-    //    debug(QString("PasserID %1 , Counter : %2").arg(passerID).arg(counter),D_MAHI);
-    //    debug(QString("playMake %1 , skill : %2"  ).arg(mahiPlayMaker->id())
-    //          .arg(roleAgentPM->getSelectedSkill()),D_MAHI);
-    //    //    debug(QString("LPRI %1 , skill : %2").arg(mahiPlayMaker->id()).arg(roleAgentPM->getSelectedSkill()),D_MAHI);
-
 }
 
 int CDynamicAttack::farGuardFromPoint(const int &_guardIndex,
@@ -1241,8 +1064,8 @@ int CDynamicAttack::farGuardFromPoint(const int &_guardIndex,
     int tempIndex = -1;
     for (int i = 0; i < 3; i++) {
         tempDist = guardLocations[currentPlan.agentSize]
-                [guardIndexList.at(_guardIndex)]
-                [i].dist(_point);
+        [guardIndexList.at(_guardIndex)]
+        [i].dist(_point);
         if (i == lastGuards[_guardIndex]) {
             tempDist += 0.3;
         }
@@ -1589,25 +1412,25 @@ void CDynamicAttack::assignLocations_6() {
 
 QString CDynamicAttack::getString(const DynamicMode &_mode) const {
     switch (_mode) {
-    default:
-    case DynamicMode::NoMode:
-        return QString("NoMode");
-    case DynamicMode::DefenseClear:
-        return QString("DefenseClear");
-    case DynamicMode::NotWeHaveBall:
-        return QString("NotWeHaveBall");
-    case DynamicMode::DirectKick:
-        return QString("DirectKick");
-    case DynamicMode::Fast:
-        return QString("Fast");
-    case DynamicMode::Critical:
-        return QString("Critical");
-    case DynamicMode::Plan:
-        return QString("NewPlan");
-    case DynamicMode::Forward:
-        return QString("Ball In Our Field");
-    case DynamicMode::NoPositionAgent:
-        return QString("No Agent");
+        default:
+        case DynamicMode::NoMode:
+            return QString("NoMode");
+        case DynamicMode::DefenseClear:
+            return QString("DefenseClear");
+        case DynamicMode::NotWeHaveBall:
+            return QString("NotWeHaveBall");
+        case DynamicMode::DirectKick:
+            return QString("DirectKick");
+        case DynamicMode::Fast:
+            return QString("Fast");
+        case DynamicMode::Critical:
+            return QString("Critical");
+        case DynamicMode::Plan:
+            return QString("NewPlan");
+        case DynamicMode::Forward:
+            return QString("Ball In Our Field");
+        case DynamicMode::NoPositionAgent:
+            return QString("No Agent");
     }
 }
 
@@ -1630,28 +1453,9 @@ void CDynamicAttack::setPositions(QList<int> _positioningRegion) {
     }
 }
 
-void CDynamicAttack::setPlayMake(Agent* _playMake)
-{
-    ROS_INFO_STREAM("playmake1 PMfromCoach: " << PMfromCoach);
-
-//    if(PMfromCoach || playmake == nullptr || receiver == nullptr)
-//    {
-      playmakeID = _playMake->id();
-      playmake = _playMake;
-//    }
-//    else if(!PMfromCoach)
-//    {
-//        ROS_INFO_STREAM("swap receivverID: " << receiver->id());
-//        QList<Agent*> newposing;
-//        newposing.clear();
-//        for(const auto& agent : agents)
-//            if(agent->id() != receiver->id())
-//                newposing.append(agent);
-//        newposing.append(playmake);
-//        init(newposing);
-//        playmakeID = receiver->id();
-//        playmake = receiver;
-//    }
+void CDynamicAttack::setPlayMake(Agent* _playMake)  {
+    ROS_INFO_STREAM("H: " << &_playMake);
+    playmake = _playMake;
 }
 
 void CDynamicAttack::setWeHaveBall(bool _ballPoss) {
@@ -1685,19 +1489,19 @@ void CDynamicAttack::choosePlan() {
 bool CDynamicAttack::isPlanFailed() {
     switch (currentPlan.mode) {
 
-    case DynamicMode::NoMode:
-        return false;
-        break;
-    case DynamicMode::CounterAttack:break;
-    case DynamicMode::DefenseClear:break;
-    case DynamicMode::DirectKick:break;
-    case DynamicMode::Fast:break;
-    case DynamicMode::Critical:break;
-    case DynamicMode::NotWeHaveBall:break;
-    case DynamicMode::Plan:break;
-    case DynamicMode::Forward:break;
-    case DynamicMode::NoPositionAgent:break;
-    case DynamicMode::BallInOppJaw:break;
+        case DynamicMode::NoMode:
+            return false;
+            break;
+        case DynamicMode::CounterAttack:break;
+        case DynamicMode::DefenseClear:break;
+        case DynamicMode::DirectKick:break;
+        case DynamicMode::Fast:break;
+        case DynamicMode::Critical:break;
+        case DynamicMode::NotWeHaveBall:break;
+        case DynamicMode::Plan:break;
+        case DynamicMode::Forward:break;
+        case DynamicMode::NoPositionAgent:break;
+        case DynamicMode::BallInOppJaw:break;
     }
     return false;
 }
@@ -1705,25 +1509,25 @@ bool CDynamicAttack::isPlanFailed() {
 bool CDynamicAttack::isPlanDone() {
     switch (currentPlan.mode) {
 
-    case DynamicMode::NoMode:
-        return true;
-        break;
-    case DynamicMode::CounterAttack:break;
-    case DynamicMode::DefenseClear:break;
-    case DynamicMode::DirectKick:break;
-    case DynamicMode::Fast:break;
-    case DynamicMode::Critical:break;
-    case DynamicMode::NotWeHaveBall:break;
-    case DynamicMode::Plan:break;
-    case DynamicMode::Forward:break;
-    case DynamicMode::NoPositionAgent:break;
-    case DynamicMode::BallInOppJaw:break;
+        case DynamicMode::NoMode:
+            return true;
+            break;
+        case DynamicMode::CounterAttack:break;
+        case DynamicMode::DefenseClear:break;
+        case DynamicMode::DirectKick:break;
+        case DynamicMode::Fast:break;
+        case DynamicMode::Critical:break;
+        case DynamicMode::NotWeHaveBall:break;
+        case DynamicMode::Plan:break;
+        case DynamicMode::Forward:break;
+        case DynamicMode::NoPositionAgent:break;
+        case DynamicMode::BallInOppJaw:break;
     }
 }
 
 
 // NEW PASS
-double f1(long double &tot, long double a, long double b)
+double f1(double &tot, double a, double b)
 {
     tot += b;
     if (a>1.0) a=1.0;
@@ -1731,16 +1535,16 @@ double f1(long double &tot, long double a, long double b)
     return a*b;
 }
 
-double f1(long double a, long double b)
+double f1(double a, double b)
 {
     if (a>1.0) a=1.0;
     if (a<0.0) a=0.0;
     return a*b;
 }
 
-double fm1(long double a, long double b)
+double fm1(double a, double b)
 {
-    long double r = a/b;
+    double r = a/b;
     if (r>1.0) r = 1.0;
     if (r<0.0) r = 0.0;
     return r;
@@ -1755,9 +1559,11 @@ void CDynamicAttack::createRegions()
     for(int i{0}; i<3; i++)
     {
         row0.push_back(Rect2D(Vector2D(2*i,4.5), 2, 2.8));
-        row1.push_back(Rect2D(Vector2D(2*i,1.7), 2, 3.4));
+        if (i == 2) row1.push_back(Rect2D(Vector2D(2*i - 0.7,1.7), 2, 3.4));
+        else row1.push_back(Rect2D(Vector2D(2*i,1.7), 2, 3.4));
         row2.push_back(Rect2D(Vector2D(2*i,-1.7), 2, 2.8));
     }
+
     rectangles.push_back(row0);
     rectangles.push_back(row1);
     rectangles.push_back(row2);
@@ -1804,88 +1610,121 @@ void CDynamicAttack::chooseBestPositons_new()
     avoidRects.append(wm->field->oppPenaltyRect());
 
     // get the pass sender
-    int passSenderID{playmakeID};
+    int passSenderID{playmake->id()};
     ROS_INFO_STREAM("hamid playkame ID: " << passSenderID);
     Vector2D passSenderPos;
-    Vector2D passSenderDir;
-    if(passSenderID != -1)
-    {
+    if(passSenderID != -1) {
         passSenderPos = wm->our[passSenderID]->pos;
-        passSenderDir  = wm->our[passSenderID]->dir;
         ourRelaxedIDs.append(passSenderID);
-    }
-    else
-    {
+    } else {
         passSenderPos.invalidate();
     }
+
+    int ballR = -1;
+    regionPriority.clear();
+    for (int i{0}; i < 3; i++) for (int j{0}; j < 3; j++) if (regions[i][j].rectangle.contains(wm->ball->pos + wm->ball->vel)) ballR = i*3+j;
+    switch (ballR) {
+        case 0:
+            regionPriority << 6 << 3 << 2 << 8 << 7 << 5 << 4 << 1 << 0;
+            break;
+        case 1:
+            regionPriority << 7 << 4 << 2 << 8 << 5 << 3 << 6 << 0 << 1;
+            break;
+        case 2:
+            regionPriority << 4 << 8 << 5 << 7 << 3 << 6 << 1 << 0 << 2;
+            break;
+        case 3:
+            regionPriority << 7 << 2 << 8 << 1 << 6 << 0 << 4 << 5 << 3;
+            break;
+        case 4:
+            regionPriority << 2 << 8 << 7 << 1 << 3 << 1 << 7 << 6 << 4;
+            break;
+        case 5:
+            regionPriority << 2 << 8 << 4 << 1 << 3 << 7 << 0 << 6 << 5;
+            break;
+        case 6:
+            regionPriority << 0 << 3 << 8 << 2 << 1 << 5 << 4 << 7 << 6;
+            break;
+        case 7:
+            regionPriority << 6 << 3 << 2 << 8 << 7 << 4 << 5 << 1 << 7;
+            break;
+        case 8:
+            regionPriority << 4 << 2 << 5 << 1 << 3 << 0 << 7 << 6 << 8;
+            break;
+        default:
+            regionPriority << 7 << 2 << 8 << 1 << 6 << 0 << 4 << 5 << 3;
+            break;
+    }
+
+    return;
 
     // this section determines the factors and calculates the probability of those factors
     for (auto& passReciever : agents)
     {
-        auto passRecieverID = passReciever->id();
-        if(passRecieverID != passSenderID)
-        {
-            // getting the pass receiver
-            Vector2D passRecieverPos;
-            Vector2D passRecieverDir;
-            if(passRecieverID != -1)
-            {
-                passRecieverPos = wm->our[passRecieverID]->pos;
-                passRecieverDir = wm->our[passRecieverID]->dir;
-                ourRelaxedIDs.append(passRecieverID);
-            }
-            else
-            {
-                passRecieverPos.invalidate();
-            }
-            ROS_INFO_STREAM("hamid pass receiverpos: (" << passRecieverPos.x << ", " << passRecieverPos.y);
-            for(int region_id{0}; region_id<9; region_id++)
-            {
-                Vector2D bestPoint(regions[region_id/3][region_id%3].rectangle.center());
-                double maxProbability = 0;
-                for(auto& point : regions[region_id/3][region_id%3].points)
-                {
-                    for(int i{0}; i<avoidRects.count(); i++)
-                    {
-                        if (avoidRects[i].contains(point))
-                            continue;
-                    }
+        int passRecieverID = passReciever->id();
+        if (passRecieverID == passSenderID) continue;
 
-                    double prob = 0.0;
-                    //factors for pass
-                    double receiverDistanceFactor = 0; // be the closer than opp robots (temp), could change based on timing
-                    double senderDistanceFactor = 0; // being within a specified intervval (temp), ccould change based on timing
-                    double clearPathFactor = 0; // if the path to the point is clear for receiving robot
-                    double widenessFactor = 0;
-
-                    // factors for shoot
-                    double oneTouchAngleFactor = 0; // if the angle to the opp goal is whitin a desird interval
-                    double shootFactor = 0;
-
-                    receiverDistanceFactor = calcReceiverDistanceFactor(point, passRecieverID, region_id);
-                    senderDistanceFactor = calcSenderDistanceFactor(passSenderPos, point);
-                    clearPathFactor = caclClearPathFactor(point, passSenderPos, ROBOT_RADIUS);
-                    oneTouchAngleFactor = calcOneTouchAngleFactor(point, passSenderPos);
-                    widenessFactor = calcWidenessFactor(passSenderPos, point);
-
-                    double f = 1.0;
-                    prob += f1(widenessFactor,0.5*f);
-                    prob += f1(receiverDistanceFactor,2.0*f);
-                    prob += f1(senderDistanceFactor,0.1*f);
-                    prob += f1(clearPathFactor,1.0*f);
-                    prob += f1(oneTouchAngleFactor,0.1*f);
-                    prob  = fm1(prob,5.2*f);
-
-                    if( prob > maxProbability )
-                    {
-                        maxProbability = prob;
-                        bestPoint = point;
-                    }
-                }
-                robotRegionsWeights[passRecieverID][region_id] = maxProbability;
-                bestPointForRobotsInRegions[passRecieverID][region_id] = bestPoint;
-            }
+        // getting the pass receiver
+        Vector2D passRecieverPos;
+        Vector2D passRecieverDir;
+        if(passRecieverID != -1) {
+            passRecieverPos = wm->our[passRecieverID]->pos;
+            passRecieverDir = wm->our[passRecieverID]->dir;
+            ourRelaxedIDs.append(passRecieverID);
+        } else {
+            passRecieverPos.invalidate();
         }
+        ROS_INFO_STREAM("hamid pass receiverpos: (" << passRecieverPos.x << ", " << passRecieverPos.y);
+        for(int region_id{0}; region_id<9; region_id++)
+        {
+            Vector2D bestPoint(regions[region_id/3][region_id%3].rectangle.center());
+            double maxProbability = 0;
+            for(auto& point : regions[region_id/3][region_id%3].points)
+            {
+                for(int i{0}; i<avoidRects.count(); i++)
+                {
+                    if (avoidRects[i].contains(point))
+                        continue;
+                }
+
+                double prob = 0.0;
+                //factors for pass
+                double receiverDistanceFactor = 0; // be the closer than opp robots (temp), could change based on timing
+                double senderDistanceFactor = 0; // being within a specified interval (temp), could change based on timing
+                double clearPathFactor = 0; // if the path to the point is clear for receiving robot
+                double widenessFactor = 0;
+                double notInWayFactor = 0;
+
+                // factors for shoot
+                double oneTouchAngleFactor = 0; // if the angle to the opp goal is whitin a desird interval
+                double shootFactor = 0;
+
+                receiverDistanceFactor = calcReceiverDistanceFactor(point, passRecieverID, region_id);
+                senderDistanceFactor = calcSenderDistanceFactor(passSenderPos, point);
+                clearPathFactor = caclClearPathFactor(point, passSenderPos, ROBOT_RADIUS);
+                oneTouchAngleFactor = calcOneTouchAngleFactor(point);
+                widenessFactor = calcWidenessFactor(passSenderPos, point);
+                notInWayFactor = calcNotInWayFactor(passSenderPos, point);
+
+                double f = 1.0;
+                prob += f1(widenessFactor,0.5*f);
+                prob += f1(receiverDistanceFactor,2.0*f);
+                prob += f1(senderDistanceFactor,0.1*f);
+                prob += f1(clearPathFactor,1.0*f);
+                prob += f1(oneTouchAngleFactor,0.1*f);
+                prob += f1(notInWayFactor,1*f);
+//                prob  = fm1(prob,5.2*f);
+
+                if( prob > maxProbability )
+                {
+                    maxProbability = prob;
+                    bestPoint = point;
+                }
+            }
+            robotRegionsWeights[passRecieverID][region_id] = maxProbability;
+            bestPointForRobotsInRegions[passRecieverID][region_id] = bestPoint;
+        }
+
     }
 }
 
@@ -1904,11 +1743,7 @@ int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos)
 
 void CDynamicAttack::assignId_new()
 {
-    mahiPlayMaker = nullptr;
-    if (playmakeID != -1) {
-        mahiPlayMaker = playmake;
-    }
-
+    if (regionPriority.isEmpty()) return;
     QList<Rect2D> searchRegions;
     for(int i{0}; i<3; i++)
     {
@@ -1917,59 +1752,37 @@ void CDynamicAttack::assignId_new()
             searchRegions.append(regions[i][j].rectangle);
         }
     }
-
-
     QList<int> robotIDs;
     MWBM matcher;
-    for(int k{0}; k<11; k++)
-    {
-        if(robotRegionsWeights[k][0] != -1.0)
-            robotIDs.append(k);
+    for (const auto& a : agents) {
+        if (a->id() != playmake->id()) robotIDs.append(a->id());
     }
-    for(int i{0}; i<robotIDs.count(); i++)
-        ROS_INFO_STREAM("hamid robot ids: " << robotIDs[i] << " ");
-    if(robotIDs.count() != agents.count())
-        ROS_INFO_STREAM("hamid counts are not equal");
-    matcher.create(robotIDs.count(), 9);
+
+    matcher.create(robotIDs.count(), robotIDs.count());
     for(int i{0}; i< robotIDs.count(); i++)
     {
-        for(int j{0}; j<9; j++)
+        for(int j{0}; j < robotIDs.count(); j++)
         {
             auto agentPos = wm->our[robotIDs[i]]->pos;
-            matcher.setWeight(i, j, -1*(agentPos.dist(searchRegions[j].center())));
+            matcher.setWeight(i, j, -1 * agentPos.dist(searchRegions[regionPriority[i]].center()));
         }
     }
     matcher.findMatching();
     mahiPositionAgents.clear();
     matchingIDs.clear(); matchingRegions.clear();
     semiDynamicPosition.clear();
-    for(int i{0}; i<8; i++)
-    {mahiAgentsID[i] = -1;}
-    for(int v = 0; v<robotIDs.count(); v++)
-    {
+    for(int i{0}; i<8; i++) {mahiAgentsID[i] = -1;}
+    for(int v = 0; v<robotIDs.count(); v++) {
         mahiAgentsID[v] = /*matcher.getMatch(v);*/robotIDs[v];
         matchingIDs.append(robotIDs.at(v));
-        matchingRegions.append(matcher.getMatch(v));
-        semiDynamicPosition.append(bestPointForRobotsInRegions[robotIDs.at(v)][matcher.getMatch(v)]);
-        for(auto& agent : agents)
-        {
-            if(agent->id() == robotIDs.at(v))
-            {
+        matchingRegions.append(regionPriority[matcher.getMatch(v)]);
+        semiDynamicPosition.append(searchRegions[regionPriority[matcher.getMatch(v)]].center());
+        for(auto& agent : agents) {
+            if(agent->id() == robotIDs.at(v)) {
                 mahiPositionAgents.append(agent);
             }
         }
     }
-}
-
-
-void CDynamicAttack::chooseBestPosForPass_new(QList<Vector2D> semiDynamicPosition)
-{
-
-}
-
-void CDynamicAttack::assignTasks_new()
-{
-
 }
 
 Vector2D CDynamicAttack::getBestPosToShootToGoal(Vector2D from, double &regionWidth, bool oppGaol )
@@ -2110,7 +1923,7 @@ void CDynamicAttack::clearRobotsRegionsWeights()
         for(int j{0}; j<9; j++)
         {
             robotRegionsWeights[i][j] = -1.0;
-            bestPointForRobotsInRegions[i][j] = Vector2D(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
+            bestPointForRobotsInRegions[i][j].invalidate();
         }
     }
 }
@@ -2119,7 +1932,7 @@ double CDynamicAttack::calcReceiverDistanceFactor(Vector2D point, int passReceiv
 {
 
     return 1.0 - (wm->our[passReceiverID]->pos - point).length()/
-                                   (regions[region_id/3][region_id%3].rectangle.topLeft() - regions[region_id/3][region_id%3].rectangle.bottomRight()).length();
+                 (regions[region_id/3][region_id%3].rectangle.topLeft() - regions[region_id/3][region_id%3].rectangle.bottomRight()).length();
 
 }
 
@@ -2142,23 +1955,54 @@ double CDynamicAttack::caclClearPathFactor(Vector2D point, Vector2D passSenderPo
         return 0.0;
 }
 
-double CDynamicAttack::calcOneTouchAngleFactor(Vector2D point, Vector2D passSenderPos)
+double CDynamicAttack::calcOneTouchAngleFactor(Vector2D robotPos)
 {
-    double oneTouchAngleFactor;
-    double oneTouchAng = fabs((passSenderPos - point).th().degree() - (wm->field->oppGoal() - point).th().degree());
-    if(oneTouchAng <= 45)
-    {
-        oneTouchAngleFactor = 0.9*(oneTouchAng/45.0);
-    }
-    else if(oneTouchAng <= 90)
-    {
-        oneTouchAngleFactor = 0.9 + 0.1*(90-oneTouchAng)/45;
-    }
-    else
-    {
-        oneTouchAngleFactor = 0;
-    }
-    return oneTouchAngleFactor;
+    double fieldWidth = wm->field->_FIELD_WIDTH;
+    double penaltyWidth = wm->field->_PENALTY_WIDTH;
+    Vector2D robotBallDir = (playmake->pos() - robotPos).norm();
+    double oneTouchAngle = 60;
+
+    if(robotBallDir.x <= 0 )
+        return 0;
+
+    auto forwardRotatedDir = robotBallDir.rotate(oneTouchAngle);
+    auto backwardRotatedDir = robotBallDir.rotate(-oneTouchAngle);
+
+    double alpha = 0.1;
+    Ray2D leftRay(robotPos, forwardRotatedDir*alpha);
+    Ray2D rightRay(robotPos, backwardRotatedDir*alpha);
+
+    Line2D oppCornerLine(wm->field->fieldRect().topRight(), wm->field->fieldRect().bottomRight());
+    Vector2D highIntersect{Vector2D::INVALIDATED}, lowIntersect{Vector2D::INVALIDATED};
+
+    if(leftRay.intersection(oppCornerLine) != Vector2D::INVALIDATED)
+        highIntersect = leftRay.intersection(oppCornerLine);
+    if(rightRay.intersection(oppCornerLine) != Vector2D::INVALIDATED)
+        lowIntersect = rightRay.intersection(oppCornerLine);
+
+    if(highIntersect == Vector2D::INVALIDATED && lowIntersect == Vector2D::INVALIDATED)
+        return 0.0;
+
+//    double alpha = 0.1;
+//    Line2D leftLine(robotPos, forwardRotatedDir*alpha);
+//    Line2D rightLine(robotPos, backwardRotatedDir*alpha);
+//
+//    double highIntersect = leftLine.getY(wm->field->oppGoal().x);
+//    double lowIntersect = rightLine.getY(wm->field->oppGoal().x);
+//
+//    if(highIntersect<= -penaltyWidth/2)
+//        return 0.0;
+//
+
+    auto effectiveHigh = ((highIntersect - (Vector2D(wm->field->oppGoal()))).length() > fieldWidth/2) ? fieldWidth/2 : highIntersect.dist(wm->field->oppGoal());
+    auto effectiveLow = ((highIntersect - (Vector2D(wm->field->oppGoal()))).length() > (fieldWidth/2)) ? -(fieldWidth/2) : lowIntersect.dist(wm->field->oppGoal());
+
+    double penaltyOffset = 0.3;
+    auto extendedWidth = penaltyWidth + 2*penaltyOffset;
+
+    auto resultRatio = ((effectiveHigh > extendedWidth/2)?extendedWidth/2:effectiveHigh
+                                                                          - (effectiveLow<-extendedWidth/2)?-extendedWidth:effectiveLow)/extendedWidth;
+    return resultRatio;
 }
 
 double CDynamicAttack::calcWidenessFactor(Vector2D passSenderPos, Vector2D point)
@@ -2185,10 +2029,10 @@ void CDynamicAttack::hamidDebug()
     for(int i{0}; i<11; i++)
     {
         ROS_INFO_STREAM("hamid points of row " << i << " : " << bestPointForRobotsInRegions[i][0]
-                                                << " " << bestPointForRobotsInRegions[i][1] << " " << bestPointForRobotsInRegions[i][2] << " "
-                                                << bestPointForRobotsInRegions[i][3] << " " << bestPointForRobotsInRegions[i][4] << " "
-                                                << bestPointForRobotsInRegions[i][5] << " " << bestPointForRobotsInRegions[i][6] << " "
-                                                << bestPointForRobotsInRegions[i][7] << " " << bestPointForRobotsInRegions[i][8]);
+                                               << " " << bestPointForRobotsInRegions[i][1] << " " << bestPointForRobotsInRegions[i][2] << " "
+                                               << bestPointForRobotsInRegions[i][3] << " " << bestPointForRobotsInRegions[i][4] << " "
+                                               << bestPointForRobotsInRegions[i][5] << " " << bestPointForRobotsInRegions[i][6] << " "
+                                               << bestPointForRobotsInRegions[i][7] << " " << bestPointForRobotsInRegions[i][8]);
     }
 
     for(int i{0}; i<semiDynamicPosition.count(); i++)
@@ -2206,4 +2050,180 @@ void CDynamicAttack::hamidDebug()
             }
         }
     }
+}
+
+Vector2D CDynamicAttack::getEmptyTarget(const Vector2D& _position, const double& _radius) {
+    Vector2D tempTarget;
+    QList<Vector2D> finalTargets;
+    Vector2D optimalTarget{6, 0};
+    finalTargets.clear();
+    bool opp{false};
+    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+        if (Circle2D(wm->opp.active(i)->pos, 0.6).contains(_position)
+            || !wm->field->isInField(_position)
+            || wm->field->isInOppPenaltyArea(_position)
+            || wm->field->isInOurPenaltyArea(_position)) {
+            opp = true;
+            break;
+        }
+    }
+    if (!opp)
+        finalTargets.append(tempTarget);
+    for (double dist = 0.2; dist <= _radius; dist += 0.2) {
+        for (double ang = -180.0; ang <= 180.0; ang += 18.0 / dist) {
+            opp = false;
+            tempTarget = _position + Vector2D::polar2vector(dist, ang);
+            for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+                if (Circle2D(wm->opp.active(i)->pos, 0.6).contains(tempTarget)
+                    || !wm->field->isInField(tempTarget)
+                    || wm->field->isInOppPenaltyArea(tempTarget)
+                    || wm->field->isInOurPenaltyArea(tempTarget)) {
+                    opp = true;
+                    break;
+                }
+
+            }
+            if (!opp) {
+                finalTargets.append(tempTarget);
+            }
+        }
+    }
+    double optimalmindist = 10000;
+    for (const auto &target : finalTargets) {
+        double mindist{10000};
+        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+            double dist = wm->opp.active(i)->pos.dist(target);
+            if (dist < mindist)
+                mindist = dist;
+        }
+        if (mindist < optimalmindist)
+            optimalTarget = target;
+
+    }
+
+
+    return optimalTarget;
+}
+void CDynamicAttack::validateSegment(Segment2D &seg) {
+    Vector2D sol1, sol2;
+    sol1.invalidate();
+    sol2.invalidate();
+    Vector2D mid;
+    mid = (seg.a() + seg.b()) / 2;
+    if (wm->field->fieldRect().intersection(Segment2D(seg.a(), mid), &sol1, &sol2)) {
+        seg.assign((sol1.isValid()) ? sol1 : sol2, seg.b());
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (wm->field->fieldRect().intersection(Segment2D(mid, seg.b()), &sol1, &sol2)) {
+        seg.assign(seg.a(), (sol1.isValid()) ? sol1 : sol2);
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (wm->field->oppPenaltyRect().intersection(Segment2D(seg.a(), mid), &sol1, &sol2)) {
+        Vector2D t = (!sol1.isValid()) ? sol2 : (!sol2.isValid()) ? Vector2D(5000,5000) : (sol1.x < sol2.x) ? sol1 : sol2;
+        seg.assign(t, seg.b());
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (wm->field->oppPenaltyRect().intersection(Segment2D(mid, seg.b()), &sol1, &sol2)) {
+        Vector2D t = (!sol1.isValid()) ? sol2 : (!sol2.isValid()) ? Vector2D(5000,5000) : (sol1.x < sol2.x) ? sol1 : sol2;
+        seg.assign(seg.a(), t);
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (wm->field->oppPenaltyRect().intersection(Segment2D(seg.a(), mid), &sol1, &sol2)) {
+        Vector2D t = (!sol1.isValid()) ? sol2 : (!sol2.isValid()) ? Vector2D(5000,5000) : (sol1.x < sol2.x) ? sol1 : sol2;
+        seg.assign(t, seg.b());
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (wm->field->oppPenaltyRect().intersection(Segment2D(mid, seg.b()), &sol1, &sol2)) {
+        Vector2D t = (!sol1.isValid()) ? sol2 : (!sol2.isValid()) ? Vector2D(5000, 5000) : (sol1.x < sol2.x) ? sol1 : sol2;
+        seg.assign(seg.a(), t);
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    Vector2D t;
+    if (t = Segment2D(Vector2D(0, wm->field->_FIELD_WIDTH / 2), Vector2D(0, -wm->field->_FIELD_WIDTH / 2)).intersection(
+            Segment2D(seg.a(), mid)), t.isValid()) {
+        seg.assign(t, seg.b());
+        mid = (seg.a() + seg.b()) / 2;
+    }
+    sol1.invalidate();
+    sol2.invalidate();
+    if (t = Segment2D(Vector2D(0, wm->field->_FIELD_WIDTH / 2),
+                      Vector2D(0, -wm->field->_FIELD_WIDTH / 2)).intersection(
+            Segment2D(mid, seg.b())), t.isValid()) {
+        seg.assign(seg.a(), t);
+        mid = (seg.a() + seg.b()) / 2;
+    }
+
+}
+
+bool CDynamicAttack::inTimePlan() {
+    if (playmake != nullptr) {
+        if (wm->ball->pos.dist(playmake->pos()) < 1.0) {
+            return true;
+        }
+
+    }
+    return false;
+}
+
+double CDynamicAttack::calcNotInWayFactor(Vector2D passSenderPos, Vector2D point) {
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(passSenderPos, wm->field->oppGoal());
+    Polygon2D _poly;
+    Circle2D(passSenderPos, 2).
+            intersection(_path.perpendicular(wm->field->oppGoal()), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(passSenderPos, Robot::robot_radius_new + 0.5).
+            intersection(_path.perpendicular(passSenderPos), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+
+    if (_poly.contains(point)) {
+        return 0.0;
+    } else {
+        return 1.0;
+    }
+
+}
+
+bool CDynamicAttack::isPathClearFromOpp(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold) {
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(_pos1, _pos2);
+    Polygon2D _poly;
+    Circle2D(_pos2, _radius + treshold).
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(_pos1, Robot::robot_radius_new + treshold).
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+
+    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+        if (_poly.contains(wm->opp.active(i)->pos)) {
+            return false;
+        }
+    }
+
+    return true;
 }

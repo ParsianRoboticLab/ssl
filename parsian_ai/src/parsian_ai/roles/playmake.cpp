@@ -146,7 +146,6 @@ bool CRolePlayMake::ShootPenalty() {
     penaltyTarget = know->getEmptyPosOnGoal(agent->pos(), w, true, relax, empty);
     if (penaltyTarget.dist(wm->field->oppGoal()) < 0.1) {
         penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 10.0, true, 0.06, agent);
-
     }
     DBUG(QString("goalie index :%1").arg(wm->opp.data->goalieID), D_NADIA);
     if (wm->opp[wm->opp.data->goalieID] == nullptr) {
@@ -175,25 +174,18 @@ int CRolePlayMake::getPenaltychipSpeed() {
 void CRolePlayMake::firstKickInShootout(bool isChip) {
 
     double divation = 0;
-
     DBUG("first : ", D_NADIA);
-
-
-    penaltyTarget = wm->field->oppGoalL() + divation * Vector2D(0, wm->field->oppGoalL().y);;
+    penaltyTarget = wm->field->oppGoalL() + divation * Vector2D(0, wm->field->oppGoalL().y);//tune with deviation
     kick->setTarget(penaltyTarget);
-
     if (isChip) { //chip first
-        kick->setKickspeed(1.0);
         kick->setChip(true);
+        kick->setChipdist(2.0);//tune
         if (wm->ball->vel.length() > 0.4) {
             firstKick = false;
         }
-
     } else { //kick first
-
-
         kick->setChip(false);
-        kick->setKickspeed(1.0);
+        kick->setKickspeed(6);
         if (wm->ball->vel.length() > 0.1) {
             firstKick = false;
         }
@@ -231,19 +223,19 @@ void CRolePlayMake::ShootoutSwitching(bool isChip) {
 
             if (isChip) { //chip first
 
-                kick->setKickspeed(170);
+                kick->setKickspeed(1.5);
                 kick->setChip(true);
 
             } else { //kick first
 
                 kick->setChip(false);
-                kick->setKickspeed(50);
+                kick->setKickspeed(1.5);
             }
         } else { //shoot to goal
 
             penaltyTarget = know->getEmptyPosOnGoalForPenalty(0.13, true, 10, agent);
             kick->setChip(false);
-            kick->setKickspeed(1023);
+            kick->setKickspeed(6);
             kick->setDontkick(false);
             kick->setTarget(penaltyTarget);
 
@@ -255,7 +247,7 @@ void CRolePlayMake::ShootoutSwitching(bool isChip) {
     case pchipShoot:
         DBUG("pchipshoot", D_NADIA);
         kick->setTarget(wm->field->oppGoal());
-        kick->setKickspeed(getPenaltychipSpeed());
+        kick->setChipdist(getPenaltychipSpeed());
         kick->setChip(true);
         break;
 
@@ -264,7 +256,7 @@ void CRolePlayMake::ShootoutSwitching(bool isChip) {
         penaltyTarget = know->getEmptyPosOnGoalForPenalty(0.13, true, 10, agent);
         kick->setTarget(penaltyTarget);
         kick->setChip(false);
-        kick->setKickspeed(1000);
+        kick->setKickspeed(6);
         kick->setAvoidopppenaltyarea(true);
         break;
     default:
@@ -284,50 +276,42 @@ int CRolePlayMake::choosePenaltyStrategy() {
 
 void CRolePlayMake::executeOurPenaltyShootout() {
 
+    // working here
     bool chipchip = false;
-
     DBUG("penalty Shootout : ", D_NADIA);
-    if (abs(wm->ball->pos.x) > 4.4) { //penalty finished
+    if (fabs(wm->ball->pos.x) > fabs(wm->field->oppGoal().x - 0.1)) { //penalty finished
         firstKick = true;
     }
-
-
-    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop*/) {
+    if (gameState->ourPenaltyShootout() && !gameState->ready()/*knowledge->getGameMode()==CKnowledge::Stop*/) {
         //stop behind ball
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));
         stopBehindBall(true);
         setNoKick(true);
-    } else {    //force start
-
+    } else {    //normal start
         //initial kick skill:
         kickInitialShootout();
-
         if (ShootPenalty()) {
             firstKick = false;
         }
-
         if (firstKick) {
             firstKickInShootout(chipchip);
         } else {
             ShootoutSwitching(chipchip);
         }
-
         kick->setShotemptyspot(true);
         kick->setAvoidopppenaltyarea(false);
         agent->action = kick;
         drawer->draw(penaltyTarget, "red"); // todo : is my change OK
         //drawer->draw(penaltyTarget,0,"red");
     }
-
-
 }
 
 void CRolePlayMake::executeOurPenalty() {
     Vector2D shift;
     Vector2D position;
 
-    if (gameState->isStop()/*knowledge->getGameMode()==CKnowledge::Stop || knowledge->getGameState()==CKnowledge::Stop*/) {
+    if (gameState->isStop()) {
         cyclesExecuted--;
         srand(static_cast<unsigned int>(time(nullptr)));
         stopBehindBall(true);
@@ -427,12 +411,14 @@ void CRolePlayMake::kickPass(double kickSpeed) {
 }
 
 void CRolePlayMake::execute() {
+    ROS_INFO_STREAM("shootout: gameState->ourPenaltyShootout(): " << gameState->ourPenaltyShootout());
     cyclesExecuted++;
     if (wm->ball->inSight <= 0
             || !wm->ball->pos.valid()
             || !wm->field->marginedField().contains(wm->ball->pos)) {
         wait->setWaithere(true);
         agent->action = wait;
+        ROS_INFO_STREAM("shootout: in first if: ");
         return;
     }
 
@@ -444,9 +430,10 @@ void CRolePlayMake::execute() {
     Vector2D target = know->getEmptyPosOnGoal(wm->ball->pos , region , true , ourRelax, oppRelax);
     double kickSpeed = 5;
 
-    if (!noKick) {
-        return;
-    }
+//    if (!noKick) {
+//        ROS_INFO_STREAM("shootout: in second if: ");
+//        return;
+//    }
 
     if (gameState->ourKickoff()) {
         executeOurKickOff();
@@ -457,6 +444,7 @@ void CRolePlayMake::execute() {
         return;
 
     } else if (gameState->ourPenaltyShootout()) {
+        ROS_INFO_STREAM("shootout: execute->playmakerol: ");
         DBUG(QString("st:%1").arg(!gameState->ourPenaltyShootout()), D_NADIA);
         executeOurPenaltyShootout();
         return;

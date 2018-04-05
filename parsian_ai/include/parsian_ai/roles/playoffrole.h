@@ -86,6 +86,8 @@ public:
         updated = true;
         return this;
     }
+    double normalaizeKickSpeed();
+
 
 protected:
 };

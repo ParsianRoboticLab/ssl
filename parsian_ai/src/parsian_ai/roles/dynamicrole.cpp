@@ -70,6 +70,7 @@ void CRoleDynamic::update() {
     }
     if(isplaymake)
     {
+        shotSkill->setIskhafan(true);
         switch (playMakeSkill) {
         case PlayMakeSkill ::Shot:
             shotSkill->setTarget(target);
@@ -99,6 +100,9 @@ void CRoleDynamic::update() {
                     shotSkill->setChipdist(0);
                 }
             }
+            shotSkill->setIskickchargetime(true);
+            shotSkill->setKickchargetime(1023);
+
             break;
         case PlayMakeSkill::Chip:
             shotSkill->setTarget(target);
@@ -219,9 +223,7 @@ void CRoleDynamic::execute() {
             agent->action = oneTouchSkill;
             ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: oneTouchSkill");
             break;
-        case PositionSkill::NoSkill:
-        default:
-            agent->action = nullptr;
+        case PositionSkill::NoSkill:;
             break;
         }
     }

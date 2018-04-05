@@ -1,5 +1,8 @@
 bool chip
+bool iskickdischargetime
 float64 kickSpeed
+float64 chipdist
+float64 kickdischargetime
 vector2D waitPos
 vector2D target
 bool shotToEmptySpot

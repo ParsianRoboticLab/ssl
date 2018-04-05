@@ -92,7 +92,7 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
         posPidDist = 0.15;
     }
     if (slow) {
-        posPid->kp = (conf->posKP) * (0.0015 / (agentPos.dist(pos2) * agentPos.dist(pos2)));
+        posPid->kp = (conf->posKP) * (0.001 / (agentPos.dist(pos2) * agentPos.dist(pos2)));
         posPid->kp = min(posPid->kp, 2.5);
         posPid->kp = max(posPid->kp, 1.5);
 

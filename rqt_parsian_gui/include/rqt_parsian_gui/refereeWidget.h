@@ -17,7 +17,8 @@
 #include <QHBoxLayout>
 #include <QVariant>
 #include <QCheckBox>
-#include <parsian_msgs/ssl_refree_command.h>
+#include <QLineEdit>
+#include <parsian_msgs/ssl_force_referee.h>
 #include <parsian_msgs/parsian_team_config.h>
 
 namespace rqt_parsian_gui
@@ -40,11 +41,13 @@ namespace rqt_parsian_gui
         int enable,id;
         QHBoxLayout *mainLayout;
         QPushButton *btnRefs[14];
+        QLineEdit *posX, *posY;
         QStringList strRefNames , strRefCommands;
         ros::Publisher refereePub;
         void timerCb(const ros::TimerEvent& _timer);
         parsian_msgs::parsian_team_config teamConfig;
-        parsian_msgs::ssl_refree_commandPtr refree_command;
+        parsian_msgs::ssl_force_refereePtr refree_command;
+
     };
 }
 

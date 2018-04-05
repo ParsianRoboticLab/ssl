@@ -74,7 +74,6 @@ protected:
     Agent *blockAgent;
 
 
-
     /*static*/ CRolePlayMake playMakeRole;
     /*static*/ CRoleBlock blockRole;
 

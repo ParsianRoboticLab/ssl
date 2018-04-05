@@ -240,11 +240,11 @@ Rect2D CField::oppBigPenaltyArea(double scale , double tolerance , bool doChange
     if (doChangesWithScale) {
         penaltyArea = Rect2D(Vector2D(oppGoal().x, oppGoal().y + _PENALTY_WIDTH / 2),
                              _PENALTY_WIDTH * scale,
-                             _PENALTY_DEPTH * scale);
+                             -1*_PENALTY_DEPTH * scale);
     }
     else{
         penaltyArea = Rect2D(Vector2D(oppGoal().x, oppGoal().y + _PENALTY_WIDTH / 2 + tolerance),
-                             Vector2D(oppGoal().x + _PENALTY_DEPTH + tolerance, oppGoal().y - _PENALTY_WIDTH / 2 - tolerance));
+                             Vector2D(oppGoal().x - _PENALTY_DEPTH - tolerance, oppGoal().y - _PENALTY_WIDTH / 2 - tolerance));
     }
     return penaltyArea;
 }

@@ -5,8 +5,12 @@ using namespace parsian_msgs;
 namespace rqt_parsian_gui
 {
     RefereeWidget::RefereeWidget(ros::NodeHandle & n) : QWidget() {
-        refereePub = n.advertise<parsian_msgs::ssl_refree_command>("/force_referee", 100);
+        refereePub = n.advertise<parsian_msgs::ssl_force_referee>("/force_referee", 100);
         mainLayout = new QHBoxLayout;
+
+        posX = new QLineEdit("X",this);
+        posY = new QLineEdit("Y",this);
+
         id = -1;
         auto *btnRefGroup = new QButtonGroup();
         auto *enableCHB = new QCheckBox("enable");
@@ -28,6 +32,8 @@ namespace rqt_parsian_gui
         for (auto &btnRef : btnRefs) {
             mainLayout->addWidget(btnRef);
         }
+        mainLayout->addWidget(posX);
+        mainLayout->addWidget(posY);
         double widgetWidth = 300;
         QString strWidth = QString("%1px").arg((int) (widgetWidth / 12));
         //StyleSheet
@@ -61,93 +67,95 @@ namespace rqt_parsian_gui
 
     void RefereeWidget::timerCb(const ros::TimerEvent& _timer){
         if(enable == 2){
-            refree_command.reset(new parsian_msgs::ssl_refree_command());
+            refree_command.reset(new parsian_msgs::ssl_force_referee());
             switch(id){
                 case 0:
-                    refree_command->command =ssl_refree_command::HALT ;
+                    refree_command->command.command =ssl_refree_command::HALT ;
                     break;
                 case 1:
-                    refree_command->command = ssl_refree_command::FORCE_START;
+                    refree_command->command.command = ssl_refree_command::FORCE_START;
                     break;
                 case 2:
-                    refree_command->command = ssl_refree_command::STOP;
+                    refree_command->command.command = ssl_refree_command::STOP;
                     break;
                 case 3:
-                    refree_command->command = ssl_refree_command::NORMAL_START;
+                    refree_command->command.command = ssl_refree_command::NORMAL_START;
                     break;
                 case 4:
                     if (teamConfig.color == parsian_team_config::BLUE) {
-                        refree_command->command = ssl_refree_command::DIRECT_FREE_US;
+                        refree_command->command.command = ssl_refree_command::DIRECT_FREE_US;
                     } else {
-                        refree_command->command = ssl_refree_command::DIRECT_FREE_THEM;
+                        refree_command->command.command = ssl_refree_command::DIRECT_FREE_THEM;
                     }
                     break;
                 case 5:
                     if (teamConfig.color == parsian_team_config::BLUE) {
-                        refree_command->command = ssl_refree_command::INDIRECT_FREE_US;
+                        refree_command->command.command = ssl_refree_command::INDIRECT_FREE_US;
                     } else {
-                        refree_command->command = ssl_refree_command::INDIRECT_FREE_THEM;
+                        refree_command->command.command = ssl_refree_command::INDIRECT_FREE_THEM;
                     }
                     break;
                 case 6:
                     if (teamConfig.color == parsian_team_config::BLUE) {
-                        refree_command->command = ssl_refree_command::PREPARE_KICKOFF_US;
+                        refree_command->command.command = ssl_refree_command::PREPARE_KICKOFF_US;
                     } else {
-                        refree_command->command = ssl_refree_command::PREPARE_KICKOFF_THEM;
+                        refree_command->command.command = ssl_refree_command::PREPARE_KICKOFF_THEM;
                     }
                     break;
                 case 7:
                     if (teamConfig.color == parsian_team_config::BLUE) {
-                        refree_command->command = ssl_refree_command::PREPARE_PENALTY_US;
+                        refree_command->command.command = ssl_refree_command::PREPARE_PENALTY_US;
                     } else {
-                        refree_command->command = ssl_refree_command::PREPARE_PENALTY_THEM;
+                        refree_command->command.command = ssl_refree_command::PREPARE_PENALTY_THEM;
                     }
                     break;
                 case 8:
                     if (teamConfig.color == parsian_team_config::BLUE) {
-                        refree_command->command = ssl_refree_command::BALL_PLACEMENT_US;
+                        refree_command->command.command = ssl_refree_command::BALL_PLACEMENT_US;
                     } else {
-                        refree_command->command = ssl_refree_command::BALL_PLACEMENT_THEM;
+                        refree_command->command.command = ssl_refree_command::BALL_PLACEMENT_THEM;
                     }
                     break;
                 case 9:
                     if (teamConfig.color == parsian_team_config::YELLOW) {
-                        refree_command->command = ssl_refree_command::DIRECT_FREE_US;
+                        refree_command->command.command = ssl_refree_command::DIRECT_FREE_US;
                     } else {
-                        refree_command->command = ssl_refree_command::DIRECT_FREE_THEM;
+                        refree_command->command.command = ssl_refree_command::DIRECT_FREE_THEM;
                     }
                     break;
                 case 10:
                     if (teamConfig.color == parsian_team_config::YELLOW) {
-                        refree_command->command = ssl_refree_command::INDIRECT_FREE_US;
+                        refree_command->command.command = ssl_refree_command::INDIRECT_FREE_US;
                     } else {
-                        refree_command->command = ssl_refree_command::INDIRECT_FREE_THEM;
+                        refree_command->command.command = ssl_refree_command::INDIRECT_FREE_THEM;
                     }
                     break;
                 case 11:
                     if (teamConfig.color == parsian_team_config::YELLOW) {
-                        refree_command->command = ssl_refree_command::PREPARE_KICKOFF_US;
+                        refree_command->command.command = ssl_refree_command::PREPARE_KICKOFF_US;
                     } else {
-                        refree_command->command = ssl_refree_command::PREPARE_KICKOFF_THEM;
+                        refree_command->command.command = ssl_refree_command::PREPARE_KICKOFF_THEM;
                     }
                     break;
                 case 12:
                     if (teamConfig.color == parsian_team_config::YELLOW) {
-                        refree_command->command = ssl_refree_command::PREPARE_PENALTY_US;
+                        refree_command->command.command = ssl_refree_command::PREPARE_PENALTY_US;
                     } else {
-                        refree_command->command = ssl_refree_command::PREPARE_PENALTY_THEM;
+                        refree_command->command.command = ssl_refree_command::PREPARE_PENALTY_THEM;
                     }
                     break;
                 case 13:
                     if (teamConfig.color == parsian_team_config::YELLOW) {
-                        refree_command->command = ssl_refree_command::BALL_PLACEMENT_US;
+                        refree_command->command.command = ssl_refree_command::BALL_PLACEMENT_US;
                     } else {
-                        refree_command->command = ssl_refree_command::BALL_PLACEMENT_THEM;
+                        refree_command->command.command = ssl_refree_command::BALL_PLACEMENT_THEM;
                     }
                     break;
                 default:
                     return;
             }
+            refree_command->ballPlacementPos.x = posX->text().toDouble();
+            refree_command->ballPlacementPos.y = posY->text().toDouble();
             refereePub.publish(refree_command);
         }
     }

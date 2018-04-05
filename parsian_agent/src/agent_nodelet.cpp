@@ -121,6 +121,23 @@ CSkill* AgentNodelet::getSkill(const parsian_msgs::parsian_robot_taskConstPtr &_
         oneTouch->setMessage(&_task->oneTouchTask);
         skill = oneTouch;
         //ROS_INFO("ONETOUCH executed!");
+        if(!_task->oneTouchTask.chip)
+        {
+            if (!_task->oneTouchTask.iskickdischargetime)
+                oneTouch->setKickspeed(agent->kickSpeedValue(_task->oneTouchTask.kickSpeed, 0));
+            else {
+                oneTouch->setKickspeed(_task->oneTouchTask.kickdischargetime);
+            }
+        }
+        if(_task->oneTouchTask.chip)
+        {
+            if (!_task->oneTouchTask.iskickdischargetime)
+                oneTouch->setKickspeed(agent->chipDistanceValue(_task->oneTouchTask.chipdist, 0));
+            else {
+                oneTouch->setKickspeed(_task->oneTouchTask.kickdischargetime);
+            }
+        }
+        skill = oneTouch;
         break;
     case parsian_msgs::parsian_robot_task::RECIVEPASS:
         receivePass->setMessage(&_task->receivePassTask);

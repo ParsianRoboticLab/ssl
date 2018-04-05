@@ -24,10 +24,10 @@ void AINodelet::onInit() {
     behaviorSub = nh.subscribe("/behavior", 100, &AINodelet::behaviorCb, this);
     mousePosSub = nh.subscribe("/mousePos", 100, &AINodelet::mousePosCb, this);
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
+    robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
     drawPub = nh.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
-    timer_ = nh.createTimer(ros::Duration(0.1), boost::bind(&AINodelet::timerCb, this, _1));
-
+    timer_ = nh.createTimer(ros::Duration(.062), boost::bind(&AINodelet::timerCb, this, _1));
     plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
     behaviorPub = private_nh.advertise<parsian_msgs::parsian_ai_status>("/status", 10);
@@ -50,8 +50,8 @@ void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _con
 
 void AINodelet::timerCb(const ros::TimerEvent& event){
 
-    drawer->draws.texts.clear();
     if (drawer != nullptr)   drawPub.publish(drawer->draws);
+    drawer->draws.texts.clear();
     drawer->draws.circles.clear();
     drawer->draws.segments.clear();
     drawer->draws.polygons.clear();
@@ -69,7 +69,7 @@ void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstP
 
     }
 //
-   parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
+    parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
     ROS_INFO_STREAM("HSHM: last plan name: " << lastPlan.the_plan.planFile);
 
 }
@@ -78,7 +78,11 @@ void AINodelet::refereeCallBack(const parsian_msgs::ssl_refree_wrapperConstPtr &
     ai->updateReferee(_ref);
 }
 
-void AINodelet::forceRefereeCallBack(const parsian_msgs::ssl_refree_commandConstPtr & _command){
+void AINodelet::faultdetectionCallBack(const parsian_msgs::parsian_robot_fault & _rs) {
+    ai->updateRobotFaults(_rs);
+}
+
+void AINodelet::forceRefereeCallBack(const parsian_msgs::ssl_force_refereeConstPtr & _command){
     ai->forceUpdateReferee(_command);
 }
 

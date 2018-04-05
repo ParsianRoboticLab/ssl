@@ -32,8 +32,7 @@
 <node name="planner_10"		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />
 <node name="planner_11"		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />
 
-<node name="planserver" 	pkg="parsian_ai"		type="planserver_node.py" respawn="true"/>
-
+<!--<node name="planserver" 	pkg="parsian_ai"		type="planserver_node.py" respawn="true"/>-->
 <node name="worldmodel" 	pkg="parsian_world_model"      	type="parsian_world_model_node"  respawn="true" />
 <node name="vision"		pkg="parsian_protobuf_wrapper" 	type="vision"  respawn="true" />
 <node name="refbox" 		pkg="parsian_protobuf_wrapper" 	type="refbox"  respawn="true" />

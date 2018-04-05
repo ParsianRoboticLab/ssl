@@ -90,6 +90,7 @@ public:
 
     NewFastestToBall newFastestToBall(double timeStep = 0.1, QList<int> ourList = wm->our.data->activeAgents, QList<int> oppList = wm->opp.data->activeAgents);
     int Matching(QList <Agent*> robots, QList <Vector2D> pointsToMatch, QList <int> &matchPoints);
+    int MatchingMinTheMax(const QList <Agent*> robots, const QList <Vector2D> pointsToMatch, QList <int> &matchPoints);
     Vector2D getPointInDirection(Vector2D firstPoint , Vector2D secondPoint , double proportion);
     double getEmptyAngle(Vector2D p, Vector2D p1, Vector2D p2, QList<Circle2D> obs, double& percent, double &mostOpenAngle, double& biggestAngle, bool oppGoal, bool _draw = false);
     double getEmptyAngle(Vector2D p, Vector2D p1, Vector2D p2, QList<Circle2D> obs, double& percent, double &mostOpenAngle, double& biggestAngle);

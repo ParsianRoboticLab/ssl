@@ -236,7 +236,7 @@ class Handler(FileSystemEventHandler):
             return self.ai_message_generator(sublist[i])
         else:
             print ("of invalid plans ...")
-            return self.nearest_plan(player_num, ball_x, ball_y)
+            return self.nearest_plan(player_num, ball_x, ball_y, plan_mode)
 
     def get_master_active_plans(self, plan_list):
         master_list = []
@@ -263,19 +263,25 @@ class Handler(FileSystemEventHandler):
             # print("Ball Pos Matched")
             if len(plan["agentInitPos"]) >= player_num \
                     and plan["chance"] > 0 and plan["lastDist"] >= 0 \
-                    and (plan["planMode"] == plan_mode or (plan_mode == DIRECT and plan["planMode"] == INDIRECT)):
+                    and (plan["planMode"] == plan_mode or (plan_mode == DIRECT and plan["planMode"] == INDIRECT) or
+                             (plan_mode == INDIRECT and plan["planMode"] == DIRECT)):
                 plan["symmetry"] = False
                 return True
         if self.circle_contains(ball_x, -ball_y, rad, plan["ballInitPos"]["x"], plan["ballInitPos"]["y"]):
             # print("Ball Symm Pos Matched")
             if len(plan["agentInitPos"]) >= player_num \
                     and plan["chance"] > 0 and plan["lastDist"] >= 0 \
-                    and plan["planMode"] == plan_mode:
+                    and (plan["planMode"] == plan_mode or (plan_mode == DIRECT and plan["planMode"] == INDIRECT) or
+                             (plan_mode == INDIRECT and plan["planMode"] == DIRECT)):
                 plan["symmetry"] = True
                 return True
         return False
 
-    def nearest_plan(self, player_num, ball_x, ball_y):
+    def nearest_plan(self, player_num, ball_x, ball_y, plan_mode):
+        DIRECT = 1
+        INDIRECT = 2
+        KICKOFF = 3
+
         player_num_filter = []
 
         for plan in self.__final_dict:
@@ -287,12 +293,18 @@ class Handler(FileSystemEventHandler):
         sublist = sorted(active_list, key=lambda x: self.ball_dist(
             x, x["ballInitPos"]["x"], x["ballInitPos"]["y"], ball_x, ball_y))
 
+        subsublist = []
         if len(sublist) > 0:
-            print("# active and valid plans: " + str(len(sublist)) + "\n")
+            for plan in sublist:
+                if plan["planMode"] == plan_mode or (plan_mode == DIRECT and plan["planMode"] == INDIRECT):
+                    subsublist.append(plan)
 
-            print ("\n" + sublist[0]["filename"].split("plans/")[1] +
-                   ": " + str(sublist[0]["index"]) + "   " + str(sublist[0]["planMode"]))
-            return self.ai_message_generator(sublist[0])
+        if len(subsublist) > 0:
+            print("# active and valid plans: " + str(len(subsublist)) + "\n")
+
+            print ("\n" + subsublist[0]["filename"].split("plans/")[1] +
+                   ": " + str(subsublist[0]["index"]) + "   " + str(subsublist[0]["planMode"]))
+            return self.ai_message_generator(subsublist[0])
         else:
             print ("There is No master or active plan with proper number of players :/")
             return None

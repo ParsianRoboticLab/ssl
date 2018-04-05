@@ -13,7 +13,6 @@ void VisionNodelet::onInit() {
     //ros::param::get("/team_color", teamColor);
     packs = 0;
 
-    timer = nh.createTimer(ros::Duration(.002), boost::bind(&VisionNodelet::timerCb, this, _1));
 
     ssl_geometry_pub  = nh.advertise<parsian_msgs::ssl_vision_geometry>("vision_geom", 3);
     ssl_detection_pub = nh.advertise<parsian_msgs::ssl_vision_detection>("vision_detection", 3);
@@ -32,6 +31,7 @@ void VisionNodelet::onInit() {
     f = boost::bind(&VisionNodelet::configCb, this, _1, _2);
     configServer->setCallback(f);
 
+    timer = nh.createTimer(ros::Duration(.002), boost::bind(&VisionNodelet::timerCb, this, _1));
 }
 
 void VisionNodelet::reconnect() {

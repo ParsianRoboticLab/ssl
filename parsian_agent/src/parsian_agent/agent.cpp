@@ -101,6 +101,7 @@ Matrix Agent::ANN_forward(Matrix input) {
 
 Agent::Agent(int _ID)
 {
+    selfID = static_cast<short>(_ID);
     gotkickprofilerdatas = false;
     for(int i{}; i < 8; i++)
     {
@@ -124,7 +125,6 @@ Agent::Agent(int _ID)
     stopTrain = false;
     wh1 = wh2 = wh3 = wh4 = 0.0;
     startTrain = false;
-    selfID = static_cast<short>(_ID);
     skill = nullptr;
     skillName = "";
     onOffState = true;
@@ -385,9 +385,7 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
 //         agentStopTime.restart();
 //         timerReset = true;
 //     }
-    if(vel().length() < 0.5  && diveMode) {
-        return;
-    }
+
     double lastV, commandV;
     double vCoef = 1;
     double tempVf = vforward , tempVn = vnormal;
@@ -434,12 +432,28 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
                 vforward = lastVf + (decCoef * conf->DecMax * 0.0166667);
             }
         }
+    } else {
+        if (vforward >= 0) {
+            if (vforward > (lastVf + conf->AccMaxForward * 0.0166667 * 2)) {
+                vforward = lastVf + (conf->AccMaxForward * 0.0166667 * 2) * sign(vforward);
+            }
+            if (vforward < (lastVf - decCoef * conf->DecMax * 0.0166667 * 2)) {
+                vforward = lastVf - (decCoef * conf->DecMax * 0.0166667 * 2);
+            }
+        } else {
+            if (vforward < (lastVf - conf->AccMaxForward * 0.0166667 * 2)) {
+                vforward = lastVf - (conf->AccMaxForward * 0.0166667 * 2);
+            }
+            if (vforward > (lastVf + decCoef * conf->DecMax * 0.0166667 * 2)) {
+                vforward = lastVf + (decCoef * conf->DecMax * 0.0166667 * 2);
+            }
+        }
     }
 ////    debug(QString("vn: %1 , lVn :%2").arg(vnormal).arg(lastVn),D_MHMMD);
     if (vnormal >= 0) {
         if (diveMode) {
-            if (vnormal > (lastVn + 10 * 0.0166667)) {
-                vnormal = lastVn + (10 * 0.0166667) * sign(vnormal);
+            if (vnormal > (lastVn + 8 * 0.0166667)) {
+                vnormal = lastVn + (8 * 0.0166667) * sign(vnormal);
             }
         } else {
             if (vnormal > (lastVn + conf->AccMaxNormal * 0.0166667)) {
@@ -452,8 +466,8 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
         }
     } else {
         if (diveMode) {
-            if (vnormal < (lastVn - 10 * 0.0166667)) {
-                vnormal = lastVn + (10 * 0.0166667) * sign(vnormal);
+            if (vnormal < (lastVn - 8 * 0.0166667)) {
+                vnormal = lastVn + (8 * 0.0166667) * sign(vnormal);
             }
         } else {
             if (vnormal < (lastVn - conf->AccMaxNormal * 0.0166667)) {
@@ -798,12 +812,13 @@ int Agent::kickValueForDistance(double dist, double finalVel) {
     return static_cast<int>(kickSpeedValue(vel, false));
 }
 
-
+//TODO : get speed from profiler
 Vector2D Agent::oneTouchCheck(Vector2D positioningPos, Vector2D* oneTouchDirection) {
     Vector2D oneTouchDir = Vector2D::unitVector(CSkillKickOneTouch::oneTouchAngle(pos(), Vector2D(0, 0), (pos() - wm->ball->pos).norm(),
                            pos() - wm->ball->pos, wm->field->oppGoal(),
                            conf->Landa,
-                           conf->Gamma));
+                           conf->Gamma,
+                           6.5));
     Vector2D q;
     q.invalidate();
     bool oneTouchKick = false;
@@ -968,16 +983,20 @@ void Agent::getkickprofilerdata()
             }
             // Close the File
             file.close();
+            ROS_INFO_STREAM("readfrom datalistSize" << dataList.size());
             for(int j{1}; j<dataList.size(); j++)
+            {
+                ROS_INFO_STREAM("readfrom ID compare" << atoi(dataList[j][0].c_str()) << ", " << id());
                 if(atoi(dataList[j][0].c_str()) == id())
                 {
-                    //ROS_INFO_STREAM("readfrom datalist" << i << atof(dataList[j][1].c_str()));
+                    ROS_INFO_STREAM("readfrom datalist" << i << dataList[j][1].c_str());
                     kick_coef_a[i] = atof(dataList[j][1].c_str());
                     kick_coef_b[i] = atof(dataList[j][2].c_str());
                     kick_coef_c[i] = atof(dataList[j][3].c_str());
                     if(i == 0)
                         gotkickprofilerdatas = true;
                 }
+            }
         }
     }
 }
@@ -990,7 +1009,10 @@ float Agent::convertkickspeedtokickchargetime(float kickspeed, int spin)
         spin = 7;
     if (gotkickprofilerdatas)
     {
-        return kick_coef_a[spin]*kickspeed*kickspeed + kick_coef_b[spin]*kickspeed + kick_coef_c[spin];
+        int discharge = kick_coef_a[spin]*kickspeed*kickspeed + kick_coef_b[spin]*kickspeed + kick_coef_c[spin];
+        if(discharge > 1023)
+            discharge = 1023;
+        return discharge;
     }
     else
     {
@@ -1007,10 +1029,14 @@ void Agent::getchipprofilerdata()
         for(int i{}; i <= 7; i++)
         {
             std::ifstream file(ros::package::getPath("parsian_agent") + "/profiler_data/coefficients/coeffs_chip_"+ to_string(i) +".csv");
-            if (!file.is_open())
+            if (!file.is_open()) 
             {
                 if(i == 0)
                 {
+                    chip_coef_a[0] = 25.3;
+                    chip_coef_b[0] = 130.9;
+                    chip_coef_c[0] = 230.9;
+                    gotchipprofilerdatas = true;
                     ROS_INFO_STREAM("chip profiler datas no spin failed to open");
                     return;
                 }
@@ -1053,7 +1079,8 @@ float Agent::convertchipdisttochipchargetime(float chipdist, int spin)
     float chipspeed{};
     //TODO calculate coef for converting dist to chip speed
     float A{9.25693}, B{0.0027}, H{0.0659}, K{-0.0316};
-    chipspeed = A*sqrt(B*chipdist - H) + K;
+    //chipspeed = A*sqrt(B*chipdist - H) + K;
+    chipspeed = chipdist;
     //    ROS_INFO("kian convert");
         if(spin < 0)
             spin  = 0;
@@ -1061,7 +1088,12 @@ float Agent::convertchipdisttochipchargetime(float chipdist, int spin)
             spin = 7;
         if (gotchipprofilerdatas)
         {
-            return chip_coef_a[spin]*chipspeed*chipspeed + chip_coef_b[spin]*chipspeed + chip_coef_c[spin];
+            int chipRes = chip_coef_a[spin]*chipspeed*chipspeed + chip_coef_b[spin]*chipspeed + chip_coef_c[spin];
+            if(chipRes <= 1023) {
+                return chipRes;
+            } else {
+                return 1023;
+            }
         }
         else
         {
