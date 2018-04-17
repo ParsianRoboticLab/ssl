@@ -620,11 +620,14 @@ void CPlanner::emitPlan(const vector<Vector2D>& _resultModified, const Vector2D&
 }
 
 void CPlanner::run() {
-    if (readyToPlan) {
-        generateObstacleSpace(obst  , ourRelaxList , oppRelaxList , avoidPenaltyArea, avoidCenterArea , ballObstacleRadius, goal);
-        runPlanner();
-        emitPlan(getResultModified(), getAverageDir());
-        readyToPlan = false;
+    if (wm->our.data->activeAgents.contains(ID)) {
+        if (readyToPlan) {
+            generateObstacleSpace(obst, ourRelaxList, oppRelaxList, avoidPenaltyArea, avoidCenterArea,
+                                  ballObstacleRadius, goal);
+            runPlanner();
+            emitPlan(getResultModified(), getAverageDir());
+            readyToPlan = false;
+        }
     }
 }
 

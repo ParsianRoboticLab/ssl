@@ -19,7 +19,6 @@ find_package(catkin REQUIRED COMPONENTS
         )
 
 roslint_cpp()
-roslint_python()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -163,7 +162,6 @@ add_library(${PROJECT_NAME}_math
 
 add_library(${PROJECT_NAME}_tools
         src/tools/drawer.cpp
-        src/tools/debuger.cpp
         src/tools/filewatcher.cpp
         )
 
@@ -235,11 +233,13 @@ add_dependencies(${PROJECT_NAME}_actions
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_geom
         ${catkin_LIBRARIES}
-        )
+        ${QT_LIBRARIES}
+	)
 
 target_link_libraries(${PROJECT_NAME}_math
         ${catkin_LIBRARIES}
         ${QT_LIBRARIES}
+	${PROJECT_NAME}_geom
         )
 
 target_link_libraries(${PROJECT_NAME}_tools

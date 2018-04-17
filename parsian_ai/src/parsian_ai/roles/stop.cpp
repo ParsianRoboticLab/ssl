@@ -5,12 +5,159 @@ const double StopRadius = 0.55;//0.70;//1.02;//0.78;
 CRoleStopInfo* CRoleStop::m_info = new CRoleStopInfo("stop");
 
 CRoleStopInfo::CRoleStopInfo(QString _roleName)
-    : CRoleInfo(_roleName) {
+        : CRoleInfo(_roleName) {
     //  inCorner = -1;
+    agentIDBehindBall = -1;
+}
+void CRoleStopInfo::setAgentBehindBall(int agentId) {
+    agentIDBehindBall = agentId;
+}
+
+Vector2D CRoleStopInfo::getEmptyTarget(const Vector2D& _position, const double& _radius) {
+    Vector2D tempTarget, finalTarget;
+    bool opp;
+    finalTarget = _position;
+    for (double dist = 0.2 ; dist <= _radius ; dist += 0.2) {
+        for (double ang = -180.0 ; ang <= 180.0 ; ang += 18.0/dist) {
+            opp = false;
+            tempTarget = _position + Vector2D::polar2vector(dist, ang);
+            for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+                if (Circle2D(wm->opp.active(i)->pos, 0.25).contains(tempTarget)
+                    || !wm->field->isInField(tempTarget)
+                    || wm->field->isInOppPenaltyArea(tempTarget)
+                    || wm->field->isInOurPenaltyArea(tempTarget)) {
+                    opp = true;
+                    break;
+                }
+
+            }
+            if (!opp) {
+                finalTarget = tempTarget;
+                dist = _radius*2; // to break upper loop
+                break;
+            }
+        }
+    }
+
+    return finalTarget;
 }
 
 void CRoleStopInfo::findPositions() {
+    double sRadius = StopRadius;
+    Vector2D c = wm->ball->pos;
+    const double radius = 1.8 + 2.0 * Robot::robot_radius_new;
 
+    TA = wm->field->ourGoal();
+    if ((wm->ball->pos - wm->field->ourGoal()).length() < radius) {
+        TA = wm->field->oppGoal();
+    } else {
+        TA = wm->field->ourGoal();
+    }
+
+    Vector2D baseDirVec;
+    baseDirVec = (TA - c).norm();
+
+
+    Ps.clear();
+    robotId.clear();
+    if (count() > 0) {
+        Ps.append(c + baseDirVec * (sRadius + Robot::robot_radius_new));
+    }
+    Vector2D startPos{-.5, -wm->field->_FIELD_WIDTH/2 + 1};
+    Vector2D endPos  {-.5,  wm->field->_FIELD_WIDTH/2 - 1};
+    for (int i = 1; i < count(); i++) {
+        Ps.append(getEmptyTarget(startPos*(1.0 - (double)(i)/count()) + endPos*((double)(i)/count()), 1));
+    }
+
+    double weight;
+    double minweight=100.0;
+    for (int i = 0; i < count(); i++) {
+        weight=robot(i)->pos().dist(Ps[0]);
+        if(weight<minweight){
+            agentIDBehindBall=robot(i)->id();
+            minweight=weight;
+        }
+    }
+    ROS_INFO_STREAM("nana passer:"<<agentIDBehindBall);
+
+
+    bool contain = false;
+    for(int i =0 ; i<count(); i++){
+        if(robot(i)->id() == agentIDBehindBall){
+            contain = true;
+            break;
+        }
+    }
+
+    MWBM matcher;
+    if(agentIDBehindBall == -1 || !contain) {
+        matcher.create(count(), Ps.count());
+
+        ROS_INFO_STREAM("nana : mahi match");
+        for (int i = 0; i < count(); i++) {
+            for (int j = 0; j < Ps.count(); j++)
+                matcher.setWeight(i, j, -Ps[j].dist(robot(i)->pos()));
+        }
+
+        matcher.findMatching();
+
+        for (int i = 0; i < count(); i++) {
+            robotId.append(robot(matcher.getMatch(i))->id());
+        }
+
+    } else {
+        robotId.append(agentIDBehindBall);
+        QList<Agent *> stopagents;
+        QList<Vector2D> stopPositions;
+        QList<int> matchinglist;
+        for(int i=0;i<count();i++){
+            if(robot(i)->id()!=agentIDBehindBall) {
+                stopagents.append(robot(i));
+            }
+        }
+        for (int j = 1; j < Ps.count(); j++) {
+            stopPositions.append(Ps[j]);
+        }
+
+        know->MatchingMinTheMax(stopagents,stopPositions,matchinglist);
+        for (int i = 0; i <matchinglist.size() ; i++) {
+            if(robot(i)->id()>=agentIDBehindBall) {
+                robotId.insert(i+1, robot(i + 1)->id());
+            }
+            else {
+                robotId.insert(i+1, robot(i)->id());
+            }
+        }
+
+//        matcher.create(count() - 1, Ps.count() - 1);
+//        robotId.append(agentIDBehindBall);
+//
+//        QList<Agent*> temp;
+//
+//        for (int i = 0; i < count(); i++) {
+//            if (robot(i)->id() != agentIDBehindBall) {
+//                temp.append(robot(i));
+//            }
+//        }
+//        int k = 0;
+//        for (int i = 0; i < temp.size(); i++) {
+//            for (int j = 1; j < Ps.count(); j++) {
+//                matcher.setWeight(i, j - 1, -Ps[j].dist(temp.at(i)->pos()));
+//            }
+//            k++;
+//        }
+//
+//        matcher.findMatching();
+//
+//        for (int i = 0; i < k; i++) {
+//            robotId.append(temp.at(matcher.getMatch(i))->id());
+//        }
+    }
+
+    return;
+
+    //// OLD STOP
+    /*
     double sRadius = StopRadius;
     Vector2D c = wm->ball->pos;
     const double radius = 1.8 + 2.0 * Robot::robot_radius_new;
@@ -61,7 +208,7 @@ void CRoleStopInfo::findPositions() {
             }
         }
     }
-
+    */
 }
 
 CRoleStop::CRoleStop(Agent *_agent) : CRole(_agent) {
@@ -78,11 +225,9 @@ void CRoleStop::execute() {
 
     Vector2D target;
     info()->findPositions();
-    int kkk = 0;
     for (int k = 0; k < info()->count(); k++) {
         if (agent->id() == info()->robotId[k]) {
             target = info()->Ps[k];
-            kkk = k;
         }
     }
 
@@ -95,15 +240,11 @@ void CRoleStop::execute() {
     }
     gotopoint->setTargetpos(target);
     gotopoint->setTargetdir(Vector2D(1.0, 0.0));
-    gotopoint->setLookat(wm->ball->pos);
+    gotopoint->setLookat(wm->field->oppGoal());
     gotopoint->setAvoidpenaltyarea(true);
 
     gotopoint->setBallobstacleradius(0.50);
-    drawer->draw(Circle2D(target , 0.03) , "magenta" , true);
-    drawer->draw(QString("%1").arg(kkk) , target);
-//    ROS_INFO_STREAM("DDD " << agent->id());
     agent->action = gotopoint;
-
 
 }
 

@@ -25,6 +25,7 @@ namespace rqt_parsian_gui
     class TaskRunnerWidget:public QWidget {
     Q_OBJECT
     public:
+        ros::Timer timer;
         TaskRunnerWidget(ros::NodeHandle & n);
         virtual ~TaskRunnerWidget();
 
@@ -35,7 +36,6 @@ namespace rqt_parsian_gui
 
     private:
         int agent_id;
-        ros::Timer timer;
         parsian_msgs::grsim_ball_replacement *client ;
         ros::Subscriber mousePosSub;
         ros::ServiceClient ballReplacementClient;

@@ -20,9 +20,6 @@ void RobotStatus::initPlugin(qt_gui_cpp::PluginContext &context) {
     n_private = getPrivateNodeHandle();
 
     rs_sub = n_private.subscribe("/robots_status", 1000, &RobotStatus::rsCallback, this);
-    for (int j = 0; j < max_robot; ++j) {
-        rc_sub[j] = n_private.subscribe(QString("/agent_%1/command").arg(j).toStdString(), 1000, &RobotStatus::rcCallback, this);
-    }
 
     // create QWidget
     scroll_widget = new QWidget;
@@ -34,7 +31,7 @@ void RobotStatus::initPlugin(qt_gui_cpp::PluginContext &context) {
 
     scrollArea->setWidgetResizable(true);
     scrollArea->setWindowTitle("RobotStatus");
-    scrollArea->setFixedHeight(700);
+    scrollArea->setFixedHeight(800);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     scrollArea->setWidget(scroll_widget);
 
@@ -50,6 +47,9 @@ void RobotStatus::initPlugin(qt_gui_cpp::PluginContext &context) {
     // add widget to the user interface
 
     context.addWidget(scrollArea);
+    for (int j = 0; j < max_robot; ++j) {
+        rc_sub[j] = n_private.subscribe(QString("/agent_%1/command").arg(j).toStdString(), 1000, &RobotStatus::rcCallback, this);
+    }
 }
 
 void RobotStatus::rsCallback(const parsian_msgs::parsian_robots_statusConstPtr msg) {
@@ -60,7 +60,8 @@ void RobotStatus::rsCallback(const parsian_msgs::parsian_robots_statusConstPtr m
 }
 
 void RobotStatus::rcCallback(const parsian_msgs::parsian_robot_commandConstPtr msg) {
-    statusWidget[msg->robot_id]->setVel(*msg);
+    if(msg->robot_id < max_robot)
+        statusWidget[msg->robot_id]->setVel(*msg);
 }
 
 void RobotStatus::shutdownPlugin() {

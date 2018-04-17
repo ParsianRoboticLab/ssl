@@ -9,7 +9,7 @@
 #include <parsian_msgs/parsian_path.h>
 #include <parsian_util/core/field.h>
 #include "parsian_util/tools/drawer.h"                      //TODO must be new in node
-#include "parsian_util/tools/debuger.h"
+#include "parsian_util/tools/blackboard.h"
 #include "parsian_util/core/agent.h"
 #include "parsian_util/geom/geom.h"
 #include "parsian_util/core/worldmodel.h"

@@ -33,13 +33,13 @@ double CSkillKickOneTouch::oneTouchAngle(Vector2D pos,
         Vector2D ballDir,
         Vector2D goal,
         double landa,
-        double gamma) {
+        double gamma,
+        double vkick) {
     float ang1 = (-ballDir).th().degree();
     float ang2 = (goal - pos).th().degree();
     float theta = AngleDeg::normalize_angle(ang2 - ang1);
     float th = fabs(theta) * _DEG2RAD;
-    float vkick = 8; // agent->self()->kickValueSpeed(kickSpeed, false);// + Vector2D::unitVector(self().pos.d).innerProduct(self().vel);
-    float v = (ballVel - vel).length();
+     float v = (ballVel - vel).length();
     float th1 = th * 0.5;
     float f, fmin = 1e10;
     float th1best;
@@ -112,7 +112,7 @@ void CSkillKickOneTouch::execute() {
     Vector2D agentPos = agent->pos();
 
     Segment2D ballPath;
-    double stopParam = 0.09;
+    double stopParam = 0.085;
     ballPath.assign(ballPos, ballPos + wm->ball->vel.norm() * 15);
     Segment2D ballLine;
     ballLine.assign(ballPos, ballPos + wm->ball->vel.norm() * (15));
@@ -121,7 +121,7 @@ void CSkillKickOneTouch::execute() {
 
 
 
-    Vector2D oneTouchDir = Vector2D::unitVector(oneTouchAngle(agentPos, agent->vel(), wm->ball->vel, agentPos - ballPos, target, conf->Landa, conf->Gamma));
+    Vector2D oneTouchDir = Vector2D::unitVector(oneTouchAngle(agentPos, agent->vel(), wm->ball->vel, agentPos - ballPos, target, conf->Landa, conf->Gamma,6.5));
     drawer->draw(QString("vball :%1").arg(conf->Landa), Vector2D(0, 0));
     //drawer->draw(Segment2D(Vector2D(0,0), Vector2D(0,0)+oneTouchDir.norm()), QColor(Qt::red));
 
@@ -133,7 +133,7 @@ void CSkillKickOneTouch::execute() {
     Vector2D addVec ;
     Circle2D oneTouchArea;
     Circle2D oppPenaltyArea(wm->field->oppGoal() + Vector2D(0.15, 0), 1.45);
-    Circle2D oppPenaltyAreaWP(wm->field->oppGoal() + Vector2D(0.15, 0), 1.55);
+    Rect2D oppPenaltyAreaWP = wm->field->oppBigPenaltyArea(1,0.1,0);
     drawer->draw(oppPenaltyAreaWP, QColor(Qt::red));
     drawer->draw(oppPenaltyArea, QColor(Qt::red));
 
@@ -181,11 +181,15 @@ void CSkillKickOneTouch::execute() {
         drawer->draw(QString("agentT : %1").arg(agentTime) , Vector2D(1, -1));
 
 
-        if (wm->field->isInOppPenaltyArea(intersectPos) || oppPenaltyAreaWP.contains(waitPos)) {
-            if (oppPenaltyArea.intersection(ballLine, &sol1, &sol2) != 0) {
-                if (sol1.dist(waitPos) > sol2.dist(waitPos)) {
-                    sol1 = sol2;
+        if(intersectPos.x >wm->field->_FIELD_WIDTH/2 -  wm->field->_PENALTY_DEPTH - 0.1 && fabs(intersectPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
+            if(wm->field->oppBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
+                if(sol1.dist(ballPos)  < sol2.dist(ballPos)) {
+                    if(sol2.x != wm->field->oppGoal().x) {
+                        sol1 = sol2;
+                    }
                 }
+                if(sol1.x == wm->field->oppGoal().x)
+                    sol1 = sol2;
                 intersectPos = sol1;
             }
         }
@@ -201,14 +205,14 @@ void CSkillKickOneTouch::execute() {
             if (chip) {
                 agent->setChip(kickSpeed);
             } else {
-                agent->setKick(kickSpeed);
+                agent->setKick(kickSpeed*0.8);
             }
         }
-        agent->setRoller(49);
+        agent->setRoller(0);
     } else if (ballPos.dist(agentPos) < onetouchKickRad) {
         kick->setAgent(agent);
         kick->setTarget(target);
-        kick->setKickspeed(kickSpeed);
+        kick->setKickspeed(kickSpeed*0.8);
         kick->setChip(chip);
         kick->execute();
     } else {
@@ -219,6 +223,7 @@ void CSkillKickOneTouch::execute() {
         gotopointavoid->execute();
     }
 
+   // agent->setKick(600);
     ballLastVel = wm->ball->vel;
     lastInterceptPos = intersectPos;
 }

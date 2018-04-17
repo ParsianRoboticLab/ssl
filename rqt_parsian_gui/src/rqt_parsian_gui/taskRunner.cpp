@@ -25,6 +25,7 @@ namespace rqt_parsian_gui
     void TaskRunner::shutdownPlugin() {
         n.shutdown();
         n_private.shutdown();
+        taskRunnerWidget->timer.stop();
     }
 
 }

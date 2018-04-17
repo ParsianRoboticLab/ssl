@@ -1,0 +1,3 @@
+<launch>
+<node name="worldmodel" 	pkg="parsian_world_model"	type="parsian_world_model_node"  respawn="true" />
+</launch>

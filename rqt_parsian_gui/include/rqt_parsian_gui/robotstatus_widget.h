@@ -22,8 +22,8 @@ class RobotStatusWidget : public QWidget {
     Q_OBJECT
 public:
     explicit RobotStatusWidget(int color);
-    void setMessage(const parsian_msgs::parsian_robot_status msg);
-    void setVel(const parsian_msgs::parsian_robot_command msg);
+    void setMessage(const parsian_msgs::parsian_robot_status& msg);
+    void setVel(const parsian_msgs::parsian_robot_command &msg);
 private:
 
     QString getFileName();
@@ -36,8 +36,8 @@ private:
     QCheckBox ** motors_f, **encoders_f, *kick_f, *chip_f, *shoot_sens_f, *shoot_board_f, *shoot_sens, *spin;
     QLabel *vel_dir, *vel, *vel_ang, * robot_id_l, *board_id_l;
     QString color, robot_id, board_id;
-    QPixmap *agent_i;
-    QPainter *agent_p;
+    boost::shared_ptr<QPixmap> agent_i;
+    boost::shared_ptr<QPainter> agent_p;
 
 };
 }

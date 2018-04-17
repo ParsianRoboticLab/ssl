@@ -49,7 +49,7 @@ void CSkillReceivePass::execute() {
     receivePassMode = decideMode();
     Segment2D ballPath;
     Vector2D sol1, sol2;
-    ballPath.assign(ballPos, ballPos + wm->ball->vel.norm() * (10));
+    ballPath.assign(ballPos, ballPos + wm->ball->vel.norm() * (20));
     drawer->draw(receiveArea, QColor(Qt::cyan));
 
 
@@ -96,8 +96,10 @@ void CSkillReceivePass::execute() {
         Vector2D kickerPoint = agent->pos();
         double agentTime = 0;
         Vector2D dummy;
+            gotopointavoid->setOnetouchmode(false);
         if (Circle2D(agentPos, 0.15).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)), &dummy, &dummy)) {
             intersectPos = ballPath.nearestPoint(kickerPoint);
+
         } else {
             bool posFound  = false;
             for (double i = 0 ; i < 5 ; i += 0.1) {
@@ -112,9 +114,18 @@ void CSkillReceivePass::execute() {
                     break;
                 }
             }
+            Vector2D s1,s2;
+            if (posFound == false || !wm->field->isInField(intersectPos )) {
 
-            if (posFound == false /*||*/ /*intersectPos.dist(ballPos) > ballPath.nearestPoint(kickerPoint).dist(ballPos) ||*/ /*!wm->field->isInField(intersectPos )*/) {
-                intersectPos = ballPath.nearestPoint(kickerPoint);
+                if (wm->field->fieldRect().intersection(ballPath,&s1,&s2)) {
+                    if(s1.isValid()) {
+                        intersectPos = s1;
+                    } else {
+                        intersectPos = s2;
+                    }
+                } else {
+                    intersectPos = ballPath.nearestPoint(agentPos);
+                }
             }
         }
 
@@ -125,10 +136,40 @@ void CSkillReceivePass::execute() {
             }
             intersectPos = sol1;
         }
-        gotopointavoid->init(intersectPos, oneTouchDir);
-        gotopointavoid->setSlowmode(false);
-        gotopointavoid->setOnetouchmode(false);
-        gotopointavoid->execute();
+            if(intersectPos.x >wm->field->_FIELD_WIDTH/2 -  wm->field->_PENALTY_DEPTH - 0.1 && fabs(intersectPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
+                if(wm->field->oppBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
+                    if(sol1.dist(intersectPos) > sol2.dist(intersectPos)) {
+                        if(sol2.x != wm->field->oppGoal().x) {
+                            sol1 = sol2;
+                        }
+                    }
+                    if(sol1.x == wm->field->oppGoal().x)
+                        sol1 = sol2;
+                    intersectPos = sol1;
+                }
+            }
+            if(intersectPos.x < -1 * wm->field->_FIELD_WIDTH/2 +  wm->field->_PENALTY_DEPTH + 0.1 && fabs(intersectPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
+                if(wm->field->ourBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
+                   drawer->draw(wm->field->ourBigPenaltyArea(1,0.1,0),QColor(Qt::red),true);
+                    if(sol1.dist(intersectPos) > sol2.dist(intersectPos)) {
+                        if(sol2.x >= -1 * wm->field->_FIELD_WIDTH/2 + 0.02) {
+                            sol1 = sol2;
+                        }
+                    }
+                    if(sol1.x == wm->field->ourGoal().x)
+                        sol1 = sol2;
+                    intersectPos = sol1;
+                }
+            }
+            drawer -> draw(intersectPos,QColor(Qt::red));
+            if(agentPos.dist(intersectPos) < 0.5) {
+                gotopointavoid->setOnetouchmode(true);
+            }
+            agent->setRoller(1);
+            oneTouchDir = ballPos - intersectPos;
+            gotopointavoid->init(intersectPos, oneTouchDir);
+            gotopointavoid->setSlowmode(false);
+            gotopointavoid->execute();
         break;
 
     }

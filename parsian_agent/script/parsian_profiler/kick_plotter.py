@@ -25,7 +25,7 @@ for i in range (12):
 
 os.chdir('../../profiler_data/')
 
-# filling datas
+# filling datas from file
 for i in range(12):
 	for f_t in files_list:
 		if f_t.startswith(str(i)):
@@ -41,8 +41,6 @@ for i in range(12):
         temp = list(datas[i].keys())
         temp.sort()
         input_speeds[i] = temp
-
-# getting the raw outputs
 
 for i in range(12):
     if datas[i] != -1:
@@ -67,23 +65,22 @@ for i in range(12):
 	    	all_coeffs[i] = p
 
 
-#for out_speed, in_speed in all_real_raw_output_speeds, input_:
-#    p = np.polyfit(out_speed, input_speeds, 2)
-#    all_coeffs.append(p)
-
-# debug polyfit coefficients
+# debugging coeffs
 print(all_coeffs)
+
+# <plotting>, used as a validation test
 
 x = np.linspace(0,10,100)
 y = all_coeffs[7][0]*(x**2) + all_coeffs[7][1]*x + all_coeffs[7][2]
 
-# plt.plot(output_speeds, input_speeds, 'o', x, y, 'r--')
 plt.plot(x, y, 'r--')
 plt.plot(all_real_raw_output_speeds[7], input_speeds[7], 'o')
 
 plt.xlabel('Real Speed M/S')
 plt.ylabel('Cap Charge')
 plt.grid(True)
+
+# </plotting>
 
 # saving coeffs to csv file
 with open('coeffs_kick.csv', 'wb') as csv_file:

@@ -11,7 +11,6 @@ void {{Tbehavior}}Nodelet::onInit() {
     {{behavior}}.reset(new Behavior{{Tbehavior}}());
 
     drawer = new Drawer();
-    debugger = new Debugger();
 
     worldModelSub = nh.subscribe("/world_model", 1000, &{{Tbehavior}}Nodelet::worldModelCallBack, this);
     robotStatusSub = nh.subscribe("/robot_status", 1000, &{{Tbehavior}}Nodelet::robotStatusCallBack, this);
@@ -20,7 +19,6 @@ void {{Tbehavior}}Nodelet::onInit() {
     refereeSub = nh.subscribe("/referee", 1000,  &{{Tbehavior}}Nodelet::refereeCallBack, this);
 
     drawPub = nh.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
-    debugPub = nh.advertise<parsian_msgs::parsian_debugs>("/debugs", 1000);
     timer_ = nh.createTimer(ros::Duration(.016), boost::bind(&{{Tbehavior}}Nodelet::timerCb, this, _1));
 
     behavPub = nh.advertise<parsian_msgs::parsian_behavior>("/eval", 10); // TODO: make it private
@@ -35,15 +33,12 @@ void {{Tbehavior}}Nodelet::onInit() {
 void {{Tbehavior}}Nodelet::timerCb(const ros::TimerEvent& event) {
 
     if (drawer != nullptr)   drawPub.publish(drawer->draws);
-//    if (debugger != nullptr) debugPub.publish(debugger->debugs);
 
     drawer->draws.texts.clear();
     drawer->draws.circles.clear();
     drawer->draws.segments.clear();
     drawer->draws.vectors.clear();
     drawer->draws.rects.clear();
-
-//    debugger->debugs.clear();
 
 }
 

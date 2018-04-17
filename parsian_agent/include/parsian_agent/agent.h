@@ -90,6 +90,7 @@ public:
     bool isVisible();
     bool notVisible();
 
+
     void setOnOffState(bool state);
     void setCommandID(int ID);
 

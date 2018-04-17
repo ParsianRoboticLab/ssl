@@ -11,7 +11,6 @@ void MahiNodelet::onInit() {
     mahi.reset(new BehaviorMahi());
 
     drawer = new Drawer();
-    debugger = new Debugger();
 
     worldModelSub = nh.subscribe("/world_model", 1000, &MahiNodelet::worldModelCallBack, this);
     robotStatusSub = nh.subscribe("/robot_status", 1000, &MahiNodelet::robotStatusCallBack, this);
@@ -19,7 +18,6 @@ void MahiNodelet::onInit() {
     refereeSub = nh.subscribe("/referee", 1000,  &MahiNodelet::refereeCallBack, this);
 
     drawPub = nh.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
-    debugPub = nh.advertise<parsian_msgs::parsian_debugs>("/debugs", 1000);
     timer_ = nh.createTimer(ros::Duration(.016), boost::bind(&MahiNodelet::timerCb, this, _1));
 
     behavPub = nh.advertise<parsian_msgs::parsian_behavior>("/eval", 10); // TODO: make it private

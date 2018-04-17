@@ -1,61 +1,100 @@
 #!/usr/bin/env python
 from rosgraph_msgs.msg import Log
+from parsian_tools.cfg import blackBoardConfig
+from dynamic_reconfigure.server import Server
 import sys
 import os
 import rospy
-from time import time
-
+import re
+names = ["D_ERROR", "D_GAME", "D_EXPERIMENT", "D_DEBUG", "D_NADIA", "D_MAHI", "D_ALI", "D_MHMMD", "D_FATEME", "D_AHZ",
+         "D_AMIN", "D_PARSA", "D_HAMED", "D_SEPEHR","D_KK", "D_HOSSEIN", "D_ATOUSA"]
 
 class BlackBoardConsole:
     def __init__(self):
-        rospy.init_node('latency', anonymous=True)
-        self.print_index = 1
+        rospy.init_node('blackBoard', anonymous=True)
         if len(sys.argv) > 1:
-            self.limt_preview_time = int(sys.argv[1])
-            self.dont_apply_time_limit = False
+            self.mode = 0 if int(sys.argv[1]) != 1 else 1
         else:
-            self.limt_preview_time = 0
-            self.dont_apply_time_limit = True
-        self.data = {}
-        self.clear_screen()
+            self.mode = 0
+        print(self.mode)
+        self.data = []
+        self.config = blackBoardConfig
+        self.srv = Server(blackBoardConfig, self.cfg_callback)
         rospy.Subscriber('/rosout', Log,
                          self.callback, queue_size=1, buff_size=2 ** 24)
         rospy.spin()
 
     def callback(self, msg):
         # type: (Log) -> null
-        k_v_pair = msg.msg.split(" = ")
         my_level = msg.level
         if my_level is Log.DEBUG:
-            is_changed = self.add_data(k_v_pair[0], k_v_pair[1])
-            if is_changed:
-                self.clear_screen()
-                self.preview_data()
+            node_name_msg = msg.msg.split("::")
+            if len(node_name_msg) != 3:
+                return
+            node = node_name_msg[0].split(".")[1]
+            namespace = node_name_msg[1]
+            debug_msg = node_name_msg[2]
+            if self.config[names[int(namespace)]] is False:
+                return
+
+            if self.config[node] is False and self.config["parsian"] is False:
+                return
+
+            if self.mode == 1:
+                k_v_pair = debug_msg.split(" = ")
+                if k_v_pair[0] == "":
+                    new_key_pair = re.split(':|=', k_v_pair[1])
+                    if len(new_key_pair) >= 2:
+                        k_v_pair[0] = ""
+                        for i in range(len(new_key_pair) - 1):
+                            k_v_pair[0] += new_key_pair[i]
+                        k_v_pair[1] = new_key_pair[-1]
+                    else:
+                        return
+                change_index = self.add_data(k_v_pair[0], k_v_pair[1])
+                if change_index != -2:
+                    if change_index == -1:
+                        change_index += len(self.data)
+                    self.clear_screen(change_index)
+                    self.preview_data(change_index)
+                if change_index == -1:
+                    self.print_there(0, 20 + len(self.data), "new data( "+str(len(self.data))+" )" + msg.msg)
+            else:
+                print(debug_msg[3:])
+
 
     def print_there(self, x, y, text):
         sys.stdout.write("\x1b7\x1b[%d;%df%s\x1b8" % (y, x, text))
         sys.stdout.flush()
 
-    def clear_screen(self):
+    def clear_screen(self, row):
         rows, columns = os.popen('stty size', 'r').read().split()
+        start = len(self.data[row][0])+3
+        self.print_there(start, row + 1, " " * (int(columns)-start))
 
-        for i in range(int(rows)):
-            self.print_there(0, i, " " * int(columns))
+    def preview_data(self, row):
+        self.print_there(0, row+1, self.data[row][0] + " = " + self.data[row][1])
 
-    def add_data(self, key, new_data):
-        is_changed = True
-        if key in self.data:
-            if self.data[key][0] == new_data:
-                is_changed = False
-        self.data[key] = (new_data, time())
-        return is_changed
+    def add_data(self, var_name, new_data):
+        change_index = -1
+        for index in range(len(self.data)):
+            if self.data[index][0] == var_name:
+                if self.data[index][1] == new_data:
+                    return -2
+                else:
+                    change_index = index
+                    break
 
-    def preview_data(self):
-        self.print_index = 1
-        for x in self.data:
-            if time() - self.data[x][1] < self.limt_preview_time or self.dont_apply_time_limit:
-                self.print_there(0, self.print_index, x + "  =  " + self.data[x][0])
-                self.print_index += 1
+        if change_index == -1:
+            self.data.append((var_name, new_data))
+        else:
+            self.data[change_index] = (var_name, new_data)
+        return change_index
+
+    def cfg_callback(self, config, level):
+        self.config = config
+        return config
+
 
 if __name__ == '__main__':
     try:

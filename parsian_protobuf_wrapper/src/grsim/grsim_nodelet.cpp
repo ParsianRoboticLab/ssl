@@ -7,7 +7,7 @@
 void GrsimNodelet::GrsimBotCmd(const parsian_msgs::parsian_robot_command::ConstPtr& msg) {
     grSim_Robot_Command* GrsimRobotCommand = GrsimCommand->add_robot_commands();
     GrsimRobotCommand->set_id(msg->robot_id);
-    GrsimRobotCommand->set_kickspeedx(convertkickchargetimetokickspeed(msg->robot_id, msg->kickSpeed));
+    GrsimRobotCommand->set_kickspeedx(msg->kickSpeed / 100.0);
     GrsimRobotCommand->set_kickspeedz(msg->kickspeedz / 200.0);
     GrsimRobotCommand->set_veltangent(0);
     GrsimRobotCommand->set_velnormal(0);
@@ -62,7 +62,7 @@ void GrsimNodelet::send() {
     GrsimReplacement = new grSim_Replacement;
 }
 
-void GrsimNodelet::visionCB(const parsian_msgs::ssl_vision_detectionConstPtr & msg) {
+void GrsimNodelet::visionCB(const parsian_msgs::parsian_world_modelConstPtr & msg) {
     send();
 }
 
@@ -128,7 +128,7 @@ void GrsimNodelet::onInit() {
     f = boost::bind(& GrsimNodelet::conf, this, _1, _2);
     server->setCallback(f);
 
-    vision_sub = n.subscribe<parsian_msgs::ssl_vision_detection>("vision_detection", 100, boost::bind(& GrsimNodelet::visionCB, this, _1));
+    vision_sub = n.subscribe("/world_model", 10, &GrsimNodelet::visionCB, this);
 
 }
 

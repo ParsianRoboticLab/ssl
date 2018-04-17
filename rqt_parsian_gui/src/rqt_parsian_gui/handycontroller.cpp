@@ -233,6 +233,7 @@ void HandyController::takeAction(EActionType action) {
         mUI.Chip->setIcon(QIcon(pkgPath + "/resource/icons/chip_on.png"));
         cmd->chip = true;
         cmd->kickspeedz = chipkickspeed;
+        cmd->kickSpeed = chipkickspeed;
         break;
 
     case EActionType::_ROLLER:  //TODO some issue when robot id changes

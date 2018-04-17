@@ -71,6 +71,31 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 
 }
 
+void AI::updateRobotFaults(const parsian_msgs::parsian_robot_fault & _rs)
+{
+    if(_rs.select == 0)
+        {
+            soccer->agents[_rs.robot_id]->fault = false;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
+        }
+        if(_rs.select == 1)
+        {
+            ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
+        }
+        if(_rs.select == 2)
+        {
+            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " damaged");
+            soccer->agents[_rs.robot_id]->fault = true;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
+        }
+        if(_rs.select == 3)
+        {
+            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " destroyed");
+            soccer->agents[_rs.robot_id]->fault = true;
+            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
+        }
+}
+
 void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {
     wm->update(_wm);
     for (int i = 0 ; i < _MAX_NUM_PLAYERS ; i++) {
@@ -81,8 +106,58 @@ void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {
 void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
     gameState->setRefree(_ref);
     wm->updateRef(_ref);
+}
 
-
+void AI::forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command){
+    States state;
+    switch (_command->command.command){
+        case ssl_refree_command::BALL_PLACEMENT_US:
+            state = States::OurBallPlacement;
+            break;
+        case ssl_refree_command::BALL_PLACEMENT_THEM:
+            state = States::TheirBallPlacement;
+            break;
+        case ssl_refree_command::PREPARE_KICKOFF_US:
+            state = States::OurKickOff;
+            break;
+        case ssl_refree_command::PREPARE_KICKOFF_THEM:
+            state = States::TheirKickOff;
+            break;
+        case ssl_refree_command::INDIRECT_FREE_US:
+            state = States::OurIndirectKick;
+            break;
+        case ssl_refree_command::INDIRECT_FREE_THEM:
+            state = States::TheirIndirectKick;
+            break;
+        case ssl_refree_command::HALT:
+            state = States::Halt;
+            break;
+        case ssl_refree_command::FORCE_START:
+            state = States::Start;
+            break;
+        case ssl_refree_command::NORMAL_START:
+            gameState->setReady(true);
+            return;
+        case ssl_refree_command::STOP:
+            state = States::Stop;
+            break;
+        case ssl_refree_command::DIRECT_FREE_US:
+            state = States::OurDirectKick;
+            break;
+        case ssl_refree_command::DIRECT_FREE_THEM:
+            state = States::TheirDirectKick;
+            break;
+        case ssl_refree_command::PREPARE_PENALTY_US:
+            state = States::OurPenaltyKick;
+            break;
+        case ssl_refree_command::PREPARE_PENALTY_THEM:
+            state = States::TheirPenaltyKick;
+            break;
+        default:
+            return;
+    }
+    gameState->setState(state);
+    wm->setBallplacementPoin(_command->ballPlacementPos);
 }
 
 CSoccer* AI::getSoccer() {

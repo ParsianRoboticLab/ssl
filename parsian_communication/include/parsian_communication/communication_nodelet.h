@@ -7,17 +7,11 @@
 
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
-
-#include "parsian_msgs/parsian_debugs.h"
 #include "parsian_msgs/parsian_draw.h"
 #include "parsian_util/tools/drawer.h"
-#include "parsian_util/tools/debuger.h"
 #include "parsian_msgs/parsian_packets.h"
-
 #include <parsian_communication/communicator.h>
-
 #include <parsian_msgs/parsian_team_config.h>
-
 #include <dynamic_reconfigure/server.h>
 #include "parsian_communication/communicationConfig.h"
 
@@ -32,7 +26,6 @@ private:
     ros::Subscriber robotPacketSub;
     ros::Subscriber team_config_sub;
     ros::Publisher  drawPub;
-    ros::Publisher  debugPub;
     ros::Publisher  statusPub;
     ros::Timer      timer;
     ros::Timer      recTimer;
@@ -54,9 +47,6 @@ private:
     bool sim_handle_flag;
     parsian_msgs::parsian_packetsPtr modeChangePacket(const parsian_msgs::parsian_packetsConstPtr& _packet);
     parsian_msgs::parsian_packetsPtr modeChangePacketZero(const parsian_msgs::parsian_packetsConstPtr& _packet);
-
-
-
 
 };
 }

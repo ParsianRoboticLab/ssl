@@ -68,7 +68,8 @@ enum DynamicSelect {
     NOSELECT = 0,
     KHAFAN = 1,
     CHIP = 2,
-    BLOCKER = 3
+    KICK = 3,
+    BLOCKER = 4
 };
 
 struct STuneParams {
@@ -327,6 +328,8 @@ public:
     EMode getMasterMode();
     void reset();
     void setInitial(bool _init);
+
+    void kickoffPositioning(int playersNum);
 private:
 
 
@@ -338,6 +341,7 @@ private:
     bool initial;
 
     bool firstPass;
+    bool isOnetouch;
 
     SPlan* masterPlan;
     EMode masterMode;
@@ -352,7 +356,7 @@ private:
     SPositioningAgent positionAgent[_NUM_PLAYERS];
 
     int agentSize;
-    Vector2D getEmptyTarget(Vector2D _position, double _radius);
+    Vector2D getEmptyTarget(const Vector2D& _position, const double& _radius);
     QList<POOwnerReceive> ownerReceiveList;
 
     /////////////////////////////////////////////////////////////////////
@@ -410,7 +414,7 @@ private:
     bool isFinalShotDone();
 
     Vector2D lastBallPos;
-    long lastTime;
+    unsigned int lastTime;
     bool decidePlan;
     int kkAgentsID[_NUM_PLAYERS];
 
@@ -450,12 +454,13 @@ private:
     SFail isAnyTaskFaild();
     bool isAllTasksDone();
     bool isPlanDone();
-    bool isPlanFaild();
+    bool isPlanFailed();
     bool setTimer;
     unsigned int tempStart;
     ////////////////////////////
 
     bool isKickDone(CRolePlayOff*);
+    bool firstKickFailed();
     bool isOneTouchDone(CRolePlayOff*);
     bool isMoveDone(const CRolePlayOff*);
     bool isReceiveDone(const CRolePlayOff*);
@@ -489,7 +494,7 @@ private:
     void dynamicAssignID();
     void dynamicPlayKhafan();
     void dynamicPlayBlocker();
-    void dynamicPlayChipToGoal();
+    void dynamicPlayChipToGoal(bool isChip);
 
     void checkEndKhafan();
     void checkEndBlocker();
@@ -499,7 +504,7 @@ private:
     int dynamicAgentSize;
     bool ready, pass, shot;
     int dynamicState;
-    long dynamicStartTime;
+    unsigned int dynamicStartTime;
 
 ////////////First
 public:

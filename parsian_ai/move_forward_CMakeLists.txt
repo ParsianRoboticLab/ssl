@@ -1,0 +1,51 @@
+add_library(move_forward
+    src/behavior/move_forward/move_forward.cpp
+
+)
+
+#add_library(move_forward_nodelet
+#    src/behavior/move_forward/move_forward_nodelet.cpp
+#
+#)
+
+#add_executable(move_forward_node
+#    src/behavior/move_forward/move_forward_node.cpp
+#
+#)
+
+#target_link_libraries(move_forward_node
+#    ${catkin_LIBRARIES}
+#    move_forward_nodelet
+#)
+
+#target_link_libraries(move_forward_nodelet
+#    ${catkin_LIBRARIES}
+#    ${QT_LIBRARIES}
+#    move_forward
+#    ${PROJECT_NAME}_util
+#)
+
+target_link_libraries(move_forward
+    ${catkin_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${PROJECT_NAME}_util
+
+)
+
+add_dependencies(move_forward
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    ${PROJECT_NAME}_gencfg
+)
+
+#add_dependencies(move_forward_node
+#    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#    ${catkin_EXPORTED_TARGETS}
+#    ${PROJECT_NAME}_gencfg
+#)
+
+#add_dependencies(move_forward_nodelet
+#    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+#    ${catkin_EXPORTED_TARGETS}
+#    ${PROJECT_NAME}_gencfg
+#)

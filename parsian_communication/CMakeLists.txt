@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
         )
 
 roslint_cpp()
-roslint_python()
 
 file(GLOB_RECURSE HEADER_FILES include *.h)
 

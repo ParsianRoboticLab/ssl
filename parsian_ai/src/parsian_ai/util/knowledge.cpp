@@ -536,6 +536,40 @@ int Knowledge::Matching(const QList <Agent*> robots, const QList <Vector2D> poin
 
 }
 
+int Knowledge::MatchingMinTheMax(const QList <Agent*> robots, const QList <Vector2D> pointsToMatch, QList <int> &matchPoints) {
+    QList <int> tempForMatch;
+    tempForMatch.clear();
+    QList<double> D;
+    for (int i = 0 ; i < robots.count() ; i++) {
+        tempForMatch.append(i);
+        D.append(1000000.0);
+    }
+
+    QList<double> tempD;
+    QList<QList <int> > combo = generateCombinations(tempForMatch);
+    matchPoints.clear();
+    if (robots.count() == pointsToMatch.count()) {
+        for (int i = 0 ; i < factorial(robots.count()) ; i++) {
+            tempD.clear();
+            for (int j = 0 ; j < robots.count() ; j++) {
+                tempD.append(pointsToMatch[combo[i][j]].dist(robots[j]->pos()));
+            }
+            qSort(tempD.begin(),tempD.end());
+            for(int j=robots.count()-1; j>=0; j--)
+                if (tempD[j] < D[j]) {
+                    D = tempD;
+                    matchPoints.clear();
+                    matchPoints.append(combo[i]);
+                }else if(tempD[j] > D[j])
+                       break;
+        }
+        return 1;
+    } else {
+        return -1;
+    }
+
+}
+
 Vector2D Knowledge::getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double th, Agent* ourAgent) {
 
     Vector2D target, goalieR, goalieL;
@@ -594,7 +628,6 @@ Vector2D Knowledge::getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double t
 
     return target;
 }
-
 
 bool Knowledge::isPointClear(Vector2D point, Vector2D from, double rad, bool considerRelaxedIDs, QList<int> ourRelaxedIDs, QList<int> oppRelaxedIDs) {
     Vector2D posIntersect1(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
@@ -664,7 +697,6 @@ bool Knowledge::isPointClear(Vector2D point, Vector2D from, double radBig, doubl
     }
     return true;
 }
-
 
 NewFastestToBall Knowledge::newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList, const CWorldModel*& wm) {
     ////
@@ -851,7 +883,6 @@ FastestToBall Knowledge::findFastestToBall(QList<int> ourList, QList<int> oppLis
     return f;
 }
 
-
 NewFastestToBall Knowledge::newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList) {
     ////
     ////Code By Sepehr
@@ -1028,6 +1059,5 @@ double Knowledge::chipGoalPropability(bool isOurChip) {
 
 
 }
-
 
 Knowledge * know = new Knowledge();

@@ -65,5 +65,6 @@
     <nodelet plugin="${prefix}/nodelet.xml"/>
     <nodelet plugin="${prefix}/common.xml"/>
     <nodelet plugin="${prefix}/planner.xml"/>
+    <nodelet plugin="${prefix}/auto_decider.xml"/>
   </export>
 </package>

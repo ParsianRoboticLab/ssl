@@ -28,15 +28,14 @@ class getPlan:
         if len(received) > 0:
             print ("response to gui...... update plans")
             self.response.allPlans = self.__w.update_master_active(received, req.index, req.isMaster, req.isActive)
-            return self.response
         else:
             print ("response to gui...... return all plans")
             self.response.allPlans = self.__w.get_all_plans()
-            return self.response
+        self.response.allPlans = sorted(self.response.allPlans, key=lambda x: x.planFile)
+        return self.response
 
     def handle_plan_request(self, req):
         # type: (plan_serviceRequest) -> req
-        print("REQUEST:: #players: " + str(req.plan_req.playersNum) + " game mode: " + str(req.plan_req.gameMode) + "\n")
         t = int(round(time.time() * 1000000))
         response = plan_serviceResponse()
         out = self.__w.choose_plan(req.plan_req.playersNum, req.plan_req.gameMode, req.plan_req.ballPos.x, req.plan_req.ballPos.y)
@@ -44,6 +43,7 @@ class getPlan:
             t2 = int(round(time.time() * 1000000)) - t
             response.the_plan = out
             response.time_us = t2
+            print("REQUEST:: # plan players: " + str(response.the_plan.agentSize) + " # req players: " + str(req.plan_req.playersNum) + " game mode: " + str(req.plan_req.gameMode) + "\n")
             print ("time: " + str(t2) + " ms")
             return response
         else:

@@ -36,8 +36,6 @@ qt4_wrap_cpp(QT_MOC_HPP ${QT_MOC})
 
 file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINKS *.cpp)
 
-find_package(QJSON REQUIRED)
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -61,7 +59,9 @@ generate_dynamic_reconfigure_options(
 	###	cfg/pass.cfg
 		cfg/direct.cfg
 		cfg/mahi.cfg
+		cfg/move_forward.cfg
 		cfg/ai.cfg
+		cfg/def_test.cfg
 		cfg/behavior_server.cfg
 )
 
@@ -99,44 +99,37 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/gamestate.cpp
 		src/${PROJECT_NAME}/config.cpp
 		src/${PROJECT_NAME}/coach.cpp
-		)
-
-add_library(${PROJECT_NAME}_plays
-		src/parsian_ai/plays/dynamicattack.cpp
-		src/parsian_ai/plays/masterplay.cpp
-		src/parsian_ai/plays/ourballplacement.cpp
-		src/parsian_ai/plays/playoff.cpp
-		src/parsian_ai/plays/ourpenalty.cpp
-		src/parsian_ai/plays/theirpenalty.cpp
-		src/parsian_ai/plays/theirkickoff.cpp
-		src/parsian_ai/plays/theirindirect.cpp
-		src/parsian_ai/plays/theirdirect.cpp
-		src/parsian_ai/plays/theirballplacement.cpp
-		src/parsian_ai/plays/stopplay.cpp
-		)
-
-add_library(${PROJECT_NAME}_plans
-		src/parsian_ai/plans/defenseplan.cpp
-		src/parsian_ai/plans/markplan.cpp
-		src/parsian_ai/plans/plan.cpp
-		src/parsian_ai/plans/positioningplan.cpp
-		)
-
-add_library(${PROJECT_NAME}_roles
-		src/parsian_ai/roles/role.cpp
-		src/parsian_ai/roles/block.cpp
-		src/parsian_ai/roles/playoffrole.cpp
-		src/parsian_ai/roles/stop.cpp
-		src/parsian_ai/roles/dynamicrole.cpp
-		src/parsian_ai/roles/playmake.cpp
+		src/${PROJECT_NAME}/plays/dynamicattack.cpp
+		src/${PROJECT_NAME}/plays/masterplay.cpp
+		src/${PROJECT_NAME}/plays/ourballplacement.cpp
+		src/${PROJECT_NAME}/plays/playoff.cpp
+		src/${PROJECT_NAME}/plays/ourpenalty.cpp
+		src/${PROJECT_NAME}/plays/theirpenalty.cpp
+		src/${PROJECT_NAME}/plays/theirkickoff.cpp
+		src/${PROJECT_NAME}/plays/theirindirect.cpp
+		src/${PROJECT_NAME}/plays/theirdirect.cpp
+		src/${PROJECT_NAME}/plays/theirballplacement.cpp
+		src/${PROJECT_NAME}/plays/theirpenaltyshootout.cpp
+		src/${PROJECT_NAME}/plays/ourpenaltyshootout.cpp
+		src/${PROJECT_NAME}/plays/stopplay.cpp
+		src/${PROJECT_NAME}/plays/halftimelineup.cpp
+		src/${PROJECT_NAME}/plans/defenseplan.cpp
+		src/${PROJECT_NAME}/plans/markplan.cpp
+		src/${PROJECT_NAME}/plans/plan.cpp
+		src/${PROJECT_NAME}/plans/positioningplan.cpp
+		src/${PROJECT_NAME}/roles/role.cpp
+		src/${PROJECT_NAME}/roles/block.cpp
+		src/${PROJECT_NAME}/roles/playoffrole.cpp
+		src/${PROJECT_NAME}/roles/stop.cpp
+		src/${PROJECT_NAME}/roles/fault.cpp
+		src/${PROJECT_NAME}/roles/dynamicrole.cpp
+		src/${PROJECT_NAME}/roles/playmake.cpp
 		)
 
 add_library(${PROJECT_NAME}_util
-		 src/parsian_ai/util/defpos.cpp
+		src/parsian_ai/util/defpos.cpp
 		src/parsian_ai/util/knowledge.cpp
 		src/parsian_ai/util/worldmodel.cpp
-		#		src/parsian_ai/util/planloader.cpp
-		#		src/parsian_ai/util/loadplayoffjson.cpp
 		src/parsian_ai/util/agent.cpp)
 
 add_library(${PROJECT_NAME}_nodelet
@@ -153,8 +146,9 @@ add_executable(${PROJECT_NAME}_node
 
 ### BEHAVIORS ### DO NOT REMOVE THIS LINE, IT'S FOR AUTO-GENERATION
 #####include(./pass_CMakeLists.txt)
-include(./direct_CMakeLists.txt)
-include(./mahi_CMakeLists.txt)
+#include(./direct_CMakeLists.txt)
+#include(./mahi_CMakeLists.txt)
+#include(./move_forward_CMakeLists.txt)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -186,25 +180,10 @@ target_link_libraries(${PROJECT_NAME}_nodelet
 		)
 target_link_libraries(${PROJECT_NAME}_node
 		${catkin_LIBRARIES}
-		${PROJECT_NAME}
-		${PROJECT_NAME}_nodelet
 		${QT_LIBRARIES}
-		mahi
 		)
 
 add_dependencies(${PROJECT_NAME}
-		${${PROJECT_NAME}_EXPORTED_TARGETS}
-		${catkin_EXPORTED_TARGETS}
-		${PROJECT_NAME}_gencfg
-		)
-
-add_dependencies(${PROJECT_NAME}_plans
-		${${PROJECT_NAME}_EXPORTED_TARGETS}
-		${catkin_EXPORTED_TARGETS}
-		${PROJECT_NAME}_gencfg
-		)
-
-add_dependencies(${PROJECT_NAME}_plays
 		${${PROJECT_NAME}_EXPORTED_TARGETS}
 		${catkin_EXPORTED_TARGETS}
 		${PROJECT_NAME}_gencfg
@@ -216,45 +195,17 @@ add_dependencies(${PROJECT_NAME}_util
 		${PROJECT_NAME}_gencfg
 		)
 
-add_dependencies(${PROJECT_NAME}_roles
-		${${PROJECT_NAME}_EXPORTED_TARGETS}
-		${catkin_EXPORTED_TARGETS}
-		${PROJECT_NAME}_gencfg
-		)
-
 target_link_libraries(${PROJECT_NAME}
 		${catkin_LIBRARIES}
 		${QT_LIBRARIES}
-		${PROJECT_NAME}_plays
-		${PROJECT_NAME}_plans
-		${PROJECT_NAME}_roles
-		${PROJECT_NAME}_util
-		mahi_nodelet
-		)
-
-target_link_libraries(${PROJECT_NAME}_plays
-		${QT_LIBRARIES}
-		${catkin_LIBRARIES}
-		${PROJECT_NAME}_util
-		)
-
-target_link_libraries(${PROJECT_NAME}_plans
-		${QT_LIBRARIES}
-		${catkin_LIBRARIES}
 		${PROJECT_NAME}_util
 		)
 
 target_link_libraries(${PROJECT_NAME}_util
 		${QT_LIBRARIES}
 		${catkin_LIBRARIES}
-		${QJSON_LIBRARIES}
 		)
 
-target_link_libraries(${PROJECT_NAME}_roles
-		${QT_LIBRARIES}
-		${catkin_LIBRARIES}
-		${QJSON_LIBRARIES}
-		)
 
 #############
 ## Install ##
@@ -272,7 +223,7 @@ install(PROGRAMS
 		)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_nodelet ${PROJECT_NAME}_node mahi_node
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_nodelet ${PROJECT_NAME}_node
 		ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -291,8 +242,10 @@ install(FILES
 		DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 		)
 
-catkin_install_python(PROGRAMS scripts/plan_server/planserver_node.py
-						       scripts/behavior_server/behavior_server_node.py
+catkin_install_python(PROGRAMS
+scripts/plan_server/planserver_node.py
+scripts/behavior_server/behavior_server_node.py
+scripts/auto_defense_test/def_test_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############

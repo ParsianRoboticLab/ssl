@@ -22,14 +22,17 @@ enum class States {
     OurPenaltyKick = 8,
     OurPenaltyShootOut = 9,
     OurKickOff = 10,
+    OurTimeOut = 11,
+
+    TheirBallPlacement = 12,/// start of their
+    TheirDirectKick = 13,
+    TheirIndirectKick = 14,
+    TheirPenaltyKick = 15,
+    TheirPenaltyShootOut = 16,
+    TheirKickOff = 17,
+    TheirTimeOut = 18
 
 
-    TheirBallPlacement = 11,/// start of their
-    TheirDirectKick = 12,
-    TheirIndirectKick = 13,
-    TheirPenaltyKick = 14,
-    TheirPenaltyShootOut = 15,
-    TheirKickOff = 16,
 
 
 };
@@ -79,11 +82,14 @@ public:
     bool ballPlacement();
     bool ourBallPlacement();
     bool theirBallPlacement();
-    bool halfTimeLineUp();
+    bool halfTime();
     bool penaltyShootout();
     bool ourPenaltyShootout();
     bool theirPenaltyShootout();
-
+    bool ourTimeOut();
+    bool theirTimeOut();
+    bool timeOut();
+    void setReady(bool ready);
     States getState();
     void setState(const States& s, bool isReady = false);
 };

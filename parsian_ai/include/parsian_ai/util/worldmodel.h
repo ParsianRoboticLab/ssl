@@ -14,6 +14,7 @@ public:
     bool AHZIsInOurPenaltyArea(Vector2D point);
     QList<Vector2D> AHZOurPAreaIntersect(Segment2D segment,QString role);
     Vector2D ballplacementPoint();
+    void setBallplacementPoin(Vector2D ballplacementPoint);
 private:
     Vector2D m_ballplacementPoint;
 

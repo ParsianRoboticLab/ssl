@@ -24,8 +24,6 @@ ModeChooserWidget::ModeChooserWidget(ros::NodeHandle & n)
     modeStr[0] = "SIMULATION";
     modeStr[1] = "REAL";
 
-    this->setFixedSize(90, 110);
-
     mainLayout = new QGridLayout(this);
 
     colorPB = new QPushButton(colorStr[static_cast<int>(color)], this);

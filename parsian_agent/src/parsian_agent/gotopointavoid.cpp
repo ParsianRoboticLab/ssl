@@ -55,6 +55,7 @@ void CSkillGotoPointAvoid::execute()
     if (agent == nullptr) {
         return;
     }
+    ballPos = wm->ball->pos;
     agentPos = agent->pos();
     agentVel = agent->vel();
     double dVx, dVy, dW;
@@ -111,31 +112,31 @@ void CSkillGotoPointAvoid::execute()
         targetDir = (lookAt - agentPos).norm();
     }
 
-//    knowledge->plotWidgetCustom[1] = agentVel.length();
+    //    knowledge->plotWidgetCustom[1] = agentVel.length();
     //    debug(QString("speed: %1").arg(agentVel.length()),D_MHMMD);
     ///////////
 
-//    if (targetPos.x < wm->field->ourCornerL().x - 0.2) targetPos.x = wm->field->ourCornerL().x;
-//    if (targetPos.x > wm->field->oppCornerL().x + 0.2) targetPos.x = wm->field->oppCornerL().x;
-//    if (targetPos.y < wm->field->ourCornerR().y - 0.2) targetPos.y = wm->field->ourCornerR().y;
-//    if (targetPos.y > wm->field->ourCornerL().y + 0.2) targetPos.y = wm->field->ourCornerL().y;
+    //    if (targetPos.x < wm->field->ourCornerL().x - 0.2) targetPos.x = wm->field->ourCornerL().x;
+    //    if (targetPos.x > wm->field->oppCornerL().x + 0.2) targetPos.x = wm->field->oppCornerL().x;
+    //    if (targetPos.y < wm->field->ourCornerR().y - 0.2) targetPos.y = wm->field->ourCornerR().y;
+    //    if (targetPos.y > wm->field->ourCornerL().y + 0.2) targetPos.y = wm->field->ourCornerL().y;
 
-//    if (false) { //conf()->LocalSettings_ParsianWorkShop()) {
-//        if(conf()->LocalSettings_OurTeamSide() == "Right")
-//        {
-//            if(targetPos.x < 0.2)
-//            {
-//                targetPos.x = 0.2;
-//            }
-//        }
-//        else
-//        {
-//            if(targetPos.x > 4.3)
-//            {
-//                targetPos.x = 4.3;
-//            }
-//        }
-//    }
+    //    if (false) { //conf()->LocalSettings_ParsianWorkShop()) {
+    //        if(conf()->LocalSettings_OurTeamSide() == "Right")
+    //        {
+    //            if(targetPos.x < 0.2)
+    //            {
+    //                targetPos.x = 0.2;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if(targetPos.x > 4.3)
+    //            {
+    //                targetPos.x = 4.3;
+    //            }
+    //        }
+    //    }
 
     if (lookAt.valid()) {
         targetDir = (lookAt - agentPos).norm();
@@ -151,7 +152,7 @@ void CSkillGotoPointAvoid::execute()
         for (long i = agent->pathPlannerResult.size() - 1 ; i >= 0 ; i--) {
             // ROS_INFO_STREAM("POS : " << agent->pathPlannerResult[i].x << " , " << agent->pathPlannerResult[i].y);
             result.append(agent->pathPlannerResult[i]);
-//            drawer->draw(Circle2D(agent->pathPlannerResult[i],0.01),QColor(Qt::red));
+            //            drawer->draw(Circle2D(agent->pathPlannerResult[i],0.01),QColor(Qt::red));
         }
     }
 
@@ -172,27 +173,27 @@ void CSkillGotoPointAvoid::execute()
 
 
 
-//        for( int i=1 ; i<result.size() ; i++ ){
-//            alpha = 0;
-//            if(fabs(Vector2D::angleBetween(result[i] - result[0] , result[i+1] - result[i]).degree()) > 3 ){
-//                if( i+1 == result.size() ){
-//                    vf = 0;
-//                    alpha = 0;
-//                }
-//                else{
-//                    alpha = fabs(Vector2D::angleBetween(result[i] - result[0] , result[i+1] - result[i]).degree());
-//                    vf = -1.0259280143 * log(alpha) + 4.570475303;
-//                    vf = max(vf , 0.5);
-//                }
-//                D = result[i].dist(result[0]);
-//                lllll = result[i];
-//                d = dist - D;
-//
-//
-//                flag = false;
-//                break;
-//            }
-//        }
+    //        for( int i=1 ; i<result.size() ; i++ ){
+    //            alpha = 0;
+    //            if(fabs(Vector2D::angleBetween(result[i] - result[0] , result[i+1] - result[i]).degree()) > 3 ){
+    //                if( i+1 == result.size() ){
+    //                    vf = 0;
+    //                    alpha = 0;
+    //                }
+    //                else{
+    //                    alpha = fabs(Vector2D::angleBetween(result[i] - result[0] , result[i+1] - result[i]).degree());
+    //                    vf = -1.0259280143 * log(alpha) + 4.570475303;
+    //                    vf = max(vf , 0.5);
+    //                }
+    //                D = result[i].dist(result[0]);
+    //                lllll = result[i];
+    //                d = dist - D;
+    //
+    //
+    //                flag = false;
+    //                break;
+    //            }
+    //        }
 
     if (result.size() >= 3) {
         alpha = fabs(Vector2D::angleBetween(result[1] - result[0] , result[2] - result[1]).degree());
@@ -206,7 +207,7 @@ void CSkillGotoPointAvoid::execute()
         vf = 0;
         lllll = targetPos;
     }
-//    drawer->draw(QString("vf : %1").arg(vf),Vector2D(1,0));
+    //    drawer->draw(QString("vf : %1").arg(vf),Vector2D(1,0));
     ////////////////////// avoid goal posts
     Segment2D goalPostL, goalPostR;
     goalPostL.assign(wm->field->ourGoalL() - Vector2D(0.2, 0), wm->field->ourGoalL() + Vector2D(0.1, 0));
@@ -228,7 +229,7 @@ void CSkillGotoPointAvoid::execute()
     bangBang->setSmooth(true);// = false;
 
     bangBang->bangBangSpeed(agentPos, agentVel, agent->dir(), lllll, targetDir, vf, 0.016, dVx, dVy, dW);
-//    bangBang->bangBangSpeed(agentPos, agentVel, agent->dir(), lllll, lllll - agentPos, vf, 0.016, dVx, dVy, dW);
+    //    bangBang->bangBangSpeed(agentPos, agentVel, agent->dir(), lllll, lllll - agentPos, vf, 0.016, dVx, dVy, dW);
 
     if (!addVel.isValid()) {
         addVel = Vector2D(0, 0);
@@ -242,6 +243,15 @@ void CSkillGotoPointAvoid::execute()
     drawer -> draw(QString("time : %1").arg(timeNeeded(agent, targetPos, conf->VelMax, dumm, dumm, 0, 0, 0)), Vector2D(1, 1));
 
     counter ++;
+    if(oneTouchFlag){
+        if (agentPos.dist(ballPos) < 1) {
+            if (chip) {
+                agent->setChip(chipDist);
+            } else {
+                agent->setKick(kickSpeed);
+            }
+        }
+    }
 }
 
 double CSkillGotoPointAvoid::progress() {

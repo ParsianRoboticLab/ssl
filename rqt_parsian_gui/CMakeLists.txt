@@ -133,6 +133,8 @@ set (${PROJECT_NAME}_SRCS
   src/${PROJECT_NAME}/playoff.cpp
   src/${PROJECT_NAME}/taskRunner.cpp
   src/${PROJECT_NAME}/taskRunnerWidget.cpp
+  src/${PROJECT_NAME}/referee.cpp
+  src/${PROJECT_NAME}/refereeWidget.cpp
 )
 
 set(${PROJECT_NAME}_HDRS
@@ -148,7 +150,10 @@ set(${PROJECT_NAME}_HDRS
   include/${PROJECT_NAME}/playoff.h
   include/${PROJECT_NAME}/taskRunner.h
   include/${PROJECT_NAME}/taskRunnerWidget.h
-)
+  include/${PROJECT_NAME}/referee.h
+  include/${PROJECT_NAME}/refereeWidget.h
+
+        )
 
 
 set(${PROJECT_NAME}_UIS
@@ -235,7 +240,10 @@ install(FILES
   plugin1.xml
   plugin2.xml
   plugin3.xml
+  playoff_plugin.xml
+  referee_plugin.xml
   mode_plugin.xml
+  task_runner_plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

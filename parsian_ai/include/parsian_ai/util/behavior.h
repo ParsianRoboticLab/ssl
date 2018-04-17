@@ -8,6 +8,12 @@
 #include <parsian_msgs/parsian_behavior.h>
 #include <parsian_ai/util/agent.h>
 #include <parsian_msgs/parsian_ai_status.h>
+#include <parsian_util/action/autogenerate/kickaction.h>
+#include <parsian_util/action/autogenerate/receivepassaction.h>
+#include <parsian_util/action/autogenerate/onetouchaction.h>
+#include <parsian_util/action/autogenerate/noaction.h>
+#include <parsian_util/action/autogenerate/gotopointavoidaction.h>
+#include <parsian_util/mathtools.h>
 
 class Behavior
 {

@@ -22,6 +22,10 @@ public:
     static QString SActionName();
 
 
+    SkillProperty(GotopointavoidAction, bool, Chip, chip);
+    SkillProperty(GotopointavoidAction, double, Kickspeed, kickSpeed);
+    SkillProperty(GotopointavoidAction, double, Chipdist, chipDist);
+    SkillProperty(GotopointavoidAction, bool, Onetouchflag, oneTouchFlag);
     SkillProperty(GotopointavoidAction, bool, Avoidpenaltyarea, avoidPenaltyArea);
     SkillProperty(GotopointavoidAction, bool, Noavoid, noAvoid);
     SkillProperty(GotopointavoidAction, bool, Avoidcentercircle, avoidCenterCircle);

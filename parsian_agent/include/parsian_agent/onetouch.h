@@ -15,7 +15,7 @@ private:
     Vector2D ballLastVel;
     Vector2D lastInterceptPos;
 public:
-    static double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double landa, double gamma);
+    static double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double landa, double gamma,double vkick);
     DEF_SKILL(CSkillKickOneTouch);
 };
 

@@ -11,17 +11,18 @@ add_custom_target(headers SOURCES ${LibFiles})
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-        roscpp
+	roscpp
         rospy
         nodelet
         parsian_msgs
 	roslint
+	dynamic_reconfigure
         )
 
 roslint_cpp()
 roslint_python()
 
-find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui)
+find_package(Qt4 REQUIRED COMPONENTS QtCore QtGui )
 include(${QT_USE_FILE})
 include_directories(
         include
@@ -46,7 +47,9 @@ catkin_python_setup()
 
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-#generate_dynamic_reconfigure_options()
+generate_dynamic_reconfigure_options(
+	cfg/blackBoard.cfg
+	)
 
 ###################################
 ## catkin specific configuration ##
@@ -98,11 +101,13 @@ target_link_libraries(${PROJECT_NAME}_nodelet
 add_dependencies(${PROJECT_NAME}_node
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
+	${PROJECT_NAME}_gencfg
         )
 
 add_dependencies(${PROJECT_NAME}_nodelet
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
+	${PROJECT_NAME}_gencfg
         )
 
 #############

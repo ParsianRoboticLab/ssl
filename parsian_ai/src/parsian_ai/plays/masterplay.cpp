@@ -8,6 +8,7 @@
 //CRoleBlock CMasterPlay::blockRole{nullptr};
 
 CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr) {
+    markAgents.clear();
     executedCycles = 0;
     lockAgents = false;
     //defenseN = 2;
@@ -19,9 +20,9 @@ void CMasterPlay::initMaster() {
     blockAgent = nullptr;
     playMakeAgent = nullptr;
     positionAgents.clear();
-    if (gameState->isStart()) {
-        markAgents.clear();
-    }
+//    if (gameState->isStart()) {
+//        markAgents.clear();
+//    }
     stopAgents.clear();
     masterStaticPoints.clear();
     staticInited = false;
@@ -277,7 +278,7 @@ void CMasterPlay::execute() {
         }
     }
     execPlay();
-    DBUG(QString("MasterPlay agents invalid size: %1!").arg(agents.count()) , D_ERROR);
+    DBUG(QString("MasterPlay size: %1").arg(agents.count()) , D_ERROR);
 }
 
 void CMasterPlay::execPlay() {

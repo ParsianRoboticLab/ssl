@@ -29,7 +29,7 @@ double CBall::whenBallReachToPoint(double dist) const {
 
 double CBall::getBallAcc() const {
     // return Gravity*BallFriction();
-    return 0.17;
+    return 0.45;
     return this->acc.length();
 }
 

@@ -11,13 +11,13 @@ void WMNodelet::onInit() {
     wm.reset(new WorldModel);
     drawer = new Drawer;
 //    timer = nh.createTimer(ros::Duration(.062), boost::bind(&WMNodelet::timerCb, this, _1));
-    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 1000);
+    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 3);
     team_config_sub = nh.subscribe("/team_config", 1000, & WMNodelet::teamConfigCb, this);
-    vision_detection_sub = nh.subscribe("vision_detection", 1000, &WMNodelet::detectionCb, this);
+    vision_detection_sub = nh.subscribe("vision_detection", 8, &WMNodelet::detectionCb, this);
     QString robotCommandSubName;
     for (int i = 0 ; i < 12 ; i++) {
         robotCommandSubName = QString("/agent_%1/command").arg(i);
-        robots_command_sub[i] = nh.subscribe(robotCommandSubName.toStdString(), 1000, &WMNodelet::robotsCommandCb, this);
+        robots_command_sub[i] = nh.subscribe(robotCommandSubName.toStdString(), 3, &WMNodelet::robotsCommandCb, this);
     }
 //    vision_geom_sub = nh.subscribe("vision_geom", 10, boost::bind(& WMNodelet::geomCb, this, _1));
 

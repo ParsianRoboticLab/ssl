@@ -100,9 +100,15 @@ add_library(${PROJECT_NAME}_planner
 add_library(${PROJECT_NAME}_planner_nodelet
         src/planner/planner_nodelet.cpp
         )
+add_library(${PROJECT_NAME}_auto_decider_nodelet
+		src/auto_decider/auto_decider_nodelet.cpp
+		)
 add_executable(${PROJECT_NAME}_planner_node
         src/planner/planner_node.cpp
         )
+add_executable(${PROJECT_NAME}_auto_decider_node
+		src/auto_decider/auto_decider_node.cpp
+		)
 
 add_library(${PROJECT_NAME}_nodelet
         src/agent_nodelet.cpp
@@ -164,6 +170,15 @@ target_link_libraries(${PROJECT_NAME}_commonconfig_node
         ${catkin_LIBRARIES}
         ${PROJECT_NAME}_commonconfig_nodelet
         )
+target_link_libraries(${PROJECT_NAME}_auto_decider_node
+		${catkin_LIBRARIES}
+		${PROJECT_NAME}_auto_decider_nodelet
+		)
+target_link_libraries(${PROJECT_NAME}_auto_decider_nodelet
+		${catkin_LIBRARIES}
+		${QT_LIBRARIES}
+		${PROJECT_NAME}
+		)
 
 # dependencies
 
@@ -171,6 +186,7 @@ add_dependencies(${PROJECT_NAME}
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
         )
+
 #
 add_dependencies(${PROJECT_NAME}_nodelet
         ${PROJECT_NAME}_gencfg
@@ -211,6 +227,10 @@ add_dependencies(${PROJECT_NAME}_commonconfig_node
         ${${PROJECT_NAME}_EXPORTED_TARGETS}
         ${catkin_EXPORTED_TARGETS}
         )
+add_dependencies(${PROJECT_NAME}_auto_decider_nodelet
+		${${PROJECT_NAME}_EXPORTED_TARGETS}
+		${catkin_EXPORTED_TARGETS}
+		)
 
 # Add cmake target dependencies of the library
 # as an example, code may need to be generated before libraries
@@ -288,3 +308,5 @@ catkin_install_python(PROGRAMS script/parsian_profiler/motion_profiler_node.py
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+

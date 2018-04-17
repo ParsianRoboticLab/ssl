@@ -205,9 +205,10 @@ public:
     QList<Vector2D> oppPAreaIntersect(Circle2D circle) const;
 
     Vector2D ourPAreaPerpendicularVector(double angle , Vector2D &intersectpoint) const;
-
+    ///////////////////////////////////////// AHZ ////////////////////////////////
     Rect2D ourBigPenaltyArea(double scale = 1 , double tolerance = 0 , bool doChangesWithScale  = 1);
-
+    Rect2D oppBigPenaltyArea(double scale = 1, double tolerance = 0 , bool doChangesWithScale = 1);
+    ////////////////////////////////////////////////////////////////////////////////
     double ourPAreaPos(double angle) const;
 
 private:

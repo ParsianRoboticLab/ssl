@@ -1,0 +1,7 @@
+<library path="lib/libmove_forward_nodelet">
+    <class name="parsian_ai/Move_ForwardNodelet" type="parsian_ai::Move_ForwardNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            just another behavior for parsian ssl
+        </description>
+    </class>
+</library>

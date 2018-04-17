@@ -1,4 +1,5 @@
 #include "parsian_util/core/team.h"
+#include <parsian_util/tools/blackboard.h>
 #include <ros/ros.h>
 
 
@@ -56,8 +57,8 @@ int CTeam::activeAgentID(int i) {
     if ((i < data->activeAgents.size()) && (i >= 0)) {
         return data->activeAgents[i];
     }
-    debugger->debug(QString("request for id %1 that does not exist in team").arg(i), D_ERROR);
-    debugger->debug("Active Agents:", D_DEBUG);
+    DEBUG(QString("request for id %1 that does not exist in team").arg(i), D_ERROR);
+    DEBUG("Active Agents:", D_DEBUG);
     for (int activeAgent : data->activeAgents) {
         DEBUG(activeAgent , D_DEBUG);
     }
@@ -76,8 +77,8 @@ CRobot* CTeam::active(const int& i) const {
     if ((i < data->activeAgents.size()) && (i >= 0)) {
         return data->teamMembers[data->activeAgents[i]];
     }
-    debugger->debug(QString("request for id %1 that does not exist in team").arg(i), D_ERROR);
-    debugger->debug("Active Agents:", D_DEBUG);
+    DEBUG(QString("request for id %1 that does not exist in team").arg(i), D_ERROR);
+    DEBUG("Active Agents:", D_DEBUG);
     for (int activeAgent : data->activeAgents) {
         DEBUG(activeAgent , D_DEBUG);
     }

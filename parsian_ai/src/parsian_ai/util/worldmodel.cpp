@@ -109,6 +109,10 @@ void WorldModel::updateRef(const parsian_msgs::ssl_refree_wrapperConstPtr _ref) 
     m_ballplacementPoint = Vector2D(_ref->designated_position);
 }
 
+void WorldModel::setBallplacementPoin(Vector2D ballplacementPoint){
+    m_ballplacementPoint = ballplacementPoint;
+}
+
 Vector2D WorldModel::ballplacementPoint() {
     return m_ballplacementPoint;
 }

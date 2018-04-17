@@ -97,7 +97,8 @@ add_library(${PROJECT_NAME}
 		src/wm/robot.cpp
 		src/wm/ball.cpp
 		src/config.cpp
-		)
+#        src/wm/ballFlyingFilter.cpp src/wm/ballFlyingFilter.h
+)
 
 add_library(${PROJECT_NAME}_util
 		src/util/robottracker.cpp

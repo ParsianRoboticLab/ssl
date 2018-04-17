@@ -1,0 +1,2 @@
+ssl_refree_command command
+vector2D ballPlacementPos

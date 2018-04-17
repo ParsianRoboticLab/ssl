@@ -24,9 +24,10 @@ protected:
     QList <Vector2D> pathPoints;
     int counter;
     Vector2D averageDir;
-public:
-    void init(Vector2D _target, Vector2D _targetDir, Vector2D _targetVel = Vector2D(0.0, 0.0));
 
+public:
+    Vector2D ballPos;
+    void init(Vector2D _target, Vector2D _targetDir, Vector2D _targetVel = Vector2D(0.0, 0.0));
     static double timeNeeded(Agent *_agentT, Vector2D posT, double vMax, QList <int> _ourRelax, QList <int> _oppRelax , bool avoidPenalty, double ballObstacleReduce, bool _noAvoid);
     DEF_SKILL(CSkillGotoPointAvoid);
     CSkillGotoPointAvoid* noRelax();

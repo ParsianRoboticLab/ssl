@@ -18,13 +18,11 @@ void CommunicationNodelet::onInit() {
     recTimer = n.createTimer(ros::Duration(.02), boost::bind(&CommunicationNodelet::recTimerCb, this, _1));
 
     drawer = new Drawer();
-    debugger = new Debugger();
 
     drawPub    = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
-    debugPub   = n.advertise<parsian_msgs::parsian_debugs>("/debugs", 1000);
     statusPub  = n.advertise<parsian_msgs::parsian_robots_status>("/robots_status", 1000);
-    robotPacketSub   = n.subscribe("/packets" , 10000, &CommunicationNodelet::callBack, this);
-    team_config_sub = n.subscribe("/team_config", 1000, & CommunicationNodelet::teamConfigCb, this);
+    robotPacketSub   = n.subscribe("/packets" , 100, &CommunicationNodelet::callBack, this);
+    team_config_sub = n.subscribe("/team_config", 10, & CommunicationNodelet::teamConfigCb, this);
 
 
     communicator.reset(new CCommunicator);
@@ -120,9 +118,6 @@ void CommunicationNodelet::timerCb(const ros::TimerEvent &event) {
     if (drawer != nullptr) {
         drawPub.publish(drawer->draws);
         drawer->draws.vectors.clear();
-    }
-    if (debugger != nullptr) {
-        debugPub.publish(debugger->debugs);
     }
 }
 

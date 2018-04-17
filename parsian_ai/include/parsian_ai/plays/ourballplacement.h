@@ -20,7 +20,7 @@ public:
         ~COurBallPlacement();
         void execute_x();
         void init(const QList <Agent*>& _agents);
-
+        bool first;
 private:
         void reset();
         BallPlacement state;
@@ -30,7 +30,7 @@ private:
         CAgent *ap;
         int minIndex;
         CAgent *a;
-        bool first;
+
 };
 
 #endif // OURBALLPLACEMENT_H
