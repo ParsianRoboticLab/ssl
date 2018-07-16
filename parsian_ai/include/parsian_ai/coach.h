@@ -20,8 +20,6 @@
 #include <parsian_ai/plans/plans.h>
 #include <parsian_ai/plays/plays.h>
 #include <parsian_ai/roles/stop.h>
-#include <behavior/mahi/mahi.h>
-#include <behavior/direct/direct.h>
 #include <parsian_msgs/plan_service.h>
 #include <parsian_msgs/parsian_ai_status.h>
 #include <parsian_msgs/parsian_pair_roles.h>
@@ -91,8 +89,6 @@ public:
 
     parsian_msgs::plan_serviceResponse getLastPlan();
 
-    void updateBehavior(const parsian_msgs::parsian_behaviorConstPtr _behav);
-
     void generateWorkingRobotIds();
     QList<int> workingIDs;
     void replacefaultedrobots();
@@ -134,10 +130,6 @@ private:
     CDynamicAttack *dynamicAttack;
     CStopPlay *stopPlay;
     CHalftimeLineup *halftimeLineup;
-
-    Behavior *selectedBehavior;
-
-    BehaviorMahi *behaviorMahi;
 
 public:
     CRoleStop *stopRoles[_MAX_NUM_PLAYERS];
@@ -314,7 +306,6 @@ private:
     int desiredDefCount;
     QString stateForMark;
     QPair<int, parsian_msgs::parsian_robot_task>** defenseMatched[2];
-    parsian_msgs::parsian_behaviorConstPtr m_behavior;
 
     POffSkills strToEnum(const std::string &_str);
 

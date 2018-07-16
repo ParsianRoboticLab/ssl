@@ -3,6 +3,10 @@
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 
 GotopointavoidAction::GotopointavoidAction() {
+       chip = false;
+       kickSpeed = 0.0;
+       chipDist = 0.0;
+       oneTouchFlag = false;
        avoidPenaltyArea = false;
        noAvoid = false;
        avoidCenterCircle = false;
@@ -13,6 +17,10 @@ GotopointavoidAction::GotopointavoidAction() {
 
 void GotopointavoidAction::setMessage(const void* _msg) {
     parsian_msgs::parsian_skill_gotoPointAvoid msg = *((parsian_msgs::parsian_skill_gotoPointAvoid*)_msg);
+        chip = msg.chip;
+        kickSpeed = msg.kickSpeed;
+        chipDist = msg.chipDist;
+        oneTouchFlag = msg.oneTouchFlag;
         avoidPenaltyArea = msg.avoidPenaltyArea;
         noAvoid = msg.noAvoid;
         avoidCenterCircle = msg.avoidCenterCircle;
@@ -27,6 +35,10 @@ void GotopointavoidAction::setMessage(const void* _msg) {
 void* GotopointavoidAction::getMessage() {
     parsian_msgs::parsian_skill_gotoPointAvoid* _msg = new parsian_msgs::parsian_skill_gotoPointAvoid;
     _msg->base = *((parsian_msgs::parsian_skill_gotoPoint*) GotopointAction::getMessage());
+    _msg->chip = chip;
+    _msg->kickSpeed = kickSpeed;
+    _msg->chipDist = chipDist;
+    _msg->oneTouchFlag = oneTouchFlag;
     _msg->avoidPenaltyArea = avoidPenaltyArea;
     _msg->noAvoid = noAvoid;
     _msg->avoidCenterCircle = avoidCenterCircle;

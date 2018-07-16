@@ -205,14 +205,14 @@ void CSkillKickOneTouch::execute() {
             if (chip) {
                 agent->setChip(kickSpeed);
             } else {
-                agent->setKick(kickSpeed);
+                agent->setKick(kickSpeed*0.8);
             }
         }
         agent->setRoller(0);
     } else if (ballPos.dist(agentPos) < onetouchKickRad) {
         kick->setAgent(agent);
         kick->setTarget(target);
-        kick->setKickspeed(kickSpeed);
+        kick->setKickspeed(kickSpeed*0.8);
         kick->setChip(chip);
         kick->execute();
     } else {

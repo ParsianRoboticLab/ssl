@@ -659,7 +659,6 @@ void CCoach::choosePlaymakeAndSupporter(bool defenseFirst){
 
 void CCoach::decideAttack() {
     // find unused agents!
-    ROS_INFO("MAJH-1");
 
     QList<int> ourPlayersID = workingIDs;
     if (goalieAgent != nullptr) {
@@ -670,7 +669,6 @@ void CCoach::decideAttack() {
             ourPlayersID.removeOne(defenseAgent->id());
         }
     }
-    ROS_INFO("MAJH0");
 
     switch (gameState->getState()) { // GAMESTATE
 
@@ -748,7 +746,6 @@ void CCoach::decideAttack() {
 
     selectedPlay->init(ourAgents);
     selectedPlay->execute();
-    ROS_INFO("MAJHxx");
 
     lastPlayers.clear();
     lastPlayers.append(ourPlayersID);
@@ -1460,7 +1457,7 @@ void CCoach::initStaticPlay(const POMODE _mode, const QList<int>& _ourplayers) {
             planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
             break;
         case POMODE::DIRECT:
-            planRequest.plan_req.gameMode = planRequest.plan_req.DIRECT;
+            planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
             break;
         case POMODE::KICKOFF:
             planRequest.plan_req.gameMode = planRequest.plan_req.KICKOFF;
@@ -1802,15 +1799,6 @@ parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
     return receivedPlan;
 }
 
-void CCoach::updateBehavior(const parsian_msgs::parsian_behaviorConstPtr _behav) {
-    m_behavior = _behav;
-    //    if (_behav->name == "mahi") {
-    //        selectedBehavior = behaviorMahi;
-    //    } else {
-    //        selectedBehavior = nullptr;
-    //    }
-}
-
 int CCoach::findGoalie() {
     if (conf.useGoalieInPlayoff
         && gameState->ourPlayOffKick()
@@ -1824,10 +1812,12 @@ int CCoach::findGoalie() {
     } else {
         if (conf.GoalieFromGUI) {
             preferedGoalieID = conf.Goalie;
-        } else {
+        } else if (wm->our.data->activeAgents.contains(wm->our.data->goalieID)){
             preferedGoalieID = wm->our.data->goalieID;
             ROS_INFO_STREAM("check goaliID from wm : " << preferedGoalieID);
 
+        } else {
+            preferedGoalieID = -1;
         }
     }
     if (gameState->timeOut() || gameState->halfTime()) {

@@ -75,17 +75,16 @@ bool CPlayOff:: isBlockDisturbing() {
 
 void CPlayOff::globalExecute() {
 
-    if (masterMode == NGameOff::StaticPlay) {
-
-        DBUG(QString("lastTime : %1").arg(ros::Time::now().sec - lastTime), D_MAHI);
-        if (!initial && ros::Time::now().sec - lastTime > 10 && lastBallPos.dist(wm->ball->pos) < 0.06) {
-            if (criticalPlay()) {
-                ROS_INFO("criticalPlay set playon flag");
-                playOnFlag = true;
-            }
-            return;
+    if (!initial && ros::Time::now().sec - lastTime > 10 && lastBallPos.dist(wm->ball->pos) <= 0.06) {
+        qDebug()<< "nkmiujgt5fr4";
+        if (criticalPlay()) {
+            playOnFlag = true;
         }
+        return;
+    } else
+        ROS_INFO_STREAM("llastTime: " <<ros::Time::now().sec - lastTime<<" masterMode: "<< masterMode <<" balldist: "<<lastBallPos.dist(wm->ball->pos) );
 
+    if (masterMode == NGameOff::StaticPlay) {
 
         if (masterPlan != nullptr) {
             DBUG(QString("Plan Number : %1 ==> ").arg(masterPlan->gui.planFile), D_MAHI);
@@ -278,6 +277,8 @@ void CPlayOff::kickoffPositioning(int playersNum) {
 
 void CPlayOff::dynamicExecute() {
 
+    ROS_INFO_STREAM("dynamicSelect: "<<dynamicSelect);
+
     if (dynamicSelect == CHIP && false) {
         dynamicPlayChipToGoal(true);
         checkEndChipToGoal();
@@ -299,6 +300,10 @@ void CPlayOff::dynamicExecute() {
 
 
 void CPlayOff::dynamicAssignID() {
+    lastTime = ros::Time::now().sec;
+    lastBallPos = wm->ball->pos;
+    initial = false;
+
     dynamicAgentSize = _NUM_PLAYERS;
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         if (dynamicMatch[i] != -1) {
@@ -353,7 +358,6 @@ void CPlayOff::dynamicPlayBlocker() {
     if (initial) {
         dynamicAssignID();
         ready = true;
-
     } else if (ready) {
         roleAgent[0] -> setAvoidCenterCircle(false);
         roleAgent[0] -> setAvoidPenaltyArea(true);
@@ -456,6 +460,7 @@ void CPlayOff::dynamicPlayKhafan() {
 
 
 void CPlayOff::checkEndKhafan() {
+    ROS_INFO_STREAM("TIMENS: "<< ros::Time::now().sec << " TIMES: "<< ros::Time::now().sec);
     if (ready) {
         dynamicState = 2;
     } else if (pass) {
@@ -473,7 +478,8 @@ void CPlayOff::checkEndKhafan() {
     }
 
     if (dynamicState == 4) {
-        DBUG(QString("[dastan] : %1").arg(ros::Time::now().sec - dynamicStartTime), D_MAHI);
+
+        DBUG(QString("ENDKHAFAN : %1").arg(ros::Time::now().sec - dynamicStartTime), D_MAHI);
         if (wm->ball->pos.dist(wm->field->oppGoal()) - 0.5 < roleAgent[1]->getAgent()->pos().dist(wm->field->oppGoal())) {
             pass = false;
             shot = true;
@@ -488,7 +494,7 @@ void CPlayOff::checkEndKhafan() {
             dynamicState = 0;
         }
 
-        if ((ros::Time::now().sec - dynamicStartTime) > 300 && dynamicStartTime != -1) {
+        if ((ros::Time::now().sec - dynamicStartTime) > 3 && dynamicStartTime != -1) {
             playOnFlag = true;
             dynamicState = 0;
 
@@ -505,7 +511,7 @@ void CPlayOff::checkEndKhafan() {
         }
         DBUG(QString("[dastan] : %1").arg(ros::Time::now().sec - dynamicStartTime), D_MAHI);
 
-        if (ros::Time::now().sec - dynamicStartTime > 200 && dynamicStartTime != -1) {
+        if (ros::Time::now().sec - dynamicStartTime > 2 && dynamicStartTime != -1) {
             playOnFlag = true;
             dynamicState = 0;
 
@@ -544,7 +550,7 @@ void CPlayOff::checkEndBlocker() {
             dynamicState = 0;
         }
 
-        if (ros::Time::now().sec - dynamicStartTime > 300 && dynamicStartTime != -1) {
+        if (ros::Time::now().sec - dynamicStartTime > 3 && dynamicStartTime != -1) {
             playOnFlag = true;
             dynamicState = 0;
         }
@@ -576,7 +582,7 @@ void CPlayOff::checkEndChipToGoal() {
             dynamicState = 0;
         }
 
-        if (ros::Time::now().sec - dynamicStartTime > 200 && dynamicStartTime != -1) {
+        if (ros::Time::now().sec - dynamicStartTime > 2 && dynamicStartTime != -1) {
             playOnFlag = true;
             dynamicState = 0;
         }
@@ -1244,7 +1250,7 @@ bool CPlayOff::isTimeOver() {
         tempStart = ros::Time::now().sec;
     }
 
-    if (!Circle2D(lastBallPos, 0.5).contains(wm->ball->pos)) {
+    if (!Circle2D(lastBallPos, 0.06).contains(wm->ball->pos)) {
         setTimer = false;
         ROS_INFO_STREAM("MAHIS: Time That Left: " << ros::Time::now().sec - tempStart);
         if(ros::Time::now().sec - tempStart >= 3*masterPlan->execution.passCount) { // 2 Second
@@ -1264,7 +1270,8 @@ bool CPlayOff::isBallDirChanged() {
 
     // USE PASSER FORM INITIAL LEVEL
     const int& passer = masterPlan->execution.passer.at(0).id;
-    const int& recive = masterPlan->execution.reciver.at(0).id;
+    const int& recieve = masterPlan->execution.reciver.at(0).id;
+    const int recive = masterPlan->common.matchedID.value(recieve);
     Vector2D& b  = wm->ball->pos;
     if (b.dist(lastBallPos) > 0.5 && !roleAgent[passer]->getChip()) {
         Vector2D  bv = b + wm->ball->vel.norm() * wm->field->_MAX_DIST;
@@ -1344,8 +1351,8 @@ Vector2D CPlayOff::getEmptyTarget(const Vector2D& _position, const double& _radi
 }
 ///////////////PassManager///////////////////
 void CPlayOff::passManager() {
-    const AgentPoint &p = masterPlan->execution.passer.at(0);
     const AgentPoint &r = masterPlan->execution.reciver.at(0);
+    const AgentPoint &p = masterPlan->execution.passer.at(0);
 
     const int &i = masterPlan->common.matchedID.value(r.id);
 
@@ -1357,7 +1364,7 @@ void CPlayOff::passManager() {
                      QColor(Qt::darkMagenta));
         doPass = positionAgent[r.id].getAbsArgs(r.state).staticPos.dist(c->pos())
                  <= masterPlan->common.lastDist;
-        doAfterlife = !Circle2D(lastBallPos, 0.4).contains(wm->ball->pos);
+        doAfterlife = !Circle2D(lastBallPos, 0.1).contains(wm->ball->pos);
         roleAgent[p.id]->setDoPass(doPass);
     }
 
@@ -1409,24 +1416,29 @@ void CPlayOff::checkEndState() {
         if (roleAgent[i]->getAgent() == nullptr) {
             continue;
         }
-        if (isTaskDone(roleAgent[i])) {
+
+        Agent *firstPasser = soccer->agents[masterPlan->execution.passer.at(0).id];
+
+        if (isTaskDone(roleAgent[i]) || (doAfterlife && roleAgent[i]->getAgent()->id() != firstPasser->id())) {
 
             roleAgent[i]->setRoleUpdate(false);
             roleAgent[i]->resetTime();
 
-            POffSkills temp_skill = positionAgent[i].positionArg.at(positionAgent[i].positionArg.size() - 1).staticSkill;
+            POffSkills last_skill = positionAgent[i].positionArg.at(
+                    positionAgent[i].positionArg.size() - 1).staticSkill;
 
-            if (doAfterlife && temp_skill == Position ){
-
+            if (last_skill == Position) {
+                if (!doAfterlife && positionAgent[i].stateNumber == positionAgent[i].positionArg.size() - 2) {
+                    roleAgent[i]->setRoleUpdate(true);
+                } else if (doAfterlife){
                     positionAgent[i].stateNumber = positionAgent[i].positionArg.size() - 1;
-                    ROS_INFO_STREAM("after_life " << roleAgent[i]->getAgent()->id());
-
-            } else if (positionAgent[i].stateNumber + 1  < positionAgent[i].positionArg.size()) {
+                }
+            } else if (positionAgent[i].stateNumber + 1 < positionAgent[i].positionArg.size()) {
                 if (positionAgent[i].getArgs(1).staticSkill == Defense
-                        ||  positionAgent[i].getArgs(1).staticSkill == Support
-                        ||  positionAgent[i].getArgs(1).staticSkill == Position
-                        ||  positionAgent[i].getArgs(1).staticSkill == Goalie
-                        ||  positionAgent[i].getArgs(1).staticSkill == Mark) {
+                    || positionAgent[i].getArgs(1).staticSkill == Support
+                    || positionAgent[i].getArgs(1).staticSkill == Position
+                    || positionAgent[i].getArgs(1).staticSkill == Goalie
+                    || positionAgent[i].getArgs(1).staticSkill == Mark) {
 
                     if (doAfterlife) {
                         positionAgent[i].stateNumber++;
@@ -2045,7 +2057,7 @@ bool CPlayOff::firstKickFailed() {
     return false;
     if (lastBallPos.dist(wm->ball->pos) > 0.15 && Circle2D(lastBallPos, 0.5).contains(wm->ball->pos)
         && wm->ball->vel.length() < 0.1) {
-        const int &i = masterPlan->common.matchedID.value(masterPlan->execution.passer.at(0).id);
+        const int &i = masterPlan->execution.passer.at(0).id;
 
         playoff_badPasserID = soccer->agents[i]->id();
         ROS_INFO("playofff bad kick");
@@ -2245,7 +2257,15 @@ void CPlayOff::analysePass() {
         masterPlan->execution.passCount = tPass.size();
         if (havePassInPlan) {
             for (int i = 0; i < tPass.size(); i++) {
-                masterPlan->execution.passer.append(tPass.at(i).first);
+                if(i == 0) {
+                    AgentPoint p;
+                    p.id = masterPlan->common.matchedID.value(tPass.at(i).first.id);
+                    p.state = tPass.at(i).first.state;
+                    masterPlan->execution.passer.append(p);
+                } else{
+                    masterPlan->execution.passer.append(tPass.at(i).first);
+                }
+
                 masterPlan->execution.reciver.append(tPass.at(i).second);
             }
 //            qDebug() << "First Pass:";
@@ -2260,16 +2280,31 @@ void CPlayOff::analysePass() {
 
 bool CPlayOff::criticalPlay() {
 
+    ROS_INFO("criticalll");
     if (criticalInit) {
         criticalInit = false;
         criticalKick->setTarget(wm->field->oppGoal());
-        criticalKick->setChip(false);
+        criticalKick->setChip(wm->ball->pos.x < 1);
         criticalKick->setDontkick(false);
         criticalKick->setPassprofiler(false);
-        criticalKick->setKickspeed(7);
+        criticalKick->setKickspeed(6.5);
+        criticalKick->setChipdist(4);
         criticalKick->setTolerance(0.5);
     }
-    soccer->agents[masterPlan->execution.passer[0].id]->action = criticalKick;
+//    soccer->agents[masterPlan->common.matchedID.value(masterPlan->execution.passer.at(0).id)]->action = criticalKick;
+    double minDist = 100;
+    int nearestID = -1;
+    for(int i=0; i< 8; i++) {
+        if(soccer->agents[i] != nullptr){
+            if(soccer->agents[i]->pos().dist(wm->ball->pos) < minDist){
+                nearestID = i;
+                minDist = soccer->agents[i]->pos().dist(wm->ball->pos);
+            }
+        }
+    }
+    if(nearestID != -1){
+        soccer->agents[nearestID]->action = criticalKick;
+    }
     return wm->ball->vel.length() > 0.5;
 
 }
