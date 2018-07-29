@@ -219,6 +219,7 @@ target_link_libraries(${PROJECT_NAME}_util
 install(PROGRAMS
    		scripts/plan_service_server
 		scripts/plan_service_client
+		scripts/state_machine/state_machine_node.py
    		DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 		)
 
@@ -246,6 +247,7 @@ catkin_install_python(PROGRAMS
 scripts/plan_server/planserver_node.py
 scripts/behavior_server/behavior_server_node.py
 scripts/auto_defense_test/def_test_node.py
+		scripts/state_machine/state_machine_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############

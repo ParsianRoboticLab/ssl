@@ -1175,7 +1175,7 @@ void CCoach::execute()
     }
 
 
-    // devcide the whole strategy for defense agents, including Goalie, defense and Mark
+    // decide the whole strategy for defense agents, including Goalie, defense and Mark
 
     checkTransitionToForceStart();
     virtualTheirPlayOffState();
