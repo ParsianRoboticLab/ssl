@@ -68,5 +68,6 @@
     <rqt_gui plugin="${prefix}/playoff_plugin.xml"/>
     <rqt_gui plugin="${prefix}/task_runner_plugin.xml"/>
     <rqt_gui plugin="${prefix}/referee_plugin.xml"/>
+    <rqt_gui plugin="${prefix}/graphical.xml"/>
   </export>
 </package>

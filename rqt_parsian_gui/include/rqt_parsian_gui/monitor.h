@@ -34,7 +34,6 @@ public:
 
     ros::NodeHandle n;
     ros::NodeHandle n_private;
-    ros::NodeHandle n_color;
 
     ros::Subscriber wm_sub;
     ros::Subscriber log_wm_sub;

@@ -20,10 +20,18 @@ find_package(catkin REQUIRED COMPONENTS
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5OpenGL REQUIRED)
+    find_package(Qt5Core REQUIRED)
+    find_package(OpenGL REQUIRED)
 else()
-    find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+    find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+    find_package(OpenGL REQUIRED)
     include(${QT_USE_FILE})
 endif()
+
+# find_package(Boost REQUIRED COMPONENTS system)
+file(GLOB_RECURSE LibFiles "include/*.h")
+add_custom_target(headers SOURCES ${LibFiles})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -121,52 +129,57 @@ catkin_package(
 
 
 set (${PROJECT_NAME}_SRCS
-  src/${PROJECT_NAME}/monitor.cpp
-  src/${PROJECT_NAME}/robotstatus.cpp
-  src/${PROJECT_NAME}/robotstatus_widget.cpp
-  src/${PROJECT_NAME}/monitorWidget.cpp
-  src/${PROJECT_NAME}/guiDrawer.cpp
-  src/${PROJECT_NAME}/mode_chooser.cpp
-  src/${PROJECT_NAME}/modeChooserWidget.cpp
-  src/${PROJECT_NAME}/handycontroller.cpp
-  src/${PROJECT_NAME}/playoffWidget.cpp
-  src/${PROJECT_NAME}/playoff.cpp
-  src/${PROJECT_NAME}/taskRunner.cpp
-  src/${PROJECT_NAME}/taskRunnerWidget.cpp
-  src/${PROJECT_NAME}/referee.cpp
-  src/${PROJECT_NAME}/refereeWidget.cpp
-)
+        src/${PROJECT_NAME}/monitor.cpp
+        src/${PROJECT_NAME}/robotstatus.cpp
+        src/${PROJECT_NAME}/robotstatus_widget.cpp
+        src/${PROJECT_NAME}/monitorWidget.cpp
+        src/${PROJECT_NAME}/guiDrawer.cpp
+        src/${PROJECT_NAME}/mode_chooser.cpp
+        src/${PROJECT_NAME}/modeChooserWidget.cpp
+        src/${PROJECT_NAME}/handycontroller.cpp
+        src/${PROJECT_NAME}/playoffWidget.cpp
+        src/${PROJECT_NAME}/playoff.cpp
+        src/${PROJECT_NAME}/taskRunner.cpp
+        src/${PROJECT_NAME}/taskRunnerWidget.cpp
+        src/${PROJECT_NAME}/referee.cpp
+        src/${PROJECT_NAME}/refereeWidget.cpp
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        )
 
 set(${PROJECT_NAME}_HDRS
-  include/${PROJECT_NAME}/monitor.h
-  include/${PROJECT_NAME}/robotstatus.h
-  include/${PROJECT_NAME}/robotstatus_widget.h
-  include/${PROJECT_NAME}/monitorWidget.h
-  include/${PROJECT_NAME}/guiDrawer.h
-  include/${PROJECT_NAME}/mode_chooser.h
-  include/${PROJECT_NAME}/modeChooserWidget.h
-  include/${PROJECT_NAME}/handycontroller.h
-  include/${PROJECT_NAME}/playoffWidget.h
-  include/${PROJECT_NAME}/playoff.h
-  include/${PROJECT_NAME}/taskRunner.h
-  include/${PROJECT_NAME}/taskRunnerWidget.h
-  include/${PROJECT_NAME}/referee.h
-  include/${PROJECT_NAME}/refereeWidget.h
+        include/${PROJECT_NAME}/monitor.h
+        include/${PROJECT_NAME}/robotstatus.h
+        include/${PROJECT_NAME}/robotstatus_widget.h
+        include/${PROJECT_NAME}/monitorWidget.h
+        include/${PROJECT_NAME}/guiDrawer.h
+        include/${PROJECT_NAME}/mode_chooser.h
+        include/${PROJECT_NAME}/modeChooserWidget.h
+        include/${PROJECT_NAME}/handycontroller.h
+        include/${PROJECT_NAME}/playoffWidget.h
+        include/${PROJECT_NAME}/playoff.h
+        include/${PROJECT_NAME}/taskRunner.h
+        include/${PROJECT_NAME}/taskRunnerWidget.h
+        include/${PROJECT_NAME}/referee.h
+        include/${PROJECT_NAME}/refereeWidget.h
 
         )
 
 
 set(${PROJECT_NAME}_UIS
-  resource/handycontroller.ui
-)
+        resource/handycontroller.ui
+        )
 
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
-  qt5_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+    qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt5_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 else()
-  qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
-  qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+    qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 endif()
 
 ###########
@@ -183,11 +196,18 @@ include_directories(
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}
-    ${${PROJECT_NAME}_SRCS}
-    ${${PROJECT_NAME}_MOCS}
-    ${${PROJECT_NAME}_UIS_H}
-    )
+        ${${PROJECT_NAME}_SRCS}
+        ${${PROJECT_NAME}_MOCS}
+        ${${PROJECT_NAME}_UIS_H}
+        )
 
+add_library(${PROJECT_NAME}_graphical
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        )
 
 ## Declare a C++ executable
 # add_executable(rqt_example_cpp_node src/rqt_example_cpp_node.cpp)
@@ -200,6 +220,11 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )
+
+target_link_libraries(${PROJECT_NAME}_graphical
+        ${catkin_LIBRARIES}
+        Qt5::Widgets
+        Qt5::OpenGL)
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
@@ -222,7 +247,7 @@ endif()
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_graphical
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -237,15 +262,16 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-  plugin1.xml
-  plugin2.xml
-  plugin3.xml
-  playoff_plugin.xml
-  referee_plugin.xml
-  mode_plugin.xml
-  task_runner_plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+        plugin1.xml
+        plugin2.xml
+        plugin3.xml
+        playoff_plugin.xml
+        referee_plugin.xml
+        mode_plugin.xml
+        task_runner_plugin.xml
+        graphical.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )
 
 
 #############
