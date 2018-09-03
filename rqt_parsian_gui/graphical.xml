@@ -1,0 +1,22 @@
+<library path="lib/librqt_parsian_gui">
+    <class name="rqt_parsian_gui/GraphicalClient" type="rqt_parsian_gui::GraphicalClient" base_class_type="rqt_gui_cpp::Plugin">
+        <description>
+            Graphical Client for Debuge System Graphical.
+        </description>
+        <qtgui>
+
+            <group>
+                <label>Parsian</label>
+                <icon>resource/icons/parsian_logo.jpg</icon>
+            </group>
+            <!-- optional grouping...
+            <group>
+              <label>Subgroup</label>
+            </group>
+            -->
+            <label>GraphicalClient</label>
+            <icon type="theme">system-help</icon>
+            <statustip>Great user interface to provide real value.</statustip>
+        </qtgui>
+    </class>
+</library>
