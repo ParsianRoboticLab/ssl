@@ -94,7 +94,6 @@ namespace rqt_parsian_gui {
 
         QVector<Robot> robots;
         vector2d ball;
-        QMutex graphicsMutex;
         GLText glText;
 
         GLuint blueRobotShape;
@@ -125,8 +124,6 @@ namespace rqt_parsian_gui {
 
         void drawDebugs();
 
-        void drawTriangle(vector2d loc1, vector2d loc2, vector2d loc3, double z);
-
         void drawQuad(vector2d loc1, vector2d loc2, double z = 0.0);
 
         void drawQuad(double x1, double y1, double x2, double y2, double z = 0.0) {
@@ -146,8 +143,6 @@ namespace rqt_parsian_gui {
         void drawRobot(int team, bool hasAngle, bool useDisplayLists);
 
         void drawBall(vector2d loc);
-
-        void vectorTextTest();
 
     protected:
         void paintEvent(QPaintEvent *event);

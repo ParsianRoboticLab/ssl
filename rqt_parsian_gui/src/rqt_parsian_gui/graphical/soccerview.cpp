@@ -23,6 +23,7 @@
 
 #include <rqt_parsian_gui/graphical/field.h>
 #include <rqt_parsian_gui/graphical/field_default_constants.h>
+#include <ros/ros.h>
 
 using namespace rqt_parsian_gui;
 
@@ -81,12 +82,11 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
 
 void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr& _packet) {
 
-    graphicsMutex.lock();
     ball.x = ball.y = 5000;
     robots.clear();
     for(int i=0; i < _packet->our.size(); i++){
         Robot robot{};
-        robot.loc.set(_packet->our[i].pos.x, _packet->our[i].pos.y);
+        robot.loc.set(_packet->our[i].pos.x*1000, _packet->our[i].pos.y*1000);
         robot.id = i;
         robot.hasAngle = true;
         if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->our[i].dir.y,_packet->our[i].dir.x));
@@ -98,7 +98,7 @@ void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr&
 
     for(int i=0; i < _packet->opp.size(); i++){
         Robot robot{};
-        robot.loc.set(_packet->opp[i].pos.x, _packet->opp[i].pos.y);
+        robot.loc.set(_packet->opp[i].pos.x*1000, _packet->opp[i].pos.y*1000);
         robot.id = i;
         robot.hasAngle = true;
         if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->opp[i].dir.y,_packet->opp[i].dir.x));
@@ -108,14 +108,12 @@ void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr&
         robots.append(robot);
     }
 
-    ball.x = _packet->ball.pos.x;
-    ball.y = _packet->ball.pos.y;
-    graphicsMutex.unlock();
-    postRedraw();
+    ball.x = _packet->ball.pos.x*1000;
+    ball.y = _packet->ball.pos.y*1000;
+    update();
 }
 
 void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawConstPtr& _packet) {
-    graphicsMutex.lock();
 
     debugs->circles.clear();
     debugs->vectors.clear();
@@ -131,17 +129,14 @@ void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawConstPtr& _packet
     for (auto a : _packet->rects) debugs->rects.push_back(a);
     for (auto a : _packet->polygons) debugs->polygons.push_back(a);
 
-    graphicsMutex.unlock();
     postRedraw();
 }
 
 void GLSoccerView::redraw()
 {
-    if(GetTimeSec()-tLastRedraw<MinRedrawInterval)
-        return;
-    graphicsMutex.lock();
+   // if(GetTimeSec()-tLastRedraw<MinRedrawInterval)
+     //   return;
     update();
-    graphicsMutex.unlock();
     tLastRedraw = GetTimeSec();
 }
 
@@ -306,31 +301,8 @@ void GLSoccerView::initializeGL()
     glEndList();
 }
 
-
-void GLSoccerView::vectorTextTest()
-{
-#define TextTest(loc,angle,size,str,halign,valign) \
-    {glText.drawString((loc),angle,size,str,halign,valign); \
-    vector2d l1,l2; \
-    l1.heading(M_PI/180.0*angle); \
-    l1 = loc+l1*size*(glText.getWidth(str)); \
-    l2.heading(M_PI/180.0*angle); \
-    l2 = loc-l2*size*(glText.getWidth(str)); \
-    glBegin(GL_LINES); \
-    glVertex3d(l1.x,l1.y,9); \
-    glVertex3d(l2.x,l2.y,9); \
-    glEnd();}
-
-    glColor3d(1,1,1);
-    TextTest(vector2d(1,1)*353.6,45,500,"123agdo0",GLText::LeftAligned,GLText::MedianAligned)
-            TextTest(vector2d(fieldDim.field_length*0.5,0),0,500,"123agdo0",GLText::RightAligned,GLText::BottomAligned)
-            TextTest(vector2d(0,-fieldDim.field_width*0.5),0,500,"123agdo0",GLText::CenterAligned,GLText::TopAligned)
-            TextTest(vector2d(-fieldDim.field_length*0.5,0),0,500,"1\ub023agdo0",GLText::CenterAligned,GLText::MiddleAligned)
-}
-
 void GLSoccerView::paintEvent(QPaintEvent* event)
 {
-    graphicsMutex.lock();
     makeCurrent();
     glClearColor(FIELD_COLOR);
     glShadeModel(GL_SMOOTH);
@@ -346,10 +318,8 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     drawFieldLines(fieldDim);
     drawRobots();
     drawBall(ball);
-    //vectorTextTest();
     glPopMatrix();
     swapBuffers();
-    graphicsMutex.unlock();
 }
 
 void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z)
@@ -408,53 +378,46 @@ void GLSoccerView::drawRobot(int team, bool hasAngle, bool useDisplayLists)
         }
         return;
     }
+    switch ( team ){
+        case teamBlue:{
+            glColor3d(0.2549, 0.4941, 1.0);
+            break;
+        }
+        case teamYellow:{
+            glColor3d(1.0, 0.9529, 0.2431);
+            break;
+        }
+        default:{
+            glColor3d(0.5882,0.5882,0.5882);
+            break;
+        }
+    }
+    double theta1 = hasAngle?RAD(40):0.0;
+    double theta2 = 2.0*M_PI - theta1;
+    drawArc(0,0,0,90,theta1, theta2, RobotZ);
+    glBegin(GL_TRIANGLES);
+    glVertex3d(0,0,RobotZ);
+    glVertex3d(90.0*cos(theta1),90.0*sin(theta1),RobotZ);
+    glVertex3d(90.0*cos(theta2),90.0*sin(theta2),RobotZ);
+    glEnd();
 
     switch ( team ){
-    case teamBlue:{
-        glColor3d(0.2549, 0.4941, 1.0);
-        break;
+        case teamBlue:{
+            glColor3d(0.0706, 0.2314, 0.6275);
+            break;
+        }
+        case teamYellow:{
+            glColor3d(0.8, 0.6157, 0.0);
+            break;
+        }
+        default:{
+            glColor3d(0.2745,0.2745,0.2745);
+            break;
+        }
     }
-    case teamYellow:{
-        glColor3d(1.0, 0.9529, 0.2431);
-        break;
-    }
-    default:{
-        glColor3d(0.5882,0.5882,0.5882);
-        break;
-    }
-    }
-    drawQuad(-5,5,5,-5,RobotZ);
+    drawArc(0,0,80,90,theta1, theta2, RobotZ+0.01);
+    drawQuad(90.0*cos(theta1)-10,90.0*sin(theta1), 90.0*cos(theta2),90.0*sin(theta2),RobotZ+0.01);
 
-    switch ( team ){
-    case teamBlue:{
-        glColor3d(0.0706, 0.2314, 0.6275);
-        break;
-    }
-    case teamYellow:{
-        glColor3d(0.8, 0.6157, 0.0);
-        break;
-    }
-    default:{
-        glColor3d(0.2745,0.2745,0.2745);
-        break;
-    }
-    }
-    drawQuad(-5,5,-4.5,-5,RobotZ+0.01);
-    drawQuad(-5,5,5,4.5,RobotZ+0.01);
-    drawQuad(-5,-4.5,5,-5,RobotZ+0.01);
-
-    glColor3d(1,0,0);
-    drawQuad(4,5,5,-5,RobotZ+0.01);
-
-
-    if(hasAngle) {
-        double theta1 = hasAngle?RAD(40):0.0;
-        double theta2 = 2.0*M_PI - theta1;
-        glColor3d(0.2745,0.2745,0.2745);
-        drawQuad(-5.*cos(theta1),5.*sin(theta1), 5.*cos(theta2), -5.*sin(theta2) + 1,RobotZ+0.02);
-        drawQuad(-5.*cos(theta2),-5.*sin(theta1), 5.*cos(theta1), 5.*sin(theta2) - 1 ,RobotZ+0.02);
-
-    }
 }
 
 void GLSoccerView::drawRobot(vector2d loc, double theta, double conf, int robotID, int team, bool hasAngle)
@@ -462,47 +425,13 @@ void GLSoccerView::drawRobot(vector2d loc, double theta, double conf, int robotI
     glPushMatrix();
     glLoadIdentity();
     glTranslated(loc.x,loc.y,0);
-    switch ( team ){
-    case teamBlue:{
-        glColor3d(0.2549, 0.4941, 1.0);
-        break;
-    }
-    case teamYellow:{
-        glColor3d(1.0, 0.9529, 0.2431);
-        break;
-    }
-    default:{
-        glColor3d(0.5882,0.5882,0.5882);
-        break;
-    }
-    }
-    drawQuad(-9,13,-9+18*conf,16,RobotZ);
     glColor3d(0.0,0.0,0.0);
     char buf[1024];
     if(robotID!=unknownRobotID)
         snprintf(buf,1023,"%X",robotID);
     else
         snprintf(buf,1023,"?");
-    glText.drawString(loc,0,5,buf,GLText::CenterAligned,GLText::MiddleAligned);
-    switch ( team ){
-    case teamBlue:{
-        glColor3d(0.0706, 0.2314, 0.6275);
-        break;
-    }
-    case teamYellow:{
-        glColor3d(0.8, 0.6157, 0.0);
-        break;
-    }
-    default:{
-        glColor3d(0.2745,0.2745,0.2745);
-        break;
-    }
-    }
-    drawQuad(-9.6,12.4,9.6,13.0,RobotZ+0.01);
-    drawQuad(-9.6,12.4,-9.0,16.6,RobotZ+0.01);
-    drawQuad(-9.6,16.0,9.6,16.6,RobotZ+0.01);
-    drawQuad(9.0,12.4,9.6,16.6,RobotZ+0.01);
-
+    glText.drawString(loc,0,100,buf,GLText::CenterAligned,GLText::MiddleAligned);
     glRotated(theta,0,0,1.0);
     drawRobot(team, hasAngle, true);
     glPopMatrix();
@@ -533,38 +462,15 @@ void GLSoccerView::drawFieldLines(FieldDimensions& dimensions)
                 FieldZ);
     }
 
-    for (size_t i = 0; i < fieldDim.tris.size(); ++i) {
-        const FieldTriangle& triangle = *fieldDim.tris[i];
-        vector2d a,b,c;
-        a.x = triangle.p1_x;
-        a.y = triangle.p1_y;
-        b.x = triangle.p2_x;
-        b.y = triangle.p2_y;
-        c.x = triangle.p3_x;
-        c.y = triangle.p3_y;
-        drawTriangle(a, b, c, FieldZ);
-    }
-    vector2d a;
-    a.x = a.y = 0;
-    drawRobot(a, 10, 0.9, 3, 1, true);
-
 }
 
 void GLSoccerView::drawBall(vector2d loc)
 {
     glColor3d(1.0,0.5059,0.0);
-    drawArc(loc,0,1.6,-M_PI,M_PI,BallZ);
+    drawArc(loc,0,16,-M_PI,M_PI,BallZ);
     glColor3d(0.8706,0.3490,0.0);
-    drawArc(loc,1.5,2.1,-M_PI,M_PI,BallZ);
+    drawArc(loc,15,21,-M_PI,M_PI,BallZ);
 
-}
-
-void GLSoccerView::drawTriangle(vector2d loc1, vector2d loc2, vector2d loc3, double z) {
-    glBegin(GL_TRIANGLES);
-    glVertex3d(loc1.x,loc1.y,z);
-    glVertex3d(loc2.x,loc2.y,z);
-    glVertex3d(loc3.x,loc3.y,z);
-    glEnd();
 }
 
 void GLSoccerView::drawRobots() {

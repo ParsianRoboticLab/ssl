@@ -72,21 +72,26 @@ namespace rqt_parsian_gui {
 
     void GraphicalClient::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
         view->updatePacket(_wm);
+        ROS_INFO("HA");
     }
 
     void GraphicalClient::logwmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
+        return;
         view->updatePacket(_wm);
     }
 
     void GraphicalClient::drawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
+        return;
         view->updateDraws(_draw);
     }
 
     void GraphicalClient::logdrawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
+        return;
         view->updateDraws(_draw);
     }
 
     void GraphicalClient::colorCb(const parsian_msgs::parsian_team_configConstPtr &_color) {
+        return;
         view->updateConfig(_color);
     }
 
