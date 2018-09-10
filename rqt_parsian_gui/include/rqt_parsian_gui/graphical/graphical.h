@@ -71,9 +71,6 @@ namespace rqt_parsian_gui {
     private:
         QWidget* widget_;
 
-        CguiDrawer* drawer;
-        CguiDrawer logDrawer;
-        CguiDrawer* lastdrawer;
         parsian_msgs::parsian_world_modelConstPtr mywm;
         parsian_msgs::parsian_team_configConstPtr mycolor;
         MonitorWidget* fieldWidget;

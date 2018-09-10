@@ -28,10 +28,8 @@ using namespace rqt_parsian_gui;
 
 using FieldConstants::kNumFieldLines;
 using FieldConstants::kNumFieldArcs;
-using FieldConstants::kNumFieldTriangles;
 using FieldConstants::kFieldLines;
 using FieldConstants::kFieldArcs;
-using FieldConstants::kFieldTris;
 
 const double GLSoccerView::minZValue = -10;
 const double GLSoccerView::maxZValue = 10;
@@ -53,9 +51,7 @@ GLSoccerView::FieldDimensions::FieldDimensions() :
     for (size_t i = 0; i < kNumFieldArcs; ++i) {
         arcs.push_back(new FieldCircularArc(kFieldArcs[i]));
     }
-    for (size_t i = 0; i < kNumFieldTriangles; ++i) {
-        tris.push_back(new FieldTriangle(kFieldTris[i]));
-    }
+
 }
 
 GLSoccerView::GLSoccerView(QWidget* parent) :
