@@ -473,7 +473,7 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForCircularPositioning(double 
     return defensePosition;
 }
 
-QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
+QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){//Lhum2
     QList<int> IDOfOpponentsInPolygon;
     Vector2D solutions[4];
     Vector2D solution;
@@ -499,6 +499,10 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
         }
         drawer->draw(ballArea , QColor("black"));
     }
+    drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
+    drawer->draw(Segment2D(solutions[1] , solutions[2]) , "cyan");
+    drawer->draw(Segment2D(solutions[2] , solutions[3]) , "cyan");
+    drawer->draw(Segment2D(solutions[3] , solutions[0]) , "cyan");
     ///////////////////// Calculate the reach time of each opponent agent ///////////////////////
     temp = Rect2D(currentBallPosition , finalBallPosition);
     drawer->draw(temp);
@@ -3374,7 +3378,7 @@ int DefensePlan::decideNumOfMarks(){
     return 0;
 }
 
-Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
+Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
     //// When ballLine is in field we predict the ball line : If ball moves toward the
     //// our field, we consider the ballLine (ballPos + ballVel) && If moves toward
     //// the opponent field we consider the ballPos + ballVel.y for the location
@@ -3402,7 +3406,7 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
     }
 //    wm->opp.update();
     QList<int> temp;
-    if((wm->opp.activeAgentsCount() > 0) && 0) {
+    if(wm->opp.activeAgentsCount() > 0) {//Lhum
         ROS_INFO_STREAM("ED: raft");
         temp = detectOpponentPassOwners(1 , 100);//taghir kone
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
@@ -3445,7 +3449,8 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
             }
         }
     }
-    if ((dist2Ball != 1000) && 0) {
+    if (dist2Ball != 1000) {
+        drawer->draw(Circle2D(predictedBall , 0.2) , "blue");
         return predictedBall;
     }
     else if (_isGoalie && know->variables["transientFlag"].toBool()) {
