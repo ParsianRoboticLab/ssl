@@ -22,13 +22,13 @@ if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5OpenGL REQUIRED)
     find_package(Qt5Core REQUIRED)
-    find_package(OpenGL REQUIRED)
+
 else()
     find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
-    find_package(OpenGL REQUIRED)
     include(${QT_USE_FILE})
 endif()
 
+find_package(OpenGL REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system)
 file(GLOB_RECURSE LibFiles "include/*.h")
 add_custom_target(headers SOURCES ${LibFiles})
@@ -143,11 +143,6 @@ set (${PROJECT_NAME}_SRCS
         src/${PROJECT_NAME}/taskRunnerWidget.cpp
         src/${PROJECT_NAME}/referee.cpp
         src/${PROJECT_NAME}/refereeWidget.cpp
-        src/rqt_parsian_gui/graphical/graphical.cpp
-        src/rqt_parsian_gui/graphical/soccerview.cpp
-        src/rqt_parsian_gui/graphical/gltext.cpp
-        src/rqt_parsian_gui/graphical/field_default_constants.cpp
-        src/rqt_parsian_gui/graphical/field.cpp
         )
 
 set(${PROJECT_NAME}_HDRS
@@ -168,11 +163,35 @@ set(${PROJECT_NAME}_HDRS
 
         )
 
-
 set(${PROJECT_NAME}_UIS
         resource/handycontroller.ui
         )
 
+
+set(${PROJECT_NAME}_graphical_SRCS
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        )
+
+set(${PROJECT_NAME}_graphical_HDRS
+        include/rqt_parsian_gui/graphical/bbox.h
+        include/rqt_parsian_gui/graphical/field.h
+        include/rqt_parsian_gui/graphical/field_default_constants.h
+        include/rqt_parsian_gui/graphical/geomalgo.h
+        include/rqt_parsian_gui/graphical/geometry.h
+        include/rqt_parsian_gui/graphical/gltext.h
+        include/rqt_parsian_gui/graphical/graphical.h
+        include/rqt_parsian_gui/graphical/gvector.h
+        include/rqt_parsian_gui/graphical/pose.h
+        include/rqt_parsian_gui/graphical/quaternion.h
+        include/rqt_parsian_gui/graphical/range.h
+        include/rqt_parsian_gui/graphical/soccerview.h
+        include/rqt_parsian_gui/graphical/timer.h
+        include/rqt_parsian_gui/graphical/util.h
+        )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
@@ -181,6 +200,8 @@ else()
     qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
     qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 endif()
+
+qt5_wrap_cpp(${PROJECT_NAME}_graphical_MOCS ${${PROJECT_NAME}_graphical_HDRS})
 
 ###########
 ## Build ##
@@ -207,6 +228,7 @@ add_library(${PROJECT_NAME}_graphical
         src/rqt_parsian_gui/graphical/soccerview.cpp
         src/rqt_parsian_gui/graphical/gltext.cpp
         src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        ${${PROJECT_NAME}_graphical_MOCS}
         )
 
 ## Declare a C++ executable
@@ -224,7 +246,10 @@ target_link_libraries(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}_graphical
         ${catkin_LIBRARIES}
         Qt5::Widgets
-        Qt5::OpenGL)
+        Qt5::OpenGL
+        ${OPENGL_gl_LIBRARY}
+        ${OPENGL_glu_LIBRARY}
+        )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     target_link_libraries(${PROJECT_NAME} Qt5::Widgets)

@@ -1,4 +1,4 @@
-<library path="lib/librqt_parsian_gui">
+<library path="lib/librqt_parsian_gui_graphical">
     <class name="rqt_parsian_gui/GraphicalClient" type="rqt_parsian_gui::GraphicalClient" base_class_type="rqt_gui_cpp::Plugin">
         <description>
             Graphical Client for Debuge System Graphical.
