@@ -2370,7 +2370,7 @@ void DefensePlan::execute(){
         penaltyShootOutMode();// hamid penalty
     }
     else{
-        if(goalKeeperAgent != nullptr){
+        if(goalKeeperAgent != nullptr){//Lhum0
             setGoalKeeperState();
             setGoalKeeperTargetPoint();
             executeGoalKeeper();
@@ -3471,31 +3471,6 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
         }
         return wm->ball->pos;
     }
-<<<<<<< 51ab77c057f0f656381b8c46ed05c984a9198f13
-=======
-    if (dist2Ball != 1000) {
-        return predictedBall;
-    }
-    else if (_isGoalie && know->variables["transientFlag"].toBool()) {
-        wm->field->ourBigPenaltyArea(1, -0.1 , 0).intersection(Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100 ), &solu[0], &solu[1]);/////////////////Lhum
-        ROS_INFO_STREAM("ED: "<< solu[0].x);
-        if((solu[0].isValid() && solu[1].isValid()) && ((solu[0].y > 0.6 && solu[1].y < -0.6) || (solu[1].y > 0.6 && solu[0].y < -0.6))){
-                predictedBall = (BallPos.dist(solu[0]) < BallPos.dist(solu[1])) ? (solu[1]) : (solu[0]);
-        }
-        else if(solu[0].isValid() && wm->field->isInOurPenaltyArea(wm->ball->pos)){
-            predictedBall = solu[0];
-        }
-        else if(solu[1].isValid() && wm->field->isInOurPenaltyArea(wm->ball->pos)){
-            predictedBall = solu[1];
-        }
-        else{
-            predictedBall = ballPos;
-        }
-        drawer->draw(Circle2D(predictedBall , 0.2) , "blue");
-        return predictedBall;
-    }
-
->>>>>>> .
     if(!_isGoalie){
         if(wm->field->ourBigPenaltyArea(1, 0.2, 0).contains(wm->ball->pos)){
             drawer->draw(QString("1"), Vector2D(2, 2), "red");
