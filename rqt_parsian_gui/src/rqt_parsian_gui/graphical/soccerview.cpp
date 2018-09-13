@@ -37,9 +37,10 @@ const double GLSoccerView::maxZValue = 10;
 const double GLSoccerView::FieldZ = 1.0;
 const double GLSoccerView::RobotZ = 2.0;
 const double GLSoccerView::BallZ = 3.0;
+const double GLSoccerView::DebugZ = 4.0;
 const int GLSoccerView::PreferedWidth = 1024;
 const int GLSoccerView::PreferedHeight = 768;
-const double GLSoccerView::MinRedrawInterval = 0.016; ///Minimum time between graphics updates (limits the fps)
+const uint64_t GLSoccerView::MinRedrawInterval = 20000000; ///Minimum time between graphics updates (limits the fps)
 const int GLSoccerView::unknownRobotID = -1;
 
 GLSoccerView::FieldDimensions::FieldDimensions() :
@@ -78,6 +79,8 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
     RobotIDFont.setPointSize(80);
     glText = GLText(RobotIDFont);
     tLastRedraw = 0;
+    debugs.reset(new parsian_msgs::parsian_draw());
+    debugs2.reset(new parsian_msgs::parsian_draw());
 }
 
 void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr& _packet) {
@@ -110,17 +113,25 @@ void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr&
 
     ball.x = _packet->ball.pos.x*1000;
     ball.y = _packet->ball.pos.y*1000;
-    update();
+    if (debugs->circles.size()) {
+        for (auto a : debugs->circles) debugs2->circles.push_back(a);
+        for (auto a : debugs->vectors) debugs2->vectors.push_back(a);
+        for (auto a : debugs->texts) debugs2->texts.push_back(a);
+        for (auto a : debugs->segments) debugs2->segments.push_back(a);
+        for (auto a : debugs->rects) debugs2->rects.push_back(a);
+        for (auto a : debugs->polygons) debugs2->polygons.push_back(a);
+
+        debugs->circles.clear();
+        debugs->vectors.clear();
+        debugs->texts.clear();
+        debugs->segments.clear();
+        debugs->rects.clear();
+        debugs->polygons.clear();
+    }
+    redraw();
 }
 
 void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawConstPtr& _packet) {
-
-    debugs->circles.clear();
-    debugs->vectors.clear();
-    debugs->texts.clear();
-    debugs->segments.clear();
-    debugs->rects.clear();
-    debugs->polygons.clear();
 
     for (auto a : _packet->circles) debugs->circles.push_back(a);
     for (auto a : _packet->vectors) debugs->vectors.push_back(a);
@@ -128,16 +139,14 @@ void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawConstPtr& _packet
     for (auto a : _packet->segments) debugs->segments.push_back(a);
     for (auto a : _packet->rects) debugs->rects.push_back(a);
     for (auto a : _packet->polygons) debugs->polygons.push_back(a);
-
-    postRedraw();
 }
 
 void GLSoccerView::redraw()
 {
-   // if(GetTimeSec()-tLastRedraw<MinRedrawInterval)
-     //   return;
+    if(ros::Time::now().toNSec() - tLastRedraw < MinRedrawInterval)
+        return;
     update();
-    tLastRedraw = GetTimeSec();
+    tLastRedraw = ros::Time::now().toNSec();
 }
 
 
@@ -194,18 +203,15 @@ void GLSoccerView::mouseMoveEvent(QMouseEvent* event)
 
 void GLSoccerView::wheelEvent(QWheelEvent* event)
 {
-    static const bool debug = false;
     double zoomRatio = -double(event->delta())/1000.0;
     viewScale = viewScale*(1.0+zoomRatio);
     recomputeProjection();
-    if(debug) printf("Zoom: %5.3f\n",viewScale);
     postRedraw();
 }
 
 void GLSoccerView::keyPressEvent(QKeyEvent* event)
 {
-    static const bool debug = false;
-    if(debug) printf("KeyPress: 0x%08X\n",event->key());
+    ROS_INFO_STREAM("KeyPress: " << event->key());
     if(event->key() == Qt::Key_Space)
         resetView();
     if(event->key() == Qt::Key_Escape)
@@ -316,15 +322,24 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     glPushMatrix();
     glLoadIdentity();
     drawFieldLines(fieldDim);
+    drawDebugs();
     drawRobots();
     drawBall(ball);
     glPopMatrix();
     swapBuffers();
+
+    debugs2->circles.clear();
+    debugs2->vectors.clear();
+    debugs2->texts.clear();
+    debugs2->segments.clear();
+    debugs2->rects.clear();
+    debugs2->polygons.clear();
 }
 
-void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z)
+void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z, bool filled, QColor color)
 {
-    glBegin(GL_QUADS);
+    glBegin((filled) ? GL_QUAD_STRIP : GL_QUADS);
+    glColor4d(color.redF(), color.greenF(), color.blueF(), color.alphaF());
     glVertex3d(loc1.x,loc1.y,z);
     glVertex3d(loc2.x,loc1.y,z);
     glVertex3d(loc2.x,loc2.y,z);
@@ -482,8 +497,49 @@ void GLSoccerView::drawRobots() {
 
 void GLSoccerView::drawDebugs() {
 
+    for (const auto& v : debugs2->vectors) {
+        drawVectors(v.vector.x*1000, v.vector.y*1000, toQColor(v.color));
+    }
+    for (const auto& c : debugs2->circles) {
+        glColor4d(c.color.r, c.color.g, c.color.b, c.color.a);
+        drawArc(c.circle.center.x*1000, c.circle.center.y*1000,
+                (c.filled) ? 0 : c.circle.radius*1000-5, c.circle.radius*1000,
+                c.startAng, c.endAng, DebugZ, 1);
+    }
+    for (const auto& t : debugs2->texts) glText.drawString(t.position.x*1000, t.position.y*1000, 0, t.size, t.value.c_str(), toQColor(t.color));
+    for (const auto& s : debugs2->segments) {
+        vector2d o, t;
+        o.x = s.start.x;o.y = s.start.y; t.x = s.end.x; t.y = s.end.y;
+        if (s.line) {
+            o *= 1000; t *= 1000;
+        } else if (s.ray) {
+            t *= 1000;
+        }
+        drawQuad(o*1000, t*1000, DebugZ);
+    }
+    for (const auto& r : debugs2->rects) drawQuad(r.rect.left_x*1000, r.rect.top_y*1000,
+                                                 r.rect.left_x*1000 + r.rect.length*1000, r.rect.top_y*1000 - r.rect.width*1000, DebugZ,
+                                                 r.filled, toQColor(r.color));
+    for (const auto& p : debugs2->polygons) {
+        glBegin((p.filled) ? GL_POLYGON : GL_TRIANGLE_FAN);
+        glColor4d(p.color.r, p.color.g, p.color.b, p.color.a);
+        for(const auto& pp : p.points) glVertex3d(pp.x*1000, pp.y*1000, DebugZ);
+        glEnd();
+
+    }
+
 }
 
 void GLSoccerView::updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config) {
 
+}
+
+void GLSoccerView::drawVectors(const double &x, const double &y, const QColor &color) {
+
+}
+
+QColor GLSoccerView::toQColor(const std_msgs::ColorRGBA &_color) {
+    QColor c;
+    c.fromRgb(_color.r, _color.g, _color.b, _color.a);
+    return c;
 }

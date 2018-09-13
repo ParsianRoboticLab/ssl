@@ -87,9 +87,10 @@ namespace rqt_parsian_gui {
         static const double FieldZ;
         static const double RobotZ;
         static const double BallZ;
+        static const double DebugZ;
         static const int PreferedWidth;
         static const int PreferedHeight;
-        static const double MinRedrawInterval; ///Minimum time between graphics updates (limits the fps)
+        static const uint64_t MinRedrawInterval; ///Minimum time between graphics updates (limits the fps)
         static const int unknownRobotID;
 
         QVector<Robot> robots;
@@ -113,9 +114,10 @@ namespace rqt_parsian_gui {
         int mouseStartX;
         int mouseStartY;
 
-        double tLastRedraw;
+        uint64_t tLastRedraw;
 
         parsian_msgs::parsian_drawPtr debugs;
+        parsian_msgs::parsian_drawPtr debugs2;
         FieldDimensions fieldDim;
     private:
         void drawFieldLines(FieldDimensions &dimensions);
@@ -124,17 +126,19 @@ namespace rqt_parsian_gui {
 
         void drawDebugs();
 
-        void drawQuad(vector2d loc1, vector2d loc2, double z = 0.0);
+        void drawQuad(vector2d loc1, vector2d loc2, double z = 0.0, bool filled = false, QColor color = QColor(255,255,255));
 
-        void drawQuad(double x1, double y1, double x2, double y2, double z = 0.0) {
-            drawQuad(vector2d(x1, y1), vector2d(x2, y2), z);
+        void drawQuad(double x1, double y1, double x2, double y2, double z = 0.0, bool filled = false, QColor color = QColor(255,255,255)) {
+            drawQuad(vector2d(x1, y1), vector2d(x2, y2), z, filled, color);
         }
 
-        void
-        drawArc(vector2d loc, double r1, double r2, double theta1, double theta2, double z = 0.0, double dTheta = -1);
+        void drawArc(vector2d loc, double r1, double r2, double theta1,
+                     double theta2, double z = 0.0, double dTheta = -1);
 
         void drawArc(double x, double y, double r1, double r2, double theta1, double theta2, double z = 0.0,
                      double dTheta = -1) { drawArc(vector2d(x, y), r1, r2, theta1, theta2, z, dTheta); }
+
+        void drawVectors(const double& x, const double& y, const QColor& color);
 
         void recomputeProjection();
 
@@ -143,6 +147,8 @@ namespace rqt_parsian_gui {
         void drawRobot(int team, bool hasAngle, bool useDisplayLists);
 
         void drawBall(vector2d loc);
+
+        QColor toQColor(const std_msgs::ColorRGBA& _color);
 
     protected:
         void paintEvent(QPaintEvent *event);
