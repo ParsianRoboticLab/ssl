@@ -30,15 +30,9 @@ namespace rqt_parsian_gui {
         // access standalone command line arguments
         QStringList argv = context.argv();
 
-        //Soocer View
+        //Soccer View
 
         view = new GLSoccerView();
-        view->show();
-
-        // create QWidget
-        widget_ = new QWidget();
-
-        widget_->setWindowTitle("nadia");
         ourCol = QColor("blue");
         oppCol = QColor("yellow");
 
@@ -58,10 +52,7 @@ namespace rqt_parsian_gui {
         connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
 
 
-
         context.addWidget(view);
-
-
 
     }
 
@@ -72,21 +63,17 @@ namespace rqt_parsian_gui {
 
     void GraphicalClient::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
         view->updatePacket(_wm);
-        ROS_INFO("HA");
     }
 
     void GraphicalClient::logwmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
-        return;
         view->updatePacket(_wm);
     }
 
     void GraphicalClient::drawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
-        return;
         view->updateDraws(_draw);
     }
 
     void GraphicalClient::logdrawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
-        return;
         view->updateDraws(_draw);
     }
 
@@ -107,6 +94,16 @@ namespace rqt_parsian_gui {
 
     }
 
+    bool GraphicalClient::eventFilter(QObject *, QEvent * event) {
+        if (event->type() == QEvent::KeyPress) {
+            QKeyEvent* e = static_cast<QKeyEvent*>(event);
+            if (e->key() == Qt::Key_Space) {
+                view->resetView();
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 PLUGINLIB_EXPORT_CLASS(rqt_parsian_gui::GraphicalClient, rqt_gui_cpp::Plugin)

@@ -64,6 +64,7 @@ namespace rqt_parsian_gui {
         void logdrawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
         void colorCb(const parsian_msgs::parsian_team_configConstPtr& _color);
         void timerCb(const ros::TimerEvent& _timer);
+        virtual bool eventFilter(QObject *, QEvent *);
 
         // Comment in to signal that the plugin has a way to configure it
         // bool hasConfiguration() const;
