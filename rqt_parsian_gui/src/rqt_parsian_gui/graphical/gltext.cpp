@@ -130,7 +130,7 @@ double GLText::getDescent(const char* str)
   return descent;
 }
 
-void GLText::drawString(vector2d loc, double angle, double size, const char* str, HAlignOptions hAlign, VAlignOptions vAlign)
+void GLText::drawString(vector2d loc, double angle, double size, const char* str, HAlignOptions hAlign, VAlignOptions vAlign, const QColor _color)
 {
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
@@ -138,7 +138,7 @@ void GLText::drawString(vector2d loc, double angle, double size, const char* str
   glTranslated(loc.x,loc.y,0.0);
   glScaled(size, size,1.0);
   glRotated(angle,0,0,1);
-  
+  glColor4d(_color.redF(), _color.greenF(), _color.blueF(), _color.alphaF());
   switch(hAlign){
     case LeftAligned:{
       //Normal rendering will achieve this!

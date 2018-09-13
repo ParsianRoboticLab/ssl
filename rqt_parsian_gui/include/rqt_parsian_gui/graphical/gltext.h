@@ -23,6 +23,7 @@
 #include <QtGui>
 #include <GL/glu.h>
 #include <QtOpenGL/QGL>
+#include <QColor>
 #include <math.h>
 #include <stdio.h>
 #include <float.h>
@@ -66,7 +67,9 @@ public:
   
   GLText(QFont font = QFont());
   ~GLText();
-  void drawString(vector2d loc, double angle, double size, const char* str, GLText::HAlignOptions hAlign=LeftAligned, GLText::VAlignOptions vAlign=MiddleAligned);
+    void drawString(double x, double y, double angle, double size, const char* str, const QColor& color)
+    {drawString(vector2d(x,y), angle, size, str, LeftAligned, MiddleAligned, color);}
+    void drawString(vector2d loc, double angle, double size, const char* str, GLText::HAlignOptions hAlign=LeftAligned, GLText::VAlignOptions vAlign=MiddleAligned, const QColor=QColor(0, 0, 0));
   void drawGlyph(char glyph);
   void initializeGlyph(char ch);
   double getWidth(char ch);
