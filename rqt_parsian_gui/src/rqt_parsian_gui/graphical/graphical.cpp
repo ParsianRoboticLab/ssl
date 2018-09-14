@@ -69,11 +69,11 @@ namespace rqt_parsian_gui {
         view->updatePacket(_wm);
     }
 
-    void GraphicalClient::drawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
+    void GraphicalClient::drawCb(const parsian_msgs::parsian_drawsConstPtr &_draw) {
         view->updateDraws(_draw);
     }
 
-    void GraphicalClient::logdrawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
+    void GraphicalClient::logdrawCb(const parsian_msgs::parsian_drawsConstPtr &_draw) {
         view->updateDraws(_draw);
     }
 

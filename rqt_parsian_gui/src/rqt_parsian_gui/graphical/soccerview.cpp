@@ -79,8 +79,8 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
     RobotIDFont.setPointSize(80);
     glText = GLText(RobotIDFont);
     tLastRedraw = 0;
-    debugs.reset(new parsian_msgs::parsian_draw());
-    debugs2.reset(new parsian_msgs::parsian_draw());
+    debugs.reset(new parsian_msgs::parsian_draws());
+    debugs2.reset(new parsian_msgs::parsian_draws());
 }
 
 void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr& _packet) {
@@ -113,32 +113,17 @@ void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr&
 
     ball.x = _packet->ball.pos.x*1000;
     ball.y = _packet->ball.pos.y*1000;
-    if (debugs->circles.size()) {
-        for (auto a : debugs->circles) debugs2->circles.push_back(a);
-        for (auto a : debugs->vectors) debugs2->vectors.push_back(a);
-        for (auto a : debugs->texts) debugs2->texts.push_back(a);
-        for (auto a : debugs->segments) debugs2->segments.push_back(a);
-        for (auto a : debugs->rects) debugs2->rects.push_back(a);
-        for (auto a : debugs->polygons) debugs2->polygons.push_back(a);
-
-        debugs->circles.clear();
-        debugs->vectors.clear();
-        debugs->texts.clear();
-        debugs->segments.clear();
-        debugs->rects.clear();
-        debugs->polygons.clear();
+    if (debugs->draws.size()) {
+        for (auto a : debugs->draws) debugs2->draws.push_back(a);
+        debugs->draws.clear();
     }
     redraw();
 }
 
-void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawConstPtr& _packet) {
+void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawsConstPtr& _packet) {
 
-    for (auto a : _packet->circles) debugs->circles.push_back(a);
-    for (auto a : _packet->vectors) debugs->vectors.push_back(a);
-    for (auto a : _packet->texts) debugs->texts.push_back(a);
-    for (auto a : _packet->segments) debugs->segments.push_back(a);
-    for (auto a : _packet->rects) debugs->rects.push_back(a);
-    for (auto a : _packet->polygons) debugs->polygons.push_back(a);
+    for (auto a : _packet->draws) debugs->draws.push_back(a);
+
 }
 
 void GLSoccerView::redraw()
@@ -328,12 +313,7 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     glPopMatrix();
     swapBuffers();
 
-    debugs2->circles.clear();
-    debugs2->vectors.clear();
-    debugs2->texts.clear();
-    debugs2->segments.clear();
-    debugs2->rects.clear();
-    debugs2->polygons.clear();
+    debugs2->draws.clear();
 }
 
 void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z, bool filled, QColor color)
@@ -497,35 +477,38 @@ void GLSoccerView::drawRobots() {
 
 void GLSoccerView::drawDebugs() {
 
-    for (const auto& v : debugs2->vectors) {
-        drawVectors(v.vector.x*1000, v.vector.y*1000, toQColor(v.color));
-    }
-    for (const auto& c : debugs2->circles) {
-        glColor4d(c.color.r, c.color.g, c.color.b, c.color.a);
-        drawArc(c.circle.center.x*1000, c.circle.center.y*1000,
-                (c.filled) ? 0 : c.circle.radius*1000-10, c.circle.radius*1000,
-                c.startAng, c.endAng, DebugZ, -1);
-    }
-    for (const auto& t : debugs2->texts) glText.drawString(t.position.x*1000, t.position.y*1000, 0, t.size*10, t.value.c_str(), toQColor(t.color));
-    for (const auto& s : debugs2->segments) {
-        vector2d o, t;
-        o.x = s.start.x;o.y = s.start.y; t.x = s.end.x; t.y = s.end.y;
-        if (s.line) {
-            o *= 1000; t *= 1000;
-        } else if (s.ray) {
-            t *= 1000;
+    for(const auto& d : debugs2->draws) {
+        switch (d.type) {
+            case parsian_msgs::parsian_draw::CIRCLE:
+                    glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
+                    drawArc(d.primary.x*1000, d.primary.y*1000,
+                            (d.filled) ? 0 : d.size*1000-10, d.size*1000,
+                            d.secondary.x, d.secondary.y, DebugZ, -1);
+                break;
+            case parsian_msgs::parsian_draw::VECTOR:
+                drawVectors(d.primary.x*1000, d.primary.y*1000, toQColor(d.color));
+                break;
+            case parsian_msgs::parsian_draw::TEXT:
+                glText.drawString(d.primary.x*1000, d.primary.y*1000, 0, d.size*10, d.text.c_str(), toQColor(d.color));
+                break;
+            case parsian_msgs::parsian_draw::SEGMENT:
+                drawQuad(vector2d(d.primary.x*1000, d.primary.y*1000),
+                         vector2d(d.secondary.x*1000, d.secondary.y*1000), DebugZ);
+                break;
+            case parsian_msgs::parsian_draw::RECT:
+                drawQuad(vector2d(d.primary.x*1000, d.primary.y*1000),
+                         vector2d(d.secondary.x*1000, d.secondary.y*1000), DebugZ,
+                         d.filled, toQColor(d.color));
+                break;
+            case parsian_msgs::parsian_draw::POLYGON:
+                glBegin((d.filled) ? GL_POLYGON : GL_TRIANGLE_FAN);
+                glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
+                for(const auto& pp : d.polygon) glVertex3d(pp.x*1000, pp.y*1000, DebugZ);
+                glEnd();
+                break;
+            case parsian_msgs::parsian_draw::NONE:
+            default:break;
         }
-        drawQuad(o*1000, t*1000, DebugZ);
-    }
-    for (const auto& r : debugs2->rects) drawQuad(r.rect.left_x*1000, r.rect.top_y*1000,
-                                                 r.rect.left_x*1000 + r.rect.length*1000, r.rect.top_y*1000 - r.rect.width*1000, DebugZ,
-                                                 r.filled, toQColor(r.color));
-    for (const auto& p : debugs2->polygons) {
-        glBegin((p.filled) ? GL_POLYGON : GL_TRIANGLE_FAN);
-        glColor4d(p.color.r, p.color.g, p.color.b, p.color.a);
-        for(const auto& pp : p.points) glVertex3d(pp.x*1000, pp.y*1000, DebugZ);
-        glEnd();
-
     }
 
 }

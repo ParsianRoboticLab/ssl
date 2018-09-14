@@ -13,7 +13,6 @@
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
-#include <rqt_parsian_gui/monitorWidget.h>
 #include <pluginlib/class_list_macros.h>
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/parsian_team_config.h>
@@ -60,8 +59,8 @@ namespace rqt_parsian_gui {
 
         void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
         void logwmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
-        void drawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
-        void logdrawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
+        void drawCb(const parsian_msgs::parsian_drawsConstPtr& _draw);
+        void logdrawCb(const parsian_msgs::parsian_drawsConstPtr& _draw);
         void colorCb(const parsian_msgs::parsian_team_configConstPtr& _color);
         void timerCb(const ros::TimerEvent& _timer);
         virtual bool eventFilter(QObject *, QEvent *);
@@ -74,7 +73,6 @@ namespace rqt_parsian_gui {
 
         parsian_msgs::parsian_world_modelConstPtr mywm;
         parsian_msgs::parsian_team_configConstPtr mycolor;
-        MonitorWidget* fieldWidget;
         GLSoccerView* view;
 
     public slots:

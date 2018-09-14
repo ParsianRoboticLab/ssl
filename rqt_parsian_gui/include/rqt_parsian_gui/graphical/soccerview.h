@@ -36,7 +36,7 @@
 #include "util.h"
 #include "gltext.h"
 #include <parsian_msgs/parsian_world_model.h>
-#include <parsian_msgs/parsian_draw.h>
+#include <parsian_msgs/parsian_draws.h>
 #include <parsian_msgs/parsian_team_config.h>
 
 #ifndef SOCCERVIEW_H
@@ -116,8 +116,8 @@ namespace rqt_parsian_gui {
 
         uint64_t tLastRedraw;
 
-        parsian_msgs::parsian_drawPtr debugs;
-        parsian_msgs::parsian_drawPtr debugs2;
+        parsian_msgs::parsian_drawsPtr debugs;
+        parsian_msgs::parsian_drawsPtr debugs2;
         FieldDimensions fieldDim;
     private:
         void drawFieldLines(FieldDimensions &dimensions);
@@ -176,7 +176,7 @@ namespace rqt_parsian_gui {
 
         void updatePacket(const parsian_msgs::parsian_world_modelConstPtr &_packet);
 
-        void updateDraws(const parsian_msgs::parsian_drawConstPtr &_packet);
+        void updateDraws(const parsian_msgs::parsian_drawsConstPtr &_packet);
 
         void updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config);
 
