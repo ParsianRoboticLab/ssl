@@ -54,9 +54,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <nodelet plugin="${prefix}/direct.xml"/>
-    <nodelet plugin="${prefix}/mahi.xml"/>
-    <nodelet plugin="${prefix}/move_forward.xml"/>
     <nodelet plugin="${prefix}/nodelet.xml"/>
 
   </export>
