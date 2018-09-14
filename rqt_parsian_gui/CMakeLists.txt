@@ -79,11 +79,8 @@ catkin_package(
 
 
 set (${PROJECT_NAME}_SRCS
-        src/${PROJECT_NAME}/monitor.cpp
         src/${PROJECT_NAME}/robotstatus.cpp
         src/${PROJECT_NAME}/robotstatus_widget.cpp
-        src/${PROJECT_NAME}/monitorWidget.cpp
-        src/${PROJECT_NAME}/guiDrawer.cpp
         src/${PROJECT_NAME}/mode_chooser.cpp
         src/${PROJECT_NAME}/modeChooserWidget.cpp
         src/${PROJECT_NAME}/handycontroller.cpp
@@ -96,11 +93,8 @@ set (${PROJECT_NAME}_SRCS
         )
 
 set(${PROJECT_NAME}_HDRS
-        include/${PROJECT_NAME}/monitor.h
         include/${PROJECT_NAME}/robotstatus.h
         include/${PROJECT_NAME}/robotstatus_widget.h
-        include/${PROJECT_NAME}/monitorWidget.h
-        include/${PROJECT_NAME}/guiDrawer.h
         include/${PROJECT_NAME}/mode_chooser.h
         include/${PROJECT_NAME}/modeChooserWidget.h
         include/${PROJECT_NAME}/handycontroller.h
@@ -237,7 +231,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-        plugin1.xml
         plugin2.xml
         plugin3.xml
         playoff_plugin.xml

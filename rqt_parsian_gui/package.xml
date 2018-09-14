@@ -65,7 +65,6 @@
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
-    <rqt_gui plugin="${prefix}/plugin1.xml"/>
     <rqt_gui plugin="${prefix}/plugin2.xml"/>
     <rqt_gui plugin="${prefix}/plugin3.xml"/>
     <rqt_gui plugin="${prefix}/mode_plugin.xml"/>
