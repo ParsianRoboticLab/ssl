@@ -1791,21 +1791,9 @@ void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
     plan_client = _plan_client;
 }
 
-void CCoach::setBehaviorPublisher(ros::Publisher& _behavior_publisher) {
-    ai_status_pub = &_behavior_publisher;
-}
 
 parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
     return receivedPlan;
-}
-
-void CCoach::updateBehavior(const parsian_msgs::parsian_behaviorConstPtr _behav) {
-    m_behavior = _behav;
-    //    if (_behav->name == "mahi") {
-    //        selectedBehavior = behaviorMahi;
-    //    } else {
-    //        selectedBehavior = nullptr;
-    //    }
 }
 
 int CCoach::findGoalie() {
@@ -1838,10 +1826,6 @@ int CCoach::findGoalie() {
     return preferedGoalieID;
 }
 
-void CCoach::sendBehaviorStatus() {
-
-    ai_status_pub->publish(fillAIStatus());
-}
 
 parsian_msgs::parsian_ai_statusPtr CCoach::fillAIStatus()
 {
