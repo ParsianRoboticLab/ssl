@@ -13,7 +13,7 @@
 #include <parsian_msgs/parsian_plan.h>
 #include <parsian_msgs/parsian_ai_plan_request.h>
 
-#include <parsian_msgs/parsian_draw.h>
+#include <parsian_msgs/parsian_draws.h>
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_msgs/parsian_behavior.h>
 #include <parsian_msgs/parsian_ai_status.h>
@@ -29,11 +29,10 @@ class AINodelet : public nodelet::Nodelet {
 
 private:
     boost::shared_ptr<AI> ai;
-    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, behaviorSub, mousePosSub,forceRefereeSub, robotfaultSub;
+    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, mousePosSub,forceRefereeSub, robotfaultSub;
     ros::Publisher drawPub;
 
     ros::Publisher *robTask;
-    ros::Publisher behaviorPub;
     ros::Timer timer_;
 
     ros::ServiceClient plan_client;
@@ -49,7 +48,6 @@ private:
     void forceRefereeCallBack(const parsian_msgs::ssl_force_refereeConstPtr & _command);
     void robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & _rs);
     void teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf);
-    void behaviorCb(const parsian_msgs::parsian_behaviorConstPtr& _behavior);
     void timerCb(const ros::TimerEvent &event);
     void mousePosCb(const parsian_msgs::vector2DConstPtr& _mousePos);
     void faultdetectionCallBack(const parsian_msgs::parsian_robot_fault & _rs);

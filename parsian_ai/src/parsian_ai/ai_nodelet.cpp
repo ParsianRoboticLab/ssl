@@ -21,19 +21,15 @@ void AINodelet::onInit() {
     robotStatusSub = nh.subscribe("/robot_status", 100, &AINodelet::robotStatusCallBack, this);
     refereeSub = nh.subscribe("/referee", 100,  &AINodelet::refereeCallBack, this);
     teamConfSub = nh.subscribe("/team_config", 100, &AINodelet::teamConfCb, this);
-    behaviorSub = nh.subscribe("/behavior", 100, &AINodelet::behaviorCb, this);
     mousePosSub = nh.subscribe("/mousePos", 100, &AINodelet::mousePosCb, this);
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
-    drawPub = nh.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
+    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
     timer_ = nh.createTimer(ros::Duration(.062), boost::bind(&AINodelet::timerCb, this, _1));
     plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
-    behaviorPub = private_nh.advertise<parsian_msgs::parsian_ai_status>("/status", 10);
-
     ai->getSoccer()->getCoach()->setPlanClient(plan_client);
-    ai->getSoccer()->getCoach()->setBehaviorPublisher(behaviorPub);
     //config server settings
     server.reset(new dynamic_reconfigure::Server<ai_config::aiConfig>(private_nh));
     dynamic_reconfigure::Server<ai_config::aiConfig>::CallbackType f;
@@ -50,13 +46,10 @@ void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _con
 
 void AINodelet::timerCb(const ros::TimerEvent& event){
 
-    if (drawer != nullptr)   drawPub.publish(drawer->draws);
-    drawer->draws.texts.clear();
-    drawer->draws.circles.clear();
-    drawer->draws.segments.clear();
-    drawer->draws.polygons.clear();
-    drawer->draws.rects.clear();
-    drawer->draws.vectors.clear();
+    if (drawer != nullptr)  {
+        drawPub.publish(drawer->getDraws());
+        drawer->clear();
+    }
 }
 
 void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
@@ -93,9 +86,4 @@ void AINodelet::robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & 
 void AINodelet::ConfigServerCallBack(const ai_config::aiConfig &config, uint32_t level) {
     ROS_INFO("MAHICALLING BACK");
     conf = config;
-}
-
-void AINodelet::behaviorCb(const parsian_msgs::parsian_behaviorConstPtr &_behavior) {
-    ROS_INFO_STREAM("behavior " << _behavior->name << " received !");
-    soccer->coach->updateBehavior(_behavior);
 }
