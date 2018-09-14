@@ -158,7 +158,7 @@ add_library(${PROJECT_NAME}_packet
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(${PROJECT_NAME}_node
-        src/communication_node.cpp
+        src/parsian_communication/communication_node.cpp
         )
 
 add_executable(${PROJECT_NAME}_packet_node
@@ -166,7 +166,7 @@ add_executable(${PROJECT_NAME}_packet_node
         )
 
 add_library(${PROJECT_NAME}_nodelet
-        src/communication_nodelet.cpp)
+        src/parsian_communication/communication_nodelet.cpp)
 
 add_library(${PROJECT_NAME}_packet_nodelet
         src/packet_generate/packet_nodelet.cpp

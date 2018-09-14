@@ -204,7 +204,7 @@ void GLSoccerView::mouseMoveEvent(QMouseEvent* event)
 void GLSoccerView::wheelEvent(QWheelEvent* event)
 {
     double zoomRatio = -double(event->delta())/1000.0;
-    viewScale = viewScale*(1.0+zoomRatio);
+    viewScale *= (1.0+zoomRatio);
     recomputeProjection();
     postRedraw();
 }
@@ -503,10 +503,10 @@ void GLSoccerView::drawDebugs() {
     for (const auto& c : debugs2->circles) {
         glColor4d(c.color.r, c.color.g, c.color.b, c.color.a);
         drawArc(c.circle.center.x*1000, c.circle.center.y*1000,
-                (c.filled) ? 0 : c.circle.radius*1000-5, c.circle.radius*1000,
-                c.startAng, c.endAng, DebugZ, 1);
+                (c.filled) ? 0 : c.circle.radius*1000-10, c.circle.radius*1000,
+                c.startAng, c.endAng, DebugZ, -1);
     }
-    for (const auto& t : debugs2->texts) glText.drawString(t.position.x*1000, t.position.y*1000, 0, t.size, t.value.c_str(), toQColor(t.color));
+    for (const auto& t : debugs2->texts) glText.drawString(t.position.x*1000, t.position.y*1000, 0, t.size*10, t.value.c_str(), toQColor(t.color));
     for (const auto& s : debugs2->segments) {
         vector2d o, t;
         o.x = s.start.x;o.y = s.start.y; t.x = s.end.x; t.y = s.end.y;
