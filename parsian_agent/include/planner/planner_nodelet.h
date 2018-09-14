@@ -41,7 +41,6 @@ private:
 
     boost::shared_ptr<CPlanner> planner;
 
-    void cleanDraws() const;
 };
 }
 

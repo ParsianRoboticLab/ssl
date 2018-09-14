@@ -22,7 +22,7 @@ void PlannerNodelet::onInit() {
     world_model_sub   = nh.subscribe("world_model", 10, &PlannerNodelet::wmCb, this);
     planner_sub       = nh.subscribe(QString("agent_%1/plan").arg(planner->getID()).toStdString(), 1, &PlannerNodelet::plannerCb, this);
 
-    draw_pub  = nh.advertise<parsian_msgs::parsian_draw>("draws", 1000);
+    draw_pub  = nh.advertise<parsian_msgs::parsian_draws>("draws", 1000);
     planner->path_pub = private_nh.advertise<parsian_msgs::parsian_path>("path", 5);
 
     timer_ = nh.createTimer(ros::Duration(0.1), &PlannerNodelet::timerCb, this);
@@ -39,20 +39,12 @@ void PlannerNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) 
 
 void PlannerNodelet::timerCb(const ros::TimerEvent& event) {
     if (drawer   != nullptr) {
-        draw_pub.publish(drawer->draws);
-        cleanDraws();
+        draw_pub.publish(drawer->getDraws());
+        drawer->clear();
     }
     planner->run();
 
 
-}
-
-void PlannerNodelet::cleanDraws() const {
-    drawer->draws.texts.clear();
-    drawer->draws.circles.clear();
-    drawer->draws.segments.clear();
-    drawer->draws.vectors.clear();
-    drawer->draws.rects.clear();
 }
 
 void PlannerNodelet::plannerCb(const parsian_msgs::parsian_get_planConstPtr & _plan) {
