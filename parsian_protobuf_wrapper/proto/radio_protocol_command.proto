@@ -1,3 +1,4 @@
+syntax = "proto2";
 message RadioProtocolCommand {
   // The unique ID of the robot, as identified by SSL-Vision.
   required int32 robot_id = 1;
