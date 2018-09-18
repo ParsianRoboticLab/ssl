@@ -20,7 +20,7 @@ public:
     void draw(const Circle2D&  _circle = Circle2D(Vector2D(0, 0), 0), int _startAng = 0, int _endAng = 360, const QColor& _color = QColor(255, 255, 255), bool _filled = false);
     void draw(const Polygon2D& _polygon = Polygon2D(), const QColor& _color = QColor(255, 255, 255), bool _filled = false);
     void draw(const Segment2D& _seg = Segment2D(Vector2D(0, 0), Vector2D(0, 0)), const QColor& _color = QColor(255, 255, 255));
-    void draw(const Vector2D&  _point = Vector2D(0, 0), const QColor& _color = QColor(255, 255, 255));
+    void draw(const Vector2D&  _point = Vector2D(0, 0), const QColor& _color = QColor(255, 255, 255), const double& size = 0.02);
     void clear();
     const parsian_msgs::parsian_draws& getDraws();
 private:

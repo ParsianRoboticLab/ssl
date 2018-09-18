@@ -95,23 +95,23 @@ void Drawer::draw(const Segment2D& _seg, const QColor& _color) {
 
 }
 
-void Drawer::draw(const Vector2D& _point, const QColor& _color) {
+void Drawer::draw(const Vector2D& _point, const QColor& _color, const double& size) {
 
     parsian_msgs::parsian_draw drawVector;
 
     drawVector.primary = toParsianVec(_point);
     drawVector.color   = toColorRGBA(_color);
     drawVector.type = parsian_msgs::parsian_draw::VECTOR;
-
+    drawVector.size = size;
     draws.draws.push_back(drawVector);
 }
 
 std_msgs::ColorRGBA Drawer::toColorRGBA(const QColor &_color) {
     std_msgs::ColorRGBA colorRGBA;
-    colorRGBA.a = _color.alpha();
-    colorRGBA.r = _color.red();
-    colorRGBA.g = _color.green();
-    colorRGBA.b = _color.blue();
+    colorRGBA.a = static_cast<float>(_color.alphaF());
+    colorRGBA.r = static_cast<float>(_color.redF());
+    colorRGBA.g = static_cast<float>(_color.greenF());
+    colorRGBA.b = static_cast<float>(_color.blueF());
     return colorRGBA;
 }
 
