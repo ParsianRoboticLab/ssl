@@ -25,8 +25,7 @@ void AINodelet::onInit() {
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
-    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws2", 1000);
-    timer_ = nh.createTimer(ros::Duration(.020), boost::bind(&AINodelet::timerCb, this, _1));
+    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
     plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
     ai->getSoccer()->getCoach()->setPlanClient(plan_client);
@@ -42,14 +41,6 @@ void AINodelet::mousePosCb(const parsian_msgs::vector2DConstPtr &_mousePos) {
 }
 void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf) {
     teamConfig = *_conf;
-}
-
-void AINodelet::timerCb(const ros::TimerEvent& event){
-
-//    if (drawer != nullptr)  {
-//        drawPub.publish(drawer->getDraws());
-//        drawer->clear();
-//    }
 }
 
 void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm) {

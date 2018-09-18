@@ -38,7 +38,7 @@ def clean_cb(time):
 if __name__ == "__main__":
     rospy.init_node('drawbuffer_node', anonymous=True)
     wm_sub = rospy.Subscriber('/world_model', parsian_world_model, wm_cb, queue_size=1, buff_size=2 ** 24)
-    draw_sub = rospy.Subscriber('/draws2', parsian_draws, draw_cb, queue_size=1, buff_size=2 ** 24)
+    draw_sub = rospy.Subscriber('/draws', parsian_draws, draw_cb, queue_size=1, buff_size=2 ** 24)
     timer = rospy.Timer(rospy.Duration(secs=0, nsecs=16000000), timer_cb)
     clean = rospy.Timer(rospy.Duration(secs=1, nsecs=0), clean_cb)
     # srv = server.Server(drawbufferConfig, config_cb)
