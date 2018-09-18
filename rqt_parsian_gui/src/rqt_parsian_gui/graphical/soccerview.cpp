@@ -315,10 +315,9 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     swapBuffers();
 }
 
-void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z, bool filled, QColor color)
+void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z, bool filled)
 {
-    glBegin((filled) ? GL_QUAD_STRIP : GL_QUADS);
-    glColor4d(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+    glBegin((filled) ? GL_QUADS : GL_LINE_LOOP);
     glVertex3d(loc1.x,loc1.y,z);
     glVertex3d(loc2.x,loc1.y,z);
     glVertex3d(loc2.x,loc2.y,z);
@@ -475,44 +474,44 @@ void GLSoccerView::drawRobots() {
 }
 
 void GLSoccerView::drawDebugs() {
-    int i;
-    int triangleAmount = 1000;
-    ROS_INFO_STREAM("de: " << debugs2->draws.size());
+
     for(const auto& d : debugs2->draws) {
         switch (d.type) {
             case parsian_msgs::parsian_draw::CIRCLE:
                 glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
-
                 if (d.filled) {
-                    drawArc(vector2d(d.primary.x*1000, d.secondary.y*1000), 0, d.size*1000, d.secondary.x, d.secondary.y, DebugZ);
-
+                    drawArc(vector2d(d.primary.x*1000, d.primary.y*1000), 0, d.size*1000, d.secondary.x, d.secondary.y, DebugZ);
                 } else {
                     glBegin(GL_LINE_LOOP);
+                    glVertex3d(d.primary.x*1000, d.primary.y*1000, DebugZ);
                     for (double i = d.secondary.x; i <= d.secondary.y; i += M_PI/50)
                         glVertex3d(d.primary.x*1000 + (d.size*1000 * cos(i)),
                                    d.primary.y*1000 + (d.size*1000 * sin(i)), DebugZ);
-
                     glEnd();
 
                 }
                 break;
             case parsian_msgs::parsian_draw::VECTOR:
-                drawVectors(d.primary.x*1000, d.primary.y*1000, toQColor(d.color));
+                drawVectors(d.primary.x*1000, d.primary.y*1000, d.size*1000, d.color);
                 break;
             case parsian_msgs::parsian_draw::TEXT:
                 glText.drawString(d.primary.x*1000, d.primary.y*1000, 0, d.size*10, d.text.c_str(), toQColor(d.color));
                 break;
             case parsian_msgs::parsian_draw::SEGMENT:
-                drawQuad(vector2d(d.primary.x*1000, d.primary.y*1000),
-                         vector2d(d.secondary.x*1000, d.secondary.y*1000), DebugZ);
+                glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
+                glBegin(GL_LINES);
+                glVertex3d(d.primary.x*1000, d.primary.y*1000, DebugZ);
+                glVertex3d(d.secondary.x*1000, d.secondary.y*1000, DebugZ);
+                glEnd();
                 break;
             case parsian_msgs::parsian_draw::RECT:
+                glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
                 drawQuad(vector2d(d.primary.x*1000, d.primary.y*1000),
                          vector2d(d.secondary.x*1000, d.secondary.y*1000), DebugZ,
-                         d.filled, toQColor(d.color));
+                         d.filled);
                 break;
             case parsian_msgs::parsian_draw::POLYGON:
-                glBegin((d.filled) ? GL_POLYGON : GL_TRIANGLE_FAN);
+                glBegin((d.filled) ? GL_POLYGON : GL_LINE_LOOP);
                 glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
                 for(const auto& pp : d.polygon) glVertex3d(pp.x*1000, pp.y*1000, DebugZ);
                 glEnd();
@@ -528,13 +527,19 @@ void GLSoccerView::updateConfig(const parsian_msgs::parsian_team_configConstPtr 
 
 }
 
-void GLSoccerView::drawVectors(const double &x, const double &y, const QColor &color) {
-
+void GLSoccerView::drawVectors(const double &x, const double &y, const double& size, const std_msgs::ColorRGBA &color) {
+    glColor4d(color.r, color.g, color.b, color.a);
+    glBegin(GL_LINES);
+    glVertex3d(x+size, y+size, DebugZ);
+    glVertex3d(x-size, y-size, DebugZ);
+    glVertex3d(x-size, y+size, DebugZ);
+    glVertex3d(x+size, y-size, DebugZ);
+    glEnd();
 }
 
 QColor GLSoccerView::toQColor(const std_msgs::ColorRGBA &_color) {
     QColor c;
-    c.fromRgb(_color.r, _color.g, _color.b, _color.a);
+    c.fromRgbF(_color.r, _color.g, _color.b, _color.a);
     return c;
 }
 
@@ -571,5 +576,5 @@ void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_pa
 
     debugs2->draws.clear();
     for (auto a : _packet->draws.draws) debugs2->draws.push_back(a);
-//    redraw();
+
 }

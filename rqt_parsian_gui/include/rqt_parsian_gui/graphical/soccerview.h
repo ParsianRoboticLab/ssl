@@ -127,10 +127,10 @@ namespace rqt_parsian_gui {
 
         void drawDebugs();
 
-        void drawQuad(vector2d loc1, vector2d loc2, double z = 0.0, bool filled = false, QColor color = QColor(255,255,255));
+        void drawQuad(vector2d loc1, vector2d loc2, double z = 0.0, bool filled = true);
 
-        void drawQuad(double x1, double y1, double x2, double y2, double z = 0.0, bool filled = false, QColor color = QColor(255,255,255)) {
-            drawQuad(vector2d(x1, y1), vector2d(x2, y2), z, filled, color);
+        void drawQuad(double x1, double y1, double x2, double y2, double z = 0.0, bool filled = true) {
+            drawQuad(vector2d(x1, y1), vector2d(x2, y2), z, filled);
         }
 
         void drawArc(vector2d loc, double r1, double r2, double theta1,
@@ -139,7 +139,7 @@ namespace rqt_parsian_gui {
         void drawArc(double x, double y, double r1, double r2, double theta1, double theta2, double z = 0.0,
                      double dTheta = -1) { drawArc(vector2d(x, y), r1, r2, theta1, theta2, z, dTheta); }
 
-        void drawVectors(const double& x, const double& y, const QColor& color);
+        void drawVectors(const double& x, const double& y, const double& size, const std_msgs::ColorRGBA& color);
 
         void recomputeProjection();
 
