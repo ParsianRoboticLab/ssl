@@ -25,8 +25,8 @@ void AINodelet::onInit() {
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
-    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
-    timer_ = nh.createTimer(ros::Duration(.062), boost::bind(&AINodelet::timerCb, this, _1));
+    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws2", 1000);
+    timer_ = nh.createTimer(ros::Duration(.020), boost::bind(&AINodelet::timerCb, this, _1));
     plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
     ai->getSoccer()->getCoach()->setPlanClient(plan_client);
@@ -46,10 +46,10 @@ void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _con
 
 void AINodelet::timerCb(const ros::TimerEvent& event){
 
-    if (drawer != nullptr)  {
-        drawPub.publish(drawer->getDraws());
-        drawer->clear();
-    }
+//    if (drawer != nullptr)  {
+//        drawPub.publish(drawer->getDraws());
+//        drawer->clear();
+//    }
 }
 
 void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
@@ -59,11 +59,15 @@ void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstP
 //
     for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
         robTask[wm->our.activeAgentID(i)].publish(ai->getTask(wm->our.activeAgentID(i)));
-
     }
-//
+
     parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
     ROS_INFO_STREAM("HSHM: last plan name: " << lastPlan.the_plan.planFile);
+
+    if (drawer != nullptr)  {
+        drawPub.publish(drawer->getDraws());
+        drawer->clear();
+    }
 
 }
 
