@@ -15,6 +15,7 @@
 #include <rosbag/view.h>
 #include <pluginlib/class_list_macros.h>
 #include <parsian_msgs/parsian_world_model.h>
+#include <parsian_msgs/parsian_draw_buffer.h>
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_util/core/worldmodel.h>
 #include <ros/package.h>
@@ -37,6 +38,7 @@ namespace rqt_parsian_gui {
         ros::NodeHandle n_color;
 
         ros::Subscriber wm_sub;
+        ros::Subscriber db_sub;
         ros::Subscriber log_wm_sub;
         ros::Subscriber draw_sub;
         ros::Subscriber log_draw_sub;
@@ -58,6 +60,7 @@ namespace rqt_parsian_gui {
 
 
         void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
+        void dbCb(const parsian_msgs::parsian_draw_bufferConstPtr& _db);
         void logwmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
         void drawCb(const parsian_msgs::parsian_drawsConstPtr& _draw);
         void logdrawCb(const parsian_msgs::parsian_drawsConstPtr& _draw);

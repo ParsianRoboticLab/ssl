@@ -20,11 +20,12 @@ namespace rqt_parsian_gui {
         n_private = getPrivateNodeHandle();
 
         wm_sub = n.subscribe("/world_model", 1000, &GraphicalClient::wmCb, this);
+        db_sub = n.subscribe("/buffer_draws", 100000, &GraphicalClient::dbCb, this);
         log_wm_sub = n.subscribe("/log/world_model", 1000, &GraphicalClient::logwmCb, this);
         draw_sub = n.subscribe("/draws", 1000, &GraphicalClient::drawCb, this);
         log_draw_sub = n.subscribe("/log/draws", 1000, &GraphicalClient::logdrawCb, this);
         color_sub = n.subscribe("/team_config", 1000, &GraphicalClient::colorCb, this);
-        timer = n.createTimer(ros::Duration(0.080), &GraphicalClient::timerCb, this);
+        timer = n.createTimer(ros::Duration(0.02), &GraphicalClient::timerCb, this);
         parsian_msgs::parsian_team_configPtr team_config{new parsian_msgs::parsian_team_config};
 
         // access standalone command line arguments
@@ -62,19 +63,23 @@ namespace rqt_parsian_gui {
     }
 
     void GraphicalClient::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
-        view->updatePacket(_wm);
+        return;
+//        view->updatePacket(_wm);
     }
 
     void GraphicalClient::logwmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
-        view->updatePacket(_wm);
+        return;
+//        view->updatePacket(_wm);
     }
 
     void GraphicalClient::drawCb(const parsian_msgs::parsian_drawsConstPtr &_draw) {
-        view->updateDraws(_draw);
+        return;
+//        view->updateDraws(_draw);
     }
 
     void GraphicalClient::logdrawCb(const parsian_msgs::parsian_drawsConstPtr &_draw) {
-        view->updateDraws(_draw);
+        return;
+//        view->updateDraws(_draw);
     }
 
     void GraphicalClient::colorCb(const parsian_msgs::parsian_team_configConstPtr &_color) {
@@ -83,7 +88,7 @@ namespace rqt_parsian_gui {
     }
 
     void GraphicalClient::timerCb(const ros::TimerEvent &_timer) {
-
+        view->redraw();
     }
 
     void GraphicalClient::startLog() {
@@ -103,6 +108,10 @@ namespace rqt_parsian_gui {
             }
         }
         return false;
+    }
+
+    void GraphicalClient::dbCb(const parsian_msgs::parsian_draw_bufferConstPtr &_wm) {
+        view->updateDB(_wm);
     }
 }
 

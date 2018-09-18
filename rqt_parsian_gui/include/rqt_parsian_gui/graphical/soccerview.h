@@ -37,6 +37,7 @@
 #include "gltext.h"
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/parsian_draws.h>
+#include <parsian_msgs/parsian_draw_buffer.h>
 #include <parsian_msgs/parsian_team_config.h>
 
 #ifndef SOCCERVIEW_H
@@ -175,6 +176,7 @@ namespace rqt_parsian_gui {
         GLSoccerView(QWidget *parent = 0);
 
         void updatePacket(const parsian_msgs::parsian_world_modelConstPtr &_packet);
+        void updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet);
 
         void updateDraws(const parsian_msgs::parsian_drawsConstPtr &_packet);
 
@@ -183,9 +185,6 @@ namespace rqt_parsian_gui {
     public slots:
 
         void resetView();
-
-    private slots:
-
         void redraw();
 
     signals:

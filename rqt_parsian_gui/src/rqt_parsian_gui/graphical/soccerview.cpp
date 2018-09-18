@@ -117,7 +117,7 @@ void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr&
         for (auto a : debugs->draws) debugs2->draws.push_back(a);
         debugs->draws.clear();
     }
-    redraw();
+//    redraw();
 }
 
 void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawsConstPtr& _packet) {
@@ -128,10 +128,10 @@ void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawsConstPtr& _packe
 
 void GLSoccerView::redraw()
 {
-    if(ros::Time::now().toNSec() - tLastRedraw < MinRedrawInterval)
-        return;
+//    if(ros::Time::now().toNSec() - tLastRedraw < MinRedrawInterval)
+//        return;
     update();
-    tLastRedraw = ros::Time::now().toNSec();
+//    tLastRedraw = ros::Time::now().toNSec();
 }
 
 
@@ -310,10 +310,9 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     drawDebugs();
     drawRobots();
     drawBall(ball);
+
     glPopMatrix();
     swapBuffers();
-
-    debugs2->draws.clear();
 }
 
 void GLSoccerView::drawQuad(vector2d loc1, vector2d loc2, double z, bool filled, QColor color)
@@ -476,14 +475,26 @@ void GLSoccerView::drawRobots() {
 }
 
 void GLSoccerView::drawDebugs() {
-
+    int i;
+    int triangleAmount = 1000;
+    ROS_INFO_STREAM("de: " << debugs2->draws.size());
     for(const auto& d : debugs2->draws) {
         switch (d.type) {
             case parsian_msgs::parsian_draw::CIRCLE:
-                    glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
-                    drawArc(d.primary.x*1000, d.primary.y*1000,
-                            (d.filled) ? 0 : d.size*1000-10, d.size*1000,
-                            d.secondary.x, d.secondary.y, DebugZ, -1);
+                glColor4d(d.color.r, d.color.g, d.color.b, d.color.a);
+
+                if (d.filled) {
+                    drawArc(vector2d(d.primary.x*1000, d.secondary.y*1000), 0, d.size*1000, d.secondary.x, d.secondary.y, DebugZ);
+
+                } else {
+                    glBegin(GL_LINE_LOOP);
+                    for (double i = d.secondary.x; i <= d.secondary.y; i += M_PI/50)
+                        glVertex3d(d.primary.x*1000 + (d.size*1000 * cos(i)),
+                                   d.primary.y*1000 + (d.size*1000 * sin(i)), DebugZ);
+
+                    glEnd();
+
+                }
                 break;
             case parsian_msgs::parsian_draw::VECTOR:
                 drawVectors(d.primary.x*1000, d.primary.y*1000, toQColor(d.color));
@@ -525,4 +536,40 @@ QColor GLSoccerView::toQColor(const std_msgs::ColorRGBA &_color) {
     QColor c;
     c.fromRgb(_color.r, _color.g, _color.b, _color.a);
     return c;
+}
+
+void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet) {
+
+    ball.x = ball.y = 5000;
+    robots.clear();
+    for(int i=0; i < _packet->wm.our.size(); i++){
+        Robot robot{};
+        robot.loc.set(_packet->wm.our[i].pos.x*1000, _packet->wm.our[i].pos.y*1000);
+        robot.id = i;
+        robot.hasAngle = true;
+        if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->wm.our[i].dir.y,_packet->wm.our[i].dir.x));
+        robot.team = (_packet->wm.isYellow) ? teamYellow : teamBlue;
+        robot.cameraID = 0;
+        robot.conf = 0.9;
+        robots.append(robot);
+    }
+
+    for(int i=0; i < _packet->wm.opp.size(); i++){
+        Robot robot{};
+        robot.loc.set(_packet->wm.opp[i].pos.x*1000, _packet->wm.opp[i].pos.y*1000);
+        robot.id = i;
+        robot.hasAngle = true;
+        if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->wm.opp[i].dir.y,_packet->wm.opp[i].dir.x));
+        robot.team = (!_packet->wm.isYellow) ? teamYellow : teamBlue;
+        robot.cameraID = 0;
+        robot.conf = 0.9;
+        robots.append(robot);
+    }
+
+    ball.x = _packet->wm.ball.pos.x*1000;
+    ball.y = _packet->wm.ball.pos.y*1000;
+
+    debugs2->draws.clear();
+    for (auto a : _packet->draws.draws) debugs2->draws.push_back(a);
+//    redraw();
 }
