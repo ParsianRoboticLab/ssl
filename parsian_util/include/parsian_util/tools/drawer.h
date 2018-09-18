@@ -13,6 +13,7 @@
 
 class Drawer {
 public:
+    Drawer();
     void draw(const Rect2D&    _rect = Rect2D(Vector2D(0, 0), Vector2D(0, 0)), const QColor& _color = QColor(255, 255, 255), bool _filled = false);
     void draw(const QString&   _text = "", const Vector2D& _pos = Vector2D(0, 0), const QColor& _color = QColor("black"), int _size = 12);
     void draw(const Circle2D&  _circle = Circle2D(Vector2D(0, 0), 0), const QColor& _color = QColor(255, 255, 255), bool _filled = false);

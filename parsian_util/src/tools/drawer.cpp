@@ -3,8 +3,13 @@
 //
 
 #include <parsian_util/tools/drawer.h>
+#include <ros/ros.h>
 
 Drawer* drawer;
+
+Drawer::Drawer() {
+    draws.node = ros::this_node::getName();
+}
 
 void Drawer::draw(const Rect2D& _rect, const QColor &_color, bool _filled) {
     parsian_msgs::parsian_draw drawRect;
@@ -13,6 +18,7 @@ void Drawer::draw(const Rect2D& _rect, const QColor &_color, bool _filled) {
     drawRect.filled = static_cast<unsigned char>(_filled);
     drawRect.primary = toParsianVec(_rect.topLeft());
     drawRect.secondary = toParsianVec(_rect.bottomRight());
+    drawRect.type = parsian_msgs::parsian_draw::RECT;
     draws.draws.push_back(drawRect);
 
 }
@@ -24,6 +30,7 @@ void Drawer::draw(const QString& _text, const Vector2D& _pos, const QColor& _col
     drawText.primary = toParsianVec(_pos);
     drawText.size = _size;
     drawText.color = toColorRGBA(_color);
+    drawText.type = parsian_msgs::parsian_draw::TEXT;
     draws.draws.push_back(drawText);
 
 
@@ -39,6 +46,7 @@ void Drawer::draw(const Circle2D& _circle, int _startAng, int _endAng, const QCo
     drawCircle.filled = static_cast<unsigned char>(_filled);
     drawCircle.secondary.x = _startAng;
     drawCircle.secondary.y = _endAng;
+    drawCircle.type = parsian_msgs::parsian_draw::CIRCLE;
 
     draws.draws.push_back(drawCircle);
 
@@ -55,6 +63,7 @@ void Drawer::draw(const Circle2D& _circle, const QColor& _color, bool _filled) {
     drawCircle.filled = static_cast<unsigned char>(_filled);
     drawCircle.secondary.x = 0;
     drawCircle.secondary.y = 2*M_PI;
+    drawCircle.type = parsian_msgs::parsian_draw::CIRCLE;
 
     draws.draws.push_back(drawCircle);
 
@@ -69,6 +78,8 @@ void Drawer::draw(const Polygon2D& _polygon, const QColor& _color, bool _filled)
     }
     drawPolygon.filled = static_cast<unsigned char>(_filled);
     drawPolygon.color = toColorRGBA(_color);
+    drawPolygon.type = parsian_msgs::parsian_draw::POLYGON;
+
     draws.draws.push_back(drawPolygon);
 }
 
@@ -78,6 +89,8 @@ void Drawer::draw(const Segment2D& _seg, const QColor& _color) {
     drawSegment.primary   = toParsianVec(_seg.a());
     drawSegment.secondary = toParsianVec(_seg.b());
     drawSegment.color = toColorRGBA(_color);
+    drawSegment.type = parsian_msgs::parsian_draw::SEGMENT;
+
     draws.draws.push_back(drawSegment);
 
 }
@@ -88,6 +101,7 @@ void Drawer::draw(const Vector2D& _point, const QColor& _color) {
 
     drawVector.primary = toParsianVec(_point);
     drawVector.color   = toColorRGBA(_color);
+    drawVector.type = parsian_msgs::parsian_draw::VECTOR;
 
     draws.draws.push_back(drawVector);
 }
