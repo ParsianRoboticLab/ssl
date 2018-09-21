@@ -20,8 +20,6 @@ private:
 
     void onInit() override ;
 
-    void timerCb(const ros::TimerEvent &event);
-
     ros::NodeHandle nh;
     ros::NodeHandle private_nh;
 
@@ -31,7 +29,6 @@ private:
 
     ros::Publisher draw_pub;
 
-    ros::Timer timer_;
 
     void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
 

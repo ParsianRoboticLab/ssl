@@ -25,7 +25,6 @@ void PlannerNodelet::onInit() {
     draw_pub  = nh.advertise<parsian_msgs::parsian_draws>("draws", 1000);
     planner->path_pub = private_nh.advertise<parsian_msgs::parsian_path>("path", 5);
 
-    timer_ = nh.createTimer(ros::Duration(0.1), &PlannerNodelet::timerCb, this);
 }
 
 void PlannerNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_cnf) {
@@ -35,16 +34,11 @@ void PlannerNodelet::commonConfigCb(const dynamic_reconfigure::ConfigConstPtr &_
 
 void PlannerNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
     wm->update(_wm);
-}
-
-void PlannerNodelet::timerCb(const ros::TimerEvent& event) {
+    planner->run();
     if (drawer   != nullptr) {
         draw_pub.publish(drawer->getDraws());
         drawer->clear();
     }
-    planner->run();
-
-
 }
 
 void PlannerNodelet::plannerCb(const parsian_msgs::parsian_get_planConstPtr & _plan) {

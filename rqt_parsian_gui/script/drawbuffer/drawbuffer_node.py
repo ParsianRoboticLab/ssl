@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import rospy
 from dynamic_reconfigure import server
 from parsian_msgs.msg import parsian_world_model
