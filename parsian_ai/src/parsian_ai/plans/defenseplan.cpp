@@ -2370,7 +2370,7 @@ void DefensePlan::execute(){
         penaltyShootOutMode();// hamid penalty
     }
     else{
-        if(goalKeeperAgent != nullptr){//Lhum0
+        if(goalKeeperAgent != nullptr){
             setGoalKeeperState();
             setGoalKeeperTargetPoint();
             executeGoalKeeper();
