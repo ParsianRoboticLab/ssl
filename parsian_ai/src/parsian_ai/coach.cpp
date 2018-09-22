@@ -583,7 +583,6 @@ void CCoach::updateAttackState() {
 }
 
 void CCoach::choosePlaymakeAndSupporter(bool defenseFirst){
-
     if (!gameState->isStart()) {
         playmakeId = -1;
         playMakeIntention.restart();
