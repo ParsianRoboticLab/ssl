@@ -39,12 +39,11 @@ enum class State{
 
 class Exprimental {
 public:
-    Exprimental(Agent** _agent) {
+    explicit Exprimental(Agent** _agent) {
 
     }
-    ~Exprimental() {
+    ~Exprimental() = default;
 
-    }
     void reset() {
 
     }

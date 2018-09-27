@@ -16,7 +16,7 @@ using namespace rcsc;
 //TODOS
 //1)select what state the damaged robot is
 //2)what kick(or what ever)fault = true means (dameged or not)
-//3)whats the best number for threshold and buffersize
+//3)whats the best number f0or threshold and buffersize
 
 namespace auto_decider {
     class Decider : public nodelet::Nodelet {
