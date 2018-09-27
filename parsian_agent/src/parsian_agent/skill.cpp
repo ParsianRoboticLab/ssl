@@ -1,9 +1,4 @@
 #include "parsian_agent/skill.h"
-//#include "roles/role.h"
-
-int CSkill::level() {
-    return 1;
-}
 
 CSkill::CSkill(Agent* _agent) : localAgentName() {
     agent = _agent;
@@ -11,50 +6,6 @@ CSkill::CSkill(Agent* _agent) : localAgentName() {
 
 CSkill::~CSkill() = default;
 
-double CSkill::timeNeeded() {
-    return 0;
-
-}
-
-double CSkill::successRate() {
-    return 1;
-}
-
-bool CSkill::done() {
-    if (agent == NULL) {
-        return true;
-    }
-    return progress() >= 1.0;
-}
-
-bool CSkill::failed() {
-    return progress() < 0;
-}
-
-void CSkill::parse(QStringList /*params*/) {
-
-}
-
-void CSkill::generateFromConfig(Agent *a) {
-    agent = a;
-}
-
-
-QString CSkill::stateName() {
-    return sm.currentStateName();
-}
-
-void CSkill::assign(Agent* _agent) {
-
-    if (_agent != nullptr) {
-        agent = _agent;
-//        agent->skill = this;
-//        agent->skillName = getName();
-//        agent->localName = localAgentName;
-    }
-}
-
-//--------------------
 
 QList<CSkills::RegisteredSkill>* CSkills::Skills;
 bool CSkills::inited = false;
@@ -80,22 +31,6 @@ bool CSkills::registerSkill(const char *name, CSkill* Skill) {
         name, Skill, info
     });
     return true;
-}
-
-CSkill* CSkills::initSkill(const char *name, Agent* _agent) {
-    for (auto &Skill : *Skills)
-        if (strcmp(Skill.name, name) == 0) {
-            return Skill.Skill->allocate(_agent);
-        }
-    return nullptr;
-}
-
-void* CSkills::getInfo(const char *name) {
-    for (auto &Skill : *Skills)
-        if (strcmp(Skill.name, name) == 0) {
-            return Skill.Info;
-        }
-    return nullptr;
 }
 
 int CSkills::skillsCount() {
