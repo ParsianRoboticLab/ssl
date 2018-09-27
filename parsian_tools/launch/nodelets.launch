@@ -4,6 +4,7 @@
     <!--<node pkg="nodelet" type="nodelet" name="ai" 	   args="load parsian_ai/AINodelet                 all_nodelet" output="screen"/>-->
 
     <node pkg="nodelet" type="nodelet" name="commonconfig"   args="load parsian_agent/CommonConfig            all_nodelet" output="screen"/> 
+    <node name="drawbuffer"		pkg="rqt_parsian_gui"		type="drawbuffer_node.py"	respawn="true" />
 
     <node pkg="nodelet" type="nodelet" name="agent_0"   args="load parsian_agent/AgentNodelet               all_nodelet" output="screen"/>
     <node pkg="nodelet" type="nodelet" name="agent_1"   args="load parsian_agent/AgentNodelet               all_nodelet" output="screen"/>
