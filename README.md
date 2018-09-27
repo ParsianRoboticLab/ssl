@@ -1,4 +1,6 @@
-## Parsian SSL [![CodeFactor](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/badge/develop)](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/overview/develop)
+## Parsian SSL 
+[![CircleCI](https://circleci.com/gh/ParsianRoboticLab/ssl/tree/develop.svg?style=svg)](https://circleci.com/gh/ParsianRoboticLab/ssl/tree/develop) 
+[![CodeFactor](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/badge/develop)](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/overview/develop)
 
 
 # Install Stuff
