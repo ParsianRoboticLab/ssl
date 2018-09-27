@@ -3,45 +3,56 @@ jobs:
   build:
     working_directory: /tmp/repository
     docker:
-      - image: shadowrobot/build-tools:xenial-kinetic
-        environment:
-          toolset_branch: master
-          server_type: circle
-          ros_release_name: kinetic
-          ubuntu_version_name: xenial
+      - image: ros:kinetic-ros-core
 
     steps:
-        - checkout
+        - checkout:
+            path: ~/parsian_ws/src/ssl
         - run:
-            name: Init
-            command: |
-              echo 'export remote_shell_script="https://raw.githubusercontent.com/shadow-robot/sr-build-tools/$toolset_branch/bin/sr-run-ci-build.sh"' >> $BASH_ENV
-              wget -O /tmp/oneliner "$( echo "$remote_shell_script" | sed 's/#/%23/g' )"
-              chown -R $MY_USERNAME:$MY_USERNAME $CIRCLE_WORKING_DIRECTORY
-              chmod 755 /tmp/oneliner
-              gosu $MY_USERNAME /tmp/oneliner "$toolset_branch" $server_type $used_modules
-
-        - run:
-            name: Build and Install Dependencies
-            command: |
-              echo "Start Deps"
-              apt-get install --assume-yes libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
-              MAHI=`pwd`
-              ls -a ../repository
-              echo "Done Deps"
-
-        - run:
-            name: Build SSL Project
-            command: |
-              echo "Done SSL"
-
-        - run:
-            name: Test Project
-            command: |
-              echo "Done Test"
+            name: Set Up Container
+              command: |
+                echo "Start Deps"
+                apt-get install --assume-yes libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
+                MAHI=`pwd`
+                ls -a
+                echo "Done Deps"
+                apt-get update && apt-get install openssh-client python-catkin-tools build-essential -y
+                source /opt/ros/kinetic/setup.bash
+                rosdep install --from-paths . --ignore-src -y
+                cd ..
+                catkin init
+                catkin config --extend /opt/ros/$ROS_DISTRO
+              - run:
+                  name: Build
+                  command: |
+                    cd ..
+                    catkin build
+              - run:
+                  name: Run Tests
+                  command: |
+                    cd ..
+                    catkin run_tests
+        working_directory: ~/src
 
         - store_test_results:
             path: test_results
 
         - store_artifacts:
             path: code_coverage_results
+
+
+# Two main workflows: One run per commit, one to run master nightly.
+workflows:
+  version: 2
+  commit-workflow:
+    jobs:
+      - build
+  nightly-workflow:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only: develop
+    jobs:
+- build
