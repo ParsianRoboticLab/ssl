@@ -33,7 +33,7 @@ jobs:
             name: Build
             command: |
               cd ~/parsian_ws/
-              catkin build
+              catkin build -j 1
         - run:
             name: Run Tests
             command: |
