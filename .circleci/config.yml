@@ -11,26 +11,23 @@ jobs:
         - run:
             name: Set Up Container
             command: |
-              echo "Start Deps"
               apt-get update && apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
               MAHI=`pwd`
-              ls -a ../..
-              echo $MAHI
-              echo "Done Deps"
+              cd ~/parsian_ws/src/ssl/parsian_communication/
+              ./deps.sh
+              cd $MAHI
               source /opt/ros/kinetic/setup.bash
               rosdep install --from-paths . --ignore-src -y
-              cd ..
+              cd ~/parsian_ws/
               catkin init
               catkin config --extend /opt/ros/$ROS_DISTRO
         - run:
             name: Build
             command: |
-              cd ..
               catkin build
         - run:
             name: Run Tests
             command: |
-              cd ..
               catkin run_tests
 
         - store_test_results:
