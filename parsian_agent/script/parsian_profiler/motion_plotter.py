@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 from math import pi
 import os
+import ast
 
 command = []
 world_model = []
@@ -11,7 +12,7 @@ os.chdir('../../profiler_data')
 ls = [x for x in os.listdir() if x.endswith('motion.profile')]
 for item in ls:
     with open(item) as file:
-        f = eval(file.read())
+        f = ast.literal_eval(file.read())
         for (dist, phi, khab) in f:
             for point in f[(dist, phi, khab)]['data']:
                 command.append(point['robot_command'])

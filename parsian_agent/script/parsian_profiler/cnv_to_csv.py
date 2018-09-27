@@ -4,6 +4,9 @@ from math import pi
 from sklearn import linear_model
 import time
 import os
+import ast
+
+
 X_values = []
 Y_values = []
 r = linear_model.LinearRegression()
@@ -11,7 +14,7 @@ os.chdir('../../profiler_data')
 ls = [x for x in os.listdir() if x.endswith('motion.profile')]
 for item in ls:
     with open(item) as file:
-        f = eval(file.read())
+        f = ast.literal_eval(file.read())
         for (dist, phi, khab) in f:
             for point in f[(dist, phi, khab)]['data']:
                 X_values.append([point['remain_dist'], point['world_model'], phi, khab])
