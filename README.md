@@ -1,4 +1,4 @@
-## Parsian SSL
+## Parsian SSL [![CodeFactor](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/badge/develop)](https://www.codefactor.io/repository/github/parsianroboticlab/ssl/overview/develop)
 
 
 # Install Stuff
