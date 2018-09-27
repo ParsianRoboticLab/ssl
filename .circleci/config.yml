@@ -33,7 +33,7 @@ jobs:
             name: Build
             command: |
               cd ~/parsian_ws/
-              catkin --summarize --no-status --force-color -j 2
+              catkin build --summarize --no-status --force-color -j 2
         - run:
             name: Run Tests
             command: |
