@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /tmp/repository
+    working_directory: ~/parsian_ws/src
     docker:
       - image: ros:kinetic-ros-core
 
@@ -38,14 +38,13 @@ jobs:
             name: Run Tests
             command: |
               cd ~/parsian_ws/
-              catkin run_tests
+              catkin run_tests --summarize --no-status --force-color -j 2
 
-        - store_test_results:
-            path: test_results
+         - store_test_results:
+             path: test_results
 
-        - store_artifacts:
-            path: code_coverage_results
-
+         - store_artifacts:
+             path: code_coverage_results
 
 # Two main workflows: One run per commit, one to run master nightly.
 workflows:
