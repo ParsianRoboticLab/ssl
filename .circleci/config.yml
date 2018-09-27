@@ -16,7 +16,13 @@ jobs:
               apt-get install --assume-yes ros-kinetic-roslint ros-kinetic-dynamic-reconfigure ros-kinetic-nodelet ros-kinetic-rqt-gui ros-kinetic-rqt-gui-py ros-kinetic-rqt-gui-cpp > /dev/null
               MAHI=`pwd`
               cd ~/parsian_ws/src/ssl/parsian_communication/
-              ./deps.sh
+              git clone https://github.com/qextserialport/qextserialport.git temp
+              cd temp
+              qmake-qt4
+              echo "Installing ... "
+              make > /dev/null
+              make install > /dev/null
+              echo "Installed"
               cd $MAHI
               source /opt/ros/kinetic/setup.bash
               rosdep install --from-paths . --ignore-src -y
