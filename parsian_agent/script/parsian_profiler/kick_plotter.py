@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 import csv
+import ast
 
 # set directory for profile files
 # datas : a list of dictionaries, each for a robot profile
@@ -30,7 +31,7 @@ for i in range(12):
 	for f_t in files_list:
 		if f_t.startswith(str(i)):
 			temp_file = open(f_t)
-			temp_prof = eval(temp_file.read())
+			temp_prof = ast.literal_eval(temp_file.read())
 			##datas.append(temp_prof)
 			datas[i] = temp_prof
 			temp_file.close()

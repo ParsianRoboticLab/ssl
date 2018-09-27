@@ -68,7 +68,7 @@ class BlackBoardConsole:
         sys.stdout.flush()
 
     def clear_screen(self, row):
-        rows, columns = os.popen('stty size', 'r').read().split()
+        rows, columns = os.popen('/bin/stty size', 'r').read().split()
         start = len(self.data[row][0])+3
         self.print_there(start, row + 1, " " * (int(columns)-start))
 
