@@ -23,12 +23,6 @@ jobs:
               gosu $MY_USERNAME /tmp/oneliner "$toolset_branch" $server_type $used_modules
               
 
-        - store_test_results:
-            path: test_results
-
-        - store_artifacts:
-            path: code_coverage_results
-
         - run:
             name: Build and Install Dependencies
             command: |
@@ -58,4 +52,10 @@ jobs:
             name: Test Project
             command: |
               echo "Done Test"  
+              
+        - store_test_results:
+            path: test_results
+
+        - store_artifacts:
+            path: code_coverage_results
 
