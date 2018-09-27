@@ -119,7 +119,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/fault.cpp
 		src/${PROJECT_NAME}/roles/dynamicrole.cpp
 		src/${PROJECT_NAME}/roles/playmake.cpp
-		)
+        )
 
 add_library(${PROJECT_NAME}_util
 		src/parsian_ai/util/defpos.cpp
@@ -152,12 +152,14 @@ add_dependencies(${PROJECT_NAME}_node
 		${${PROJECT_NAME}_EXPORTED_TARGETS}
 		${catkin_EXPORTED_TARGETS}
 		${PROJECT_NAME}_gencfg
+		${PROJECT_NAME}_nodelet
 		)
 
 add_dependencies(${PROJECT_NAME}_nodelet
 		${${PROJECT_NAME}_EXPORTED_TARGETS}
 		${catkin_EXPORTED_TARGETS}
 		${PROJECT_NAME}_gencfg
+        ${PROJECT_NAME}
 		)
 
 ## Specify libraries to link a library or executable target against
@@ -244,10 +246,15 @@ scripts/auto_defense_test/def_test_node.py
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_parsian_ai.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-test test/${PROJECT_NAME}/utest.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+   target_link_libraries(${PROJECT_NAME}-test
+           ${PROJECT_NAME}
+           ${catkin_LIBRARIES}
+           ${QT_LIBRARIES}
+           ${PROJECT_NAME}_util
+           )
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

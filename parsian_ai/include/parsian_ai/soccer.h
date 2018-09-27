@@ -28,15 +28,11 @@ public:
     ~CSoccer();
     void execute();
 
-    virtual void customControl(bool& custom);
-
     CCoach* getCoach();
 
     Agent **agents;
     CCoach *coach;
-    Exprimental* exp;
-    clock_t realTimeTime;
-    struct timeval t1, t2;
+
 private:
 
 

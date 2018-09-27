@@ -9,7 +9,6 @@ CSoccer::CSoccer() {
         agents[i]->action = nullptr;
     }
     coach = new CCoach(agents);
-    exp = new Exprimental(agents);
 }
 
 CSoccer::~CSoccer() {
@@ -23,18 +22,9 @@ CSoccer::~CSoccer() {
 
 
 void CSoccer::execute() {
-    bool custom = false;
-    //customControl(custom);
-    if (true) {
         coach->execute();
-    } else {
-        exp->execute();
-    }
 }
 
-void CSoccer::customControl(bool &custom) {
-    custom = false;
-}
 
 CCoach* CSoccer::getCoach() {
     return coach;

@@ -74,14 +74,14 @@ CDynamicAttack::~CDynamicAttack() {
     delete[] guards[4];
     delete[] guards[5];
 
-    for (size_t i = 1; i < 6; i++) {
-        for (size_t j = 0; j < 6; j++) {
+    for (size_t i = 1; i < 7; i++) {
+        for (size_t j; j < i; j++) {
             delete[] guardLocations[i][j];
         }
     }
 
-    for (size_t i = 0; i < 4; i++) {
-        delete guardLocations[i];
+    for (auto &guardLocation : guardLocations) {
+        delete guardLocation;
     }
 
 }

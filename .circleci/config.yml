@@ -40,10 +40,10 @@ jobs:
               cd ~/parsian_ws/
               catkin run_tests --summarize --no-status --force-color -j 2
 
-         - store_test_results:
+        - store_test_results:
              path: test_results
 
-         - store_artifacts:
+        - store_artifacts:
              path: code_coverage_results
 
 # Two main workflows: One run per commit, one to run master nightly.

@@ -57,7 +57,7 @@ CPlayOff::CPlayOff() : CMasterPlay() {
 }
 
 CPlayOff::~CPlayOff() {
-    qDebug() << "Playoff is gone";
+    ROS_INFO("Playoff is gone");
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         delete roleAgent[i];
         delete newRoleAgent[i];

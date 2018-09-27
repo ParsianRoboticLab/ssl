@@ -45,6 +45,7 @@ class GameState {
 private:
     int command_ctr;
     States state;
+    parsian_msgs::ssl_refree_stage stage;
     int ourScore, theirScore;
     bool isReady;
 public:
@@ -54,6 +55,7 @@ public:
     GameState();
     bool ready();
     void setRefree(ssl_refree_wrapperConstPtr ref_wrapper);
+    void updateCommand(ssl_refree_command command);
     bool isStart();
     bool isStop();
     bool playOffKick();
