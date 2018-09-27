@@ -473,7 +473,7 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForCircularPositioning(double 
     return defensePosition;
 }
 
-QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){//Lhum2
+QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
     QList<int> IDOfOpponentsInPolygon;
     Vector2D solutions[4];
     Vector2D solution;
@@ -1642,7 +1642,7 @@ void DefensePlan::setGoalKeeperState(){
     }
 }
 
-void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
+void DefensePlan::setGoalKeeperTargetPoint() {
     //// This function determine the target point that goalkeeper must go to it.
     //// For producing the target point, we certainly consider the states that
     //// is result from the "setGoalKeeperState" function.  :)
@@ -1709,7 +1709,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
                 goalKeeperTarget = wm->field->ourGoal() + goalKeeperTargetOffSet;
             }
             else {
-                goalKeeperTarget = strictFollowBall(ballPrediction(true));//lhum?
+                goalKeeperTarget = strictFollowBall(ballPrediction(true));
             }
             return;
         }
@@ -3021,8 +3021,6 @@ void DefensePlan::executeGoalKeeper() {
             }
             else {
                 //// strict follow
-                //Lhum#drawer->draw(Circle2D(wm->ball->pos , 0.4) , "yellow");
-                //Lhum#drawer->draw(Circle2D(goalKeeperTarget , 0.3) , "yellow");
                 know->variables["goalKeeperClearMode"] = false;
                 know->variables["goalKeeperOneTouchMode"] = false;
                 AHZSkills = gpa[goalKeeperAgent->id()];
@@ -3377,7 +3375,7 @@ int DefensePlan::decideNumOfMarks(){
     return 0;
 }
 
-Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
+Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
     //// When ballLine is in field we predict the ball line : If ball moves toward the
     //// our field, we consider the ballLine (ballPos + ballVel) && If moves toward
     //// the opponent field we consider the ballPos + ballVel.y for the location
@@ -3464,7 +3462,7 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
                         return predictedBall;
                     }
                     else{
-                        return Line2D(wm->opp.active(i)->pos, wm->field->ourGoal()).intersection(Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm()));//Lhum@
+                        return Line2D(wm->opp.active(i)->pos, wm->field->ourGoal()).intersection(Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm()));
                     }
                 }
             }
