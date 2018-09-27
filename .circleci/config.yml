@@ -14,7 +14,8 @@ jobs:
               echo "Start Deps"
               apt-get update && apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
               MAHI=`pwd`
-              ls -a
+              ls -a ..
+              echo $MAHI
               echo "Done Deps"
               source /opt/ros/kinetic/setup.bash
               rosdep install --from-paths . --ignore-src -y
