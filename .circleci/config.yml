@@ -9,19 +9,17 @@ jobs:
           server_type: circle
           ros_release_name: kinetic
           ubuntu_version_name: xenial
-          
 
     steps:
         - checkout
         - run:
-            name: Init 
-            command: | 
+            name: Init
+            command: |
               echo 'export remote_shell_script="https://raw.githubusercontent.com/shadow-robot/sr-build-tools/$toolset_branch/bin/sr-run-ci-build.sh"' >> $BASH_ENV
               wget -O /tmp/oneliner "$( echo "$remote_shell_script" | sed 's/#/%23/g' )"
               chown -R $MY_USERNAME:$MY_USERNAME $CIRCLE_WORKING_DIRECTORY
               chmod 755 /tmp/oneliner
               gosu $MY_USERNAME /tmp/oneliner "$toolset_branch" $server_type $used_modules
-              
 
         - run:
             name: Build and Install Dependencies
@@ -30,17 +28,6 @@ jobs:
               apt-get install --assume-yes libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
               MAHI=`pwd`
               ls -a
-              cd /builds/ParsianSoftware/parsian_ssl/parsian_communication/
-              git clone https://github.com/qextserialport/qextserialport.git temp
-              cd temp
-              qmake-qt4
-              echo "Installing ... "
-              make > /dev/null
-              make install > /dev/null
-              echo "Installed"
-              cd ..
-              rm -rf ./temp
-              cd $MAHI
               echo "Done Deps"
 
         - run:
@@ -51,11 +38,10 @@ jobs:
         - run:
             name: Test Project
             command: |
-              echo "Done Test"  
+              echo "Done Test"
               
         - store_test_results:
             path: test_results
 
         - store_artifacts:
             path: code_coverage_results
-
