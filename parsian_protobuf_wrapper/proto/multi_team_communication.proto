@@ -1,3 +1,4 @@
+syntax = "proto2";
 package multi_team_comm;
 //Protocol to communicate rough plans to other teammates
 //Units are specified as follows:
