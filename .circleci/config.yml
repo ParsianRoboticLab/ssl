@@ -26,7 +26,7 @@ jobs:
             name: Build
             command: |
               cd ~/parsian_ws/
-              catkin build
+              catkin build --summarize --no-status --force-color
         - run:
             name: Run Tests
             command: |
