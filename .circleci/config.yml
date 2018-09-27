@@ -11,7 +11,8 @@ jobs:
         - run:
             name: Set Up Container
             command: |
-              apt-get update && apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
+              apt-get update > /dev/null
+              apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
               apt-get install --assume-yes ros-kinetic-roslint ros-kinetic-dynamic-reconfigure ros-kinetic-nodelet ros-kinetic-rqt-gui > /dev/null
               MAHI=`pwd`
               cd ~/parsian_ws/src/ssl/parsian_communication/
