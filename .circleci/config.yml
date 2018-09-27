@@ -24,10 +24,12 @@ jobs:
         - run:
             name: Build
             command: |
+              cd ~/parsian_ws/
               catkin build
         - run:
             name: Run Tests
             command: |
+              cd ~/parsian_ws/
               catkin run_tests
 
         - store_test_results:
