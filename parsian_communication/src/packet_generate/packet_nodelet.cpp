@@ -18,7 +18,7 @@ void PacketNodelet::onInit() {
 
     drawer = new Drawer();
 
-    drawPub    = n.advertise<parsian_msgs::parsian_draw>("draws", 1000);
+    drawPub    = n.advertise<parsian_msgs::parsian_draws>("draws", 1000);
     packetPub  = n.advertise<parsian_msgs::parsian_packets>("packets", 1000);
 
     for (int i = 0 ; i < _MAX_ROBOT_NUM; i++) {
@@ -149,7 +149,7 @@ void PacketNodelet::syncData(const parsian_msgs::parsian_world_modelConstPtr &_p
 
 void PacketNodelet::timerCb(const ros::TimerEvent &event) {
     if (drawer != nullptr) {
-        drawPub.publish(drawer->draws);
-        ROS_INFO_STREAM("packet draw " << drawer);
+        drawPub.publish(drawer->getDraws());
+        drawer->clear();
     }
 }

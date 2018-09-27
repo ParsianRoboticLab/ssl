@@ -25,12 +25,11 @@ void AgentNodelet::onInit() {
     robot_task_sub    = private_nh.subscribe("task", 10, &AgentNodelet::rtCb, this);
     planner_sub       = nh.subscribe(QString("planner_%1/path").arg(agent->id()).toStdString(), 10, &AgentNodelet::plannerCb, this);
 
-    draw_pub  = nh.advertise<parsian_msgs::parsian_draw>("draws", 1000);
+    draw_pub  = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
 
     parsian_robot_command_pub = private_nh.advertise<parsian_msgs::parsian_robot_command>("command", 10);
     agent->planner_pub = private_nh.advertise<parsian_msgs::parsian_get_plan>("plan", 10);
 
-    timer_ = nh.createTimer(ros::Duration(0.01), &AgentNodelet::timerCb, this);
     watchdog = 0;
 }
 
@@ -57,20 +56,11 @@ void AgentNodelet::wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
         parsian_robot_command_pub.publish(agent->getCommand());
         finished = true;
     }
-
-}
-
-void AgentNodelet::timerCb(const ros::TimerEvent& event) {
+    
     if (drawer   != nullptr) {
-        // ROS_INFO_STREAM("agent drawer"<<drawer);
-        draw_pub.publish(drawer->draws);
-        drawer->draws.texts.clear();
-        drawer->draws.circles.clear();
-        drawer->draws.segments.clear();
-        drawer->draws.vectors.clear();
-        drawer->draws.rects.clear();
+        draw_pub.publish(drawer->getDraws());
+        drawer->clear();
     }
-    //ROS_INFO("draawwwerrr");
 }
 
 void AgentNodelet::rtCb(const parsian_msgs::parsian_robot_taskConstPtr& _robot_task) {

@@ -19,7 +19,7 @@ void CommunicationNodelet::onInit() {
 
     drawer = new Drawer();
 
-    drawPub    = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
+    drawPub    = n.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
     statusPub  = n.advertise<parsian_msgs::parsian_robots_status>("/robots_status", 1000);
     robotPacketSub   = n.subscribe("/packets" , 100, &CommunicationNodelet::callBack, this);
     team_config_sub = n.subscribe("/team_config", 10, & CommunicationNodelet::teamConfigCb, this);
@@ -37,18 +37,6 @@ void CommunicationNodelet::onInit() {
     while (!communicator->isSerialConnected()) {
         communicator->connectSerial(conf.serial_connect.c_str());//conf.serial_connect.c_str());
     }
-
-
-//    ros::Rate loop_rate(62);
-//
-//    while (ros::ok()) {
-//
-//        drawPub.publish(drawer->draws);
-//        debugPub.publish(debugger->debugs);
-//
-//        ros::spinOnce();
-//        loop_rate.sleep();
-//    }
 
 }
 
@@ -116,8 +104,8 @@ parsian_msgs::parsian_packetsPtr CommunicationNodelet::modeChangePacketZero(cons
 
 void CommunicationNodelet::timerCb(const ros::TimerEvent &event) {
     if (drawer != nullptr) {
-        drawPub.publish(drawer->draws);
-        drawer->draws.vectors.clear();
+        drawPub.publish(drawer->getDraws());
+        drawer->clear();
     }
 }
 

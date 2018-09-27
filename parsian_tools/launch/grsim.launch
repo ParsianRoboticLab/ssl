@@ -2,13 +2,13 @@
 <rosparam command="load" file="$(find parsian_world_model)/param/field.yaml" />
 
 <node name="commonconfig" 	pkg="parsian_agent"            	type="parsian_agent_commonconfig_node"  respawn="true" />
-
-<node name="agent_0" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
-<node name="agent_1" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
-<node name="agent_2" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
-<node name="agent_3" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
-<node name="agent_4" 		pkg="parsian_agent"            	type="parsian_agent_node"  respawn="true" />
-<node name="agent_5" 		pkg="parsian_agent"           	type="parsian_agent_node"  respawn="true" />
+<node name="drawbuffer"		pkg="rqt_parsian_gui"		type="drawbuffer_node.py"	respawn="true" />
+<node name="agent_0" 		pkg="parsian_agent"            	type="parsian_agent_node"	respawn="true" />
+<node name="agent_1" 		pkg="parsian_agent"            	type="parsian_agent_node"	respawn="true" />
+<node name="agent_2" 		pkg="parsian_agent"            	type="parsian_agent_node"	respawn="true" />
+<node name="agent_3" 		pkg="parsian_agent"            	type="parsian_agent_node"	respawn="true" />
+<node name="agent_4" 		pkg="parsian_agent"            	type="parsian_agent_node"	respawn="true" />
+<node name="agent_5" 		pkg="parsian_agent"           	type="parsian_agent_node"	respawn="true" />
 
 
 <node name="planner_0" 		pkg="parsian_agent"		type="parsian_agent_planner_node"  respawn="true" />
