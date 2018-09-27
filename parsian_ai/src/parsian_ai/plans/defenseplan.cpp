@@ -78,7 +78,6 @@ Vector2D DefensePlan::getGKPositionInThreeDefense(Vector2D firstPoint , Vector2D
     Vector2D sol[2];
     int numberOfAgents = 1;
     Circle2D defenseArea(wm->field->ourGoal(),findBestRadiusForGK(getBestLineWithTallesForGK(numberOfAgents , firstPoint , originPoint , secondPoint) , firstPoint , originPoint , secondPoint , downLimit , upLimit));
-    drawer->draw(defenseArea , 0 , 180 , "red");
     defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
     goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
     return goalkeeperPosition;
@@ -100,29 +99,30 @@ Vector2D DefensePlan::getGKPositionWithoutDefense(double downLimit , double upLi
 Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){
     Vector2D goalKeeperPosition;
     double downLimit , upLimit;
+
     switch (numberOfDefenders){
     case 0:{
-        downLimit = 0.3;
+        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         drawer->draw(Circle2D(wm->field->center() , 0.5) , 0, 360 , "black");
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionWithoutDefense(downLimit , upLimit);
         break;
     }
     case 1:{
-        downLimit = 0.3;
+        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInOneDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
     }
     case 2:{
         PDEBUG("AYA" ,2, D_AHZ);
-        downLimit = 0.3;
+        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInTwoDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
     }
     case 3:{
-        downLimit = 0.3;
+        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInThreeDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
@@ -2041,6 +2041,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {
                     }
                 }
                 goalKeeperTarget = strictFollowBall(predictedBall);
+                drawer->draw(Circle2D(goalKeeperTarget , 0.7) , "black");
                 return;
             }
         }
@@ -3427,17 +3428,15 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
                                 predictedBall = solu[0];
                             }
                             if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                drawer->draw(Circle2D(wm->ball->pos , 0.2) , "blue");
                                 return wm->ball->pos;
                             }
                         }
-                        else if(solu[1].isValid()){//Lhum!!!
+                        else if(solu[1].isValid()){
                             if(dist2Ball != min(dist2Ball , solu[1].dist(wm->ball->pos))) {
                                 dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
                                 predictedBall = solu[1];
                             }
                             if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                drawer->draw(Circle2D(wm->ball->pos , 0.2) , "blue");
                                 return wm->ball->pos;
                             }
                         }
@@ -3447,7 +3446,6 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
         }
     }
     if ((dist2Ball != 1000) && 0) {
-        drawer->draw(Circle2D(predictedBall , 0.2) , "blue");
         return predictedBall;
     }
     else if (_isGoalie && know->variables["transientFlag"].toBool()) {
