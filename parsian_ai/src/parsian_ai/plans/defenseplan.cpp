@@ -73,16 +73,13 @@ Vector2D DefensePlan::getGKPositionInTwoDefense(Vector2D firstPoint , Vector2D o
     return goalkeeperPosition;
 }
 
-Vector2D DefensePlan::getGKPositionInThreeDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){//Lhum2
+Vector2D DefensePlan::getGKPositionInThreeDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
     Vector2D goalkeeperPosition;
     Vector2D sol[2];
     int numberOfAgents = 1;
     Circle2D defenseArea(wm->field->ourGoal(),findBestRadiusForGK(getBestLineWithTallesForGK(numberOfAgents , firstPoint , originPoint , secondPoint) , firstPoint , originPoint , secondPoint , downLimit , upLimit));
-    drawer->draw(defenseArea , 0 , 180 , "red");
-    drawer->draw(getBisectorSegment(firstPoint , originPoint , secondPoint) , "cyan");
     defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
     goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
-    ROS_INFO_STREAM("E: " << goalkeeperPosition);
     return goalkeeperPosition;
 }
 
@@ -3431,17 +3428,15 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
                                 predictedBall = solu[0];
                             }
                             if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                drawer->draw(Circle2D(wm->ball->pos , 0.2) , "blue");
                                 return wm->ball->pos;
                             }
                         }
-                        else if(solu[1].isValid()){//Lhum!!!
+                        else if(solu[1].isValid()){
                             if(dist2Ball != min(dist2Ball , solu[1].dist(wm->ball->pos))) {
                                 dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
                                 predictedBall = solu[1];
                             }
                             if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                drawer->draw(Circle2D(wm->ball->pos , 0.2) , "blue");
                                 return wm->ball->pos;
                             }
                         }
@@ -3451,7 +3446,6 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
         }
     }
     if ((dist2Ball != 1000) && 0) {
-        drawer->draw(Circle2D(predictedBall , 0.2) , "blue");
         return predictedBall;
     }
     else if (_isGoalie && know->variables["transientFlag"].toBool()) {
@@ -3838,7 +3832,7 @@ int DefensePlan::predictMostDangrousOppToBall() {
     }
 }
 
-Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//Lhum0
+Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {
     //// This function is  the main behavior of goalkeeper that is a geometric
     //// behavior.
 
@@ -3895,8 +3889,6 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//Lhum0
         goal2Ball.assign(wm->field->ourGoal(), wm->ball->pos);
         if (goalKeeperAgent->pos().dist(AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos())) > 0.2 + thr) {
             target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());
-            drawer->draw(Circle2D(target , 0.2) , "blue");
-            ROS_INFO_STREAM("E: 1");
             thr = 0;
         }
         else{
@@ -3904,26 +3896,17 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//Lhum0
             if(AZBigestOpenAngle > 2 + AHZDegThreshOld){
                 AHZDegThreshOld = 0;
                 target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , ballPrediction(true) , openAngGoalIntersectionBottom);
-                drawer->draw(Circle2D(target , 0.2) , "cyan");
-                ROS_INFO_STREAM("E: 2");
             }
             else{
                 AHZDegThreshOld = 1;
                 target = lastTargetForStrictFollow;
-                drawer->draw(Circle2D(target , 0.2) , "black");
-                ROS_INFO_STREAM("E: 3");
             }
         }
         if(!wm->field->isInField(target) || target.x < -5.9){
             target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);
-            //drawer->draw(Circle2D(target , 0.2) , "red");
-            ROS_INFO_STREAM("E: 4");
         }
     }
     lastTargetForStrictFollow = target;
-    ROS_INFO_STREAM("E: b" << _ballPos);
-    ROS_INFO_STREAM("E: t" << target);
-    drawer->draw(Circle2D(_ballPos , 0.2) , "red");
     return target;
 }
 
