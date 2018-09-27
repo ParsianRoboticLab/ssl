@@ -39,7 +39,7 @@ jobs:
             name: Test Project
             command: |
               echo "Done Test"
-              
+
         - store_test_results:
             path: test_results
 
