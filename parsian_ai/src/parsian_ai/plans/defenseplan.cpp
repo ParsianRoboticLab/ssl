@@ -486,7 +486,7 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
     Line2D ballPath(currentBallPosition , finalBallPosition);
     IDOfOpponentsInPolygon.clear();
     //////////////// Make the polygon2D ////////////////////////////////
-    if(wm->ball->vel.length()){
+    if(wm->ball->vel.length() > 0.1){
         downEdgeCircle.intersection(ballPath.perpendicular(currentBallPosition) , &solutions[0] , &solutions[1]);
         upEdgeCircle.intersection(ballPath.perpendicular(finalBallPosition) , &solutions[3] , &solutions[2]);
         solution = solutions[0];
@@ -494,11 +494,11 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
             ballArea.addVertex(solutions[i]);
         }
         ballArea.addVertex(solution);
+        drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
+        drawer->draw(Segment2D(solutions[1] , solutions[2]) , "cyan");
+        drawer->draw(Segment2D(solutions[2] , solutions[3]) , "cyan");
+        drawer->draw(Segment2D(solutions[3] , solutions[0]) , "cyan");
     }
-    drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
-    drawer->draw(Segment2D(solutions[1] , solutions[2]) , "cyan");
-    drawer->draw(Segment2D(solutions[2] , solutions[3]) , "cyan");
-    drawer->draw(Segment2D(solutions[3] , solutions[0]) , "cyan");
     ///////////////////// Calculate the reach time of each opponent agent ///////////////////////
     if(wm->ball->vel.length() > 0.1) {
         for (size_t i = 0; i < wm->opp.activeAgentsCount(); i++) {
@@ -2033,17 +2033,17 @@ void DefensePlan::setGoalKeeperTargetPoint() {
                 lastStateForGoalKeeper = QString("noBesidePoleMode");
                 DBUG(QString("strict follow"), D_AHZ);
                 predictedBall = ballPrediction(true);
-                drawer->draw(Circle2D(predictedBall , 0.4) , "cyan");
-                if (predictedBall.x - 0.02 < goalKeeperAgent->pos().x) {
+                /*if(predictedBall.x - 0.02 < goalKeeperAgent->pos().x) {//Lhum???
                     ROS_INFO_STREAM("E: !!!!!!!!!!!!!!!!!");
                     Segment2D ball2PredictedBall(ballPos, predictedBall);
                     Line2D robotPrGoalLine(goalKeeperAgent->pos(), Vector2D(goalKeeperAgent->pos().x, (goalKeeperAgent->pos().y + 0.01)));
                     if (ball2PredictedBall.intersection(robotPrGoalLine).valid()) {
                         predictedBall = ball2PredictedBall.intersection(robotPrGoalLine);
                     }
-                }
+                }*///LhumChangeSomething
                 goalKeeperTarget = strictFollowBall(predictedBall);
-                drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "cyan");
+                drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "red");
+                drawer->draw(Circle2D(predictedBall , 0.3) , "black");
                 return;
             }
         }
@@ -3397,9 +3397,9 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
     double dist2Ball = 1000;
     //    predictedBall = wm->ball->pos;
     //    return predictedBall;
-    if (BallVel.x > 0 && BallPos.x > 0) {
-        return BallPos;
-    }
+    //if (BallVel.x > 0 && BallPos.x > 0) {
+    //    return BallPos;
+    //}
 //    wm->opp.update();
     //LhumTS
     /*if (_isGoalie && know->variables["transientFlag"].toBool()){
@@ -3862,7 +3862,7 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
             if (defenseAgents[g]->pos().dist(wm->ball->pos) < nearestDist2Ball) {
                 nearestDef2BallId = defenseAgents[g]->id();
                 nearestDist2Ball = defenseAgents[g]->pos().dist(wm->ball->pos);
-                ROS_INFO_STREAM("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                ROS_INFO_STREAM("E: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             }
         }
         ///////////////////////////// Empty region between defense agents //////////////////////////
