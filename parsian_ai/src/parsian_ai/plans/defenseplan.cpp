@@ -3424,11 +3424,11 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
         temp = detectOpponentPassOwners(1 , max(1 , wm->ball->vel.length() * 2));
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
         Line2D ballLine = Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
+        //ROS_INFO_STREAM("E: " << temp.size());
         for(int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
             for(int j = 0 ; j < temp.size() ; j++){
-                Circle2D oppCircle(wm->opp.active(i)->pos, 1);
                 if(wm->opp.activeAgentID(i) == temp[j]){
-                    Circle2D oppCircle(wm->opp.active(i)->pos, 1);
+                    Circle2D oppCircle(wm->opp.active(i)->pos, 0.5);
                     drawer->draw(oppCircle ,  "black");
                     if(oppCircle.intersection(ballSegment , &solu[0] , &solu[1]) > 0){
                         if(solu[0].isValid() && solu[1].isValid()){
@@ -3481,7 +3481,6 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
             predictedBall = solu[4].isValid() && solu[4].dist(wm->field->center()) < solu[5].dist(wm->field->center()) ? solu[4] : solu[5];
         }
     }
-
     if(!_isGoalie && (wm->ball->pos.x < wm->field->ourGoal().x || wm->ball->pos.x > wm->field->oppGoal().x)){
         predictedBall = wm->field->center() - Vector2D(4 , 0);
     }
@@ -3839,7 +3838,7 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
     //// behavior.
 
     //////////////////////// Variables of this function //////////////////////
-    Vector2D ballPos =wm->ball->pos;// _ballPos;
+    Vector2D ballPos = _ballPos;
     Segment2D goal2Ball;
     QList<Vector2D> tempSol;
     Vector2D target;
@@ -3855,7 +3854,6 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
     //////////////////////////////////////////////////////////////////////////
     tempSol.clear();
     if (goalKeeperAgent != nullptr) {
-        ballPos = _ballPos;
         Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, -0.8) , wm->field->ourGoal() + Vector2D(0, 0.8));
         Segment2D downFieldLine(Vector2D(-wm->field->_FIELD_WIDTH / 2, -wm->field->_FIELD_HEIGHT / 2), Vector2D(-wm->field->_FIELD_WIDTH / 2, wm->field->_FIELD_HEIGHT / 2));
         //////////////////////////////// Appending circles on defense agents /////////////////////////////////////////
@@ -3864,6 +3862,7 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
             if (defenseAgents[g]->pos().dist(wm->ball->pos) < nearestDist2Ball) {
                 nearestDef2BallId = defenseAgents[g]->id();
                 nearestDist2Ball = defenseAgents[g]->pos().dist(wm->ball->pos);
+                ROS_INFO_STREAM("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             }
         }
         ///////////////////////////// Empty region between defense agents //////////////////////////
