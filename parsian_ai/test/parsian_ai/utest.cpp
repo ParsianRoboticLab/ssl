@@ -74,8 +74,8 @@ TEST(GameState, ForceCommand) {
 TEST(GameState, RefereeCommand) {
     AI ai;
     parsian_msgs::ssl_refree_wrapperPtr r; r.reset(new parsian_msgs::ssl_refree_wrapper);
-//    ASSERT_NO_THROW(ai.updateReferee(r));
-//    ASSERT_NO_FATAL_FAILURE(ai.updateReferee(r));
+    ASSERT_NO_THROW(ai.updateReferee(r));
+    ASSERT_NO_FATAL_FAILURE(ai.updateReferee(r));
 
 }
 
