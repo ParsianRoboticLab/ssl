@@ -38,7 +38,7 @@ jobs:
             name: Run Tests
             command: |
               cd ~/parsian_ws/
-              catkin build --verbose -j 2 --catkin-make-args run_tests 
+              catkin build -j 2 --make-args test 
 
         - store_test_results:
              path: test_results
