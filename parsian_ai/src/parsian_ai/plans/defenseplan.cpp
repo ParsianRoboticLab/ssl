@@ -3421,14 +3421,14 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
     }*/
     QList<int> temp;
     if(wm->opp.activeAgentsCount() > 0 && _isGoalie) {
-        temp = detectOpponentPassOwners(1 , max(1 , wm->ball->vel.length() * 2));
+        temp = detectOpponentPassOwners(max(1 , (6 - wm->ball->vel.length()) / 2) , max(3 , (6 - wm->ball->vel.length())));
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
         Line2D ballLine = Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
         //ROS_INFO_STREAM("E: " << temp.size());
         for(int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
             for(int j = 0 ; j < temp.size() ; j++){
                 if(wm->opp.activeAgentID(i) == temp[j]){
-                    Circle2D oppCircle(wm->opp.active(i)->pos, 0.5);
+                    Circle2D oppCircle(wm->opp.active(i)->pos, 1);
                     drawer->draw(oppCircle ,  "black");
                     if(oppCircle.intersection(ballSegment , &solu[0] , &solu[1]) > 0){
                         if(solu[0].isValid() && solu[1].isValid()){
@@ -3868,7 +3868,7 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
         ///////////////////////////// Empty region between defense agents //////////////////////////
         CKnowledge::getEmptyAngle(*wm->field , _ballPos, wm->field->ourGoalL(), wm->field->ourGoalR(), defs, AZDangerPercent, AZBisecOpenAngle, AZBigestOpenAngle, false);
         ////////// Bisector of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
-        Segment2D AZBisecOpenSeg(_ballPos ,_ballPos + (Vector2D(cos(_PI * AZBisecOpenAngle / 180), sin(_PI * AZBisecOpenAngle / 180)).norm() * 12));
+        Segment2D AZBisecOpenSeg(_ballPos ,_ballPos + (Vector2D(cos(_PI * AZBisecOpenAngle / 180) , sin(_PI * AZBisecOpenAngle / 180)).norm() * 12) );
         ////////// Top and bottom line of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
         Segment2D AZTopOfOpenSeg(_ballPos , _ballPos + Vector2D(cos(_PI * (AZBisecOpenAngle + (AZBigestOpenAngle / 2)) / 180), sin(_PI * (AZBisecOpenAngle + (AZBigestOpenAngle / 2)) / 180)).norm() * 12);
         Segment2D AZBottomOfOpenSeg(_ballPos , _ballPos + Vector2D(cos(_PI * (AZBisecOpenAngle - (AZBigestOpenAngle / 2)) / 180), sin(_PI * (AZBisecOpenAngle - (AZBigestOpenAngle / 2)) / 180)).norm() * 12);
@@ -3888,21 +3888,27 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
         goal2Ball.assign(wm->field->ourGoal(), _ballPos);
         if (goalKeeperAgent->pos().dist(AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos())) > 0.2 + thr) {
             target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());
+            drawer->draw(Circle2D(target , 0.2) , "red");
             thr = 0;
         }
         else{
             thr = 0.1;
             if(AZBigestOpenAngle > 2 + AHZDegThreshOld){
                 AHZDegThreshOld = 0;
-                target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , ballPrediction(true) , openAngGoalIntersectionBottom);
+                target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
+                drawer->draw(Circle2D(target , 0.2) , "blue");
             }
             else{
                 AHZDegThreshOld = 1;
                 target = lastTargetForStrictFollow;
+                drawer->draw(Circle2D(target , 0.2) , "yellow");
             }
         }
         if(!wm->field->isInField(target) || target.x < -5.9){
-            target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);
+            target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());//LhumWillTestIt
+            //target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
+            //target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);//LhumChangeSomething
+            drawer->draw(Circle2D(target , 0.2) , "cyan");
         }
     }
     lastTargetForStrictFollow = target;
