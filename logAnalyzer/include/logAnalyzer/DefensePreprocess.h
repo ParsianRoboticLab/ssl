@@ -17,7 +17,7 @@
 #include <QtCore/QFile>
 #include <parsian_util/core/field.h>
 
-enum class BallPossesion {
+enum class BallPossession {
     ours = 0,
     theirs = 1,
 };
@@ -58,7 +58,7 @@ public:
     double balldistance;
     double ballangle;
 
-    BallPossesion BP;
+    BallPossession BP;
     int ourBPID,oppBPID;
 
 

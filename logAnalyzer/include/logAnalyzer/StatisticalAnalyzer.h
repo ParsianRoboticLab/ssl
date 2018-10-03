@@ -19,10 +19,11 @@
 #include <jmorecfg.h>
 
 
-enum class BallPossesion {
+enum class BallPossession {
     ours = 0,
     theirs = 1,
-    draw=2
+    draw=2,
+    noOne=3
 };
 
 
@@ -39,8 +40,7 @@ public:
     void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
     void refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref);
     void preprocess();
-    bool validShot();
-    bool validPass();
+    int validShotOrPass();
     bool validPossession();
     void writeToShot();
     void writeToPass();
@@ -48,16 +48,17 @@ public:
     QFile possessionFile, shotFile, passFile;
     QTextStream possessionDS, shotDS, passDS;
     Vector2D ballvel,ballPos,
-            passerRobot,receiverRobot,passDir,
-            shotterRobot,shotTarget,shotDir;
+            shotterRobot,receiverRobot,shotTarget,shotDir;
+    Vector2D ballDir=Vector2D(0,0), lastBallPos=Vector2D(0,0);
 
-    bool shotInGoal=false;
-    BallPossesion BP;
+    bool shotInGoal=false , passSucceed= false;
+    BallPossession BP, BPsaved=BallPossession ::ours, BPLast=BallPossession ::ours;
     int ourBPID,oppBPID;
-    bool shotFlag=false, PassFlag;
+    int isShottingFlag=0;
+    bool shottedFlag=false, passFlag=false, passFnished=false;
 
     bool isPlayingTime();
-    BallPossesion getPossession();
+    BallPossession getPossession();
     void updatewm();
     void getNearestRobotToPoint(Vector2D _point);
 

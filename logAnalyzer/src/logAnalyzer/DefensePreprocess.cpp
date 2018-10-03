@@ -263,33 +263,33 @@ void DefensePreprocess::updateBP() {
     if(refcommand==ref->command.DIRECT_FREE_US
        || refcommand==ref->command.INDIRECT_FREE_US
        || refcommand==ref->command.PREPARE_KICKOFF_US){
-        BP= BallPossesion::ours;
+        BP= BallPossession::ours;
         return;
     }
     else if(refcommand==ref->command.DIRECT_FREE_THEM
             || refcommand==ref->command.INDIRECT_FREE_THEM
             || refcommand==ref->command.PREPARE_KICKOFF_THEM){
-        BP= BallPossesion::theirs;
+        BP= BallPossession::theirs;
         return;
     }
 
 
     double temp = wm->ball.pos.x ;
     if(temp > 0)
-        BP= BallPossesion::ours;
+        BP= BallPossession::ours;
     else if(isoppNearest()==0 && temp >-2)
-        BP= BallPossesion::ours;
+        BP= BallPossession::ours;
     else
-        BP= BallPossesion::theirs;
+        BP= BallPossession::theirs;
 //
 //    if(ballvel.length()<1.5){
 //
 ////        ROS_INFO_STREAM("vel<1.5__"<<isoppNearest());
 //        if(getPossession()==0)
-//            BP= BallPossesion::ours;
+//            BP= BallPossession::ours;
 //
 //        else if(getPossession()==1)
-//            BP= BallPossesion::theirs;
+//            BP= BallPossession::theirs;
 //    }
 
 
@@ -504,27 +504,27 @@ AnalyzeDS << refcommand <<',';
 }
 
 
-//BallPossesion CCoach::isBallOurs() {
-//    BallPossesion decidePState;
+//BallPossession CCoach::isBallOurs() {
+//    BallPossession decidePState;
 //
 //    double temp = wm->ball->pos.x + wm->ball->vel.x * 1;
 //
 //    if (temp > 0.5) {
-//        decidePState = BallPossesion::WEHAVETHEBALL;
+//        decidePState = BallPossession::WEHAVETHEBALL;
 //    } else if (temp < 0.1) {
-//        decidePState = BallPossesion::WEDONTHAVETHEBALL;
+//        decidePState = BallPossession::WEDONTHAVETHEBALL;
 //    } else {
 //        decidePState = lastBallPossesionState;
 //    }
 //
 //    if (wm->field->isInOurPenaltyArea(wm->ball->pos)
 //        &&  wm->ball->vel.length() < 0.1) {
-//        decidePState = BallPossesion::SOSOTHEIR;
+//        decidePState = BallPossession::SOSOTHEIR;
 //    }
 //
 //    if (wm->field->isInOppPenaltyArea(wm->ball->pos)
 //        && wm->ball->vel.length() < 0.1) {
-//        decidePState = BallPossesion::SOSOOUR;
+//        decidePState = BallPossession::SOSOOUR;
 //    }
 //
 //    lastBallPossesionState = decidePState;
