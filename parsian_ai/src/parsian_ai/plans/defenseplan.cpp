@@ -481,6 +481,7 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
     Rect2D temp;
     Vector2D currentBallPosition = wm->ball->pos - 0.5 * wm->ball->vel.norm();
     Vector2D finalBallPosition = wm->ball->getPosInFuture(10) + wm->ball->vel.norm();
+    drawer->draw(Circle2D(finalBallPosition - wm->ball->vel.norm() , 0.3) , "blue");
     Circle2D downEdgeCircle(currentBallPosition , downEdgeLength / 2);
     Circle2D upEdgeCircle(finalBallPosition, upEdgeLength / 2);
     Line2D ballPath(currentBallPosition , finalBallPosition);
@@ -3426,7 +3427,7 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
     }*/
     QList<int> temp;
     if(wm->opp.activeAgentsCount() > 0 && _isGoalie) {
-        temp = detectOpponentPassOwners(max(1 , (6 - wm->ball->vel.length()) / 2) , max(3 , (6 - wm->ball->vel.length())));
+        temp = detectOpponentPassOwners(max(1 , (6 - wm->ball->vel.length()) / 1.5) , max(3 , (6 - wm->ball->vel.length())));
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
         Line2D ballLine = Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
         //ROS_INFO_STREAM("E: " << temp.size());
