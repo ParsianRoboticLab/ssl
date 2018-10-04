@@ -35,5 +35,6 @@
 <node name="vision"		pkg="parsian_protobuf_wrapper" 	type="vision"  respawn="true" />
 <node name="refbox" 		pkg="parsian_protobuf_wrapper" 	type="refbox"  respawn="true" />
 <node name="grsim" 		pkg="parsian_protobuf_wrapper" 	type="grsim"  respawn="true" />
+<node name="drawbuffer"         pkg="rqt_parsian_gui"           type="drawbuffer_node.py" respawn="true" />
 
 </launch>
