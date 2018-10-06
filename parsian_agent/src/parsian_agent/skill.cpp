@@ -1,14 +1,19 @@
 #include "parsian_agent/skill.h"
 //#include "roles/role.h"
 
+
+//// function
 int CSkill::level() {
     return 1;
 }
 
+////constructor
 CSkill::CSkill(Agent* _agent) : localAgentName() {
     agent = _agent;
 }
 
+////disteractor
+//// mokharebe object
 CSkill::~CSkill() = default;
 
 double CSkill::timeNeeded() {

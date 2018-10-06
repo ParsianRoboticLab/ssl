@@ -73,7 +73,7 @@ namespace rqt_parsian_gui {
         // void triggerConfiguration();
     private:
         QWidget* widget_;
-
+        bool updated;
         parsian_msgs::parsian_world_modelConstPtr mywm;
         parsian_msgs::parsian_team_configConstPtr mycolor;
         GLSoccerView* view;

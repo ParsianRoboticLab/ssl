@@ -294,6 +294,7 @@ void GLSoccerView::initializeGL()
 
 void GLSoccerView::paintEvent(QPaintEvent* event)
 {
+
     makeCurrent();
     glClearColor(FIELD_COLOR);
     glShadeModel(GL_SMOOTH);
