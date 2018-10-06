@@ -161,7 +161,7 @@ void COurBallPlacement::execute_x(){
 
     switch(state){
         case BallPlacement :: NoState:
-            //:)
+            //:))
             break;
         case BallPlacement :: GO_FOR_BALL://noghtash doroste vali mikhore be top:-?
             ROS_INFO_STREAM("ED: " << "GO_FOR_BALL");

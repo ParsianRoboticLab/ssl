@@ -54,6 +54,13 @@ function parsian() {
 	TEMP_DIR=$(pwd)
 	cd $PARSIAN_ROOT
 	case "$1" in
+		report)
+			read -r  'user?Username: '
+			read -rs 'pass?Password: '
+			read -r  'tt?Title: '
+			read -r  'bd?Body: '
+			$PARSIAN_ROOT/src/ssl/parsian_tools/script/add_issue.py $user $pass $tt $bd
+			;;
 		run-grsim)
 			ps cax | grep grsim
 			if [ $? -eq 0 ]; then
