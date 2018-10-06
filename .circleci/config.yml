@@ -1,0 +1,64 @@
+version: 2
+jobs:
+  build:
+    working_directory: /tmp/repository
+    docker:
+      - image: ros:kinetic-ros-core
+
+    steps:
+        - checkout:
+            path: ~/parsian_ws/src/ssl
+        - run:
+            name: Set Up Container
+            command: |
+              apt-get update > /dev/null
+              apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
+              apt-get install --assume-yes ros-kinetic-roslint ros-kinetic-dynamic-reconfigure ros-kinetic-nodelet ros-kinetic-rqt-gui ros-kinetic-rqt-gui-py ros-kinetic-rqt-gui-cpp > /dev/null
+              MAHI=`pwd`
+              cd ~/parsian_ws/src/ssl/parsian_communication/
+              git clone https://github.com/qextserialport/qextserialport.git temp
+              cd temp
+              qmake-qt4
+              echo "Installing ... "
+              make > /dev/null
+              make install > /dev/null
+              echo "Installed"
+              cd $MAHI
+              source /opt/ros/kinetic/setup.bash
+              rosdep install --from-paths . --ignore-src -y
+              cd ~/parsian_ws/
+              catkin init
+              catkin config --extend /opt/ros/$ROS_DISTRO
+        - run:
+            name: Build
+            command: |
+              cd ~/parsian_ws/
+              catkin build --summarize --no-status --force-color -j 2
+        - run:
+            name: Run Tests
+            command: |
+              cd ~/parsian_ws/
+              catkin run_tests
+
+        - store_test_results:
+            path: test_results
+
+        - store_artifacts:
+            path: code_coverage_results
+
+
+# Two main workflows: One run per commit, one to run master nightly.
+workflows:
+  version: 2
+  commit-workflow:
+    jobs:
+      - build
+  nightly-workflow:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only: develop
+    jobs:
+      - build

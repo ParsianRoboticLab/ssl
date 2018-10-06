@@ -56,13 +56,8 @@ catkin_python_setup()
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
-	###	cfg/pass.cfg
-		cfg/direct.cfg
-		cfg/mahi.cfg
-		cfg/move_forward.cfg
 		cfg/ai.cfg
 		cfg/def_test.cfg
-		cfg/behavior_server.cfg
 )
 
 ###################################
@@ -144,7 +139,6 @@ add_executable(${PROJECT_NAME}_node
 		src/parsian_ai/ai_node.cpp
 		)
 
-### BEHAVIORS ### DO NOT REMOVE THIS LINE, IT'S FOR AUTO-GENERATION
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -215,6 +209,7 @@ target_link_libraries(${PROJECT_NAME}_util
 install(PROGRAMS
    		scripts/plan_service_server
 		scripts/plan_service_client
+		scripts/state_machine/state_machine_node.py
    		DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 		)
 
@@ -240,8 +235,8 @@ install(FILES
 
 catkin_install_python(PROGRAMS
 scripts/plan_server/planserver_node.py
-scripts/behavior_server/behavior_server_node.py
 scripts/auto_defense_test/def_test_node.py
+		scripts/state_machine/state_machine_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############

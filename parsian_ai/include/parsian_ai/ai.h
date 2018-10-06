@@ -33,10 +33,6 @@ public:
     void forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command);
     CSoccer* getSoccer();
 
-    parsian_msgs::parsian_draw getDraw() {
-        return drawer->draws;
-    }
-
     parsian_msgs::parsian_robot_task getTask(int robotID);
 
 private:

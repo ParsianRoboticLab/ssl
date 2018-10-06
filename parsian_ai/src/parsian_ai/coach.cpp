@@ -1174,7 +1174,7 @@ void CCoach::execute()
     }
 
 
-    // devcide the whole strategy for defense agents, including Goalie, defense and Mark
+    // decide the whole strategy for defense agents, including Goalie, defense and Mark
 
     checkTransitionToForceStart();
     virtualTheirPlayOffState();
@@ -1790,9 +1790,6 @@ void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
     plan_client = _plan_client;
 }
 
-void CCoach::setBehaviorPublisher(ros::Publisher& _behavior_publisher) {
-    ai_status_pub = &_behavior_publisher;
-}
 
 parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
     return receivedPlan;
@@ -1828,10 +1825,6 @@ int CCoach::findGoalie() {
     return preferedGoalieID;
 }
 
-void CCoach::sendBehaviorStatus() {
-
-    ai_status_pub->publish(fillAIStatus());
-}
 
 parsian_msgs::parsian_ai_statusPtr CCoach::fillAIStatus()
 {

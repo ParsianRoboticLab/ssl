@@ -83,8 +83,6 @@ public:
 
     void setPlanClient(const ros::ServiceClient &_plan_client);
 
-    void setBehaviorPublisher(ros::Publisher &_behaver_publisher);
-
     int findGoalie();
 
     parsian_msgs::plan_serviceResponse getLastPlan();

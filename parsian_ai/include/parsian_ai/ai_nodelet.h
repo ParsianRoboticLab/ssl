@@ -13,7 +13,7 @@
 #include <parsian_msgs/parsian_plan.h>
 #include <parsian_msgs/parsian_ai_plan_request.h>
 
-#include <parsian_msgs/parsian_draw.h>
+#include <parsian_msgs/parsian_draws.h>
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_msgs/parsian_behavior.h>
 #include <parsian_msgs/parsian_ai_status.h>
@@ -29,11 +29,10 @@ class AINodelet : public nodelet::Nodelet {
 
 private:
     boost::shared_ptr<AI> ai;
-    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, behaviorSub, mousePosSub,forceRefereeSub, robotfaultSub;
+    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, mousePosSub,forceRefereeSub, robotfaultSub;
     ros::Publisher drawPub;
 
     ros::Publisher *robTask;
-    ros::Publisher behaviorPub;
     ros::Timer timer_;
 
     ros::ServiceClient plan_client;
