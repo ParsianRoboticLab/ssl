@@ -12,25 +12,25 @@ DefensePreprocess::DefensePreprocess() {
 
     wm_sub = n.subscribe("/world_model", 1000, &DefensePreprocess::wmCb, this);
     ref_sub = n.subscribe("/referee", 1000, &DefensePreprocess::refCb, this);
-    myfile.setFileName("Tiger_cm.csv");
+    myfile.setFileName("Tigers_ZJU.csv");
     if(!myfile.open(QIODevice::WriteOnly | QIODevice::Append))
         ROS_INFO_STREAM("Can't open the file to analyze");
     else
         ROS_INFO_STREAM("Analyze file opened :) \n");
     AnalyzeDS.setDevice(&myfile);
- /*   AnalyzeDS << "refcommand,";
-    for(int i=0; i<8; i++) {
-        AnalyzeDS << "our"<<i<<"Dist,our"<<i<<"Ang,";
-    }
-    AnalyzeDS << "ballDist,ballAng,";
+    /*   AnalyzeDS << "refcommand,";
+       for(int i=0; i<8; i++) {
+           AnalyzeDS << "our"<<i<<"Dist,our"<<i<<"Ang,";
+       }
+       AnalyzeDS << "ballDist,ballAng,";
 
-    for(int i=0; i<8; i++) {
-        AnalyzeDS << "opp"<<i<<"Dist,opp"<<i<<"Ang";
-        if(i!=7)
-            AnalyzeDS <<',';
-    }
-    AnalyzeDS<<'\n';
-*/
+       for(int i=0; i<8; i++) {
+           AnalyzeDS << "opp"<<i<<"Dist,opp"<<i<<"Ang";
+           if(i!=7)
+               AnalyzeDS <<',';
+       }
+       AnalyzeDS<<'\n';
+   */
 //    myfile.open ("PREPARED.csv");
 //    myfile<<"nadia";
     myfile.close();
@@ -85,6 +85,12 @@ void DefensePreprocess::preprocess(){
                             ourSIndex.insert(j, index);
                             break;
                         }
+                        else if (j == ourImeasure.size() - 1) {
+//                    //ROS_INFO_STREAM("thirdif");
+                            ourImeasure.append(anglemeasure);
+                            ourSIndex.append(index);
+                            break;
+                        }
                         else{
                             ourImeasure.insert(j+1, anglemeasure);
                             ourSIndex.insert(j+1, index);
@@ -95,6 +101,12 @@ void DefensePreprocess::preprocess(){
 //                        //ROS_INFO_STREAM("2if");
                         ourImeasure.insert(j, anglemeasure);
                         ourSIndex.insert(j, index);
+                        break;
+                    }
+                    else if (j == ourImeasure.size() - 1) {
+//                    //ROS_INFO_STREAM("thirdif");
+                        ourImeasure.append(anglemeasure);
+                        ourSIndex.append(index);
                         break;
                     }
 
@@ -112,6 +124,7 @@ void DefensePreprocess::preprocess(){
                     ourSIndex.append(index);
                     break;
                 }
+
 
 
 
@@ -165,6 +178,12 @@ void DefensePreprocess::preprocess(){
                             //ROS_INFO_STREAM("naha"<<oppSIndex.at(j));
                             break;
                         }
+                        else if (j == oppImeasure.size() - 1) {
+                            //ROS_INFO_STREAM("thirdif");
+                            oppImeasure.append(anglemeasure);
+                            oppSIndex.append(index);
+                            break;
+                        }
                         else{
                             oppImeasure.insert(j+1, anglemeasure);
                             oppSIndex.insert(j+1, index);
@@ -176,6 +195,12 @@ void DefensePreprocess::preprocess(){
                         //ROS_INFO_STREAM("2if");
                         oppImeasure.insert(j, anglemeasure);
                         oppSIndex.insert(j, index);
+                        break;
+                    }
+                    else if (j == oppImeasure.size() - 1) {
+                        //ROS_INFO_STREAM("thirdif");
+                        oppImeasure.append(anglemeasure);
+                        oppSIndex.append(index);
                         break;
                     }
 
@@ -231,13 +256,13 @@ void DefensePreprocess::preprocess(){
 
 bool DefensePreprocess::isPlayingTime() {
     if(refcommand==ref->command.STOP
-            ||refcommand==ref->command.HALT
-            || refcommand==ref->command.BALL_PLACEMENT_THEM
-            || refcommand==ref->command.BALL_PLACEMENT_US
-            || refcommand==ref->command.PREPARE_PENALTY_US
-            || refcommand==ref->command.PREPARE_PENALTY_THEM
-            || refcommand==ref->command.TIMEOUT_US
-            || refcommand==ref->command.TIMEOUT_THEM){
+       ||refcommand==ref->command.HALT
+       || refcommand==ref->command.BALL_PLACEMENT_THEM
+       || refcommand==ref->command.BALL_PLACEMENT_US
+       || refcommand==ref->command.PREPARE_PENALTY_US
+       || refcommand==ref->command.PREPARE_PENALTY_THEM
+       || refcommand==ref->command.TIMEOUT_US
+       || refcommand==ref->command.TIMEOUT_THEM){
         return false;
     }
     else return true;
@@ -247,7 +272,7 @@ bool DefensePreprocess::isPlayingTime() {
 
 
 void DefensePreprocess::refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
-ref=_ref;
+    ref=_ref;
     refcommand=ref->command.command;
     ROS_INFO_STREAM("REEEF"<<ref->command<<"__");
 //    ROS_INFO_STREAM("REEEF"<<ref->us.name<<"__"<<ref->them.name);
@@ -374,6 +399,7 @@ void DefensePreprocess::writeData(){
         if(i<ourSIndex.size()) {
             AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
             AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
+
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 << ',';
         }
@@ -389,7 +415,7 @@ void DefensePreprocess::writeData(){
 
     for(int k=0;k<oppSIndex.size();k++){
         int id=wm->opp.at(oppSIndex.at(k)).id;
-        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
+//ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
     }
 
 
@@ -397,6 +423,7 @@ void DefensePreprocess::writeData(){
         if(i<oppSIndex.size()) {
             AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
             AnalyzeDS << oppangles.at(oppSIndex.at(i));
+
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 ;
         }
@@ -406,6 +433,8 @@ void DefensePreprocess::writeData(){
 
     }
     AnalyzeDS<<'\n';
+
+
 
 
 
@@ -416,52 +445,9 @@ void DefensePreprocess::writeData(){
     AnalyzeDS << refcommand <<',';
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
-            AnalyzeDS << -1*ourdistances.at(ourSIndex.at(i)) << ',';
-            AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
-        } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 << ',';
-        }
-
-    }
-
-    AnalyzeDS<<-1*balldistance<<','<<ballangle<<',';
-    AnalyzeDS<<wm->opp.size()<<',';
-//    for(int k=0;k<ourSIndex.size();k++){
-//        int id=wm->our.at(ourSIndex.at(k)).id;
-//        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
-//    }
-
-    for(int k=0;k<oppSIndex.size();k++){
-        int id=wm->opp.at(oppSIndex.at(k)).id;
-        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
-    }
-
-
-    for(int i=0 ; i < 8 ; i++){
-        if(i<oppSIndex.size()) {
-            AnalyzeDS << -1*oppdistances.at(oppSIndex.at(i)) << ',';
-            AnalyzeDS << oppangles.at(oppSIndex.at(i));
-        } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 ;
-        }
-
-        if(i!=7)
-            AnalyzeDS<<',';
-
-    }
-    AnalyzeDS<<'\n';
-	
-
-
-
-
-
-
-AnalyzeDS << refcommand <<',';
-    for(int i=0 ; i < 8 ; i++){
-        if(i<ourSIndex.size()) {
             AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
-            AnalyzeDS << -1*ourangles.at(ourSIndex.at(i)) << ',';
+            AnalyzeDS << -1 * ourangles.at(ourSIndex.at(i)) << ',';
+
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 << ',';
         }
@@ -477,14 +463,16 @@ AnalyzeDS << refcommand <<',';
 
     for(int k=0;k<oppSIndex.size();k++){
         int id=wm->opp.at(oppSIndex.at(k)).id;
-        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
+//ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
     }
 
 
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
             AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
-            AnalyzeDS << -1*oppangles.at(oppSIndex.at(i));
+            AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i));
+
+
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 ;
         }

@@ -48,14 +48,16 @@ public:
     QFile possessionFile, shotFile, passFile;
     QTextStream possessionDS, shotDS, passDS;
     Vector2D ballvel,ballPos,
-            shotterRobot,receiverRobot,shotTarget,shotDir;
+            shotterRobot,receiverRobot,shotTarget,shotDir, shotter;
+
     Vector2D ballDir=Vector2D(0,0), lastBallPos=Vector2D(0,0);
+    Vector2D lastBallDir=Vector2D(0,0);
 
     bool shotInGoal=false , passSucceed= false;
     BallPossession BP, BPsaved=BallPossession ::ours, BPLast=BallPossession ::ours;
     int ourBPID,oppBPID;
     int isShottingFlag=0;
-    bool shottedFlag=false, passFlag=false, passFnished=false;
+    bool shottedFlag=false, passFlag=false, passFnished=false, outflag=false, posFlag=false;
 
     bool isPlayingTime();
     BallPossession getPossession();

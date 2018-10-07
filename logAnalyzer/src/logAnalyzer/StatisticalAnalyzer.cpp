@@ -56,11 +56,25 @@ void StatisticalAnalyzer::refCb(const parsian_msgs::ssl_refree_wrapperConstPtr &
 
 void StatisticalAnalyzer::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     wm = _wm;
+//    BallPossession newbp=BPsaved;
     updatewm();
+    if(ballPos.y <-4.7 || ballPos.y>4.7 || ballPos.x<-6 || ballPos.x>6){
+        outflag=true;
+//        ROS_INFO_STREAM("ouuuuut"<<ballPos.x<<"___"<<ballPos.y);
+    }
 
-    if(isPlayingTime())
+    if(ref== nullptr)
+        return;
+
+    if(isPlayingTime() && !outflag) {
         preprocess();
 
+//        if (BPsaved != newbp)
+//            ROS_INFO_STREAM(
+//                    "possession" << (int) BP << (int) BP << (int) BP << (int) BP << (int) BP << "__" << (int) BPsaved
+//                                 << (int) BPsaved << (int) BPsaved << (int) BPsaved << (int) BPsaved << "___");
+//
+    }
 }
 void StatisticalAnalyzer::preprocess(){
 
@@ -69,7 +83,8 @@ void StatisticalAnalyzer::preprocess(){
             BPsaved=BP;
 
     }
-    ROS_INFO_STREAM("possession"<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<"__"<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<"___");
+
+//    ROS_INFO_STREAM("possession"<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<"__"<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<"___");
 
     writeToPossession();
 
@@ -88,7 +103,7 @@ int StatisticalAnalyzer::validShotOrPass(){
 
 
 //update shotter and shotDir if pass or shot hasn't occurd
-    if((!shottedFlag || !passFlag) && BPsaved==BallPossession::theirs) {
+    if((!shottedFlag || !passFlag)) {
         shotterRobot.x = wm->opp.at(oppBPID).pos.x;
         shotterRobot.y = wm->opp.at(oppBPID).pos.y;
         shotDir.x = wm->opp.at(oppBPID).dir.x;
@@ -129,7 +144,7 @@ int StatisticalAnalyzer::validShotOrPass(){
         shotDir=ballvel;
 
         ROS_INFO_STREAM("shott"<<(int)BP<<"__");
-
+//
 
         //determine if shot is in the goal area
         shotTarget=Line2D(ballPos,ballPos+ballvel).intersection(Line2D(field.ourCornerL(),field.ourCornerR()));
@@ -147,7 +162,8 @@ int StatisticalAnalyzer::validShotOrPass(){
             && isShottingFlag==2
             && !shottedFlag
             && !passFlag
-            && field.fieldRect().contains(ballPos)){
+            && sign(ballvel.x)==sign(shotDir.x)
+            ){
 
 
         BPLast=BPsaved;
@@ -160,7 +176,7 @@ int StatisticalAnalyzer::validShotOrPass(){
         ballDir.x=ballvel.x;
         ballDir.y=ballvel.y;
         shotDir=ballvel;
-//        ROS_INFO_STREAM("Pass"<<(int)BP<<"__");
+        ROS_INFO_STREAM("Pass"<<(int)BP<<"__"<<sign(shotDir.x)<<"__"<<sign(ballvel.x));
 
         return 1;
 
@@ -189,8 +205,8 @@ int StatisticalAnalyzer::validShotOrPass(){
 
     }//Passing Fails  ** pass F shot F passFinish T
     else if(passFlag && !shottedFlag && !passFnished && ballDir!=Vector2D(0,0) && BPLast==BallPossession::theirs
-            && (BP==BallPossession::ours
-               || ! Rect2D(field.oppCornerL(),field.ourCornerR()).contains(ballPos))) {
+            && (BPsaved==BallPossession::ours
+               || !field.fieldRect().contains(ballPos))) {
 
 
         shottedFlag=false;
@@ -234,11 +250,36 @@ int StatisticalAnalyzer::validShotOrPass(){
 
 
 bool StatisticalAnalyzer::validPossession(){
+
+    if(!posFlag) {
+        if (BP == BallPossession::theirs)
+            shotter = wm->opp.at(oppBPID).pos;
+        else if (BP == BallPossession::ours)
+            shotter = wm->our.at(ourBPID).pos;
+    }
+
+    if(shotterRobot.dist(ballPos)>0.3
+    && ballvel.length() >2)
+    {
+        posFlag=true;
+    }
+
+
     //ball speed limit
+    Vector2D newBalldir=lastBallPos-ballPos;
     double vel=(lastBallPos-ballPos).length()/16*1000;
     lastBallPos=ballPos;
-    if(vel<0.3 && vel>0){
-        ROS_INFO_STREAM(vel<<"++++++");
+
+    int x=(int)lastBallDir.angleWith(newBalldir).degree();
+    lastBallDir=newBalldir;
+
+    if((fabs(ballDir.x-ballvel.x)> 3 && sign(ballDir.x) ==-1*sign(ballvel.x))
+    || (fabs(ballDir.y-ballvel.y)> 3 && sign(ballDir.y) ==-1*sign(ballvel.y)) && posFlag)
+        return true;
+    else
+        if((vel<0.5 && vel>0)
+//        || ballvel.length()==0
+        ){
         return true;
     }
     else return false;
@@ -254,6 +295,7 @@ bool StatisticalAnalyzer::isPlayingTime() {
        || refcommand==ref->command.PREPARE_PENALTY_THEM
        || refcommand==ref->command.TIMEOUT_US
        || refcommand==ref->command.TIMEOUT_THEM){
+        outflag=false;
         shottedFlag=false;
         passFlag= false;
         isShottingFlag=false;
