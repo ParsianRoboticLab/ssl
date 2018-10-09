@@ -38,6 +38,7 @@ jobs:
             name: Run Tests
             command: |
               cd ~/parsian_ws/
+              source /opt/ros/kinetic/setup.bash
               roscore && catkin build -j 2 --catkin-make-args run_tests
 
         - store_test_results:
