@@ -1,9 +1,12 @@
 #include "parsian_agent/skill.h"
 
+////constructor
 CSkill::CSkill(Agent* _agent) : localAgentName() {
     agent = _agent;
 }
 
+////disteractor
+//// mokharebe object
 CSkill::~CSkill() = default;
 
 

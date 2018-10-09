@@ -8,6 +8,7 @@ namespace rqt_parsian_gui {
     GraphicalClient::GraphicalClient() {
         qApp->installEventFilter(this);
         setObjectName("Graphical_Client");
+        updated = false;
     }
 
     GraphicalClient::~GraphicalClient() {
@@ -88,7 +89,9 @@ namespace rqt_parsian_gui {
     }
 
     void GraphicalClient::timerCb(const ros::TimerEvent &_timer) {
-        view->redraw();
+        if (updated)
+            view->redraw();
+        updated = false;
     }
 
     void GraphicalClient::startLog() {
@@ -112,6 +115,7 @@ namespace rqt_parsian_gui {
 
     void GraphicalClient::dbCb(const parsian_msgs::parsian_draw_bufferConstPtr &_wm) {
         view->updateDB(_wm);
+        updated = true;
     }
 }
 
