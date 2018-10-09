@@ -18,7 +18,6 @@ int GameState::getTheirScore() {
 
 void GameState::setRefree(ssl_refree_wrapperConstPtr ref_wrapper) {
 
-
     if (ref_wrapper->command_counter == command_ctr) {
         return;
     }
@@ -31,7 +30,8 @@ void GameState::setRefree(ssl_refree_wrapperConstPtr ref_wrapper) {
         return;
     }
 
-    switch (ref_wrapper->stage.stage) {
+    stage = ref_wrapper->stage;
+    switch (stage.stage) {
         case ssl_refree_stage::NORMAL_HALF_TIME:
         case ssl_refree_stage::EXTRA_HALF_TIME:
             state = States::HalfTime;
@@ -44,87 +44,7 @@ void GameState::setRefree(ssl_refree_wrapperConstPtr ref_wrapper) {
             break;
     }
 
-    switch (ref_wrapper->command.command) {
-        case ssl_refree_command::FORCE_START:
-            state = States::Start;
-            isReady = false;
-            break;
-        case ssl_refree_command::HALT:
-            state = States::Halt;
-            isReady = false;
-            break;
-
-        case ssl_refree_command::STOP:
-            state = States::Stop;
-            isReady = false;
-            break;
-
-        case ssl_refree_command::NORMAL_START:
-            isReady = true;
-            break;
-
-            //####################################################
-        case ssl_refree_command::BALL_PLACEMENT_THEM:
-            isReady = true;
-            state = States::TheirBallPlacement;
-            break;
-        case ssl_refree_command::BALL_PLACEMENT_US:
-            isReady = true;
-            state = States::OurBallPlacement;
-            break;
-
-        case ssl_refree_command::DIRECT_FREE_THEM:
-            isReady = true;
-            state = States::TheirDirectKick;
-            break;
-        case ssl_refree_command::DIRECT_FREE_US:
-            isReady = true;
-            state = States::OurDirectKick;
-            break;
-
-        case ssl_refree_command::GOAL_THEM:
-            theirScore++;
-            break;
-        case ssl_refree_command::GOAL_US:
-            ourScore++;
-            break;
-
-        case ssl_refree_command::INDIRECT_FREE_THEM:
-            isReady = true;
-            state = States::TheirIndirectKick;
-            break;
-        case ssl_refree_command::INDIRECT_FREE_US:
-            isReady = true;
-            state = States::OurIndirectKick;
-            return;
-
-        case ssl_refree_command::PREPARE_KICKOFF_THEM:
-            isReady = false;
-            state = States::TheirKickOff;
-            break;
-        case ssl_refree_command::PREPARE_KICKOFF_US:
-            isReady = false;
-            state = States::OurKickOff;
-            break;
-
-        case ssl_refree_command::PREPARE_PENALTY_THEM:
-            isReady = false;
-            state = ((ref_wrapper->stage.stage == ssl_refree_stage::PENALTY_SHOOTOUT) ?
-                     States::TheirPenaltyShootOut : States::TheirPenaltyKick);
-            break;
-        case ssl_refree_command::PREPARE_PENALTY_US:
-            isReady = false;
-            state = (ref_wrapper->stage.stage == ssl_refree_stage::PENALTY_SHOOTOUT) ?
-                    States::OurPenaltyShootOut : States::OurPenaltyKick;
-            break;
-        case ssl_refree_command::TIMEOUT_US:
-            state = States::OurTimeOut;
-            break;
-        case ssl_refree_command::TIMEOUT_THEM:
-            state = States::TheirTimeOut;
-            break;
-        default:break;
-    }
+    updateCommand(ref_wrapper->command);
 
 }
 
@@ -257,4 +177,89 @@ bool GameState::timeOut() {
 
 void GameState::setReady(bool ready){
     isReady = ready;
+}
+
+void GameState::updateCommand(ssl_refree_command referee) {
+
+    /// When we are ready any command means force start
+    if (isReady && (referee.command != ssl_refree_command::HALT) && (referee.command != ssl_refree_command::STOP)) {
+        state = States::Start;
+        isReady = true;
+        return;
+    }
+
+    switch (referee.command) {
+        case ssl_refree_command::FORCE_START:
+            state = States::Start;
+            isReady = true;
+            break;
+        case ssl_refree_command::HALT:
+            state = States::Halt;
+            isReady = false;
+            break;
+        case ssl_refree_command::STOP:
+            state = States::Stop;
+            isReady = false;
+            break;
+        case ssl_refree_command::NORMAL_START:
+            isReady = true;
+            break;
+        case ssl_refree_command::BALL_PLACEMENT_THEM:
+            isReady = true;
+            state = States::TheirBallPlacement;
+            break;
+        case ssl_refree_command::BALL_PLACEMENT_US:
+            isReady = true;
+            state = States::OurBallPlacement;
+            break;
+        case ssl_refree_command::DIRECT_FREE_THEM:
+            isReady = true;
+            state = States::TheirDirectKick;
+            break;
+        case ssl_refree_command::DIRECT_FREE_US:
+            isReady = true;
+            state = States::OurDirectKick;
+            break;
+        case ssl_refree_command::GOAL_THEM:
+            theirScore++;
+            break;
+        case ssl_refree_command::GOAL_US:
+            ourScore++;
+            break;
+        case ssl_refree_command::INDIRECT_FREE_THEM:
+            isReady = true;
+            state = States::TheirIndirectKick;
+            break;
+        case ssl_refree_command::INDIRECT_FREE_US:
+            isReady = true;
+            state = States::OurIndirectKick;
+            break;
+        case ssl_refree_command::PREPARE_KICKOFF_THEM:
+            isReady = false;
+            state = States::TheirKickOff;
+            break;
+        case ssl_refree_command::PREPARE_KICKOFF_US:
+            isReady = false;
+            state = States::OurKickOff;
+            break;
+        case ssl_refree_command::PREPARE_PENALTY_THEM:
+            isReady = false;
+            state = ((stage.stage == ssl_refree_stage::PENALTY_SHOOTOUT) ?
+                    States::TheirPenaltyShootOut :
+                    States::TheirPenaltyKick);
+            break;
+        case ssl_refree_command::PREPARE_PENALTY_US:
+            isReady = false;
+            state = (stage.stage == ssl_refree_stage::PENALTY_SHOOTOUT) ?
+                    States::OurPenaltyShootOut :
+                    States::OurPenaltyKick;
+            break;
+        case ssl_refree_command::TIMEOUT_US:
+            state = States::OurTimeOut;
+            break;
+        case ssl_refree_command::TIMEOUT_THEM:
+            state = States::TheirTimeOut;
+            break;
+        default:break;
+    }
 }

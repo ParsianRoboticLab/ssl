@@ -48,7 +48,6 @@ private:
     void forceRefereeCallBack(const parsian_msgs::ssl_force_refereeConstPtr & _command);
     void robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & _rs);
     void teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf);
-    void timerCb(const ros::TimerEvent &event);
     void mousePosCb(const parsian_msgs::vector2DConstPtr& _mousePos);
     void faultdetectionCallBack(const parsian_msgs::parsian_robot_fault & _rs);
 

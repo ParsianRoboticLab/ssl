@@ -307,14 +307,8 @@ private:
 
     POffSkills strToEnum(const std::string &_str);
 
-    void sendBehaviorStatus();
-
-    parsian_msgs::parsian_ai_statusPtr fillAIStatus();
-
-    void findDefneders(const int &max_number, const int& min_number);
     NoAction* haltAction;
 
-//    QList<Vector2D> lastBallVel;
     QList<Vector2D> lastBallDir;
 
 };

@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /tmp/repository
+    working_directory: ~/parsian_ws/src
     docker:
       - image: ros:kinetic-ros-core
 
@@ -12,6 +12,7 @@ jobs:
             name: Set Up Container
             command: |
               apt-get update > /dev/null
+              apt-get install --assume-yes apt-utils
               apt-get install --assume-yes python-catkin-tools build-essential libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
               apt-get install --assume-yes ros-kinetic-roslint ros-kinetic-dynamic-reconfigure ros-kinetic-nodelet ros-kinetic-rqt-gui ros-kinetic-rqt-gui-py ros-kinetic-rqt-gui-cpp > /dev/null
               MAHI=`pwd`
@@ -38,14 +39,15 @@ jobs:
             name: Run Tests
             command: |
               cd ~/parsian_ws/
-              catkin run_tests
+              source /opt/ros/kinetic/setup.bash
+              roscore & catkin build -j 2 --catkin-make-args run_tests
+              echo 'Done'
 
         - store_test_results:
-            path: test_results
+             path: ../build/test_results
 
         - store_artifacts:
-            path: code_coverage_results
-
+             path: ../build/code_coverage_results
 
 # Two main workflows: One run per commit, one to run master nightly.
 workflows:

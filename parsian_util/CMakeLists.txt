@@ -157,7 +157,6 @@ add_library(${PROJECT_NAME}_geom
 add_library(${PROJECT_NAME}_math
         src/mathtools.cpp
         src/matrix.cpp
-        src/statemachine.cpp
         )
 
 add_library(${PROJECT_NAME}_tools
