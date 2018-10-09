@@ -419,7 +419,7 @@ void StatisticalAnalyzer::writeToPossession(){
 //    else
 //        ROS_INFO_STREAM(".) \n");
     possessionDS.setDevice(&possessionFile);
-    possessionDS << (int)BP <<(int)BPsaved <<',' <<ballPos.x<<','<<ballPos.y;
+    possessionDS << (int)BP <<','<<(int)BPsaved <<',' <<ballPos.x<<','<<ballPos.y;
     possessionDS<<'\n';
 
     possessionFile.close();

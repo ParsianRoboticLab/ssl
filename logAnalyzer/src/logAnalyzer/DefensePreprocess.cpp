@@ -12,7 +12,7 @@ DefensePreprocess::DefensePreprocess() {
 
     wm_sub = n.subscribe("/world_model", 1000, &DefensePreprocess::wmCb, this);
     ref_sub = n.subscribe("/referee", 1000, &DefensePreprocess::refCb, this);
-    myfile.setFileName("Tigers_ZJU.csv");
+    myfile.setFileName("Tigers_Erforce.csv");
     if(!myfile.open(QIODevice::WriteOnly | QIODevice::Append))
         ROS_INFO_STREAM("Can't open the file to analyze");
     else
@@ -44,6 +44,8 @@ DefensePreprocess::~DefensePreprocess() {
 
 void DefensePreprocess::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     wm = _wm;
+    if(ref== nullptr)
+        return;
     preprocess();
 
 }
@@ -54,73 +56,59 @@ void DefensePreprocess::preprocess(){
 
     for(int i=0 ; i < wm->our.size() ; i++)
     {
-        apos.x=wm->our.at(i).pos.x;
-        apos.y=wm->our.at(i).pos.y;
+//        apos.x=wm->our.at(i).pos.x;
+//        apos.y=wm->our.at(i).pos.y;
+        apos.x=wm->our.at(i).pos.x+wm->our.at(i).vel.x;
+        apos.y=wm->our.at(i).pos.y+wm->our.at(i).vel.y;
+
         ourdistances.append(apos.dist(field.oppGoal()));
         ourangles.append(sign(apos.y)*apos.angleOf(apos,field.oppGoal(),field.center()).degree());
         anglemeasure=ourangles.at(i);
         distmeasure=ourdistances.at(i);
         int index=i;
 
-        for(int k=0;k<ourangles.size();k++){
-//            //ROS_INFO_STREAM("dists:"<<k<<"__"<<ourangles.at(k));
-        }
+//        for(int k=0;k<ourangles.size();k++){
+////            //ROS_INFO_STREAM("dists:"<<k<<"__"<<ourangles.at(k));
+//        }
 
 //        //ROS_INFO_STREAM("measure:"<<anglemeasure);
 
 
         if(ourImeasure.size()==0) {
-            ourImeasure.append(anglemeasure);
+            ourImeasure.append(distmeasure);
             ourSIndex.append(0);
         }
         else {
             for (int j = 0; j < ourImeasure.size(); j++) {
 //                //ROS_INFO_STREAM("loop:"<<j);
-                if (fabs(anglemeasure - ourImeasure.at(j))<15) {
+                if (fabs(distmeasure - ourImeasure.at(j))<0.6) {
 //                    //ROS_INFO_STREAM("if15Y");
 
-                    if (fabs(distmeasure - ourdistances.at(ourSIndex.at(j))) > 0.6) {
-                        if (distmeasure < ourdistances.at(ourSIndex.at(j))) {
-                            ourImeasure.insert(j, anglemeasure);
-                            ourSIndex.insert(j, index);
-                            break;
-                        }
-                        else if (j == ourImeasure.size() - 1) {
-//                    //ROS_INFO_STREAM("thirdif");
-                            ourImeasure.append(anglemeasure);
-                            ourSIndex.append(index);
-                            break;
-                        }
-                        else{
-                            ourImeasure.insert(j+1, anglemeasure);
-                            ourSIndex.insert(j+1, index);
-                            break;
-                        }
-                    }
-                    else if(anglemeasure < ourImeasure.at(j)){
+
+                    if(anglemeasure < ourangles.at(ourSIndex.at(j))){
 //                        //ROS_INFO_STREAM("2if");
-                        ourImeasure.insert(j, anglemeasure);
+                        ourImeasure.insert(j, distmeasure);
                         ourSIndex.insert(j, index);
                         break;
                     }
                     else if (j == ourImeasure.size() - 1) {
 //                    //ROS_INFO_STREAM("thirdif");
-                        ourImeasure.append(anglemeasure);
+                        ourImeasure.append(distmeasure);
                         ourSIndex.append(index);
                         break;
                     }
 
                 }
-                else if(anglemeasure < ourImeasure.at(j)){
+                else if(distmeasure < ourImeasure.at(j)){
 //                    //ROS_INFO_STREAM("secondif");
-                    ourImeasure.insert(j, anglemeasure);
+                    ourImeasure.insert(j, distmeasure);
                     ourSIndex.insert(j, index);
                     break;
                 }
 
                 else if (j == ourImeasure.size() - 1) {
 //                    //ROS_INFO_STREAM("thirdif");
-                    ourImeasure.append(anglemeasure);
+                    ourImeasure.append(distmeasure);
                     ourSIndex.append(index);
                     break;
                 }
@@ -145,93 +133,76 @@ void DefensePreprocess::preprocess(){
 
 
 
-    for(int i=0 ; i < wm->opp.size() ; i++) {
-        apos.x = wm->opp.at(i).pos.x;
-        apos.y = wm->opp.at(i).pos.y;
+    for(int i=0 ; i < wm->opp.size() ; i++)
+    {
+        apos.x=wm->opp.at(i).pos.x;
+        apos.y=wm->opp.at(i).pos.y;
         oppdistances.append(apos.dist(field.oppGoal()));
-        oppangles.append(sign(apos.y) * apos.angleOf(apos, field.oppGoal(), field.center()).degree());
+        oppangles.append(sign(apos.y)*apos.angleOf(apos,field.oppGoal(),field.center()).degree());
         anglemeasure=oppangles.at(i);
         distmeasure=oppdistances.at(i);
         int index=i;
 
         for(int k=0;k<oppangles.size();k++){
-            //ROS_INFO_STREAM("dists:"<<k<<"__"<<oppangles.at(k));
+//            //ROS_INFO_STREAM("dists:"<<k<<"__"<<oppangles.at(k));
         }
 
-        //ROS_INFO_STREAM("measure:"<<anglemeasure);
+//        //ROS_INFO_STREAM("measure:"<<anglemeasure);
 
 
         if(oppImeasure.size()==0) {
-            oppImeasure.append(anglemeasure);
+            oppImeasure.append(distmeasure);
             oppSIndex.append(0);
         }
         else {
             for (int j = 0; j < oppImeasure.size(); j++) {
-                //ROS_INFO_STREAM("loop:"<<j);
-                if (fabs(anglemeasure - oppImeasure.at(j))<12) {
-                    //ROS_INFO_STREAM("if15Y");
+//                //ROS_INFO_STREAM("loop:"<<j);
+                if (fabs(distmeasure - oppImeasure.at(j))<0.6) {
+//                    //ROS_INFO_STREAM("if15Y");
 
-                    if (fabs(distmeasure - oppdistances.at(oppSIndex.at(j))) > 0.6) {
-                        if (distmeasure < oppdistances.at(oppSIndex.at(j))) {
-                            oppImeasure.insert(j, anglemeasure);
-                            oppSIndex.insert(j, index);
-                            //ROS_INFO_STREAM("naha"<<oppSIndex.at(j));
-                            break;
-                        }
-                        else if (j == oppImeasure.size() - 1) {
-                            //ROS_INFO_STREAM("thirdif");
-                            oppImeasure.append(anglemeasure);
-                            oppSIndex.append(index);
-                            break;
-                        }
-                        else{
-                            oppImeasure.insert(j+1, anglemeasure);
-                            oppSIndex.insert(j+1, index);
-                            //ROS_INFO_STREAM("aha"<<oppSIndex.at(j+1));
-                            break;
-                        }
-                    }
-                    else if(anglemeasure < oppImeasure.at(j)){
-                        //ROS_INFO_STREAM("2if");
-                        oppImeasure.insert(j, anglemeasure);
+
+                    if(anglemeasure < oppangles.at(oppSIndex.at(j))){
+//                        //ROS_INFO_STREAM("2if");
+                        oppImeasure.insert(j, distmeasure);
                         oppSIndex.insert(j, index);
                         break;
                     }
                     else if (j == oppImeasure.size() - 1) {
-                        //ROS_INFO_STREAM("thirdif");
-                        oppImeasure.append(anglemeasure);
+//                    //ROS_INFO_STREAM("thirdif");
+                        oppImeasure.append(distmeasure);
                         oppSIndex.append(index);
                         break;
                     }
 
                 }
-                else if(anglemeasure < oppImeasure.at(j)){
-                    //ROS_INFO_STREAM("secondif");
-                    oppImeasure.insert(j, anglemeasure);
+                else if(distmeasure < oppImeasure.at(j)){
+//                    //ROS_INFO_STREAM("secondif");
+                    oppImeasure.insert(j, distmeasure);
                     oppSIndex.insert(j, index);
                     break;
                 }
-                if (j == oppImeasure.size() - 1) {
-                    //ROS_INFO_STREAM("thirdif");
-                    oppImeasure.append(anglemeasure);
+
+                else if (j == oppImeasure.size() - 1) {
+//                    //ROS_INFO_STREAM("thirdif");
+                    oppImeasure.append(distmeasure);
                     oppSIndex.append(index);
                     break;
                 }
 
 
 
+
             }
 
-
-            for(int k=0;k<oppSIndex.size();k++){
-                int id=wm->opp.at(oppSIndex.at(k)).id;
-                //ROS_INFO_STREAM("opp_RebinI:"<<k<<"__"<<id);
-            }
+//
+//            for(int k=0;k<oppSIndex.size();k++){
+//                double id=oppImeasure.at(k);
+//                ROS_INFO_STREAM("_RebinI:"<<k<<"__"<<id);
+//            }
 
         }
-
-
     }
+
 
 
 
@@ -274,7 +245,7 @@ bool DefensePreprocess::isPlayingTime() {
 void DefensePreprocess::refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
     ref=_ref;
     refcommand=ref->command.command;
-    ROS_INFO_STREAM("REEEF"<<ref->command<<"__");
+//    ROS_INFO_STREAM("REEEF"<<ref->command<<"__");
 //    ROS_INFO_STREAM("REEEF"<<ref->us.name<<"__"<<ref->them.name);
 
 }
@@ -397,9 +368,12 @@ void DefensePreprocess::writeData(){
     AnalyzeDS << refcommand <<',';
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
-            AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
-            AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
-
+            if (ourdistances.at(ourSIndex.at(i)) < 6.5){
+                AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
+            }else {
+                AnalyzeDS << -1.0 << ',' << -1.0 << ',';
+            }
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 << ',';
         }
@@ -421,9 +395,13 @@ void DefensePreprocess::writeData(){
 
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
-            AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
-            AnalyzeDS << oppangles.at(oppSIndex.at(i));
-
+            if(oppdistances.at(oppSIndex.at(i)) < 6.5) {
+                AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
+                AnalyzeDS << oppangles.at(oppSIndex.at(i));
+            }
+            else {
+                AnalyzeDS << -1.0 << ',' << -1.0 ;
+            }
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 ;
         }
@@ -445,9 +423,10 @@ void DefensePreprocess::writeData(){
     AnalyzeDS << refcommand <<',';
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
-            AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
-            AnalyzeDS << -1 * ourangles.at(ourSIndex.at(i)) << ',';
-
+            if(ourdistances.at(ourSIndex.at(i)) < 6.5) {
+                AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << -1 * ourangles.at(ourSIndex.at(i)) << ',';
+            }
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 << ',';
         }
@@ -469,10 +448,13 @@ void DefensePreprocess::writeData(){
 
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
-            AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
-            AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i));
-
-
+            if(oppdistances.at(oppSIndex.at(i)) < 6.5) {
+                AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
+                AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i));
+            }
+            else {
+                AnalyzeDS << -1.0 << ',' << -1.0 ;
+            }
         } else {
             AnalyzeDS << -1.0 << ',' << -1.0 ;
         }
