@@ -44,10 +44,10 @@ jobs:
               echo 'Done'
 
         - store_test_results:
-             path: test_results
+             path: ../build/test_results
 
         - store_artifacts:
-             path: code_coverage_results
+             path: ../build/code_coverage_results
 
 # Two main workflows: One run per commit, one to run master nightly.
 workflows:
