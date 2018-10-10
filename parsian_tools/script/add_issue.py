@@ -38,4 +38,4 @@ def make_github_issue(title, body=None, labels=[]):
         print ('Response:', r.content)
 
 bd = 'added by script' if len(sys.argv) == 4 else sys.argv[4]
-make_github_issue('ABS_' + str(sys.argv[3]), bd, [])
+make_github_issue(str(sys.argv[3]), bd, [])
