@@ -173,7 +173,7 @@ add_library(${PROJECT_NAME}_graphical
         src/rqt_parsian_gui/graphical/gltext.cpp
         src/rqt_parsian_gui/graphical/field_default_constants.cpp
         ${${PROJECT_NAME}_graphical_MOCS}
-        )
+        src/rqt_parsian_gui/graphical/logger.cpp include/rqt_parsian_gui/graphical/logger.h)
 
 ## Declare a C++ executable
 # add_executable(rqt_example_cpp_node src/rqt_example_cpp_node.cpp)
