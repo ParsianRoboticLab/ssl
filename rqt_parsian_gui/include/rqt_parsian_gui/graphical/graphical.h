@@ -10,6 +10,8 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QAction>
+#include <QLabel>
+#include <QVBoxLayout>
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
@@ -19,6 +21,8 @@
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_util/core/worldmodel.h>
 #include <ros/package.h>
+#include <rqt_parsian_gui/graphical/logger.h>
+#include <rqt_parsian_gui/graphical/logger.h>
 #include <rqt_parsian_gui/graphical/soccerview.h>
 
 
@@ -58,6 +62,7 @@ namespace rqt_parsian_gui {
         QColor ourCol;
         QColor oppCol;
 
+        QVBoxLayout* mainLayout;
 
         void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
         void dbCb(const parsian_msgs::parsian_draw_bufferConstPtr& _db);

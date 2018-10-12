@@ -33,7 +33,9 @@ namespace rqt_parsian_gui {
         QStringList argv = context.argv();
 
         //Soccer View
-
+        QWidget* w = new QWidget();
+        mainLayout = new QVBoxLayout();
+        w->setLayout(mainLayout);
         view = new GLSoccerView();
         ourCol = QColor("blue");
         oppCol = QColor("yellow");
@@ -53,9 +55,14 @@ namespace rqt_parsian_gui {
         connect(LogMode, SIGNAL(triggered(bool)), this, SLOT(startLog()));
         connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
 
+        auto* logger = new Logger();
+        auto* statusBox = new QLabel("Status Box will be here");
 
-        context.addWidget(view);
 
+        mainLayout->addWidget(logger);
+        mainLayout->addWidget(view);
+        mainLayout->addWidget(statusBox);
+        context.addWidget(w);
     }
 
     void GraphicalClient::shutdownPlugin() {
