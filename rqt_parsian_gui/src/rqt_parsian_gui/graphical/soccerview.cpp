@@ -253,6 +253,7 @@ void GLSoccerView::initializeGL()
 void GLSoccerView::paintEvent(QPaintEvent* event)
 {
 
+
     makeCurrent();
     if (grayColor) {
         glClearColor(FIELD_COLOR_GRAY);
@@ -273,7 +274,6 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
     drawDebugs();
     drawRobots();
     drawBall(ball);
-
     glPopMatrix();
     swapBuffers();
 }
@@ -488,8 +488,8 @@ void GLSoccerView::drawDebugs() {
 
 }
 
-void GLSoccerView::updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config) {
-
+void GLSoccerView::updateConfig2(const parsian_msgs::parsian_team_configConstPtr &_config) {
+    isTeamColorBlue = _config->color;
 }
 
 void GLSoccerView::drawVectors(const double &x, const double &y, const double& size, const std_msgs::ColorRGBA &color) {

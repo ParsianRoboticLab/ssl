@@ -101,8 +101,7 @@ namespace rqt_parsian_gui {
     }
 
     void GraphicalClient::colorCb(const parsian_msgs::parsian_team_configConstPtr &_color) {
-        return;
-        view->updateConfig(_color);
+        view->updateConfig2(_color);
     }
 
     void GraphicalClient::timerCb(const ros::TimerEvent &_timer) {
