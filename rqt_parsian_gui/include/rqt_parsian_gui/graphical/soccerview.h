@@ -124,6 +124,7 @@ namespace rqt_parsian_gui {
         FieldDimensions fieldDim;
 
         bool grayColor;
+        bool isTeamColorBlue;
         monitor_config::monitorConfig m_config;
     private:
         void drawFieldLines(FieldDimensions &dimensions);
@@ -184,7 +185,7 @@ namespace rqt_parsian_gui {
         void updateConfig(const monitor_config::monitorConfig& _config);
 
         void toggleColor();
-        void updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config);
+        void updateConfig2(const parsian_msgs::parsian_team_configConstPtr &_config);
 
     public slots:
 

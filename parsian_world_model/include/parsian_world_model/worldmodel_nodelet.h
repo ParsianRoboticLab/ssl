@@ -24,7 +24,6 @@
 #include <parsian_msgs/parsian_robot_command.h>
 #include <parsian_util/tools/drawer.h>
 #include <QString>
-//#include <parsian_world_model/world_modelConfig.h>
 
 namespace parsian_world_model {
 
@@ -37,7 +36,6 @@ private:
     //void timerCb(const ros::TimerEvent& event);
 
 //        Subs CallBack
-    void geomCb(const parsian_msgs::ssl_vision_geometryConstPtr& _geom);
     void detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr& _detection);
     void robotsCommandCb(const parsian_msgs::parsian_robot_commandConstPtr& _robotCommad);
     void teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg);
@@ -56,7 +54,7 @@ private:
     boost::shared_ptr<dynamic_reconfigure::Server<world_model_config::world_modelConfig>> server;
     void ConfigServerCallBack(const world_model_config::world_modelConfig &config, uint32_t level);
 
-
+    bool yellow;
     int frame, packs;
 
 //        ros::Timer timer;
