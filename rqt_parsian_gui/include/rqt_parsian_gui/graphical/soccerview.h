@@ -39,6 +39,7 @@
 #include <parsian_msgs/parsian_draws.h>
 #include <parsian_msgs/parsian_draw_buffer.h>
 #include <parsian_msgs/parsian_team_config.h>
+#include <rqt_parsian_gui/monitorConfig.h>
 
 #ifndef SOCCERVIEW_H
 #define SOCCERVIEW_H
@@ -96,7 +97,7 @@ namespace rqt_parsian_gui {
         static const int unknownRobotID;
 
         QVector<Robot> robots;
-        vector2d ball;
+        QVector<vector2d> ball;
         GLText glText;
 
         GLuint blueRobotShape;
@@ -123,7 +124,7 @@ namespace rqt_parsian_gui {
         FieldDimensions fieldDim;
 
         bool grayColor;
-
+        monitor_config::monitorConfig m_config;
     private:
         void drawFieldLines(FieldDimensions &dimensions);
 
@@ -151,7 +152,7 @@ namespace rqt_parsian_gui {
 
         void drawRobot(int team, bool hasAngle, bool useDisplayLists);
 
-        void drawBall(vector2d loc);
+        void drawBall(QVector<vector2d> loc);
 
         QColor toQColor(const std_msgs::ColorRGBA& _color);
 
@@ -180,6 +181,7 @@ namespace rqt_parsian_gui {
         GLSoccerView(QWidget *parent = 0);
 
         void updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet);
+        void updateConfig(const monitor_config::monitorConfig& _config);
 
         void toggleColor();
         void updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config);
