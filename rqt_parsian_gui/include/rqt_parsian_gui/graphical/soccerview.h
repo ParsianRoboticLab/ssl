@@ -45,7 +45,8 @@
 
 using namespace std;
 
-#define FIELD_COLOR 0.0,0.5686,0.0980,1.0
+#define FIELD_COLOR_GREEN 0.0,0.5686,0.0980,1.0
+#define FIELD_COLOR_GRAY  0.5,0.5,0.5,1.0
 #define FIELD_LINES_COLOR 1.0,1.0,1.0,1.0
 
 
@@ -120,6 +121,9 @@ namespace rqt_parsian_gui {
         parsian_msgs::parsian_drawsPtr debugs;
         parsian_msgs::parsian_drawsPtr debugs2;
         FieldDimensions fieldDim;
+
+        bool grayColor;
+
     private:
         void drawFieldLines(FieldDimensions &dimensions);
 
@@ -175,11 +179,9 @@ namespace rqt_parsian_gui {
     public:
         GLSoccerView(QWidget *parent = 0);
 
-        void updatePacket(const parsian_msgs::parsian_world_modelConstPtr &_packet);
         void updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet);
 
-        void updateDraws(const parsian_msgs::parsian_drawsConstPtr &_packet);
-
+        void toggleColor();
         void updateConfig(const parsian_msgs::parsian_team_configConstPtr &_config);
 
     public slots:
