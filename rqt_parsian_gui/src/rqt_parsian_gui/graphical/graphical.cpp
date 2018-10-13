@@ -67,6 +67,12 @@ namespace rqt_parsian_gui {
         mainLayout->addWidget(view);
         mainLayout->addWidget(statusBox);
         context.addWidget(w);
+
+        server.reset(new dynamic_reconfigure::Server<monitor_config::monitorConfig>(getPrivateNodeHandle()));
+        dynamic_reconfigure::Server<monitor_config::monitorConfig>::CallbackType f;
+        f = boost::bind(&GraphicalClient::ConfigServerCallBack, this, _1, _2);
+        server->setCallback(f);
+
     }
 
     void GraphicalClient::shutdownPlugin() {
@@ -130,6 +136,10 @@ namespace rqt_parsian_gui {
     void GraphicalClient::dbCb(const parsian_msgs::parsian_draw_bufferConstPtr &_wm) {
         view->updateDB(_wm);
         updated = true;
+    }
+
+    void GraphicalClient::ConfigServerCallBack(const monitor_config::monitorConfig &config, uint32_t level) {
+        view->updateConfig(config);
     }
 }
 

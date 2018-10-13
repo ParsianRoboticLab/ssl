@@ -24,7 +24,8 @@
 #include <rqt_parsian_gui/graphical/logger.h>
 #include <rqt_parsian_gui/graphical/logger.h>
 #include <rqt_parsian_gui/graphical/soccerview.h>
-
+#include <rqt_parsian_gui/monitorConfig.h>
+#include <dynamic_reconfigure/server.h>
 
 namespace rqt_parsian_gui {
 
@@ -83,6 +84,11 @@ namespace rqt_parsian_gui {
         parsian_msgs::parsian_world_modelConstPtr mywm;
         parsian_msgs::parsian_team_configConstPtr mycolor;
         GLSoccerView* view;
+
+        //config server setup
+        boost::shared_ptr<dynamic_reconfigure::Server<monitor_config::monitorConfig>> server;
+        void ConfigServerCallBack(const monitor_config::monitorConfig &config, uint32_t level) ;
+
 
     public slots:
         void playLog();

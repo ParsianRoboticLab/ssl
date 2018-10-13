@@ -420,12 +420,15 @@ void GLSoccerView::drawFieldLines(FieldDimensions& dimensions)
 
 }
 
-void GLSoccerView::drawBall(vector2d loc)
-{
-    glColor3d(1.0,0.5059,0.0);
-    drawArc(loc,0,16,-M_PI,M_PI,BallZ);
+void GLSoccerView::drawBall(QVector<vector2d> loc) {
+
+    for (const auto& l : loc) {
+        glColor3d(1.0,0.5059,0.0);
+        drawArc(l,0,16,-M_PI,M_PI,BallZ);
+
+    }
     glColor3d(0.8706,0.3490,0.0);
-    drawArc(loc,15,21,-M_PI,M_PI,BallZ);
+    if (!loc.empty()) drawArc(loc.last(),15,21,-M_PI,M_PI,BallZ);
 
 }
 
@@ -507,8 +510,9 @@ QColor GLSoccerView::toQColor(const std_msgs::ColorRGBA &_color) {
 
 void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet) {
 
-    ball.x = ball.y = 5000;
+    if (ball.size() > m_config.ballHistory) ball.pop_front();
     robots.clear();
+
     for(int i=0; i < _packet->wm.our.size(); i++){
         Robot robot{};
         robot.loc.set(_packet->wm.our[i].pos.x*1000, _packet->wm.our[i].pos.y*1000);
@@ -532,10 +536,10 @@ void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_pa
         robot.conf = 0.9;
         robots.append(robot);
     }
-
-    ball.x = _packet->wm.ball.pos.x*1000;
-    ball.y = _packet->wm.ball.pos.y*1000;
-
+    vector2d tball;
+    tball.x = _packet->wm.ball.pos.x*1000;
+    tball.y = _packet->wm.ball.pos.y*1000;
+    ball.push_back(tball);
     debugs2->draws.clear();
     for (const auto &a : _packet->draws.draws) debugs2->draws.push_back(a);
 
@@ -544,4 +548,8 @@ void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_pa
 void GLSoccerView::toggleColor() {
     grayColor = !grayColor;
     redraw();
+}
+
+void GLSoccerView::updateConfig(const monitor_config::monitorConfig &_config) {
+    m_config = _config;
 }
