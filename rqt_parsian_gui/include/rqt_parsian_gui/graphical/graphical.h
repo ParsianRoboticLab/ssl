@@ -57,6 +57,7 @@ namespace rqt_parsian_gui {
         bool isLogMode;
         bool isReplayMode;
         QAction* LogMode;
+        QAction* grayMode;
         QAction* ReplayMode;
 
         QColor ourCol;
@@ -85,6 +86,7 @@ namespace rqt_parsian_gui {
 
     public slots:
         void playLog();
+        void changeGray();
         void startLog();
 
     };

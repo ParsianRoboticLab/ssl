@@ -44,6 +44,8 @@ namespace rqt_parsian_gui {
 
         LogMode = new QAction(this);
         LogMode->setShortcut(*new QKeySequence(tr("Ctrl+L")));
+        grayMode = new QAction(this);
+        grayMode->setShortcut(*new QKeySequence(tr("Ctrl+G")));
         ReplayMode = new QAction(this);
         ReplayMode->setShortcut(*new QKeySequence(tr("Ctrl+R")));
         isLogMode = false;
@@ -51,14 +53,16 @@ namespace rqt_parsian_gui {
 
         view->addAction(LogMode);
         view->addAction(ReplayMode);
+        view->addAction(grayMode);
 
         connect(LogMode, SIGNAL(triggered(bool)), this, SLOT(startLog()));
         connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
+        connect(grayMode, SIGNAL(triggered(bool)), this, SLOT(changeGray()));
 
         auto* logger = new Logger();
         auto* statusBox = new QLabel("Status Box will be here");
 
-
+        logger->setMaximumHeight(50);
         mainLayout->addWidget(logger);
         mainLayout->addWidget(view);
         mainLayout->addWidget(statusBox);
@@ -102,16 +106,19 @@ namespace rqt_parsian_gui {
     }
 
     void GraphicalClient::startLog() {
-
     }
 
     void GraphicalClient::playLog() {
 
     }
 
+    void GraphicalClient::changeGray() {
+        view->toggleColor();
+    }
+
     bool GraphicalClient::eventFilter(QObject *, QEvent * event) {
         if (event->type() == QEvent::KeyPress) {
-            QKeyEvent* e = static_cast<QKeyEvent*>(event);
+            auto * e = static_cast<QKeyEvent*>(event);
             if (e->key() == Qt::Key_Space) {
                 view->resetView();
                 return true;

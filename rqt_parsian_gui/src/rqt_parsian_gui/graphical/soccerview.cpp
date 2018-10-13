@@ -81,49 +81,7 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
     tLastRedraw = 0;
     debugs.reset(new parsian_msgs::parsian_draws());
     debugs2.reset(new parsian_msgs::parsian_draws());
-}
-
-void GLSoccerView::updatePacket(const parsian_msgs::parsian_world_modelConstPtr& _packet) {
-
-    ball.x = ball.y = 5000;
-    robots.clear();
-    for(int i=0; i < _packet->our.size(); i++){
-        Robot robot{};
-        robot.loc.set(_packet->our[i].pos.x*1000, _packet->our[i].pos.y*1000);
-        robot.id = i;
-        robot.hasAngle = true;
-        if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->our[i].dir.y,_packet->our[i].dir.x));
-        robot.team = (_packet->isYellow) ? teamYellow : teamBlue;
-        robot.cameraID = 0;
-        robot.conf = 0.9;
-        robots.append(robot);
-    }
-
-    for(int i=0; i < _packet->opp.size(); i++){
-        Robot robot{};
-        robot.loc.set(_packet->opp[i].pos.x*1000, _packet->opp[i].pos.y*1000);
-        robot.id = i;
-        robot.hasAngle = true;
-        if(robot.hasAngle) robot.angle = DEG(std::atan2(_packet->opp[i].dir.y,_packet->opp[i].dir.x));
-        robot.team = (!_packet->isYellow) ? teamYellow : teamBlue;
-        robot.cameraID = 0;
-        robot.conf = 0.9;
-        robots.append(robot);
-    }
-
-    ball.x = _packet->ball.pos.x*1000;
-    ball.y = _packet->ball.pos.y*1000;
-    if (debugs->draws.size()) {
-        for (auto a : debugs->draws) debugs2->draws.push_back(a);
-        debugs->draws.clear();
-    }
-//    redraw();
-}
-
-void GLSoccerView::updateDraws(const parsian_msgs::parsian_drawsConstPtr& _packet) {
-
-    for (auto a : _packet->draws) debugs->draws.push_back(a);
-
+    grayColor = false;
 }
 
 void GLSoccerView::redraw()
@@ -296,7 +254,11 @@ void GLSoccerView::paintEvent(QPaintEvent* event)
 {
 
     makeCurrent();
-    glClearColor(FIELD_COLOR);
+    if (grayColor) {
+        glClearColor(FIELD_COLOR_GRAY);
+    } else {
+        glClearColor(FIELD_COLOR_GREEN);
+    }
     glShadeModel(GL_SMOOTH);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
@@ -434,8 +396,8 @@ void GLSoccerView::drawRobot(vector2d loc, double theta, double conf, int robotI
 void GLSoccerView::drawFieldLines(FieldDimensions& dimensions)
 {
     glColor4f(FIELD_LINES_COLOR);
-    for (size_t i = 0; i < fieldDim.lines.size(); ++i) {
-        const FieldLine& line = *fieldDim.lines[i];
+    for (auto &i : fieldDim.lines) {
+        const FieldLine& line = *i;
         const double half_thickness = 0.5 * line.thickness;
         const vector2d p1(line.p1_x, line.p1_y);
         const vector2d p2(line.p2_x, line.p2_y);
@@ -445,8 +407,8 @@ void GLSoccerView::drawFieldLines(FieldDimensions& dimensions)
         drawQuad(corner1, corner2, FieldZ);
     }
 
-    for (size_t i = 0; i < fieldDim.arcs.size(); ++i) {
-        const FieldCircularArc& arc = *fieldDim.arcs[i];
+    for (auto &i : fieldDim.arcs) {
+        const FieldCircularArc& arc = *i;
         const double half_thickness = 0.5 * arc.thickness;
         const double radius = arc.radius;
         const vector2d center(arc.center_x, arc.center_y);
@@ -468,8 +430,7 @@ void GLSoccerView::drawBall(vector2d loc)
 }
 
 void GLSoccerView::drawRobots() {
-    for(int i=0; i<robots.size(); i++){
-        Robot r = robots[i];
+    for (auto r : robots) {
         drawRobot(r.loc,r.angle,r.conf,r.id,r.team,r.hasAngle);
     }
 }
@@ -576,6 +537,11 @@ void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_pa
     ball.y = _packet->wm.ball.pos.y*1000;
 
     debugs2->draws.clear();
-    for (auto a : _packet->draws.draws) debugs2->draws.push_back(a);
+    for (const auto &a : _packet->draws.draws) debugs2->draws.push_back(a);
 
+}
+
+void GLSoccerView::toggleColor() {
+    grayColor = !grayColor;
+    redraw();
 }
