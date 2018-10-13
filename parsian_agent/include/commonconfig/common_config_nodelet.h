@@ -8,7 +8,6 @@
 #include <parsian_agent/agentConfig.h>
 #include <parsian_agent/config.h>
 
-
 class CommonConfig : public nodelet::Nodelet {
 private:
 
