@@ -21,6 +21,7 @@ public:
         void execute_x();
         void init(const QList <Agent*>& _agents);
         bool first;
+        static int chooseFirst();
 private:
         void reset();
         BallPlacement state;

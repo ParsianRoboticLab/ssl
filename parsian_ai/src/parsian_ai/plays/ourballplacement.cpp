@@ -1,4 +1,6 @@
 #include <search.h>
+#include <parsian_ai/plays/ourballplacement.h>
+
 #include "parsian_ai/plays/ourballplacement.h"
 
 COurBallPlacement::COurBallPlacement() {
@@ -201,4 +203,8 @@ void COurBallPlacement::execute_x(){
         default:
             break;
     }
+}
+
+int COurBallPlacement::chooseFirst() {
+    return -1;
 }
