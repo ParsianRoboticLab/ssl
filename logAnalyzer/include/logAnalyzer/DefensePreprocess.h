@@ -20,7 +20,10 @@
 enum class BallPossession {
     ours = 0,
     theirs = 1,
+    draw=2,
+    noOne=3
 };
+
 
 
 class DefensePreprocess {
@@ -34,32 +37,47 @@ public:
     ros::Subscriber wm_sub;
     ros::Subscriber ref_sub;
 
+    ros::Publisher monitor_pub;
+
     void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
     void refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref);
     void preprocess();
+    void coachProcess();
     void writeData();
     void clearLists();
-    int isoppNearest();
-    bool isPlayingTime();
-    void updateBP();
-    void getNearestRobotToPoint(Vector2D _point);
     QFile myfile;
     QTextStream AnalyzeDS;
-    QList<double> ourImeasure;
-    QList<int> ourSIndex;
-    QList<double> ourdistances;
-    QList<double> ourangles;
-    QList<double> oppImeasure;
-    QList<int> oppSIndex;
-    QList<double> oppdistances;
-    QList<double> oppangles;
+    QList<double> ourImeasure,oppImeasure;
+    QList<int> ourSIndex,oppSIndex;
+    QList<double> ourdistances,oppdistances;
+    QList<Vector2D> ourVelNorm,oppVelNorm,ourVels,oppVels;
+    QList<double> ourangles,oppangles,ourvellength,oppVellength;
+
+    QMap<int, int> markMap;
 
     double anglemeasure,distmeasure;
     double balldistance;
     double ballangle;
 
-    BallPossession BP;
+
+
+    int oppCoachDef, oppCoachMark;
+
+
+
+
+    bool outflag=false;
+    Vector2D ballvel,ballPos;
+
+    BallPossession BP, BPsaved=BallPossession ::ours, BPLast=BallPossession ::ours;
     int ourBPID,oppBPID;
+
+
+    bool isPlayingTime();
+    BallPossession getPossession();
+    void updatewm();
+    void getNearestRobotToPoint(Vector2D _point);
+    bool validPossession();
 
 
 private:

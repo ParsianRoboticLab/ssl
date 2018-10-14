@@ -12,13 +12,23 @@ DefensePreprocess::DefensePreprocess() {
 
     wm_sub = n.subscribe("/world_model", 1000, &DefensePreprocess::wmCb, this);
     ref_sub = n.subscribe("/referee", 1000, &DefensePreprocess::refCb, this);
-    myfile.setFileName("Tigers_Erforce.csv");
+    myfile.setFileName("ZJU_CM.csv");
     if(!myfile.open(QIODevice::WriteOnly | QIODevice::Append))
         ROS_INFO_STREAM("Can't open the file to analyze");
     else
         ROS_INFO_STREAM("Analyze file opened :) \n");
     AnalyzeDS.setDevice(&myfile);
+
+    monitor_pub = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
+
+drawer=new Drawer();
+
+
     /*   AnalyzeDS << "refcommand,";
+     *
+     *
+     *
+     *
        for(int i=0; i<8; i++) {
            AnalyzeDS << "our"<<i<<"Dist,our"<<i<<"Ang,";
        }
@@ -33,6 +43,8 @@ DefensePreprocess::DefensePreprocess() {
    */
 //    myfile.open ("PREPARED.csv");
 //    myfile<<"nadia";
+
+
     myfile.close();
 }
 
@@ -44,25 +56,113 @@ DefensePreprocess::~DefensePreprocess() {
 
 void DefensePreprocess::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     wm = _wm;
+
+
+    updatewm();
+    if(ballPos.y <-4.7 || ballPos.y>4.7 || ballPos.x<-6 || ballPos.x>6){
+        outflag=true;
+//        ROS_INFO_STREAM("ouuuuut"<<ballPos.x<<"___"<<ballPos.y);
+    }
+
+
     if(ref== nullptr)
         return;
-    preprocess();
 
+    if(isPlayingTime() && !outflag) {
+        preprocess();
+    }
 }
+
+
+
+
+
+void DefensePreprocess::coachProcess(){
+
+
+    Vector2D apos;
+
+
+
+    oppCoachDef=0;
+    oppCoachMark=0;
+    for(int i=0 ; i < wm->opp.size() ; i++) {
+        apos.x=wm->opp.at(i).pos.x+wm->opp.at(i).vel.x;
+        apos.y=wm->opp.at(i).pos.y+wm->opp.at(i).vel.y;
+        Vector2D intersect=Line2D(ballPos,field.oppGoal()).intersection(Line2D(field.oppGoalL()+Vector2D(-1,0),field.oppGoalR()+Vector2D(-1,0)));
+
+        ROS_INFO_STREAM("iii: " << intersect.y<< "__"<<field.oppGoalL().y);
+//        if(intersect.y>1.2){
+//
+//        }
+//        else if()
+
+        double ballGoalRobotDir=(wm->opp.at(i).dir-(wm->ball.pos-field.oppGoal()).norm()).length();
+        double robotGoalRobotDir=(wm->opp.at(i).dir-(apos-field.oppGoal()).norm()).length();
+
+        getNearestRobotToPoint(apos);
+        Vector2D ourNearestPos=wm->our.at(ourBPID).pos;
+        if(ourNearestPos.dist(apos)<1.5){
+
+
+        }
+        else if(apos.dist(field.oppGoal())<3 && ballGoalRobotDir<0.5 && robotGoalRobotDir<0.5) {
+            oppCoachDef++;
+            int id= wm->opp.at(i).id;
+
+            ROS_INFO_STREAM("heyy__" <<id << "__");
+        }
+
+
+
+
+    }
+
+    ROS_INFO_STREAM("ooo:"<<oppCoachDef);
+}
+
+
+
+
 void DefensePreprocess::preprocess(){
 
 
     Vector2D apos;
 
+
+    drawer->draws.circles.clear();
+    drawer->draws.vectors.clear();
+
+    if(ballvel.length()>0.5)
+        drawer->draw(ballvel.norm(),QColor("red"));
+    else
+        drawer->draw(Vector2D(0,0),QColor("red"));
+
+    Vector2D vvv=wm->our.at(1).vel;
+    if(vvv.length()<0.7)
+        vvv=Vector2D(0,0);
+    drawer->draw(vvv.norm(), QColor("blue"));
+
+    monitor_pub.publish(drawer->draws);
+
     for(int i=0 ; i < wm->our.size() ; i++)
     {
 //        apos.x=wm->our.at(i).pos.x;
 //        apos.y=wm->our.at(i).pos.y;
-        apos.x=wm->our.at(i).pos.x+wm->our.at(i).vel.x;
-        apos.y=wm->our.at(i).pos.y+wm->our.at(i).vel.y;
 
+        apos=wm->our.at(i).pos;
         ourdistances.append(apos.dist(field.oppGoal()));
         ourangles.append(sign(apos.y)*apos.angleOf(apos,field.oppGoal(),field.center()).degree());
+
+        apos=wm->our.at(i).vel;
+        if(apos.length()>0.7)
+            ourVelNorm.append(apos.norm());
+        else
+            ourVelNorm.append(Vector2D(0,0));
+
+        ourvellength.append(apos.length());
+        ourVels.append(apos);
+
         anglemeasure=ourangles.at(i);
         distmeasure=ourdistances.at(i);
         int index=i;
@@ -135,10 +235,23 @@ void DefensePreprocess::preprocess(){
 
     for(int i=0 ; i < wm->opp.size() ; i++)
     {
-        apos.x=wm->opp.at(i).pos.x;
-        apos.y=wm->opp.at(i).pos.y;
+//        apos.x=wm->opp.at(i).pos.x;
+//        apos.y=wm->opp.at(i).pos.y;
+
+        apos=wm->opp.at(i).pos;
         oppdistances.append(apos.dist(field.oppGoal()));
         oppangles.append(sign(apos.y)*apos.angleOf(apos,field.oppGoal(),field.center()).degree());
+
+
+        apos=wm->opp.at(i).vel;
+        if(apos.length()>0.7)
+            oppVelNorm.append(apos.norm());
+        else
+            oppVelNorm.append(Vector2D(0,0));
+
+        oppVellength.append(apos.length());
+        oppVels.append(apos);
+
         anglemeasure=oppangles.at(i);
         distmeasure=oppdistances.at(i);
         int index=i;
@@ -195,15 +308,13 @@ void DefensePreprocess::preprocess(){
             }
 
 //
-//            for(int k=0;k<oppSIndex.size();k++){
-//                double id=oppImeasure.at(k);
-//                ROS_INFO_STREAM("_RebinI:"<<k<<"__"<<id);
-//            }
+
 
         }
     }
 
 
+//    ROS_INFO_STREAM(oppdistances.at(oppSIndex.at(0))<<")))))))))))");
 
 
     apos.x=wm->ball.pos.x;
@@ -211,13 +322,21 @@ void DefensePreprocess::preprocess(){
     balldistance=apos.dist(field.oppGoal());
     ballangle=sign(apos.y) * apos.angleOf(apos, field.oppGoal(), field.center()).degree();
 
-//    //ROS_INFO_STREAM("Rebin:"<<balldistance<<"___"<<ballangle<<"__M__:"<<ballangle*balldistance);
-    updateBP();
 
-    if(isPlayingTime()) {
-        writeData();
+//    ROS_INFO_STREAM("Rebin sindex o:"<<ourSIndex.size()<<"_opp:"<<oppSIndex.size());
+//    for(int k=0;k<oppSIndex.size();k++){
+//        double id=oppdistances.at(oppSIndex.at(k));
+//        ROS_INFO_STREAM("_Rebinopp:"<<k<<"__"<<id);
+//    }
+//
+//    for(int k=0;k<ourSIndex.size();k++){
+//        double id=ourdistances.at(ourSIndex.at(k));
+//        ROS_INFO_STREAM("_Rebinour:"<<k<<"__"<<id);
+//    }
+
+//    coachProcess();
+    writeData();
 //        ROS_INFO_STREAM("BP:" << 0);
-    }
     clearLists();
 //    std::cout<<"nadiaaa";
 
@@ -234,6 +353,7 @@ bool DefensePreprocess::isPlayingTime() {
        || refcommand==ref->command.PREPARE_PENALTY_THEM
        || refcommand==ref->command.TIMEOUT_US
        || refcommand==ref->command.TIMEOUT_THEM){
+        outflag=false;
         return false;
     }
     else return true;
@@ -249,53 +369,39 @@ void DefensePreprocess::refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _
 //    ROS_INFO_STREAM("REEEF"<<ref->us.name<<"__"<<ref->them.name);
 
 }
+bool DefensePreprocess::validPossession(){
 
-void DefensePreprocess::updateBP() {
-    Vector2D ballvel;
+
+
+    if((ballvel.length()<0.5 && ballvel.length()>0)
+//        || ballvel.length()==0
+            ){
+        return true;
+    }
+    else return false;
+}
+
+
+
+void DefensePreprocess::updatewm() {
+
+//    Vector2D passerRobot,receiverRobot,
+//            shotterRobot,shotTarget;
     ballvel.x=wm->ball.vel.x;
     ballvel.y=wm->ball.vel.y;
 
-
-    if(refcommand==ref->command.DIRECT_FREE_US
-       || refcommand==ref->command.INDIRECT_FREE_US
-       || refcommand==ref->command.PREPARE_KICKOFF_US){
-        BP= BallPossession::ours;
-        return;
-    }
-    else if(refcommand==ref->command.DIRECT_FREE_THEM
-            || refcommand==ref->command.INDIRECT_FREE_THEM
-            || refcommand==ref->command.PREPARE_KICKOFF_THEM){
-        BP= BallPossession::theirs;
-        return;
-    }
-
-
-    double temp = wm->ball.pos.x ;
-    if(temp > 0)
-        BP= BallPossession::ours;
-    else if(isoppNearest()==0 && temp >-2)
-        BP= BallPossession::ours;
-    else
-        BP= BallPossession::theirs;
-//
-//    if(ballvel.length()<1.5){
-//
-////        ROS_INFO_STREAM("vel<1.5__"<<isoppNearest());
-//        if(getPossession()==0)
-//            BP= BallPossession::ours;
-//
-//        else if(getPossession()==1)
-//            BP= BallPossession::theirs;
-//    }
+    ballPos.x=wm->ball.pos.x;
+    ballPos.y=wm->ball.pos.y;
 
 
 
-    Vector2D x;
+    BP= getPossession();
+
 
 
 }
 
-int DefensePreprocess::isoppNearest() {
+BallPossession DefensePreprocess::getPossession() {
     Vector2D ballpos,apos;
     double ourdist,oppdist;
     ballpos.x = wm->ball.pos.x;
@@ -309,11 +415,18 @@ int DefensePreprocess::isoppNearest() {
     oppdist=apos.dist(ballpos);
 //    ROS_INFO_STREAM(oppBPID<<"___"<<ourBPID);
 //    ROS_INFO_STREAM("opp:"<<oppdist<<"__our:"<<ourdist);
-    if(ourdist+oppdist<0.4)
-        return 2;
-    if(ourdist<oppdist)
-        return 0;
-    else return 1;
+    if(ourdist+oppdist<0.4 && ourdist<0.20 && oppdist<0.20)
+        return BallPossession::draw;
+    if(ourdist<oppdist && ourdist < 0.3)
+        return BallPossession::ours;
+    else if(oppdist < 0.3)
+        return BallPossession::theirs;
+    else if(ballvel.length()< 0.1 && ourdist<oppdist && ourdist < 1)
+        return BallPossession::ours;
+    else if(ballvel.length()< 0.1 && oppdist < 1)
+        return BallPossession::theirs;
+    else
+        return BallPossession::noOne;
 
 }
 void DefensePreprocess::getNearestRobotToPoint(Vector2D _point) {
@@ -347,6 +460,8 @@ void DefensePreprocess::getNearestRobotToPoint(Vector2D _point) {
 
 
 
+
+
 void DefensePreprocess::clearLists() {
     ourImeasure.clear();
     ourSIndex.clear();
@@ -360,50 +475,77 @@ void DefensePreprocess::clearLists() {
 
 void DefensePreprocess::writeData(){
 
-    if(!myfile.open(QIODevice::WriteOnly | QIODevice::Append))
-        ROS_INFO_STREAM("Can't open the file to analyze");
-    else
-        ROS_INFO_STREAM("Analyze file opened :) \n");
+
+    Vector2D ballNextPos;
+    ballNextPos=ballPos+ballvel;
+    ROS_INFO_STREAM(ballvel.length());
+    double ballNextDegree=sign(ballNextPos.y)*ballNextPos.angleOf(ballNextPos,field.oppGoal(),field.center()).degree();
+    double ballNextDistance=ballNextPos.dist(field.oppGoal());
+    Vector2D ballvelNorm=ballvel.norm();
+
+    if(!myfile.open(QIODevice::WriteOnly | QIODevice::Append));
+//        ROS_INFO_STREAM("Can't open the file to analyze");
+    else;
+//        ROS_INFO_STREAM("Analyze file opened :) \n");
     AnalyzeDS.setDevice(&myfile);
+
     AnalyzeDS << refcommand <<',';
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
-            if (ourdistances.at(ourSIndex.at(i)) < 6.5){
+            if (ourdistances.at(ourSIndex.at(i)) < 15){
                 AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << ourVelNorm.at(ourSIndex.at(i)).x << ',' << ourVelNorm.at(ourSIndex.at(i)).y<< ',';
+                AnalyzeDS << ourvellength.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << ourVels.at(ourSIndex.at(i)).x << ',' << ourVels.at(ourSIndex.at(i)).y<< ',';
             }else {
-                AnalyzeDS << -1.0 << ',' << -1.0 << ',';
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 2.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 << ',';
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 2.0 << ','<< 10.0 << ',';;
         }
 
     }
 
     AnalyzeDS<<balldistance<<','<<ballangle<<',';
+    AnalyzeDS<<ballNextDistance<<','<<ballNextDegree<<',';
+
+    if(ballvel.length()>0.5)
+        AnalyzeDS<<ballvelNorm.x << ',' << ballvelNorm.y << ',';
+    else
+        AnalyzeDS<< 0.0 <<','<<0.0<<',';
+    AnalyzeDS<<ballvel.length()<<',';
     AnalyzeDS<<wm->opp.size()<<',';
 //    for(int k=0;k<ourSIndex.size();k++){
 //        int id=wm->our.at(ourSIndex.at(k)).id;
 //        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
 //    }
 
-    for(int k=0;k<oppSIndex.size();k++){
-        int id=wm->opp.at(oppSIndex.at(k)).id;
-//ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
-    }
+
+
+
+
+//    for(int k=0;k<oppSIndex.size();k++){
+//        int id=wm->opp.at(oppSIndex.at(k)).id;
+////ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
+//    }
 
 
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
-            if(oppdistances.at(oppSIndex.at(i)) < 6.5) {
+            if(oppdistances.at(oppSIndex.at(i)) < 15) {
                 AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
-                AnalyzeDS << oppangles.at(oppSIndex.at(i));
+                AnalyzeDS << oppangles.at(oppSIndex.at(i))<< ',';
+                AnalyzeDS << oppVelNorm.at(oppSIndex.at(i)).x << ',' << oppVelNorm.at(oppSIndex.at(i)).y << ',';
+                AnalyzeDS << oppVellength.at(oppSIndex.at(i))<<',';
+                AnalyzeDS << oppVels.at(oppSIndex.at(i)).x << ',' << oppVels.at(oppSIndex.at(i)).y;
+
             }
             else {
-                AnalyzeDS << -1.0 << ',' << -1.0 ;
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0 ;
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 ;
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0 ;
         }
 
         if(i!=7)
@@ -423,40 +565,60 @@ void DefensePreprocess::writeData(){
     AnalyzeDS << refcommand <<',';
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
-            if(ourdistances.at(ourSIndex.at(i)) < 6.5) {
+            if(ourdistances.at(ourSIndex.at(i)) < 15) {
                 AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << -1 * ourangles.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << ourVelNorm.at(ourSIndex.at(i)).x << ','<< -1 * ourVelNorm.at(ourSIndex.at(i)).y << ',';
+                AnalyzeDS << ourvellength.at(ourSIndex.at(i)) << ',';
+                AnalyzeDS << ourVels.at(ourSIndex.at(i)).x << ','<< -1 * ourVels.at(ourSIndex.at(i)).y << ',';
+
+            }
+            else {
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 2.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 << ',';
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 2.0 << ','<< 10.0 << ',';
         }
 
     }
 
+
     AnalyzeDS<<balldistance<<','<<-1*ballangle<<',';
+    AnalyzeDS<<ballNextDistance<<','<<-1*ballNextDegree<<',';
+    if(ballvel.length()>0.5)
+        AnalyzeDS<<ballvelNorm.x << ',' << -1* ballvelNorm.y << ',';
+    else
+        AnalyzeDS<< 0.0 <<','<<0.0<<',';
+    AnalyzeDS<<ballvel.length()<<',';
     AnalyzeDS<<wm->opp.size()<<',';
+
 //    for(int k=0;k<ourSIndex.size();k++){
 //        int id=wm->our.at(ourSIndex.at(k)).id;
 //        //ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
 //    }
 
-    for(int k=0;k<oppSIndex.size();k++){
-        int id=wm->opp.at(oppSIndex.at(k)).id;
-//ROS_INFO_STREAM("Index:"<<k<<"__"<<id);
-    }
+
+
+
+
+
 
 
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
-            if(oppdistances.at(oppSIndex.at(i)) < 6.5) {
+            if(oppdistances.at(oppSIndex.at(i)) < 15) {
                 AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
-                AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i));
+                AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i))<<',';
+                AnalyzeDS << oppVelNorm.at(oppSIndex.at(i)).x << ','<< -1 * oppVelNorm.at(oppSIndex.at(i)).y << ',';
+                AnalyzeDS << oppVellength.at(oppSIndex.at(i)) <<',';
+                AnalyzeDS << oppVels.at(oppSIndex.at(i)).x << ','<< -1 * oppVels.at(oppSIndex.at(i)).y;
+
             }
             else {
-                AnalyzeDS << -1.0 << ',' << -1.0 ;
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0;
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << -1.0 ;
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0;
         }
 
         if(i!=7)
