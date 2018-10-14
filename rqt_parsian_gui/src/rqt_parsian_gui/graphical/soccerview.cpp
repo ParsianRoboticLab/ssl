@@ -424,11 +424,11 @@ void GLSoccerView::drawBall(QVector<vector2d> loc) {
 
     for (const auto& l : loc) {
         glColor3d(1.0,0.5059,0.0);
-        drawArc(l,0,16,-M_PI,M_PI,BallZ);
+        drawArc(l,15,21,-M_PI,M_PI,BallZ);
 
     }
     glColor3d(0.8706,0.3490,0.0);
-    if (!loc.empty()) drawArc(loc.last(),15,21,-M_PI,M_PI,BallZ);
+    if (!loc.empty()) drawArc(loc.last(),0,16,-M_PI,M_PI,BallZ);
 
 }
 
