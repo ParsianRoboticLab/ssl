@@ -252,7 +252,10 @@ catkin_install_python(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}-test test/${PROJECT_NAME}/utest.cpp)
+catkin_add_gtest(${PROJECT_NAME}-test
+#		test/${PROJECT_NAME}/utest.cpp
+		test/${PROJECT_NAME}/hamidtest.cpp
+		)
 if(TARGET ${PROJECT_NAME}-test)
    target_link_libraries(${PROJECT_NAME}-test
            ${PROJECT_NAME}
