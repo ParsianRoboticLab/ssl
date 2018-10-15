@@ -77,5 +77,5 @@ namespace auto_decider {
 
     };
 }
-PLUGINLIB_DECLARE_CLASS(auto_decider, Decider, auto_decider::Decider, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(auto_decider::Decider, nodelet::Nodelet)
 

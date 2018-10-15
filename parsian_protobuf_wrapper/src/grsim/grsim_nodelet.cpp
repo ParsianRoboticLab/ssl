@@ -181,7 +181,4 @@ double GrsimNodelet::convertkickchargetimetokickspeed(int id, double chargetime)
 
 }
 
-
-
-
-PLUGINLIB_DECLARE_CLASS(parsian_protobuf_wrapper, GrsimNodelet, GrsimNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(GrsimNodelet, nodelet::Nodelet);
