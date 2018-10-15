@@ -26,6 +26,8 @@
 #include <rqt_parsian_gui/graphical/soccerview.h>
 #include <rqt_parsian_gui/monitorConfig.h>
 #include <dynamic_reconfigure/server.h>
+#include <parsian_msgs/grsim_ball_replacement.h>
+#include <parsian_msgs/grsim_robot_replacement.h>
 
 namespace rqt_parsian_gui {
 
@@ -34,9 +36,11 @@ namespace rqt_parsian_gui {
     public:
 
         GraphicalClient();
-        ~GraphicalClient();
-        virtual void initPlugin(qt_gui_cpp::PluginContext& context);
-        virtual void shutdownPlugin();
+        ~GraphicalClient() override;
+
+        void initPlugin(qt_gui_cpp::PluginContext& context) override;
+
+        void shutdownPlugin() override;
 
         ros::NodeHandle n;
         ros::NodeHandle n_private;
@@ -73,7 +77,7 @@ namespace rqt_parsian_gui {
         void logdrawCb(const parsian_msgs::parsian_drawsConstPtr& _draw);
         void colorCb(const parsian_msgs::parsian_team_configConstPtr& _color);
         void timerCb(const ros::TimerEvent& _timer);
-        virtual bool eventFilter(QObject *, QEvent *);
+        bool eventFilter(QObject *, QEvent *) override;
 
         // Comment in to signal that the plugin has a way to configure it
         // bool hasConfiguration() const;
@@ -89,6 +93,9 @@ namespace rqt_parsian_gui {
         boost::shared_ptr<dynamic_reconfigure::Server<monitor_config::monitorConfig>> server;
         void ConfigServerCallBack(const monitor_config::monitorConfig &config, uint32_t level) ;
 
+
+        ros::ServiceClient grsimBall;
+        ros::ServiceClient grsimRobots;
 
     public slots:
         void playLog();
