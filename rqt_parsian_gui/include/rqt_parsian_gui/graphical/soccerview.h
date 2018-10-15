@@ -80,9 +80,15 @@ namespace rqt_parsian_gui {
 
         typedef enum {
             teamUnknown = 0,
-            teamBlue,
-            teamYellow
+            teamBlue = 1,
+            teamYellow = 2
         } TeamTypes;
+
+        struct Selected {
+            int id;
+            int team;
+
+        };
 
     private:
         static const double minZValue;
@@ -126,6 +132,13 @@ namespace rqt_parsian_gui {
         bool grayColor;
         bool isTeamColorBlue;
         monitor_config::monitorConfig m_config;
+        QPoint m_mousepos;
+
+        Selected choosen;
+
+        ros::ServiceClient* ballClinet;
+        ros::ServiceClient* robotsClinet;
+
     private:
         void drawFieldLines(FieldDimensions &dimensions);
 
@@ -178,14 +191,19 @@ namespace rqt_parsian_gui {
 
         QSize sizeHint() const { return QSize(PreferedWidth, PreferedHeight); }
 
+        double distVec(double x1, double y1, double x2, double y2);
+
     public:
         GLSoccerView(QWidget *parent = 0);
 
         void updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet);
         void updateConfig(const monitor_config::monitorConfig& _config);
-
+        QPoint getMousePos();
         void toggleColor();
         void updateConfig2(const parsian_msgs::parsian_team_configConstPtr &_config);
+
+        void setBallReplceService(ros::ServiceClient& _client);
+        void setRobotsReplceService(ros::ServiceClient& _client);
 
     public slots:
 

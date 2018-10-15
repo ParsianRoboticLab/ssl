@@ -24,6 +24,7 @@
 #include <rqt_parsian_gui/graphical/field.h>
 #include <rqt_parsian_gui/graphical/field_default_constants.h>
 #include <ros/ros.h>
+#include <parsian_msgs/grsim_ball_replacement.h>
 
 using namespace rqt_parsian_gui;
 
@@ -101,14 +102,47 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
 
     if(leftButton)
         setCursor(Qt::ClosedHandCursor);
-    if(midButton)
+    if(midButton) {
         setCursor(Qt::SizeVerCursor);
+    }
+
+    if (rightButton) {
+        parsian_msgs::grsim_ball_replacementRequest req;
+        parsian_msgs::grsim_ball_replacementResponse rep;
+        req.vx = req.vy = 0;
+        req.x = viewScale*event->x(); req.y = viewScale*event->y();
+        ballClinet->call(req, rep);
+    }
+
     if(leftButton || midButton){
         // Start Pan / Zoom
         mouseStartX = event->x();
         mouseStartY = event->y();
+        m_mousepos = event->pos();
         postRedraw();
     }
+    if (!ball.empty()) {
+        if (distVec(event->x(), event->y(), ball.last().x, ball.last().y) < 21) {
+            choosen.id = -1;
+            choosen.team = teamUnknown;
+        }
+    }
+
+    for (const auto& r : robots) {
+        if (distVec(event->x(), event->y(), r.loc.x, r.loc.y) < 90) {
+            choosen.team = r.team;
+            choosen.id = r.id;
+        }
+    }
+
+    ROS_INFO_STREAM("MOUSE:" << event->x() << "  " << event->y());
+    ROS_INFO_STREAM("CHOOSEN:" <<  width() << "s  " << height() << "x  " << viewYOffset << "y");
+    int w1 = 1837; //920
+    int h1 = 768; // 386
+
+    ROS_INFO_STREAM("FINAL:" << (event->x() + (viewXOffset/viewScale) - 920 - ((width() - w1)/2)) * 0.012048193 << "  " << -(event->y()  + (viewYOffset/viewScale) - 386 - ((height() - h1)/2)) * 0.012032086);
+
+
 }
 
 void GLSoccerView::mouseReleaseEvent(QMouseEvent* event)
@@ -122,8 +156,6 @@ void GLSoccerView::mouseMoveEvent(QMouseEvent* event)
     bool leftButton = event->buttons().testFlag(Qt::LeftButton);
     bool midButton = event->buttons().testFlag(Qt::MidButton);
     bool rightButton = event->buttons().testFlag(Qt::RightButton);
-
-    if(debug) printf("MouseMove Event, Left:%d Mid:%d Right:%d\n", leftButton?1:0, midButton?1:0, rightButton?1:0);
 
     if(leftButton){
         //Pan
@@ -552,4 +584,20 @@ void GLSoccerView::toggleColor() {
 
 void GLSoccerView::updateConfig(const monitor_config::monitorConfig &_config) {
     m_config = _config;
+}
+
+QPoint GLSoccerView::getMousePos() {
+    return m_mousepos;
+}
+
+void GLSoccerView::setRobotsReplceService(ros::ServiceClient &_client) {
+    robotsClinet = &_client;
+}
+
+void GLSoccerView::setBallReplceService(ros::ServiceClient& _client) {
+    ballClinet = &_client;
+}
+
+double GLSoccerView::distVec(double x1, double y1, double x2, double y2) {
+    return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
 }

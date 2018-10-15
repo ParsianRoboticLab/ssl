@@ -68,11 +68,18 @@ namespace rqt_parsian_gui {
         mainLayout->addWidget(statusBox);
         context.addWidget(w);
 
+        /////// Servers
+        ///Dynamic Reconfigure
         server.reset(new dynamic_reconfigure::Server<monitor_config::monitorConfig>(getPrivateNodeHandle()));
         dynamic_reconfigure::Server<monitor_config::monitorConfig>::CallbackType f;
         f = boost::bind(&GraphicalClient::ConfigServerCallBack, this, _1, _2);
         server->setCallback(f);
 
+        ///Grsim
+        grsimBall =  n.serviceClient<parsian_msgs::grsim_ball_replacement>("/GrsimBallReplacesrv");
+        grsimRobots = n.serviceClient<parsian_msgs::grsim_robot_replacement>("/GrsimRobotReplacesrv");
+        view->setBallReplceService(grsimBall);
+        view->setRobotsReplceService(grsimRobots);
     }
 
     void GraphicalClient::shutdownPlugin() {
@@ -140,6 +147,7 @@ namespace rqt_parsian_gui {
     void GraphicalClient::ConfigServerCallBack(const monitor_config::monitorConfig &config, uint32_t level) {
         view->updateConfig(config);
     }
+
 }
 
 PLUGINLIB_EXPORT_CLASS(rqt_parsian_gui::GraphicalClient, rqt_gui_cpp::Plugin)
