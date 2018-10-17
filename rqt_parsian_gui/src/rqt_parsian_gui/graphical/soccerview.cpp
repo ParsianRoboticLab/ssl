@@ -100,6 +100,9 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
     midButton = event->buttons().testFlag(Qt::MidButton);
     rightButton = event->buttons().testFlag(Qt::RightButton);
 
+    QPointF mp = mouseToFieldPos(event->pos());
+    ROS_INFO_STREAM("MousePos: " << mp.x() <<"x, "  << mp.y() << "y");
+
     if(leftButton)
         setCursor(Qt::ClosedHandCursor);
     if(midButton) {
@@ -110,7 +113,7 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
         parsian_msgs::grsim_ball_replacementRequest req;
         parsian_msgs::grsim_ball_replacementResponse rep;
         req.vx = req.vy = 0;
-        req.x = viewScale*event->x(); req.y = viewScale*event->y();
+        req.x = mp.x(); req.y = mp.y();
         ballClinet->call(req, rep);
     }
 
@@ -136,11 +139,21 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
     }
 
     ROS_INFO_STREAM("MOUSE:" << event->x() << "  " << event->y());
-    ROS_INFO_STREAM("CHOOSEN:" <<  width() << "s  " << height() << "x  " << viewYOffset << "y");
-    int w1 = 1837; //920
-    int h1 = 768; // 386
-
-    ROS_INFO_STREAM("FINAL:" << (event->x() + (viewXOffset/viewScale) - 920 - ((width() - w1)/2)) * 0.012048193 << "  " << -(event->y()  + (viewYOffset/viewScale) - 386 - ((height() - h1)/2)) * 0.012032086);
+    double mahi = (fieldDim.field_length + fieldDim.boundary_width)/width();
+    double mahi2 = (fieldDim.field_width + fieldDim.boundary_width)/height();
+    double max;
+    if (mahi > mahi2) {
+        max = mahi;
+        mahi2 = height()*mahi;
+        mahi = (fieldDim.field_length + fieldDim.boundary_width);
+    } else {
+        max = mahi2;
+        mahi = width()*mahi2;
+        mahi2 = (fieldDim.field_width + fieldDim.boundary_width);
+    }
+    ROS_INFO_STREAM("FINAL:"
+    << (1 - 2*(double)(event->x() + (viewXOffset/viewScale)) / width())*(-mahi) / 2 * (viewScale/max) << "  "
+    << ((1 - 2*(double)(event->y() - (viewYOffset/viewScale))/ height())*(mahi2)/2) * (viewScale/max));
 
 
 }
@@ -521,7 +534,6 @@ void GLSoccerView::drawDebugs() {
 }
 
 void GLSoccerView::updateConfig2(const parsian_msgs::parsian_team_configConstPtr &_config) {
-    isTeamColorBlue = _config->color;
 }
 
 void GLSoccerView::drawVectors(const double &x, const double &y, const double& size, const std_msgs::ColorRGBA &color) {
@@ -541,7 +553,7 @@ QColor GLSoccerView::toQColor(const std_msgs::ColorRGBA &_color) {
 }
 
 void GLSoccerView::updateDB(const parsian_msgs::parsian_draw_bufferConstPtr &_packet) {
-
+    isSideLeft = _packet->wm.isLeft;
     if (ball.size() > m_config.ballHistory) ball.pop_front();
     robots.clear();
 
@@ -600,4 +612,24 @@ void GLSoccerView::setBallReplceService(ros::ServiceClient& _client) {
 
 double GLSoccerView::distVec(double x1, double y1, double x2, double y2) {
     return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+}
+
+QPointF GLSoccerView::mouseToFieldPos(QPoint _mouse) {
+    double mahi = (fieldDim.field_length + fieldDim.boundary_width)/width();
+    double mahi2 = (fieldDim.field_width + fieldDim.boundary_width)/height();
+    double max;
+    if (mahi > mahi2) {
+        max = mahi;
+        mahi2 = height()*mahi;
+        mahi = (fieldDim.field_length + fieldDim.boundary_width);
+    } else {
+        max = mahi2;
+        mahi = width()*mahi2;
+        mahi2 = (fieldDim.field_width + fieldDim.boundary_width);
+    }
+    double reverse = (isSideLeft) ? 1 : -1;
+    return {
+            reverse*(1 - 2*(_mouse.x() + (viewXOffset/viewScale)) / width())*(-mahi) / 2 * (viewScale/max)/1000
+            ,reverse*((1 - 2*(_mouse.y() - (viewYOffset/viewScale))/ height())*(mahi2)/2) * (viewScale/max)/1000
+    };
 }
