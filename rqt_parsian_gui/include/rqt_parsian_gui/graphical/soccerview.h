@@ -130,7 +130,7 @@ namespace rqt_parsian_gui {
         FieldDimensions fieldDim;
 
         bool grayColor;
-        bool isTeamColorBlue;
+        bool isTeamColorBlue, isSideLeft;
         monitor_config::monitorConfig m_config;
         QPoint m_mousepos;
 
@@ -169,6 +169,8 @@ namespace rqt_parsian_gui {
         void drawBall(QVector<vector2d> loc);
 
         QColor toQColor(const std_msgs::ColorRGBA& _color);
+
+        QPointF mouseToFieldPos(QPoint _mouse);
 
     protected:
         void paintEvent(QPaintEvent *event);
