@@ -46,6 +46,7 @@ void WMNodelet::detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr &_d
         parsian_msgs::parsian_world_modelPtr temp = wm->getParsianWorldModel();
         temp->header.stamp = ros::Time::now();
         temp->header.frame_id = std::to_string(_detection->frame_number);
+	temp->isLeft = isOurSideLeft;
         temp->isYellow = yellow;
         wm_pub.publish(temp);
     }
