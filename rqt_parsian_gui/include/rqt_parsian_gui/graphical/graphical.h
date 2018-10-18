@@ -44,7 +44,6 @@ namespace rqt_parsian_gui {
 
         ros::NodeHandle n;
         ros::NodeHandle n_private;
-        ros::NodeHandle n_color;
 
         ros::Subscriber wm_sub;
         ros::Subscriber db_sub;
