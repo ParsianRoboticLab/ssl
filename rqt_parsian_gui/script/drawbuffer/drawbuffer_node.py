@@ -1,24 +1,31 @@
 #!/usr/bin/python
 import rospy
-from dynamic_reconfigure import server
 from parsian_msgs.msg import parsian_world_model
 from parsian_msgs.msg import parsian_draws
 from parsian_msgs.msg import parsian_draw_buffer
-from rqt_parsian_gui.cfg import drawbufferConfig
+from parsian_msgs.srv import parsian_logger, parsian_loggerRequest, parsian_loggerResponse
+from parsian_msgs.srv import parsian_log_player
 
+import logger
 import drawbuffer
 
 db = drawbuffer.DrawBuffer()
 pub = rospy.Publisher('/buffer_draws', parsian_draw_buffer, queue_size=1, latch=True)
 
+lgr = logger.Logger()
+
 
 def wm_cb(wm):
     print "wm"
     db.wm = wm
+    if lgr.mode == parsian_loggerRequest.LIVE or lgr.mode == parsian_loggerRequest.RECORD:
+        lgr.add_wm_to_history(wm)
 
 
 def draw_cb(draw):
     db.add_draw(draw)
+    if lgr.mode == parsian_loggerRequest.LIVE or lgr.mode == parsian_loggerRequest.RECORD:
+        lgr.add_draw_to_history(draw)
 
 
 def timer_cb(time):
@@ -32,8 +39,13 @@ def clean_cb(time):
         db.update[k] = False
 
 
-# def config_cb(config, level):
-#     print config
+def logger_cb(req):
+    global lgr
+    return lgr.parse_req(req)
+
+
+def log_player_cb(req):
+    pass
 
 
 if __name__ == "__main__":
@@ -42,5 +54,6 @@ if __name__ == "__main__":
     draw_sub = rospy.Subscriber('/draws', parsian_draws, draw_cb, queue_size=1, buff_size=2 ** 24)
     timer = rospy.Timer(rospy.Duration(secs=0, nsecs=16000000), timer_cb)
     clean = rospy.Timer(rospy.Duration(secs=1, nsecs=0), clean_cb)
-    # srv = server.Server(drawbufferConfig, config_cb)
+    logger_server = rospy.Service('/logger', parsian_logger, logger_cb)
+    player_server = rospy.Service('/log_player', parsian_log_player, log_player_cb)
     rospy.spin()
