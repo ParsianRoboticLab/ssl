@@ -29,7 +29,8 @@ def draw_cb(draw):
 
 
 def timer_cb(time):
-    if lgr.mode == parsian_loggerRequest.HISTORY or lgr.mode == parsian_loggerRequest.LOAD:
+    out = lgr.plr.get_frame()
+    if (lgr.mode == parsian_loggerRequest.HISTORY or lgr.mode == parsian_loggerRequest.LOAD) and out:
         pub.publish(lgr.plr.get_frame())
     else:
         pub.publish(db.get_msg())
@@ -54,7 +55,8 @@ def logger_cb(req):
 
 
 def log_player_cb(req):
-    pass
+    global lgr
+    return lgr.plr.parse_req(req)
 
 
 if __name__ == "__main__":

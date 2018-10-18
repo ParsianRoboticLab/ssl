@@ -34,7 +34,7 @@ class Logger:
             self.pause_log()
             res.metadata.append('wm: ' + str(len(self.wm_history)))
             [res.metadata.append(str(k) + ': ' + str(len(self.draw_history[k]))) for k in self.draw_history.keys()]
-
+            self.plr.add_history(self.wm_history)
         elif req.mode == parsian_loggerRequest.RECORD:
             self.record_log(req.filename, req.metadata)
 
