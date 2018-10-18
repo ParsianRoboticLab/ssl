@@ -1,0 +1,12 @@
+time move
+uint8 fps
+bool loop
+time l_start
+time l_end
+---
+bool ok
+time now
+uint8 fps
+bool loop
+time l_start
+time l_end

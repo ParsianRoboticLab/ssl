@@ -1,0 +1,15 @@
+byte JUST_LIVE=0
+byte LIVE=1
+byte RECORD=2
+byte LOAD=3
+byte HISTORY=4
+
+byte mode
+string filename
+string[] metadata
+---
+bool ok
+byte mode
+string filename
+string[] metadata
+
