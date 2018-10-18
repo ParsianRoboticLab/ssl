@@ -1,5 +1,6 @@
 from parsian_msgs.srv import parsian_logger, parsian_loggerRequest, parsian_loggerResponse
 import rosbag
+import player
 
 MAX_DRAW_HISTORY = 600
 MAX_WM_HISTORY = 600
@@ -12,6 +13,8 @@ class Logger:
         self.log_path = ''
         self.wm_history = []
         self.draw_history = {}
+        self.bag = None
+        self.plr = player.Player()
 
     def parse_req(self, req):
         res = parsian_loggerResponse()
@@ -33,10 +36,12 @@ class Logger:
             [res.metadata.append(str(k) + ': ' + str(len(self.draw_history[k]))) for k in self.draw_history.keys()]
 
         elif req.mode == parsian_loggerRequest.RECORD:
-            pass
-        elif req.mode == parsian_loggerRequest.LOAD:
-            pass
+            self.record_log(req.filename, req.metadata)
 
+        elif req.mode == parsian_loggerRequest.LOAD:
+            self.save_log()
+            log = self.load_log(req.filename)
+            print log
         self.mode = res.mode = req.mode
         res.ok = True
         return res
@@ -48,7 +53,8 @@ class Logger:
         pass
 
     def clear_history(self):
-        pass
+        self.wm_history = []
+        self.draw_history = {}
 
     def add_wm_to_history(self, wm):
         self.wm_history.append(wm)
@@ -61,3 +67,12 @@ class Logger:
         self.draw_history[draw.node].append(draw.draws)
         if len(self.draw_history[draw.node]) > MAX_DRAW_HISTORY:
             self.draw_history[draw.node].pop(0)
+
+    def record_log(self, filename, metadata):
+        print metadata
+        self.log_path = filename
+        self.bag = rosbag.Bag(filename, 'w')
+
+
+    def load_log(self, filename):
+        pass

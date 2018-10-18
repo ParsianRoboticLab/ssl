@@ -29,7 +29,16 @@ def draw_cb(draw):
 
 
 def timer_cb(time):
-    pub.publish(db.get_msg())
+    if lgr.mode == parsian_loggerRequest.HISTORY or lgr.mode == parsian_loggerRequest.LOAD:
+        pub.publish(lgr.plr.get_frame())
+    else:
+        pub.publish(db.get_msg())
+
+
+def player_timer_cb(time):
+    frame = lgr.plr.play(time)
+    if frame:
+        pub.publish(frame)
 
 
 def clean_cb(time):
@@ -53,6 +62,7 @@ if __name__ == "__main__":
     wm_sub = rospy.Subscriber('/world_model', parsian_world_model, wm_cb, queue_size=1, buff_size=2 ** 24)
     draw_sub = rospy.Subscriber('/draws', parsian_draws, draw_cb, queue_size=1, buff_size=2 ** 24)
     timer = rospy.Timer(rospy.Duration(secs=0, nsecs=16000000), timer_cb)
+    player_timer = rospy.Timer(rospy.Duration(secs=0, nsecs=1000000), player_timer_cb)
     clean = rospy.Timer(rospy.Duration(secs=1, nsecs=0), clean_cb)
     logger_server = rospy.Service('/logger', parsian_logger, logger_cb)
     player_server = rospy.Service('/log_player', parsian_log_player, log_player_cb)
