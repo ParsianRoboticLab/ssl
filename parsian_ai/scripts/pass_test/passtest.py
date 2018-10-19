@@ -30,8 +30,13 @@ class PassTest:
         self.STATES = {"wait_for_receiver": 0, "ball_placement": 1, "kick": 2, "receive": 3}
         self.state = self.STATES["wait_for_receiver"]
         self.ids = {"receiver": 0, "passer": 1}
-        self.knowlege = { "rec_dist_to_target": 5000,
+        self.knowlege = { "rec_dist_to_target": 5000, "ball_dist_to_target": 5000,
                           "rec_dist_to_ball":   5000, "passer_dist_to_ball": 5000}
+        self.pass_informations = {}
+        self.current_pass_key = None
+        self.speed_step = 8
+        self.vel_queue_size = 5
+        self.ball_vel_queue = []
 
     def update_wm(self, wm):  # type: (parsian_world_model)
         self.wm = wm
@@ -76,6 +81,25 @@ class PassTest:
 
         self.update_knowlege()
 
+        no_task = parsian_robot_task()
+        no_task.select = no_task.NOTASK
+
+        rec_task = parsian_robot_task()
+        rec_task.select = rec_task.RECIVEPASS
+        rec_task.receivePassTask.target.x = self.recieive_point.x
+        rec_task.receivePassTask.target.y = self.recieive_point.y
+        rec_task.receivePassTask.receiveRadius = 1
+
+        self.tasks.clear()
+        self.tasks.append({
+                "id" : self.ids["passer"],
+                "msg" : no_task
+            })
+        self.tasks.append({
+            "id": self.ids["receiver"],
+            "msg": rec_task
+        })
+
         if self.state == self.STATES["wait_for_receiver"]:
 
             if self.knowlege["rec_dist_to_target"] < .1:
@@ -101,7 +125,7 @@ class PassTest:
 
         if self.state == self.STATES["receive"]:
             self.check_pass_info()
-            if self.recive_done():
+            if self.receive_done():
                 self.show_result()
                 self.state = self.STATES["wait_for_receiver"]
 
@@ -109,11 +133,15 @@ class PassTest:
     def update_knowlege(self):
         self.knowlege["rec_dist_to_target"] = self.recieive_point.distance(self.wm.our[self.ids["receiver"]].pos)
         self.knowlege["rec_dist_to_ball"] = Point(self.wm.ball.pos).distance(self.wm.our[self.ids["receiver"]].pos)
-        self.knowlege["passer_dist_to_ball"] = Point(self.wm.ball.pos).distance(self.wm.our[self.ids["receiver"]].pos)
+        self.knowlege["passer_dist_to_ball"] = Point(self.wm.ball.pos).distance(self.wm.our[self.ids["passer"]].pos)
+        self.knowlege["ball_dist_to_target"] = self.recieive_point.distance(self.wm.ball.pos)
+
+        self.ball_vel_queue.append(Point(parsian_world_model.ball.vel).norm())
+        if len(self.ball_vel_queue) > self.vel_queue_size:
+            self.ball_vel_queue.pop(0)
 
 
     def map_distance(self,dist):
-
         if dist < 2 :
             mapped_dist = 0
         elif dist < 3 :
@@ -132,3 +160,55 @@ class PassTest:
             mapped_dist = 7
 
         return mapped_dist
+
+    def save_pass_state(self):
+        self.current_pass_key = self.map_distance(self.knowlege["ball_dist_to_target"])
+        if self.pass_informations[self.current_pass_key] is None:
+            self.pass_informations[self.current_pass_key] = []
+
+        cur_step = len(self.pass_informations[self.current_pass_key])
+        if cur_step < self.speed_step:
+            self.pass_informations[self.current_pass_key].append(
+            {
+                "step": 1024 / self.speed_step * cur_step,
+                "dist": self.knowlege["ball_dist_to_target"]
+            }
+        )
+
+    def kick_done(self):
+        if sum(self.ball_vel_queue) / len(self.ball_vel_queue) > .05:
+            print("kick Done")
+            return True
+        else:
+            return False
+
+    def do_pass(self):
+        task = parsian_robot_task()
+        task.select = task.KICK
+        cur_step = len(self.pass_informations[self.current_pass_key])
+        task.kickTask.kickSpeed = 1024 * cur_step / self.speed_step
+        task.kickTask.kickchargetime = True
+        task.kickTask.target.x = self.recieive_point.x
+        task.kickTask.target.y = self.recieive_point.y
+
+        self.tasks[1] = {
+                "id" : self.ids["passer"],
+                "msg" : task
+            }
+
+
+    def check_pass_info(self):
+        pass
+
+    def show_result(self):
+        print(self.pass_informations)
+        print("\n --------- \n")
+
+    def receive_done(self):
+        ave_bal_vel = sum(self.ball_vel_queue) / len(self.ball_vel_queue)
+        if ave_bal_vel < .1:
+            print("receive done")
+            return True
+
+        else:
+            return False
