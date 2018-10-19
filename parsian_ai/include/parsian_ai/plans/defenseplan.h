@@ -13,6 +13,7 @@
 #include <parsian_ai/gamestate.h>
 #include <parsian_ai/config.h>
 #include <parsian_util/geom/polygon_2d.h>
+#include <parsian_util/action/autogenerate/noaction.h>
 
 #define LOOP_TIME_BYKK 0.016
 #define MIN_TWO_ROBOTS_DIST 0.02
@@ -30,6 +31,7 @@ protected:
     GotopointAction* gps[_MAX_NUM_PLAYERS];
     GotopointavoidAction *gpa[_MAX_NUM_PLAYERS];
     KickAction* kickSkill;
+    NoAction* noSkill;
     Action* AHZSkills;
     CDefPos defPos;
     Vector2D pointForKick, oneToucherDir;
