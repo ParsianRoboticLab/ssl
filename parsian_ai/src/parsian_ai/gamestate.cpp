@@ -206,11 +206,11 @@ void GameState::updateCommand(ssl_refree_command referee) {
             isReady = true;
             break;
         case ssl_refree_command::BALL_PLACEMENT_THEM:
-            isReady = true;
+            isReady = false;
             state = States::TheirBallPlacement;
             break;
         case ssl_refree_command::BALL_PLACEMENT_US:
-            isReady = true;
+            isReady = false;
             state = States::OurBallPlacement;
             break;
         case ssl_refree_command::DIRECT_FREE_THEM:
