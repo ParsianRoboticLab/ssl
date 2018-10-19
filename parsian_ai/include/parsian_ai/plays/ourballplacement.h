@@ -22,6 +22,9 @@ public:
         void init(const QList <Agent*>& _agents);
         bool first;
         static int chooseFirst();
+        GotopointavoidAction* gpa;
+        bool nearFlag;
+
 private:
         void reset();
         BallPlacement state;
