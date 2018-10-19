@@ -37,6 +37,7 @@ def timer_cb(time):
 
 
 def player_timer_cb(time):
+    return
     frame = lgr.plr.play(time)
     if frame:
         pub.publish(frame)
