@@ -23,10 +23,13 @@ public:
         bool first;
         static int chooseFirst();
         GotopointavoidAction* gpa;
-        bool nearFlag;
+        GotopointavoidAction* gpar;
+
+
 
 private:
         void reset();
+        int agentFinder(Vector2D , int);
         BallPlacement state;
         bool flag;
         Vector2D passballpos;
@@ -34,6 +37,11 @@ private:
         CAgent *ap;
         int minIndex;
         CAgent *a;
+        double array[2][2];
+        bool nearFlag , restFlag;
+        int nearID;
+        Vector2D currentBallPos;
+        Vector2D lastBallPos;
 
 };
 
