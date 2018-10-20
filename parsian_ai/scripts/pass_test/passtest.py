@@ -2,15 +2,19 @@ from parsian_msgs.msg import parsian_robot_task
 from parsian_msgs.msg import parsian_world_model
 from math import sqrt
 from time import time
+from math import exp
 
-class Point(object):
+robot_radius = .2
+
+
+class Point:
+    def __init__(self, o):
+        self.x = o.x
+        self.y = o.y
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-    def __init__(self,o):
-        self.x = o.x
-        self.y = o.y
 
     def norm(self):
         return sqrt(self.x ** 2 + self.y ** 2)
@@ -18,20 +22,35 @@ class Point(object):
     def distance(self, other):
         dx = self.x - other.x
         dy = self.y - other.y
-        return sqrt(dx**2 + dy**2)
+        return sqrt(dx ** 2 + dy ** 2)
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
+    def cross(self, p):
+        return abs(self.x * p.y - self.y * p.x)
+
+    def __mul__(self, other):
+        return Point(self.x * other, self.y * other)
+
+    def distance_to_line(self, p0, p1):
+        return (p1 - p0).cross(self - p1) / (p1 - p0).norm()
 
 
 class PassTest:
     def __init__(self):
         self.wm = parsian_world_model()
-        self.recieive_point = Point(-3 ,-2)
+        self.recieive_point = Point(-3, -2)
         self.tasks = []
         self.bp_start_time = 0
         self.STATES = {"wait_for_receiver": 0, "ball_placement": 1, "kick": 2, "receive": 3}
         self.state = self.STATES["wait_for_receiver"]
         self.ids = {"receiver": 0, "passer": 1}
-        self.knowlege = { "rec_dist_to_target": 5000, "ball_dist_to_target": 5000,
-                          "rec_dist_to_ball":   5000, "passer_dist_to_ball": 5000}
+        self.knowlege = {"rec_dist_to_target": 5000, "ball_dist_to_target": 5000,
+                         "rec_dist_to_ball": 5000, "passer_dist_to_ball": 5000}
         self.pass_informations = {}
         self.current_pass_key = None
         self.speed_step = 8
@@ -40,6 +59,7 @@ class PassTest:
 
     def update_wm(self, wm):  # type: (parsian_world_model)
         self.wm = wm
+
         self.exe()
 
     def get_tasks(self):
@@ -92,9 +112,9 @@ class PassTest:
 
         self.tasks.clear()
         self.tasks.append({
-                "id" : self.ids["passer"],
-                "msg" : no_task
-            })
+            "id": self.ids["passer"],
+            "msg": no_task
+        })
         self.tasks.append({
             "id": self.ids["receiver"],
             "msg": rec_task
@@ -119,7 +139,7 @@ class PassTest:
 
         if self.state == self.STATES["kick"]:
             if self.kick_done():
-               self.state = self.STATES["receive"]
+                self.state = self.STATES["receive"]
             else:
                 self.do_pass()
 
@@ -128,7 +148,6 @@ class PassTest:
             if self.receive_done():
                 self.show_result()
                 self.state = self.STATES["wait_for_receiver"]
-
 
     def update_knowlege(self):
         self.knowlege["rec_dist_to_target"] = self.recieive_point.distance(self.wm.our[self.ids["receiver"]].pos)
@@ -140,21 +159,20 @@ class PassTest:
         if len(self.ball_vel_queue) > self.vel_queue_size:
             self.ball_vel_queue.pop(0)
 
-
-    def map_distance(self,dist):
-        if dist < 2 :
+    def map_distance(self, dist):
+        if dist < 2:
             mapped_dist = 0
-        elif dist < 3 :
+        elif dist < 3:
             mapped_dist = 1
-        elif dist < 3.5 :
+        elif dist < 3.5:
             mapped_dist = 2
-        elif dist < 4 :
+        elif dist < 4:
             mapped_dist = 3
-        elif dist < 4.5 :
+        elif dist < 4.5:
             mapped_dist = 4
-        elif dist < 5 :
+        elif dist < 5:
             mapped_dist = 5
-        elif dist < 6 :
+        elif dist < 6:
             mapped_dist = 6
         else:
             mapped_dist = 7
@@ -169,14 +187,21 @@ class PassTest:
         cur_step = len(self.pass_informations[self.current_pass_key])
         if cur_step < self.speed_step:
             self.pass_informations[self.current_pass_key].append(
-            {
-                "step": 1024 / self.speed_step * cur_step,
-                "dist": self.knowlege["ball_dist_to_target"]
-            }
-        )
+                {
+                    "step": 1024 / self.speed_step * cur_step,
+                    "dist": self.knowlege["ball_dist_to_target"]
+                }
+            )
 
     def kick_done(self):
         if sum(self.ball_vel_queue) / len(self.ball_vel_queue) > .05:
+            deviation = self.recieive_point.distance_to_line(Point(self.wm.ball.pos), Point(self.wm.ball.vel))
+            deviation_eval = exp(-1 * deviation)
+            self.pass_informations[self.current_pass_key][-1].update(
+                {
+                    "deviation":    deviation_eval
+                }
+            )
             print("kick Done")
             return True
         else:
@@ -192,13 +217,22 @@ class PassTest:
         task.kickTask.target.y = self.recieive_point.y
 
         self.tasks[1] = {
-                "id" : self.ids["passer"],
-                "msg" : task
-            }
-
+            "id": self.ids["passer"],
+            "msg": task
+        }
 
     def check_pass_info(self):
-        pass
+        if self.knowlege["rec_dist_to_ball"] < robot_radius + .05:
+            rec_pos = Point(self.wm.our[self.ids["receiver"]].pos)
+            rec_dir = Point(self.wm.our[self.ids["receiver"]].dir)
+            fak = Point(self.wm.ball.pos).distance_to_line(
+                rec_pos, rec_pos + rec_dir
+            )
+            self.pass_informations[self.current_pass_key][-1].update(
+                {
+                    "fak": fak
+                }
+            )
 
     def show_result(self):
         print(self.pass_informations)
@@ -209,6 +243,5 @@ class PassTest:
         if ave_bal_vel < .1:
             print("receive done")
             return True
-
         else:
             return False
