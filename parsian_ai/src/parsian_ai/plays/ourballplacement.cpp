@@ -12,7 +12,12 @@ COurBallPlacement::COurBallPlacement() {
     first = true;
     state = BallPlacement :: GO_FOR_BALL;
     gpa = new GotopointavoidAction;
+    gpar = new GotopointavoidAction;
     nearFlag = true;
+    restFlag = true;
+    currentBallPos =  Vector2D();
+    lastBallPos =  Vector2D();
+
 }
 
 COurBallPlacement::~COurBallPlacement() {
@@ -29,49 +34,129 @@ void COurBallPlacement::init(QList<Agent*>& _agents) {
     initMaster();
 }
 
+/**
+ * do not giv this function number bigger than 2 :)
+ *
+ * @param ballPos current ball position
+ * @param number the number of near agents that we want to use
+ * @return near agents id
+ * somthing like bubble sort
+ */
+int COurBallPlacement::agentFinder(Vector2D ballPos , int number) {
 
-void COurBallPlacement::execute_x(){
+    int minArray[number];
 
+    double tempDist = 0;
+    double minDist = 1000;
+    int nearAgent[number];
 
-//    Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
-//    Vector2D robotTarget = Vector2D(ballPos.x - 1 , ballPos.y);
-//    Vector2D pos = Vector2D(6, 0);
-//    auto *gpa = new GotopointavoidAction;
-//    gpa->setTargetpos(robotTarget);
-//    gpa->setSlowmode(true);
-//    gpa->setBallobstacleradius(0.15);
-//    agents[1]->action = gpa;
-
-
-
-    Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
-    gpa->setTargetpos(wm->ball->pos - Vector2D(0.85,0));
-    gpa->setTargetdir(Vector2D(1,0));
-
-    double nearDistance = 1E10;
-    int nearAgent{0};
-    nearDistance = agents[0]->pos().dist(ballPos);
-
-    for (int i =0; i < agents.size(); i++) {
-        if (nearDistance > agents[i]->pos().dist(ballPos)) {
-            nearDistance = agents[i]->pos().dist(ballPos);
-            nearAgent = i;
-
+    for(int i = 0 ; i < agents.size() ; i++){
+        if ( agents[i]->pos().dist(ballPos) < minDist){
+            nearAgent[0] = i;
+            minDist = agents[i]->pos().dist(wm->ball->pos);
         }
     }
 
+    ROS_INFO_STREAM("hamid agent ID: " << agents[nearID]->id());
+    return nearAgent[0];
+
+/*
+    for(int j=0 ; j<number ; j++) {
+        for (int i = 0; i < agents.size(); i++) {
+            tempDist = agents[i]->pos().dist(ballPos);
+            if(tempDist < minDist){
+                if (j != 0 && i!=minArray[0]){
+                    minDist = tempDist;
+                    minArray[j] = i;
+                } else{
+                    minDist = tempDist;
+                    minArray[j] = i;
+                }
+            }
+        }
+
+    }
+    if (number!=1){
+        return nearAgent[0]*10+nearAgent[1];
+    } else{
+        ROS_INFO_STREAM("hamid agent ID: " << agents[nearID]->id());
+        return nearAgent[0];
+    }
+    */
+
+
+}
+/**
+ * execute function
+ * this will be call in masterPLay class
+ */
+void COurBallPlacement::execute_x(){
+
+
+    int nearAgent=0;
+    Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
+    currentBallPos = ballPos;
+    gpa->setTargetpos(wm->ball->pos - Vector2D(3,0));
+    gpa->setTargetdir(Vector2D(1,0));
+
+    nearAgent = agentFinder(ballPos , 1);
+
+
+
     if (agents.size() > nearAgent && nearFlag == true) {
-        agents[nearAgent]->action = gpa;
         nearFlag = false;
+        nearID = nearAgent;
+        lastBallPos = ballPos;
     } else {
         ROS_WARN("NO AGENT");
     }
 
-    //agents[1]->action = gpa;
-    if (agents.size() > 1) ROS_INFO_STREAM("hamid agent: " << agents[1]->id());
+    if (currentBallPos.dist(lastBallPos) > 0.5 ){
+        ROS_INFO_STREAM("hamid"<<"current X : "<<currentBallPos.x<<"current Y : "<<currentBallPos.y<<"last X : "<<lastBallPos.x<<"last Y : "<<lastBallPos.y);
+        nearFlag = true;
+        restFlag = true;
+    }
+
+//    if (agents.size() > 1) {
+//
+//        //ROS_INFO_STREAM("agent pos x , y: " << agents[nearID]->pos().x << agents[nearID]->pos().y);
+//    }
+
+    for(int i=0 ;i<agents.size() ;i++){
+        if (i !=nearAgent && restFlag== true ){
+            gpar->setTargetpos(Vector2D(2 , (i*0.5)-1.5));
+            gpar->setTargetdir(Vector2D(1,0));
+            restFlag = false;
+        }
+        agents[i]->action = gpar;
+    }
+
+    agents[nearID]->action = gpa;
+
+    /*
+    double mindist = 10000;
+    double dist;
+    CAgent *pa = a;
+    for(int i = 0 ; i < agents.size() ; i++){
+        dist = agents[i]->pos().dist(ballPos);
+        if(dist < mindist && minIndexPos != i){
+            mindist = dist;
+            minIndex = i;
+            a = agents[i];
+        }
+    }
+    a->action = gpa;
 
     return;
 
+      Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
+      Vector2D robotTarget = Vector2D(ballPos.x - 1 , ballPos.y);
+      Vector2D pos = Vector2D(6, 0);
+      auto *gpa = new GotopointavoidAction;
+      gpa->setTargetpos(robotTarget);
+      gpa->setSlowmode(true);
+      gpa->setBallobstacleradius(0.15);
+      agents[1]->action = gpa;
 
     ROS_INFO("Executaion X");
     ROS_INFO_STREAM(flag);
@@ -241,6 +326,7 @@ void COurBallPlacement::execute_x(){
         default:
             break;
     }
+    */
 }
 
 int COurBallPlacement::chooseFirst() {
