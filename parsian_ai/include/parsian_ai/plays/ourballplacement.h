@@ -29,6 +29,7 @@ public:
 
 private:
         void reset();
+        void otherRobotsFormation(int , bool);
         int agentFinder(Vector2D , int);
         BallPlacement state;
         bool flag;

@@ -12,7 +12,7 @@ COurBallPlacement::COurBallPlacement() {
     first = true;
     state = BallPlacement :: GO_FOR_BALL;
     gpa = new GotopointavoidAction;
-    gpar = new GotopointavoidAction;
+    //gpar = new GotopointavoidAction;
     nearFlag = true;
     restFlag = true;
     currentBallPos =  Vector2D();
@@ -95,13 +95,34 @@ int COurBallPlacement::agentFinder(Vector2D ballPos , int number) {
  * execute function
  * this will be call in masterPLay class
  */
+
+void COurBallPlacement::otherRobotsFormation(int nearAgent , bool restFlag){
+
+    for(int i=0 ;i<agents.size() ;i++) {
+        if (i != nearAgent && restFlag == true) {
+            gpar = new GotopointavoidAction;
+            gpar->setTargetpos(wm->field->center() - Vector2D( (i*0.5 - 5), 4 ));
+            gpar->setTargetdir(Vector2D(1, 0));
+            drawer->draw(wm->field->center() - Vector2D(i*0.5 - 5 , 4),QColor("red"));
+
+        }
+        if (i != nearAgent) {
+            ROS_INFO_STREAM("hamid rest ID" << agents[i]->id() << " X : " << agents[i]->pos().x << " Y :" << agents[i]->pos().y << endl);
+            agents[i]->action = gpar;
+        }
+        gpar = nullptr;
+        delete gpar;
+    }
+    restFlag = false;
+
+}
 void COurBallPlacement::execute_x(){
 
 
     int nearAgent=0;
     Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
     currentBallPos = ballPos;
-    gpa->setTargetpos(wm->ball->pos - Vector2D(3,0));
+    gpa->setTargetpos(wm->ball->pos - Vector2D(0.5,0));
     gpa->setTargetdir(Vector2D(1,0));
 
     nearAgent = agentFinder(ballPos , 1);
@@ -117,25 +138,12 @@ void COurBallPlacement::execute_x(){
     }
 
     if (currentBallPos.dist(lastBallPos) > 0.5 ){
-        ROS_INFO_STREAM("hamid"<<"current X : "<<currentBallPos.x<<"current Y : "<<currentBallPos.y<<"last X : "<<lastBallPos.x<<"last Y : "<<lastBallPos.y);
+        //ROS_INFO_STREAM("hamid"<<"current X : "<<currentBallPos.x<<"current Y : "<<currentBallPos.y<<"last X : "<<lastBallPos.x<<"last Y : "<<lastBallPos.y);
         nearFlag = true;
         restFlag = true;
     }
 
-//    if (agents.size() > 1) {
-//
-//        //ROS_INFO_STREAM("agent pos x , y: " << agents[nearID]->pos().x << agents[nearID]->pos().y);
-//    }
-
-    for(int i=0 ;i<agents.size() ;i++){
-        if (i !=nearAgent && restFlag== true ){
-            gpar->setTargetpos(Vector2D(2 , (i*0.5)-1.5));
-            gpar->setTargetdir(Vector2D(1,0));
-            restFlag = false;
-        }
-        agents[i]->action = gpar;
-    }
-
+    otherRobotsFormation(nearAgent , restFlag);
     agents[nearID]->action = gpa;
 
     /*
