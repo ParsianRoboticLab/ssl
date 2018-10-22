@@ -11,6 +11,8 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QDir>
+#include <QCheckBox>
+#include <QTableWidget>
 
 
 
@@ -66,10 +68,36 @@ namespace rqt_parsian_gui {
         fieldWidget->addAction(ReplayMode);
         connect(LogMode, SIGNAL(triggered(bool)), this, SLOT(startLog()));
         connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
+        QTableWidget *yy=new QTableWidget(4,3);
+        QTableWidgetItem *newItem = new QTableWidgetItem("Goals");
+        yy->setItem(1, 1, newItem);
+        yy->setFixedSize(500,300);
+        QWidget *xx=new QWidget();
+//        xx->setMaximumHeight(30);
+//        xx->setMaximumWidth(600);
+        auto mainLayout = new QGridLayout();
+
+        QCheckBox *btnDraws[3];
+        QStringList strDraws;
+        strDraws << "Draw Pass" << "Draw Shot" << "Draw Possession" ;
+        mainLayout->addWidget(yy,0,1);
+        for(int i=0 ; i<3 ; i++ )
+        {
+            btnDraws[i] = new QCheckBox(strDraws[i],xx);
+            mainLayout->addWidget(btnDraws[i],1,i);
+        }
+
+
+        xx->setLayout(mainLayout);
+
+
+
+
 
 
 
         context.addWidget(fieldWidget);
+        context.addWidget(xx);
     }
 
     void Monitor::startLog() {
@@ -148,48 +176,48 @@ namespace rqt_parsian_gui {
 
             mywm = _wm;
 
-            drawer = new CguiDrawer();
-
-
-//        drawer->polygonBuffer=lastdrawer->polygonBuffer;
-//        drawer->rectBuffer=lastdrawer->rectBuffer;
-//        drawer->pointBuffer=lastdrawer->pointBuffer;
-//        drawer->segBuffer=lastdrawer->segBuffer;
-
-
-
-
-
-            drawer->guiBall.inSight = mywm->ball.inSight;
-            drawer->guiBall.pos.x = mywm->ball.pos.x;
-            drawer->guiBall.pos.y = mywm->ball.pos.y;
-            drawer->guiBall.radius = mywm->ball.obstacleRadius;
-            for (int i = 0; i < mywm->our.size(); i++) {
-                if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
-                    ourCol.setAlpha(150);
-                }
-                drawer->drawRobot(mywm->our[i].pos, mywm->our[i].dir,
-                                  ourCol, mywm->our[i].id, i, "", true);
-
-                //        if (soccer->agents[wm->our.active(i)->id]->goalVisibility>0)
-                //            draw(QString::number(soccer->agents[wm->our.active(i)->id]->goalVisibility,'f',2), wm->our.active(i)->pos + Vector2D(-0.3, -0.1), QColor("black"), 14);
-
-
-            }
-
-
-            for (const auto &i : mywm->opp) {
-
-
-                if (fabs(i.inSight - 0.5) < 0.01) {
-                    oppCol.setAlpha(150);
-                }
-
-
-                drawer->drawRobot(i.pos, i.dir,
-                                  oppCol, i.id, -1);
-
-            }
+//            drawer = new CguiDrawer();
+//
+//
+////        drawer->polygonBuffer=lastdrawer->polygonBuffer;
+////        drawer->rectBuffer=lastdrawer->rectBuffer;
+////        drawer->pointBuffer=lastdrawer->pointBuffer;
+////        drawer->segBuffer=lastdrawer->segBuffer;
+//
+//
+//
+//
+//
+//            drawer->guiBall.inSight = mywm->ball.inSight;
+//            drawer->guiBall.pos.x = mywm->ball.pos.x;
+//            drawer->guiBall.pos.y = mywm->ball.pos.y;
+//            drawer->guiBall.radius = mywm->ball.obstacleRadius;
+//            for (int i = 0; i < mywm->our.size(); i++) {
+//                if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
+//                    ourCol.setAlpha(150);
+//                }
+//                drawer->drawRobot(mywm->our[i].pos, mywm->our[i].dir,
+//                                  ourCol, mywm->our[i].id, i, "", true);
+//
+//                //        if (soccer->agents[wm->our.active(i)->id]->goalVisibility>0)
+//                //            draw(QString::number(soccer->agents[wm->our.active(i)->id]->goalVisibility,'f',2), wm->our.active(i)->pos + Vector2D(-0.3, -0.1), QColor("black"), 14);
+//
+//
+//            }
+//
+//
+//            for (const auto &i : mywm->opp) {
+//
+//
+//                if (fabs(i.inSight - 0.5) < 0.01) {
+//                    oppCol.setAlpha(150);
+//                }
+//
+//
+//                drawer->drawRobot(i.pos, i.dir,
+//                                  oppCol, i.id, -1);
+//
+//            }
 //        fieldWidget->update();
 
         }

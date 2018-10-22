@@ -45,7 +45,7 @@ namespace rqt_parsian_gui
         coeff=viewportSize.height()/stadiumSize.width();
         centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
         monitor_pub = n.advertise<parsian_msgs::vector2D>("/mousePos", 1000);
-        mousePos.reset(new parsian_msgs::vector2D);
+
 
     }
     void MonitorWidget::showHideRec(){

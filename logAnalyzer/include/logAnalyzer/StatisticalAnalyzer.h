@@ -37,6 +37,9 @@ public:
     ros::Subscriber wm_sub;
     ros::Subscriber ref_sub;
 
+
+    ros::Publisher analyze_pub;
+
     void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
     void refCb(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref);
     void preprocess();
@@ -67,6 +70,7 @@ public:
 private:
     parsian_msgs::parsian_world_modelConstPtr wm;
     parsian_msgs::ssl_refree_wrapperConstPtr ref;
+//    parsian_msgs::parsian_statistical_analyze analyze;
     int refcommand;
     int refstage;
     CField field;

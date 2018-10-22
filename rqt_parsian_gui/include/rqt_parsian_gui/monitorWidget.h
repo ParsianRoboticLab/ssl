@@ -11,12 +11,14 @@
 #include <QString>
 #include <qcolor.h>
 #include <QMouseEvent>
+#include <QPushButton>
 #include <GL/gl.h>
 #include <qopenglwidget.h>
 #include <QGridLayout>
 #include <QtOpenGL/qgl.h>
 #include <GL/glu.h>
 #include <parsian_util/core/field.h>
+#include <QCheckBox>
 #include <parsian_msgs/vector2D.h>
 
 
