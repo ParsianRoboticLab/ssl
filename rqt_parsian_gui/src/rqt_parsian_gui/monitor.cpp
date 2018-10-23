@@ -13,6 +13,9 @@
 #include <QDir>
 #include <QCheckBox>
 #include <QTableWidget>
+#include <QHeaderView>
+#include <QRadioButton>
+#include <QAbstractTableModel>
 
 
 
@@ -68,29 +71,104 @@ namespace rqt_parsian_gui {
         fieldWidget->addAction(ReplayMode);
         connect(LogMode, SIGNAL(triggered(bool)), this, SLOT(startLog()));
         connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
-        QTableWidget *yy=new QTableWidget(4,3);
-        QTableWidgetItem *newItem = new QTableWidgetItem("Goals");
-        yy->setItem(1, 1, newItem);
-        yy->setFixedSize(500,300);
+        QTableWidget *yy=new QTableWidget(7,3);
+        QStringList tableheader;
+
+        tableheader<<"Blue Team" << "Analysis" << "Yellow Team";
+        yy->setHorizontalHeaderLabels(tableheader);
+        yy->setStyleSheet("QTableView {background-color: qlineargradient(x1: 0, y1: 0, x2: 0.5, y2: 0.8,stop: 0.3 #9999ff, stop: 1 #5555ff); color:#880000; font-size:16px;}"
+                          );
+        yy->setFrameStyle(QFrame::NoFrame);
+        QHeaderView *vh=new QHeaderView(Qt::Vertical);
+        yy->setColumnWidth(1,200);
+        vh->hide();
+        yy->setVerticalHeader(vh);
+//
+//
+//        QTableWidgetItem * goals = new QTableWidgetItem("Goals");
+//        QTableWidgetItem * yCards=new QTableWidgetItem("Yellow Cards");
+//        QTableWidgetItem * Penalties=new QTableWidgetItem("Penalties");
+//        QTableWidgetItem * possession=new QTableWidgetItem("Possession");
+//        QTableWidgetItem * shots=new QTableWidgetItem("Shots");
+//        QTableWidgetItem * passSucceed=new QTableWidgetItem("Pass Succeed");
+//        QTableWidgetItem * shotSucceed=new QTableWidgetItem("Shot Succeed");
+
+        QTableWidgetItem *prototype = new QTableWidgetItem();
+// setup your prototype
+        prototype->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        prototype->setTextAlignment(Qt::AlignCenter);
+// add all your items using the prototype->clone() method
+        QStringList analysisTitles;
+        analysisTitles<<"Goals"<<"Yellow Cards"<<"Penalties"<<"Possession"<<"Shots"<<"Pass Succeed"<<"Shot Succeed";
+        for(int i=0; i<yy->rowCount();i++) {
+            QTableWidgetItem *item = prototype->clone();
+            // set the special features of each item
+            item->setText(analysisTitles[i]);
+            yy->setItem(i,1,item);
+        }
+
+
+        QStringList bTitles;
+        bTitles<<"3"<<"0"<<"1"<<"43%"<<"3"<<"78%"<<"60%";
+        for(int i=0; i<yy->rowCount();i++) {
+            QTableWidgetItem *item = prototype->clone();
+            // set the special features of each item
+            item->setText(bTitles[i]);
+            yy->setItem(i,0,item);
+        }
+
+        QStringList yTitles;
+        yTitles<<"5"<<"0"<<"0"<<"57%"<<"6"<<"85%"<<"51%";
+        for(int i=0; i<yy->rowCount();i++) {
+            QTableWidgetItem *item = prototype->clone();
+            // set the special features of each item
+            item->setText(yTitles[i]);
+            yy->setItem(i,2,item);
+        }
+
+
+        yy->setFixedSize(400,250);
         QWidget *xx=new QWidget();
 //        xx->setMaximumHeight(30);
 //        xx->setMaximumWidth(600);
         auto mainLayout = new QGridLayout();
 
+
         QCheckBox *btnDraws[3];
         QStringList strDraws;
         strDraws << "Draw Pass" << "Draw Shot" << "Draw Possession" ;
-        mainLayout->addWidget(yy,0,1);
+        mainLayout->addWidget(yy,0,0,7,3);
         for(int i=0 ; i<3 ; i++ )
         {
             btnDraws[i] = new QCheckBox(strDraws[i],xx);
-            mainLayout->addWidget(btnDraws[i],1,i);
+            mainLayout->addWidget(btnDraws[i],1,i,1,1);
         }
+
+        QRadioButton *button = new QRadioButton("blue");
+        QRadioButton *button1= new QRadioButton("yellow");
+
+
+
+        mainLayout->addWidget(button,2,0,1,1);
+        mainLayout->addWidget(button1,3,0,1,1);
+
+        xx->setMaximumHeight(900);
+
 
 
         xx->setLayout(mainLayout);
 
 
+
+        QFile file("FlightParam.csv");
+        if (!file.open(QIODevice::ReadOnly)) {
+        }
+
+        QStringList wordList;
+        while (!file.atEnd()) {
+            QByteArray line = file.readLine();
+            wordList.append(line.split(',').first());
+        }
 
 
 
