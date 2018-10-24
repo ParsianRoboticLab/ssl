@@ -121,52 +121,54 @@ catkin_package(
 
 
 set (${PROJECT_NAME}_SRCS
-  src/${PROJECT_NAME}/monitor.cpp
-  src/${PROJECT_NAME}/robotstatus.cpp
-  src/${PROJECT_NAME}/robotstatus_widget.cpp
-  src/${PROJECT_NAME}/monitorWidget.cpp
-  src/${PROJECT_NAME}/guiDrawer.cpp
-  src/${PROJECT_NAME}/mode_chooser.cpp
-  src/${PROJECT_NAME}/modeChooserWidget.cpp
-  src/${PROJECT_NAME}/handycontroller.cpp
-  src/${PROJECT_NAME}/playoffWidget.cpp
-  src/${PROJECT_NAME}/playoff.cpp
-  src/${PROJECT_NAME}/taskRunner.cpp
-  src/${PROJECT_NAME}/taskRunnerWidget.cpp
-  src/${PROJECT_NAME}/referee.cpp
-  src/${PROJECT_NAME}/refereeWidget.cpp
-)
+        src/${PROJECT_NAME}/monitor.cpp
+        src/${PROJECT_NAME}/robotstatus.cpp
+        src/${PROJECT_NAME}/robotstatus_widget.cpp
+        src/${PROJECT_NAME}/monitorWidget.cpp
+        src/${PROJECT_NAME}/guiDrawer.cpp
+        src/${PROJECT_NAME}/mode_chooser.cpp
+        src/${PROJECT_NAME}/modeChooserWidget.cpp
+        src/${PROJECT_NAME}/handycontroller.cpp
+        src/${PROJECT_NAME}/playoffWidget.cpp
+        src/${PROJECT_NAME}/playoff.cpp
+        src/${PROJECT_NAME}/taskRunner.cpp
+        src/${PROJECT_NAME}/taskRunnerWidget.cpp
+        src/${PROJECT_NAME}/referee.cpp
+        src/${PROJECT_NAME}/refereeWidget.cpp
+        src/${PROJECT_NAME}/analyzeWidget.cpp
+        )
 
 set(${PROJECT_NAME}_HDRS
-  include/${PROJECT_NAME}/monitor.h
-  include/${PROJECT_NAME}/robotstatus.h
-  include/${PROJECT_NAME}/robotstatus_widget.h
-  include/${PROJECT_NAME}/monitorWidget.h
-  include/${PROJECT_NAME}/guiDrawer.h
-  include/${PROJECT_NAME}/mode_chooser.h
-  include/${PROJECT_NAME}/modeChooserWidget.h
-  include/${PROJECT_NAME}/handycontroller.h
-  include/${PROJECT_NAME}/playoffWidget.h
-  include/${PROJECT_NAME}/playoff.h
-  include/${PROJECT_NAME}/taskRunner.h
-  include/${PROJECT_NAME}/taskRunnerWidget.h
-  include/${PROJECT_NAME}/referee.h
-  include/${PROJECT_NAME}/refereeWidget.h
+        include/${PROJECT_NAME}/monitor.h
+        include/${PROJECT_NAME}/robotstatus.h
+        include/${PROJECT_NAME}/robotstatus_widget.h
+        include/${PROJECT_NAME}/monitorWidget.h
+        include/${PROJECT_NAME}/guiDrawer.h
+        include/${PROJECT_NAME}/mode_chooser.h
+        include/${PROJECT_NAME}/modeChooserWidget.h
+        include/${PROJECT_NAME}/handycontroller.h
+        include/${PROJECT_NAME}/playoffWidget.h
+        include/${PROJECT_NAME}/playoff.h
+        include/${PROJECT_NAME}/taskRunner.h
+        include/${PROJECT_NAME}/taskRunnerWidget.h
+        include/${PROJECT_NAME}/referee.h
+        include/${PROJECT_NAME}/refereeWidget.h
+        include/${PROJECT_NAME}/analyzeWidget.h
 
         )
 
 
 set(${PROJECT_NAME}_UIS
-  resource/handycontroller.ui
-)
+        resource/handycontroller.ui
+        )
 
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
-  qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
-  qt5_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+    qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt5_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 else()
-  qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
-  qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+    qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 endif()
 
 ###########
@@ -183,10 +185,10 @@ include_directories(
 
 ## Declare a cpp library
 add_library(${PROJECT_NAME}
-    ${${PROJECT_NAME}_SRCS}
-    ${${PROJECT_NAME}_MOCS}
-    ${${PROJECT_NAME}_UIS_H}
-    )
+        ${${PROJECT_NAME}_SRCS}
+        ${${PROJECT_NAME}_MOCS}
+        ${${PROJECT_NAME}_UIS_H}
+        )
 
 
 ## Declare a C++ executable
@@ -237,15 +239,15 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-  plugin1.xml
-  plugin2.xml
-  plugin3.xml
-  playoff_plugin.xml
-  referee_plugin.xml
-  mode_plugin.xml
-  task_runner_plugin.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+        plugin1.xml
+        plugin2.xml
+        plugin3.xml
+        playoff_plugin.xml
+        referee_plugin.xml
+        mode_plugin.xml
+        task_runner_plugin.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )
 
 
 #############

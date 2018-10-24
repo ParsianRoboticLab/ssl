@@ -44,7 +44,7 @@ namespace rqt_parsian_gui
         connect(recShowTimer , SIGNAL(timeout()) , this , SLOT(showHideRec()));
         coeff=viewportSize.height()/stadiumSize.width();
         centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
-        monitor_pub = n.advertise<parsian_msgs::vector2D>("/mousePos", 1000);
+        monitor_pub = n.advertise<parsian_msgs::vector2D>("/analyze_mousePos", 1000);
 
 
     }
@@ -82,9 +82,6 @@ namespace rqt_parsian_gui
             mousePos->x = (double(event->pos().y()) - centralPoint.y) / coeff / scaleFactor;
 //            mousePos->x = double(event->pos().x());
 //            mousePos->y = double(event->pos().y());
-            ROS_INFO_STREAM("mousepos__" << mousePos->x << "__" << mousePos->y);
-            ROS_INFO_STREAM("_CP_"<<centralPoint.x<<"__"<<centralPoint.y);
-            ROS_INFO_STREAM("_E_"<<event->pos().x()<<"__"<<event->pos().y());
             monitor_pub.publish(*mousePos);
         }
     }
@@ -155,8 +152,8 @@ namespace rqt_parsian_gui
         }
 
         CGraphicalRobot rob;
-        while (!drawerBuffer->robotBuffer.isEmpty()) {
-            rob = drawerBuffer->robotBuffer.dequeue();
+        for(int i=0;i<drawerBuffer->shotteBuffer.size();i++){
+            rob = drawerBuffer->shotteBuffer.at(i);
             drawRobot(rob.pos.x,
                       rob.pos.y,
                       rob.dir.th().degree(),
@@ -168,15 +165,43 @@ namespace rqt_parsian_gui
 
         }
 
-        if (drawerBuffer->guiBall.inSight > 0) {
-            drawArc(drawerBuffer->guiBall.pos.x,
-                    drawerBuffer->guiBall.pos.y,
-                    0.03,
-                    0,
-                    360,
-                    QColor("orange"),
-                    true);
+
+        for(int i=0;i<drawerBuffer->passerBuffer.size();i++){
+            rob = drawerBuffer->passerBuffer.at(i);
+            drawRobot(rob.pos.x,
+                      rob.pos.y,
+                      rob.dir.th().degree(),
+                      rob.ID,
+                      rob.comID,
+                      rob.color,
+                      rob.str,
+                      rob.newRobots);
+
         }
+
+
+        for(int i=0;i<drawerBuffer->receiverBuffer.size();i++){
+            rob = drawerBuffer->receiverBuffer.at(i);
+            drawRobot(rob.pos.x,
+                      rob.pos.y,
+                      rob.dir.th().degree(),
+                      rob.ID,
+                      rob.comID,
+                      rob.color,
+                      rob.str,
+                      rob.newRobots);
+
+        }
+
+//        if (drawerBuffer->guiBall.inSight > 0) {
+//            drawArc(drawerBuffer->guiBall.pos.x,
+//                    drawerBuffer->guiBall.pos.y,
+//                    0.03,
+//                    0,
+//                    360,
+//                    QColor("orange"),
+//                    true);
+//        }
 
         parsian_msgs::parsian_draw_circle arc;
 ////        CGraphicalArc arc;

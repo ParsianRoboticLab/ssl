@@ -30,16 +30,16 @@ ModeChooserWidget::ModeChooserWidget(ros::NodeHandle & n)
     modePB  = new QPushButton(modeStr[static_cast<int>(mode)], this);
     sidePB  = new QPushButton(sideStr[static_cast<int>(side)], this);
 
-    colorPB->setFixedSize(70, 30);
-    modePB->setFixedSize(70, 30);
-    sidePB->setFixedSize(70, 30);
+    colorPB->setFixedSize(100, 20);
+    modePB->setFixedSize(100, 20);
+    sidePB->setFixedSize(100, 20);
 
     modeAct = new QAction(this);
     modeAct->setShortcut(*new QKeySequence(tr("Ctrl+S")));
 
-    mainLayout->addWidget(colorPB);
-    mainLayout->addWidget(sidePB);
-    mainLayout->addWidget(modePB);
+    mainLayout->addWidget(colorPB,0,0);
+    mainLayout->addWidget(sidePB,0,1);
+    mainLayout->addWidget(modePB,0,2);
 
     this->setLayout(mainLayout);
     this->addAction(modeAct);

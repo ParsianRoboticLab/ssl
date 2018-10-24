@@ -1,6 +1,8 @@
-bool passOrshoot
+uint32 shootOrPassOrPossession
 bool succeed
 vector2D shotter
+vector2D shotDir
+uint32 shotterID
 vector2D receiver
 uint32 BP
 uint32 BPSaved

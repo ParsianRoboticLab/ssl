@@ -20,9 +20,21 @@ CguiDrawer::~CguiDrawer() {
 
 
 
-void CguiDrawer::drawRobot(Vector2D _pos, Vector2D _dir, QColor _color, int _ID, int _comID, QString _str, bool _newRobots) {
+void CguiDrawer::drawRobot(int type,Vector2D _pos, Vector2D _dir, QColor _color, int _ID, int _comID, QString _str, bool _newRobots) {
     CGraphicalRobot newItem(_pos, _dir, _color, _ID, _comID, _str, _newRobots);
-    robotBuffer.enqueue(newItem);
+    switch (type) {
+        case 0:
+            shotteBuffer.enqueue(newItem);
+            break;
+        case 1:
+            passerBuffer.enqueue(newItem);
+            break;
+        case 2:
+            receiverBuffer.enqueue(newItem);
+            break;
+
+    }
+
 }
 
 void CguiDrawer::clear() {
@@ -32,6 +44,9 @@ void CguiDrawer::clear() {
     segBuffer->clear();
     pointBuffer->clear();
     textBuffer->clear();
+    shotteBuffer.clear();
+    passerBuffer.clear();
+    receiverBuffer.clear();
 }
 
 

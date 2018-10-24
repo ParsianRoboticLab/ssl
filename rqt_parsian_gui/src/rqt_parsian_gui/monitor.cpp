@@ -3,6 +3,7 @@
 */
 
 #include <rqt_parsian_gui/monitor.h>
+#include <rqt_parsian_gui/analyzeWidget.h>
 #include <rqt_parsian_gui/guiDrawer.h>
 #include <QApplication>
 #include <QThread>
@@ -15,7 +16,9 @@
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QRadioButton>
+#include <QFileDialog>
 #include <QAbstractTableModel>
+
 
 
 
@@ -37,10 +40,8 @@ namespace rqt_parsian_gui {
         n = getNodeHandle();
         n_private = getPrivateNodeHandle();
 
-        wm_sub = n.subscribe("/world_model", 1000, &Monitor::wmCb, this);
-        log_wm_sub = n.subscribe("/log/world_model", 1000, &Monitor::logwmCb, this);
-        draw_sub = n.subscribe("/draws", 1000, &Monitor::drawCb, this);
-        log_draw_sub = n.subscribe("/log/draws", 1000, &Monitor::logdrawCb, this);
+        draw_sub = n.subscribe("/analyze_draws", 1000, &Monitor::drawCb, this);
+        analysis_sub = n.subscribe("/analysis", 1000, &Monitor::analysisCb, this);
         color_sub = n.subscribe("/team_config", 1000, &Monitor::colorCb, this);
         timer = n.createTimer(ros::Duration(0.080), &Monitor::timerCb, this);
         parsian_msgs::parsian_team_configPtr team_config{new parsian_msgs::parsian_team_config};
@@ -49,7 +50,6 @@ namespace rqt_parsian_gui {
         // create QWidget
         widget_ = new QWidget();
         drawer = new CguiDrawer();
-        lastdrawer = new CguiDrawer();
 
 
 
@@ -57,78 +57,23 @@ namespace rqt_parsian_gui {
         ourCol = QColor("blue");
         oppCol = QColor("yellow");
 
-        bag=new rosbag::Bag();
 
-        LogMode = new QAction(this);
-        LogMode->setShortcut(*new QKeySequence(tr("Ctrl+L")));
-        ReplayMode = new QAction(this);
-        ReplayMode->setShortcut(*new QKeySequence(tr("Ctrl+R")));
-        isLogMode = false;
-        isReplayMode = false;
+        saveaction = new QAction(this);
+        saveaction->setShortcut(*new QKeySequence(tr("Ctrl+L")));
+        loadaction = new QAction(this);
+        loadaction->setShortcut(*new QKeySequence(tr("Ctrl+R")));
 
         fieldWidget = new MonitorWidget();
-        fieldWidget->addAction(LogMode);
-        fieldWidget->addAction(ReplayMode);
-        connect(LogMode, SIGNAL(triggered(bool)), this, SLOT(startLog()));
-        connect(ReplayMode, SIGNAL(triggered(bool)), this, SLOT(playLog()));
-        QTableWidget *yy=new QTableWidget(7,3);
-        QStringList tableheader;
-
-        tableheader<<"Blue Team" << "Analysis" << "Yellow Team";
-        yy->setHorizontalHeaderLabels(tableheader);
-        yy->setStyleSheet("QTableView {background-color: qlineargradient(x1: 0, y1: 0, x2: 0.5, y2: 0.8,stop: 0.3 #9999ff, stop: 1 #5555ff); color:#880000; font-size:16px;}"
-                          );
-        yy->setFrameStyle(QFrame::NoFrame);
-        QHeaderView *vh=new QHeaderView(Qt::Vertical);
-        yy->setColumnWidth(1,200);
-        vh->hide();
-        yy->setVerticalHeader(vh);
-//
-//
-//        QTableWidgetItem * goals = new QTableWidgetItem("Goals");
-//        QTableWidgetItem * yCards=new QTableWidgetItem("Yellow Cards");
-//        QTableWidgetItem * Penalties=new QTableWidgetItem("Penalties");
-//        QTableWidgetItem * possession=new QTableWidgetItem("Possession");
-//        QTableWidgetItem * shots=new QTableWidgetItem("Shots");
-//        QTableWidgetItem * passSucceed=new QTableWidgetItem("Pass Succeed");
-//        QTableWidgetItem * shotSucceed=new QTableWidgetItem("Shot Succeed");
-
-        QTableWidgetItem *prototype = new QTableWidgetItem();
-// setup your prototype
-        prototype->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        prototype->setTextAlignment(Qt::AlignCenter);
-// add all your items using the prototype->clone() method
-        QStringList analysisTitles;
-        analysisTitles<<"Goals"<<"Yellow Cards"<<"Penalties"<<"Possession"<<"Shots"<<"Pass Succeed"<<"Shot Succeed";
-        for(int i=0; i<yy->rowCount();i++) {
-            QTableWidgetItem *item = prototype->clone();
-            // set the special features of each item
-            item->setText(analysisTitles[i]);
-            yy->setItem(i,1,item);
-        }
+        fieldWidget->addAction(saveaction);
+        fieldWidget->addAction(loadaction);
+        connect(saveaction, SIGNAL(triggered(bool)), this, SLOT(saveAnalysis()));
+        connect(loadaction, SIGNAL(triggered(bool)), this, SLOT(loadAnalysis()));
 
 
-        QStringList bTitles;
-        bTitles<<"3"<<"0"<<"1"<<"43%"<<"3"<<"78%"<<"60%";
-        for(int i=0; i<yy->rowCount();i++) {
-            QTableWidgetItem *item = prototype->clone();
-            // set the special features of each item
-            item->setText(bTitles[i]);
-            yy->setItem(i,0,item);
-        }
 
-        QStringList yTitles;
-        yTitles<<"5"<<"0"<<"0"<<"57%"<<"6"<<"85%"<<"51%";
-        for(int i=0; i<yy->rowCount();i++) {
-            QTableWidgetItem *item = prototype->clone();
-            // set the special features of each item
-            item->setText(yTitles[i]);
-            yy->setItem(i,2,item);
-        }
+        QWidget *analyzeW=new QWidget();
 
-
-        yy->setFixedSize(400,250);
-        QWidget *xx=new QWidget();
+        AnalyzeWidget *table=new AnalyzeWidget();
 //        xx->setMaximumHeight(30);
 //        xx->setMaximumWidth(600);
         auto mainLayout = new QGridLayout();
@@ -136,61 +81,58 @@ namespace rqt_parsian_gui {
 
         QCheckBox *btnDraws[3];
         QStringList strDraws;
-        strDraws << "Draw Pass" << "Draw Shot" << "Draw Possession" ;
-        mainLayout->addWidget(yy,0,0,7,3);
+        strDraws  << "Draw Shot"<< "Draw Pass" << "Draw Possession" ;
+        mainLayout->addWidget(table,0,0,8,3);
         for(int i=0 ; i<3 ; i++ )
         {
-            btnDraws[i] = new QCheckBox(strDraws[i],xx);
-            mainLayout->addWidget(btnDraws[i],1,i,1,1);
-        }
-
-        QRadioButton *button = new QRadioButton("blue");
-        QRadioButton *button1= new QRadioButton("yellow");
-
-
-
-        mainLayout->addWidget(button,2,0,1,1);
-        mainLayout->addWidget(button1,3,0,1,1);
-
-        xx->setMaximumHeight(900);
-
-
-
-        xx->setLayout(mainLayout);
-
-
-
-        QFile file("FlightParam.csv");
-        if (!file.open(QIODevice::ReadOnly)) {
-        }
-
-        QStringList wordList;
-        while (!file.atEnd()) {
-            QByteArray line = file.readLine();
-            wordList.append(line.split(',').first());
+            btnDraws[i] = new QCheckBox(strDraws[i],analyzeW);
+            mainLayout->addWidget(btnDraws[i],3,i);
         }
 
 
 
 
+
+
+
+
+
+
+//        QFile file("FlightParam.csv");
+//        if (!file.open(QIODevice::ReadOnly)) {
+//        }
+//
+//        QStringList wordList;
+//        while (!file.atEnd()) {
+//            QByteArray line = file.readLine();
+//            wordList.append(line.split(',').first());
+//        }
+//
+//
+//        QString fileName;
+//
+//        fileName = QFileDialog::getOpenFileName(analyzeW, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
+
+        modeChooser=new ModeChooserWidget(n);
+        mainLayout->addWidget(modeChooser,4,0,1,3);
+
+
+        analyzeW->setMaximumHeight(700);
+        analyzeW->setLayout(mainLayout);
 
         context.addWidget(fieldWidget);
-        context.addWidget(xx);
+        context.addWidget(analyzeW);
     }
 
-    void Monitor::startLog() {
-        ROS_INFO_STREAM("log mode");
-        if (!isLogMode) {
-            isLogMode = true;
-            isReplayMode = false;
-            QChar cc = '0';
-            QString suggestionName = QString("%1_%2_%3-%4:%5:%6")
-                    .arg(QString::number(QDate::currentDate().year()) , 4 , cc)
-                    .arg(QString::number(QDate::currentDate().month()) , 2 , cc)
-                    .arg(QString::number(QDate::currentDate().day()) , 2 , cc)
-                    .arg(QString::number(QTime::currentTime().hour()) , 2 , cc)
-                    .arg(QString::number(QTime::currentTime().minute()) , 2 , cc)
-                    .arg(QString::number(QTime::currentTime().second()) , 2 , cc);
+    void Monitor::saveAnalysis() {
+        QChar cc = '0';
+        QString suggestionName = QString("%1_%2_%3-%4:%5:%6")
+                .arg(QString::number(QDate::currentDate().year()) , 4 , cc)
+                .arg(QString::number(QDate::currentDate().month()) , 2 , cc)
+                .arg(QString::number(QDate::currentDate().day()) , 2 , cc)
+                .arg(QString::number(QTime::currentTime().hour()) , 2 , cc)
+                .arg(QString::number(QTime::currentTime().minute()) , 2 , cc)
+                .arg(QString::number(QTime::currentTime().second()) , 2 , cc);
 
 //            bool ok;
 //
@@ -205,32 +147,20 @@ namespace rqt_parsian_gui {
 //                QDir().mkdir("logs/"+baseFileName);
 //                suggestionName="logs/"+baseFileName+"/"+suggestionName+".bag";
 //            }
-            std::string s;
-            s = ros::package::getPath("rqt_parsian_gui");
-            ROS_INFO_STREAM(s + "aa");
-            bag->open(s+"/logs/"+suggestionName.toStdString()+".bag", rosbag::bagmode::Write);
-
-        }
+        std::string s;
+        s = ros::package::getPath("rqt_parsian_gui");
+        ROS_INFO_STREAM(s + "aa");
 
     }
-    void Monitor::playLog() {
-        ROS_INFO_STREAM("replay mode");
-        if (!isReplayMode) {
-            isReplayMode = true;
-        } else {
-            isReplayMode = false;
-        }
+    void Monitor::loadAnalysis() {
 
-        if (isLogMode) {
-            isLogMode = false;
-            bag->close();
-        }
     }
 
     void Monitor::colorCb(const parsian_msgs::parsian_team_configConstPtr& _color) {
 
         mycolor=_color;
-        if(mycolor->color!=0){
+        ROS_INFO_STREAM("hhh"<<mycolor->color);
+        if(mycolor->color){
             ourCol = QColor("blue");
             oppCol = QColor("yellow");
         }
@@ -242,214 +172,106 @@ namespace rqt_parsian_gui {
 
     }
 
-    void Monitor::wmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
-
-        if (isLogMode) {
-            mywm = _wm;
+    void Monitor::analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr &_analysis) {
 
 
-            bag->write("log/world_model", ros::Time::now(), mywm);
-        }
-        if(!isReplayMode){
+        analysisMeassage=_analysis;
 
-            mywm = _wm;
 
-//            drawer = new CguiDrawer();
-//
-//
-////        drawer->polygonBuffer=lastdrawer->polygonBuffer;
-////        drawer->rectBuffer=lastdrawer->rectBuffer;
-////        drawer->pointBuffer=lastdrawer->pointBuffer;
-////        drawer->segBuffer=lastdrawer->segBuffer;
-//
-//
-//
-//
-//
-//            drawer->guiBall.inSight = mywm->ball.inSight;
-//            drawer->guiBall.pos.x = mywm->ball.pos.x;
-//            drawer->guiBall.pos.y = mywm->ball.pos.y;
-//            drawer->guiBall.radius = mywm->ball.obstacleRadius;
-//            for (int i = 0; i < mywm->our.size(); i++) {
-//                if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
-//                    ourCol.setAlpha(150);
-//                }
-//                drawer->drawRobot(mywm->our[i].pos, mywm->our[i].dir,
-//                                  ourCol, mywm->our[i].id, i, "", true);
-//
-//                //        if (soccer->agents[wm->our.active(i)->id]->goalVisibility>0)
-//                //            draw(QString::number(soccer->agents[wm->our.active(i)->id]->goalVisibility,'f',2), wm->our.active(i)->pos + Vector2D(-0.3, -0.1), QColor("black"), 14);
-//
-//
+
+
+//            if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
+//                ourCol.setAlpha(150);
 //            }
-//
-//
-//            for (const auto &i : mywm->opp) {
-//
-//
-//                if (fabs(i.inSight - 0.5) < 0.01) {
-//                    oppCol.setAlpha(150);
-//                }
-//
-//
-//                drawer->drawRobot(i.pos, i.dir,
-//                                  oppCol, i.id, -1);
-//
-//            }
-//        fieldWidget->update();
 
+        ourCol.setAlpha(150);
+
+        switch (analysisMeassage->shootOrPassOrPossession){
+            case 0://Shot
+            ROS_INFO_STREAM("nnn");
+                drawer->drawRobot(0, analysisMeassage->shotter, analysisMeassage->shotDir,
+                                  oppCol, analysisMeassage->shotterID, -1, "", true);
+                break;
+            case 1://Pass
+                drawer->drawRobot(1,analysisMeassage->shotter, analysisMeassage->shotDir,
+                                  oppCol, analysisMeassage->shotterID, -1,"", true);
+                drawer->drawRobot(2,analysisMeassage->receiver, analysisMeassage->shotDir,
+                                  oppCol, analysisMeassage->shotterID, -1,"", true);
+                break;
+            case 2://Possession
+                CguiDrawer::GuiBall ball;
+                ball.pos.x=analysisMeassage->ballPos.x;
+                ball.pos.y=analysisMeassage->ballPos.y;
+                ball.BP=analysisMeassage->BP;
+                ball.Bpsaved=analysisMeassage->BPSaved;
+                drawer->balls.enqueue(ball);
+                break;
         }
 
+
+
+        fieldWidget->drawerBuffer = drawer;
+
+
+        fieldWidget->update();
 
     }
 
 
 
-    void Monitor::logwmCb(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
 
-
-
-
-        if (isReplayMode) {
-            mywm = _wm;
-
-            drawer = new CguiDrawer();
-
-
-            drawer->guiBall.inSight = mywm->ball.inSight;
-            drawer->guiBall.pos.x = mywm->ball.pos.x;
-            drawer->guiBall.pos.y = mywm->ball.pos.y;
-            drawer->guiBall.radius = mywm->ball.obstacleRadius;
-            for (int i = 0; i < mywm->our.size(); i++) {
-                if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
-                    ourCol.setAlpha(150);
-                }
-                drawer->drawRobot(mywm->our[i].pos, mywm->our[i].dir,
-                                  ourCol, mywm->our[i].id, i, "", false);
-
-                //        if (soccer->agents[wm->our.active(i)->id]->goalVisibility>0)
-                //            draw(QString::number(soccer->agents[wm->our.active(i)->id]->goalVisibility,'f',2), wm->our.active(i)->pos + Vector2D(-0.3, -0.1), QColor("black"), 14);
-
-
-            }
-
-
-            for (const auto &i : mywm->opp) {
-
-
-                if (fabs(i.inSight - 0.5) < 0.01) {
-                    oppCol.setAlpha(150);
-                }
-
-
-                drawer->drawRobot(i.pos, i.dir,
-                                  oppCol, i.id, -1);
-
-            }
-//        fieldWidget->update();
-
-        }
-
-
-    }
 
 
 
 
 
     void Monitor::drawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
-        if(isLogMode) {
-            bag->write("log/draws", ros::Time::now(), _draw);
+
+        for (parsian_msgs::parsian_draw_circle cir : _draw->circles) {
+            drawer->arcBuffer->append(cir);
+
+        }
+        for (parsian_msgs::parsian_draw_polygon polygon : _draw->polygons) {
+            drawer->polygonBuffer->append(polygon);
+
+        }
+        for (parsian_msgs::parsian_draw_rect rect : _draw->rects) {
+            drawer->rectBuffer->append(rect);
+
+        }
+        for (parsian_msgs::parsian_draw_segment seg : _draw->segments) {
+            drawer->segBuffer->append(seg);
+        }
+        for (parsian_msgs::parsian_draw_text txt : _draw->texts) {
+            drawer->textBuffer->append(txt);
+
+        }
+        for (parsian_msgs::parsian_draw_vector point : _draw->vectors) {
+            drawer->pointBuffer->append(point);
         }
 
+        fieldWidget->drawerBuffer = drawer;
 
-        if (!isReplayMode) {
-
-            for (parsian_msgs::parsian_draw_circle cir : _draw->circles) {
-                lastdrawer->arcBuffer->append(cir);
-
-            }
-            for (parsian_msgs::parsian_draw_polygon polygon : _draw->polygons) {
-                lastdrawer->polygonBuffer->append(polygon);
-
-            }
-            for (parsian_msgs::parsian_draw_rect rect : _draw->rects) {
-                lastdrawer->rectBuffer->append(rect);
-
-            }
-            for (parsian_msgs::parsian_draw_segment seg : _draw->segments) {
-                lastdrawer->segBuffer->append(seg);
-            }
-            for (parsian_msgs::parsian_draw_text txt : _draw->texts) {
-                lastdrawer->textBuffer->append(txt);
-
-            }
-            for (parsian_msgs::parsian_draw_vector point : _draw->vectors) {
-                lastdrawer->pointBuffer->append(point);
-            }
-        }
-//        fieldWidget->update();
+        fieldWidget->update();
 
     }
 
-
-    void Monitor::logdrawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
-        if (isReplayMode) {
-
-            for (parsian_msgs::parsian_draw_circle cir : _draw->circles) {
-                lastdrawer->arcBuffer->append(cir);
-
-            }
-            for (parsian_msgs::parsian_draw_polygon polygon : _draw->polygons) {
-                lastdrawer->polygonBuffer->append(polygon);
-
-            }
-            for (parsian_msgs::parsian_draw_rect rect : _draw->rects) {
-                lastdrawer->rectBuffer->append(rect);
-
-            }
-            for (parsian_msgs::parsian_draw_segment seg : _draw->segments) {
-                lastdrawer->segBuffer->append(seg);
-            }
-            for (parsian_msgs::parsian_draw_text txt : _draw->texts) {
-                lastdrawer->textBuffer->append(txt);
-
-            }
-            for (parsian_msgs::parsian_draw_vector point : _draw->vectors) {
-                lastdrawer->pointBuffer->append(point);
-
-            }
-        }
-//        fieldWidget->update();
-
-    }
 
     void Monitor::timerCb(const ros::TimerEvent &_timer) {
 
 
-        fieldWidget->showLogMode(isLogMode,isReplayMode);
+
+
+//        fieldWidget->showLogMode(isLogMode,isReplayMode);
 
 //        fieldWidget->drawerBuffer->clear();
 
 
 
-        drawer->arcBuffer = lastdrawer->arcBuffer;
-        drawer->segBuffer = lastdrawer->segBuffer;
-        drawer->pointBuffer = lastdrawer->pointBuffer;
-        drawer->textBuffer = lastdrawer->textBuffer;
-        drawer->rectBuffer = lastdrawer->rectBuffer;
-        drawer->polygonBuffer = lastdrawer->polygonBuffer;
 
-        lastdrawer = drawer;
-        fieldWidget->drawerBuffer = lastdrawer;
 
 //        fieldWidget->drawerBuffer->draw(Circle2D(ballpos, radius), 0, 360, QColor("orange"), true);
 
-
-        fieldWidget->update();
-        if (isReplayMode && mywm != nullptr) {
-            logwmCb(mywm);
-        }
 
 
 //        fieldWidget->drawerBuffer->robotBuffer.clear();
@@ -462,9 +284,9 @@ namespace rqt_parsian_gui {
         // unregister all publishers here
         ROS_INFO("Monitor closed");
         timer.stop();
+        modeChooser->saveTeamConfig();
         n.shutdown();
         n_private.shutdown();
-        bag->close();
 
 
     }

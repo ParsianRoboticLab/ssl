@@ -49,17 +49,20 @@ public:
     QQueue<parsian_msgs::parsian_draw_segment> *segBuffer;
     QQueue<parsian_msgs::parsian_draw_vector> *pointBuffer;
     QQueue<parsian_msgs::parsian_draw_text> *textBuffer;
-    QQueue<CGraphicalRobot> robotBuffer;
+    QQueue<CGraphicalRobot> shotteBuffer;
+    QQueue<CGraphicalRobot> passerBuffer;
+    QQueue<CGraphicalRobot> receiverBuffer;
     struct GuiBall {
         Vector2D pos;
-        double inSight;
-        double radius;
-    } guiBall;
+        int BP;
+        int Bpsaved;
+    };
 
+    QQueue<GuiBall> balls;
     CguiDrawer();
     ~CguiDrawer();
 
-    void drawRobot(Vector2D _pos = Vector2D(0, 0), Vector2D _dir = Vector2D(0, 0), QColor _color = QColor(255, 255, 0), int _ID = 0, int _comID = 0, QString _str = "", bool newRobots = false);
+    void drawRobot(int type,Vector2D _pos = Vector2D(0, 0), Vector2D _dir = Vector2D(0, 0), QColor _color = QColor(255, 255, 0), int _ID = 0, int _comID = 0, QString _str = "", bool newRobots = false);
 
     void clear();
 };

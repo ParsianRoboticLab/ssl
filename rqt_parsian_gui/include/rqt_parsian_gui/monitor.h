@@ -12,10 +12,12 @@
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
 #include <rqt_parsian_gui/monitorWidget.h>
+#include <rqt_parsian_gui/modeChooserWidget.h>
 #include <pluginlib/class_list_macros.h>
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_util/core/worldmodel.h>
+#include <parsian_msgs/parsian_statistical_analyze.h>
 #include <ros/package.h>
 
 
@@ -36,31 +38,27 @@ public:
     ros::NodeHandle n_private;
     ros::NodeHandle n_color;
 
-    ros::Subscriber wm_sub;
-    ros::Subscriber log_wm_sub;
     ros::Subscriber draw_sub;
-    ros::Subscriber log_draw_sub;
     ros::Subscriber color_sub;
+    ros::Subscriber analysis_sub;
 
     ros::Timer timer;
 
-        rosbag::Bag *bag;
 
 
     double radius = 0.0215;
-    bool isLogMode;
-    bool isReplayMode;
-    QAction* LogMode;
-    QAction* ReplayMode;
+
+    QAction* saveaction;
+    QAction* loadaction;
 
     QColor ourCol;
     QColor oppCol;
 
+    int shotNumber,shotsucceed,passNumber,passsucceed,possessionnumber,possessionopp;
 
-    void wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
-    void logwmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
+
+    void analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr& _analysis);
     void drawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
-    void logdrawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
     void colorCb(const parsian_msgs::parsian_team_configConstPtr& _color);
     void timerCb(const ros::TimerEvent& _timer);
 
@@ -69,18 +67,17 @@ public:
     // void triggerConfiguration();
 private:
     QWidget* widget_;
+    ModeChooserWidget *modeChooser;
 
     CguiDrawer* drawer;
-    CguiDrawer logDrawer;
-    CguiDrawer* lastdrawer;
-    parsian_msgs::parsian_world_modelConstPtr mywm;
+    parsian_msgs::parsian_statistical_analyzeConstPtr analysisMeassage;
     parsian_msgs::parsian_team_configConstPtr mycolor;
     MonitorWidget* fieldWidget;
 
 
 public slots:
-    void playLog();
-    void startLog();
+    void loadAnalysis();
+    void saveAnalysis();
 
 };
 }  // namespace rqt_example_cpp
