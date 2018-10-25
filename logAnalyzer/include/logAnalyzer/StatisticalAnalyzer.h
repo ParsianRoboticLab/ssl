@@ -11,6 +11,7 @@
 #include <fstream>
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/ssl_refree_wrapper.h>
+#include <parsian_msgs/parsian_statistical_analyze.h>
 #include <ros/package.h>
 #include <QtCore/QList>
 #include <QtCore/QTextStream>

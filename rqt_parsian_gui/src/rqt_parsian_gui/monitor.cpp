@@ -3,21 +3,8 @@
 */
 
 #include <rqt_parsian_gui/monitor.h>
-#include <rqt_parsian_gui/analyzeWidget.h>
-#include <rqt_parsian_gui/guiDrawer.h>
-#include <QApplication>
-#include <QThread>
-#include <QTime>
-#include <QFileDialog>
-#include <QInputDialog>
-#include <QLineEdit>
-#include <QDir>
-#include <QCheckBox>
-#include <QTableWidget>
-#include <QHeaderView>
-#include <QRadioButton>
-#include <QFileDialog>
-#include <QAbstractTableModel>
+#include <QObject>
+
 
 
 
@@ -43,7 +30,7 @@ namespace rqt_parsian_gui {
         draw_sub = n.subscribe("/analyze_draws", 1000, &Monitor::drawCb, this);
         analysis_sub = n.subscribe("/analysis", 1000, &Monitor::analysisCb, this);
         color_sub = n.subscribe("/team_config", 1000, &Monitor::colorCb, this);
-        timer = n.createTimer(ros::Duration(0.080), &Monitor::timerCb, this);
+        timer = n.createTimer(ros::Duration(0.3), &Monitor::timerCb, this);
         parsian_msgs::parsian_team_configPtr team_config{new parsian_msgs::parsian_team_config};
         // access standalone command line arguments
         QStringList argv = context.argv();
@@ -73,7 +60,7 @@ namespace rqt_parsian_gui {
 
         QWidget *analyzeW=new QWidget();
 
-        AnalyzeWidget *table=new AnalyzeWidget();
+        table=new AnalyzeWidget();
 //        xx->setMaximumHeight(30);
 //        xx->setMaximumWidth(600);
         auto mainLayout = new QGridLayout();
@@ -92,6 +79,10 @@ namespace rqt_parsian_gui {
 
 
 
+        clearButton=new QPushButton("Clear");
+        clearButton->setFixedSize(400,30);
+        mainLayout->addWidget(clearButton,4,0,1,3);
+        connect(clearButton, SIGNAL(clicked(bool)) ,this, SLOT(clearField()));
 
 
 
@@ -114,14 +105,27 @@ namespace rqt_parsian_gui {
 //        fileName = QFileDialog::getOpenFileName(analyzeW, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
 
         modeChooser=new ModeChooserWidget(n);
-        mainLayout->addWidget(modeChooser,4,0,1,3);
+        mainLayout->addWidget(modeChooser,5,0,1,3);
+
+
+
+
 
 
         analyzeW->setMaximumHeight(700);
+        analyzeW->setMaximumWidth(420);
         analyzeW->setLayout(mainLayout);
 
         context.addWidget(fieldWidget);
         context.addWidget(analyzeW);
+
+
+        possessionnumber=1;
+        possessionopp=0;
+        shotNumber=1;
+        shotsucceed=0;
+        passNumber=1;
+        passsucceed=0;
     }
 
     void Monitor::saveAnalysis() {
@@ -153,13 +157,13 @@ namespace rqt_parsian_gui {
 
     }
     void Monitor::loadAnalysis() {
+        ROS_INFO_STREAM("Loaaaad");
 
     }
 
     void Monitor::colorCb(const parsian_msgs::parsian_team_configConstPtr& _color) {
 
         mycolor=_color;
-        ROS_INFO_STREAM("hhh"<<mycolor->color);
         if(mycolor->color){
             ourCol = QColor("blue");
             oppCol = QColor("yellow");
@@ -172,34 +176,77 @@ namespace rqt_parsian_gui {
 
     }
 
+
+    void Monitor::clearField(){
+        ROS_INFO_STREAM("clear");
+        drawer->clear();
+        fieldWidget->drawerBuffer = drawer;
+        fieldWidget->update();
+
+
+        //init table variables
+        QStringList bTitles;
+        bTitles<<"0"<<"0"<<"0"<<"0"<<"0"<<"0"<<"0";
+        QStringList yTitles;
+        yTitles<<"0"<<"0"<<"0"<<"0"<<"0"<<"0"<<"0";
+
+        table->updateTable(bTitles,yTitles);
+
+        possessionnumber=1;
+        possessionopp=0;
+        shotNumber=0;
+        shotsucceed=0;
+        passNumber=1;
+        passsucceed=0;
+    }
+
     void Monitor::analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr &_analysis) {
 
 
         analysisMeassage=_analysis;
 
 
-
-
-//            if (fabs(mywm->our[i].inSight - 0.5) < 0.01) {
-//                ourCol.setAlpha(150);
-//            }
-
-        ourCol.setAlpha(150);
+        oppCol.setAlpha(100);
+        QColor faultcol=QColor("red");
+        faultcol.setAlpha(150);
 
         switch (analysisMeassage->shootOrPassOrPossession){
             case 0://Shot
-            ROS_INFO_STREAM("nnn");
-                drawer->drawRobot(0, analysisMeassage->shotter, analysisMeassage->shotDir,
-                                  oppCol, analysisMeassage->shotterID, -1, "", true);
+                shotNumber++;
+                if(analysisMeassage->succeed) {
+                    shotsucceed++;
+                    drawer->drawRobot(0, analysisMeassage->shotter, analysisMeassage->shotDir,
+                                      oppCol, analysisMeassage->shotterID, -1, "", true);
+                } else{
+
+                    drawer->drawRobot(0, analysisMeassage->shotter, analysisMeassage->shotDir,
+                                      faultcol, analysisMeassage->shotterID, -1, "", true);
+                }
                 break;
             case 1://Pass
-                drawer->drawRobot(1,analysisMeassage->shotter, analysisMeassage->shotDir,
-                                  oppCol, analysisMeassage->shotterID, -1,"", true);
-                drawer->drawRobot(2,analysisMeassage->receiver, analysisMeassage->shotDir,
-                                  oppCol, analysisMeassage->shotterID, -1,"", true);
+                passNumber++;
+
+                if(analysisMeassage->succeed) {
+                    passsucceed++;
+
+                    drawer->drawRobot(1, analysisMeassage->shotter, analysisMeassage->shotDir,
+                                      oppCol, analysisMeassage->shotterID, -1, "", true);
+                    drawer->drawRobot(2, analysisMeassage->receiver, analysisMeassage->shotDir,
+                                      oppCol, analysisMeassage->shotterID, -1, "", true);
+                }
+                else{
+                    drawer->drawRobot(1, analysisMeassage->shotter, analysisMeassage->shotDir,
+                                      faultcol, analysisMeassage->shotterID, -1, "", true);
+                    drawer->drawRobot(2, analysisMeassage->receiver, analysisMeassage->shotDir,
+                                      faultcol, analysisMeassage->shotterID, -1, "", true);
+                }
                 break;
             case 2://Possession
                 CguiDrawer::GuiBall ball;
+                possessionnumber++;
+                if(analysisMeassage->BPSaved==0)
+                    possessionopp++;
+
                 ball.pos.x=analysisMeassage->ballPos.x;
                 ball.pos.y=analysisMeassage->ballPos.y;
                 ball.BP=analysisMeassage->BP;
@@ -210,10 +257,16 @@ namespace rqt_parsian_gui {
 
 
 
+
+
         fieldWidget->drawerBuffer = drawer;
 
 
         fieldWidget->update();
+
+
+
+
 
     }
 
@@ -259,6 +312,22 @@ namespace rqt_parsian_gui {
 
     void Monitor::timerCb(const ros::TimerEvent &_timer) {
 
+
+        bvals.clear();
+        yvals.clear();
+        bvals<<"0"<<"0"<<"0"<<QString::number(possessionnumber==0?0:(int)((possessionopp/(double)possessionnumber)*100))+"%"
+        <<QString::number(shotNumber)
+             <<QString::number((int)(shotNumber==0?0:(shotsucceed/(double)shotNumber)*100))+"%"
+             <<QString::number((int)(passNumber==0?0:(passsucceed/(double)passNumber)*100))+"%";
+
+
+
+        yvals<<"0"<<"0"<<"0"<<QString::number((int)(possessionnumber==0?0:(1-possessionopp/(double)possessionnumber)*100))+"%"
+             <<QString::number(shotNumber)
+             <<QString::number((int)(shotNumber==0?0:(1-shotsucceed/(double)shotNumber)*100))+"%"
+             <<QString::number((int)(passNumber==0?0:(1-passsucceed/(double)passNumber)*100))+"%";
+
+        table->updateTable(bvals,yvals);
 
 
 

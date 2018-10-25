@@ -19,6 +19,22 @@
 #include <parsian_util/core/worldmodel.h>
 #include <parsian_msgs/parsian_statistical_analyze.h>
 #include <ros/package.h>
+#include <rqt_parsian_gui/analyzeWidget.h>
+#include <rqt_parsian_gui/guiDrawer.h>
+#include <QApplication>
+#include <QThread>
+#include <QTime>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QDir>
+#include <QCheckBox>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QRadioButton>
+#include <QFileDialog>
+#include <QAbstractTableModel>
+#include <QString>
 
 
 
@@ -55,7 +71,9 @@ public:
     QColor oppCol;
 
     int shotNumber,shotsucceed,passNumber,passsucceed,possessionnumber,possessionopp;
-
+    AnalyzeWidget *table;
+    QStringList bvals,yvals;
+    QPushButton *clearButton;
 
     void analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr& _analysis);
     void drawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
@@ -78,6 +96,8 @@ private:
 public slots:
     void loadAnalysis();
     void saveAnalysis();
+    void clearField();
+
 
 };
 }  // namespace rqt_example_cpp

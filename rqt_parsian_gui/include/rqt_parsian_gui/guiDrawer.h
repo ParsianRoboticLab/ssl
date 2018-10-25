@@ -49,7 +49,7 @@ public:
     QQueue<parsian_msgs::parsian_draw_segment> *segBuffer;
     QQueue<parsian_msgs::parsian_draw_vector> *pointBuffer;
     QQueue<parsian_msgs::parsian_draw_text> *textBuffer;
-    QQueue<CGraphicalRobot> shotteBuffer;
+    QQueue<CGraphicalRobot> shotterBuffer;
     QQueue<CGraphicalRobot> passerBuffer;
     QQueue<CGraphicalRobot> receiverBuffer;
     struct GuiBall {

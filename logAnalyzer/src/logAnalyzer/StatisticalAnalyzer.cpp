@@ -8,8 +8,12 @@
 
 StatisticalAnalyzer::StatisticalAnalyzer() {
 
+//    n = getNodeHandle();
+//    n_private = getPrivateNodeHandle();
+
     wm_sub = n.subscribe("/world_model", 1000, &StatisticalAnalyzer::wmCb, this);
     ref_sub = n.subscribe("/referee", 1000, &StatisticalAnalyzer::refCb, this);
+    analyze_pub = n.advertise<parsian_msgs::parsian_statistical_analyze>("/analysis", 1000);
 //    ros::NodeHandle n("LogAnalyzer");
 
 
@@ -395,6 +399,18 @@ void StatisticalAnalyzer::writeToShot(){
 
     shotFile.close();
 
+
+    parsian_msgs::parsian_statistical_analyze shotanalysis;
+    shotanalysis.shootOrPassOrPossession=0;
+    shotanalysis.shotter.x=shotterRobot.x;
+    shotanalysis.shotter.y=shotterRobot.y;
+    shotanalysis.succeed=shotInGoal;
+    shotanalysis.receiver.y=shotTarget.y;
+    analyze_pub.publish(shotanalysis);
+
+
+
+
 }
 
 
@@ -409,6 +425,17 @@ void StatisticalAnalyzer::writeToPass(){
     passDS <<'\n';
 
     passFile.close();
+
+
+    parsian_msgs::parsian_statistical_analyze passanalysis;
+
+    passanalysis.shootOrPassOrPossession=1;
+    passanalysis.shotter.x=shotterRobot.x;
+    passanalysis.shotter.y=shotterRobot.y;
+    passanalysis.succeed=passSucceed;
+    passanalysis.receiver.x=receiverRobot.x;
+    passanalysis.receiver.y=receiverRobot.y;
+    analyze_pub.publish(passanalysis);
 }
 
 
@@ -423,6 +450,18 @@ void StatisticalAnalyzer::writeToPossession(){
     possessionDS<<'\n';
 
     possessionFile.close();
+
+
+
+    ROS_INFO_STREAM("nadi");
+
+    parsian_msgs::parsian_statistical_analyze possessionanalysis;
+    possessionanalysis.shootOrPassOrPossession=2;
+    possessionanalysis.ballPos.x=ballPos.x;
+    possessionanalysis.ballPos.y=ballPos.y;
+    possessionanalysis.BP=(int)BP;
+    possessionanalysis.BPSaved=(int)BPsaved;
+    analyze_pub.publish(possessionanalysis);
 
 }
 

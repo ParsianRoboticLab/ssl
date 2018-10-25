@@ -152,15 +152,12 @@ namespace rqt_parsian_gui
         }
 
         CGraphicalRobot rob;
-        for(int i=0;i<drawerBuffer->shotteBuffer.size();i++){
-            rob = drawerBuffer->shotteBuffer.at(i);
+        for(int i=0;i<drawerBuffer->shotterBuffer.size();i++){
+            rob = drawerBuffer->shotterBuffer.at(i);
             drawRobot(rob.pos.x,
                       rob.pos.y,
                       rob.dir.th().degree(),
-                      rob.ID,
-                      rob.comID,
                       rob.color,
-                      rob.str,
                       rob.newRobots);
 
         }
@@ -171,10 +168,7 @@ namespace rqt_parsian_gui
             drawRobot(rob.pos.x,
                       rob.pos.y,
                       rob.dir.th().degree(),
-                      rob.ID,
-                      rob.comID,
                       rob.color,
-                      rob.str,
                       rob.newRobots);
 
         }
@@ -185,23 +179,27 @@ namespace rqt_parsian_gui
             drawRobot(rob.pos.x,
                       rob.pos.y,
                       rob.dir.th().degree(),
-                      rob.ID,
-                      rob.comID,
                       rob.color,
-                      rob.str,
                       rob.newRobots);
 
         }
 
-//        if (drawerBuffer->guiBall.inSight > 0) {
-//            drawArc(drawerBuffer->guiBall.pos.x,
-//                    drawerBuffer->guiBall.pos.y,
-//                    0.03,
-//                    0,
-//                    360,
-//                    QColor("orange"),
-//                    true);
-//        }
+
+        for(int i=0; i<drawerBuffer->balls.size();i++){
+
+            QColor col=QColor("orange");
+            col.setAlpha(100);
+            drawArc(drawerBuffer->balls.at(i).pos.x,
+                    drawerBuffer->balls.at(i).pos.y,
+                    0.05,
+                    0,
+                    360,
+                    col,
+                    true);
+
+
+        }
+
 
         parsian_msgs::parsian_draw_circle arc;
 ////        CGraphicalArc arc;
@@ -382,24 +380,26 @@ namespace rqt_parsian_gui
         return list;
     }
 
-    void MonitorWidget::drawRobot(double x, double y, double ang, int ID, int comID, QColor color, QString str, bool newRobots) {
+
+
+    void MonitorWidget::drawRobot(double x, double y, double ang, QColor color, bool newRobots) {
 
         double rad = newRobots ? robot_radius_new : robot_radius_old;
-        if (newRobots) {
+//        if (newRobots) {
             glCallList(drawArc(x, y, rad , ang + 140, ang + 400, color, true, true));
             glCallList(drawLine(x, y, x + 0.05 * cos(ang * _DEG2RAD) , y + 0.05 * sin(ang * _DEG2RAD) , QColor("darkcyan")));
-        } else {
-            color.setGreen((color.green() + 45) < 255 ? (color.green() + 45) : 255);
-            color.setBlue((color.blue() + 45) < 255 ? (color.blue() + 45) : 255);
-            color.setRed((color.red() + 45) < 255 ? (color.red() + 45) : 255);
-            glCallList(drawArc(x, y, rad , 0, 360, color, true));
-            glCallList(drawArc(x, y, rad , 0, 360, QColor(0, 0, 0), false));
-            glCallList(drawLine(x, y, x + rad * cos(ang * _DEG2RAD), y + rad * sin(ang * _DEG2RAD), QColor(0, 0, 0)));
-        }
-        drawText(x + rad, y, QString("%1 %2").arg(ID).arg(str), QColor(0, 0, 0), 10);
-        if (comID != -1) {
-            drawText(x, y - rad + 0.2, QString::number(comID), QColor(255, 0, 0), 10);
-        }
+//        } else {
+//            color.setGreen((color.green() + 45) < 255 ? (color.green() + 45) : 255);
+//            color.setBlue((color.blue() + 45) < 255 ? (color.blue() + 45) : 255);
+//            color.setRed((color.red() + 45) < 255 ? (color.red() + 45) : 255);
+//            glCallList(drawArc(x, y, rad , 0, 360, color, true));
+//            glCallList(drawArc(x, y, rad , 0, 360, QColor(0, 0, 0), false));
+//            glCallList(drawLine(x, y, x + rad * cos(ang * _DEG2RAD), y + rad * sin(ang * _DEG2RAD), QColor(0, 0, 0)));
+//        }
+//        drawText(x + rad, y, QString("%1 %2").arg(ID).arg(str), QColor(0, 0, 0), 10);
+//        if (comID != -1) {
+//            drawText(x, y - rad + 0.2, QString::number(comID), QColor(255, 0, 0), 10);
+//        }
     }
 
     void MonitorWidget::drawText(double x, double y, QString text, QColor color, int size) {

@@ -109,7 +109,8 @@ namespace rqt_parsian_gui
 
 
         void drawText(double x, double y, QString text, QColor color, int size);
-        void drawRobot(double x, double y, double ang, int ID, int comID, QColor color,QString str="", bool newRobots=false);
+        void drawRobot(double x, double y, double ang, QColor color, bool newRobots=false);
+
     };
 
 
