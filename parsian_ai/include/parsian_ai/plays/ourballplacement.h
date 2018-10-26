@@ -24,6 +24,8 @@ public:
         static int chooseFirst();
         GotopointavoidAction* gpa;
         GotopointavoidAction* gpar;
+        ReceivepassAction* recivePass;
+        KickAction* pass;
 
 
 
@@ -39,10 +41,12 @@ private:
         int minIndex;
         CAgent *a;
         double array[2][2];
-        bool nearFlag , restFlag;
+        bool nearFlag , restFlag , shotFlag , firstLoopFlag ,updateFlag ,reciveFlag;
         int nearID;
         Vector2D currentBallPos;
         Vector2D lastBallPos;
+        Vector2D desigerPos;
+        Vector2D ballPosBeforKick;
 
 };
 
