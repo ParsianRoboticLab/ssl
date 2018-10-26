@@ -1,6 +1,6 @@
 #include <search.h>
 #include <parsian_ai/plays/ourballplacement.h>
-
+#include <math.h>
 #include "parsian_ai/plays/ourballplacement.h"
 
 COurBallPlacement::COurBallPlacement() {
@@ -12,11 +12,19 @@ COurBallPlacement::COurBallPlacement() {
     first = true;
     state = BallPlacement :: GO_FOR_BALL;
     gpa = new GotopointavoidAction;
+    recivePass = new ReceivepassAction;
+    pass = new KickAction;
     //gpar = new GotopointavoidAction;
-    nearFlag = true;
-    restFlag = true;
+    nearFlag = false;
+    restFlag = false;
+    shotFlag = false;
+    firstLoopFlag = false;
+    updateFlag = false;
+    reciveFlag = false;
     currentBallPos =  Vector2D();
     lastBallPos =  Vector2D();
+    ballPosBeforKick = Vector2D();
+    desigerPos = Vector2D();
 
 }
 
@@ -35,66 +43,44 @@ void COurBallPlacement::init(QList<Agent*>& _agents) {
 }
 
 /**
- * do not giv this function number bigger than 2 :)
+ * find the nearest agent to the ball
  *
  * @param ballPos current ball position
  * @param number the number of near agents that we want to use
  * @return near agents id
  * somthing like bubble sort
+ *
  */
-int COurBallPlacement::agentFinder(Vector2D ballPos , int number) {
-
-    int minArray[number];
+int COurBallPlacement::agentFinder(Vector2D pos , int number) {
 
     double tempDist = 0;
     double minDist = 1000;
-    int nearAgent[number];
+    int nearAgent;
 
     for(int i = 0 ; i < agents.size() ; i++){
-        if ( agents[i]->pos().dist(ballPos) < minDist){
-            nearAgent[0] = i;
+        if ( agents[i]->pos().dist(pos) < minDist && i != number){
+            nearAgent = i;
             minDist = agents[i]->pos().dist(wm->ball->pos);
         }
     }
 
-    ROS_INFO_STREAM("hamid agent ID: " << agents[nearID]->id());
-    return nearAgent[0];
-
-/*
-    for(int j=0 ; j<number ; j++) {
-        for (int i = 0; i < agents.size(); i++) {
-            tempDist = agents[i]->pos().dist(ballPos);
-            if(tempDist < minDist){
-                if (j != 0 && i!=minArray[0]){
-                    minDist = tempDist;
-                    minArray[j] = i;
-                } else{
-                    minDist = tempDist;
-                    minArray[j] = i;
-                }
-            }
-        }
-
-    }
-    if (number!=1){
-        return nearAgent[0]*10+nearAgent[1];
-    } else{
-        ROS_INFO_STREAM("hamid agent ID: " << agents[nearID]->id());
-        return nearAgent[0];
-    }
-    */
-
+    ROS_INFO_STREAM(" agent ID: " << agents[nearID]->id());
+    return nearAgent;
 
 }
 /**
- * execute function
- * this will be call in masterPLay class
+ * this mudule will order the other robots to what to do when ballPLacement is on
+ * now they go in the corner and step out of the way
+ * @param nearAgent the robot that is nearest to ball
+ * @param restFlag rest is all the agent except the nearAgent
  */
 
 void COurBallPlacement::otherRobotsFormation(int nearAgent , bool restFlag){
 
+    //ROS_INFO_STREAM("other Robots formation func");
+
     for(int i=0 ;i<agents.size() ;i++) {
-        if (i != nearAgent && restFlag == true) {
+        if (i != nearAgent && !restFlag) {
             gpar = new GotopointavoidAction;
             gpar->setTargetpos(wm->field->center() - Vector2D( (i*0.5 - 5), 4 ));
             gpar->setTargetdir(Vector2D(1, 0));
@@ -102,30 +88,52 @@ void COurBallPlacement::otherRobotsFormation(int nearAgent , bool restFlag){
 
         }
         if (i != nearAgent) {
-            ROS_INFO_STREAM("hamid rest ID" << agents[i]->id() << " X : " << agents[i]->pos().x << " Y :" << agents[i]->pos().y << endl);
+            //ROS_INFO_STREAM("hamid rest ID" << agents[i]->id() << " X : " << agents[i]->pos().x << " Y :" << agents[i]->pos().y << endl);
             agents[i]->action = gpar;
         }
         gpar = nullptr;
         delete gpar;
     }
-    restFlag = false;
+    restFlag = true;
 
 }
+
+//double tetaFinder(Vector2D desiger , Vector2D ballPos ){
+//    double x = desiger.x - ballPos.x;
+//    double y = desiger.y - ballPos.y;
+//    return atan(y/x);
+//
+//}
+//
+//double yFinder(Vector2D desiger , Vector2D ballPos ,  double dist){
+//    return dist*sin(tetaFinder(desiger , ballPos));
+//}
+//double xFinder(Vector2D desiger , Vector2D ballPos ,  double dist){
+//    return dist*cos(tetaFinder(desiger , ballPos));
+//}
+
+/**
+ * execute function
+ * this will be call in masterPLay class
+ */
+
 void COurBallPlacement::execute_x(){
 
 
     int nearAgent=0;
     Vector2D ballPos = Vector2D(wm->ball->pos.x , wm->ball->pos.y);
+
+    if(!firstLoopFlag){
+        desigerPos = Vector2D(ballPos + Vector2D(4,0));
+        firstLoopFlag = true;
+    }
+
     currentBallPos = ballPos;
-    gpa->setTargetpos(wm->ball->pos - Vector2D(0.5,0));
-    gpa->setTargetdir(Vector2D(1,0));
 
-    nearAgent = agentFinder(ballPos , 1);
+    nearAgent = agentFinder(ballPos , 100);
 
-
-
-    if (agents.size() > nearAgent && nearFlag == true) {
-        nearFlag = false;
+    if (agents.size() > nearAgent && !nearFlag) {
+        nearFlag = true;
         nearID = nearAgent;
         lastBallPos = ballPos;
     } else {
@@ -134,12 +142,79 @@ void COurBallPlacement::execute_x(){
 
     if (currentBallPos.dist(lastBallPos) > 0.5 ){
         //ROS_INFO_STREAM("hamid"<<"current X : "<<currentBallPos.x<<"current Y : "<<currentBallPos.y<<"last X : "<<lastBallPos.x<<"last Y : "<<lastBallPos.y);
-        nearFlag = true;
-        restFlag = true;
+        nearFlag = false;
+        restFlag = false;
     }
 
     otherRobotsFormation(nearAgent , restFlag);
-    agents[nearID]->action = gpa;
+    ///set pass action for nearAgent
+    pass->setTarget(desigerPos);
+    double power = 3 ;//0.5 * desigerPos.dist(ballPos);
+    //if(power<3) power = 3;
+    //if(power>150) power = 150;
+    ROS_INFO_STREAM("speed:"<< power);
+    pass->setKickspeed(power*100);
+    pass->setSlow(true);
+    pass->setDontkick(true);
+
+    ///recive pass action
+    recivePass->setReceiveradius(1);
+    recivePass->setTarget(desigerPos);
+    recivePass->setSlow(true);
+    int nearTargetAgent = agentFinder(desigerPos , nearAgent);
+    agents[nearTargetAgent]->action = recivePass;
+
+
+    if(!shotFlag && !updateFlag)
+    {
+        ballPosBeforKick = currentBallPos;
+    }
+
+    if ( (ballPosBeforKick.dist(currentBallPos) > ballPosBeforKick.dist(desigerPos) + 2) || (ballPosBeforKick.dist(currentBallPos) < 0.3) ) {
+        shotFlag = false;
+        ROS_INFO_STREAM("hamid shotFlag == false");
+    }
+
+    if (agents[nearTargetAgent]->pos().dist(desigerPos) < 0.2 && agents[nearAgent]->pos().dist(ballPos) < 0.2 && !shotFlag){
+        ROS_INFO_STREAM("hamid shot");
+        shotFlag = true;
+        updateFlag = true;
+        pass->setDontkick(false);
+    }
+
+    if(desigerPos.dist(ballPos) < 0.15)
+        reciveFlag = true;
+
+    if(reciveFlag && desigerPos.dist(ballPos) > 2)
+    {
+        updateFlag = false;
+        shotFlag = false;
+    }
+//    else if(reciveFlag)
+//    {
+//        pass = nullptr;
+//        delete pass;
+//        recivePass = nullptr;
+//        delete recivePass;
+//
+//
+//        int pusherAgent = agentFinder(ballPos , 100);
+//        ROS_INFO_STREAM("hamid pusherAgent = "<<pusherAgent <<endl);
+//        int holderAgent = agentFinder(ballPos , pusherAgent);
+//        ROS_INFO_STREAM("hamid holderAgent = "<<holderAgent<<endl);
+//        gpa->setLookat(desigerPos);
+//        gpa->setTargetpos(ballPos - Vector2D(xFinder(desigerPos , ballPos , 0.1) , yFinder(desigerPos , ballPos , 0.1)));
+//        gpa->setTargetdir(Vector2D(1,0));
+//        agents[pusherAgent]->action = gpa;
+//    }
+
+
+
+    agents[nearID]->action = pass;
+
+
+
+
 
     /*
     double mindist = 10000;
