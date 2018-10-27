@@ -33,6 +33,10 @@ private:
         void reset();
         void otherRobotsFormation(int , bool);
         int agentFinder(Vector2D , int);
+        int firstStep(Vector2D );
+        double xFinder(Vector2D desired , Vector2D ballPos ,  double dist);
+        double yFinder(Vector2D desired , Vector2D ballPos ,  double dist);
+        double tetaFinder(Vector2D desired, Vector2D ballPos);
         BallPlacement state;
         bool flag;
         Vector2D passballpos;
@@ -42,12 +46,12 @@ private:
         CAgent *a;
         double array[2][2];
         bool nearFlag , restFlag , shotFlag , firstLoopFlag ,updateFlag ,reciveFlag;
-        int nearID;
+        int nearID , nearTargetAgent;
         Vector2D currentBallPos;
         Vector2D lastBallPos;
-        Vector2D desigerPos;
+        Vector2D desiredPos;
         Vector2D ballPosBeforKick;
-
+        bool phFlag;
 };
 
 #endif // OURBALLPLACEMENT_H
