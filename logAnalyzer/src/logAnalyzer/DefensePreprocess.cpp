@@ -493,16 +493,18 @@ void DefensePreprocess::writeData(){
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
             if (ourdistances.at(ourSIndex.at(i)) < 15){
+                AnalyzeDS << wm->our.at(ourSIndex.at(i)).pos.x << ',' << wm->our.at(ourSIndex.at(i)).pos.y << ',';
+                AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourVelNorm.at(ourSIndex.at(i)).x << ',' << ourVelNorm.at(ourSIndex.at(i)).y<< ',';
                 AnalyzeDS << ourvellength.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourVels.at(ourSIndex.at(i)).x << ',' << ourVels.at(ourSIndex.at(i)).y<< ',';
             }else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 2.0 << ','<< 10.0 << ',';
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 2.0 << ','<< 10.0 << ',';;
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';;
         }
 
     }
@@ -534,6 +536,7 @@ void DefensePreprocess::writeData(){
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
             if(oppdistances.at(oppSIndex.at(i)) < 15) {
+                AnalyzeDS << wm->opp.at(oppSIndex.at(i)).pos.x << ',' << wm->opp.at(oppSIndex.at(i)).pos.y << ',';
                 AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
                 AnalyzeDS << oppangles.at(oppSIndex.at(i))<< ',';
                 AnalyzeDS << oppVelNorm.at(oppSIndex.at(i)).x << ',' << oppVelNorm.at(oppSIndex.at(i)).y << ',';
@@ -542,10 +545,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0 ;
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0 ;
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0 ;
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0 ;
         }
 
         if(i!=7)
@@ -566,6 +569,7 @@ void DefensePreprocess::writeData(){
     for(int i=0 ; i < 8 ; i++){
         if(i<ourSIndex.size()) {
             if(ourdistances.at(ourSIndex.at(i)) < 15) {
+                AnalyzeDS << wm->our.at(ourSIndex.at(i)).pos.x << ',' << -1* wm->our.at(ourSIndex.at(i)).pos.y << ',';
                 AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << -1 * ourangles.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourVelNorm.at(ourSIndex.at(i)).x << ','<< -1 * ourVelNorm.at(ourSIndex.at(i)).y << ',';
@@ -574,10 +578,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 2.0 << ','<< 10.0 << ',';
+                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 2.0 << ','<< 10.0 << ',';
+            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
         }
 
     }
@@ -607,6 +611,7 @@ void DefensePreprocess::writeData(){
     for(int i=0 ; i < 8 ; i++){
         if(i<oppSIndex.size()) {
             if(oppdistances.at(oppSIndex.at(i)) < 15) {
+                AnalyzeDS << wm->opp.at(oppSIndex.at(i)).pos.x << ',' << -1* wm->opp.at(oppSIndex.at(i)).pos.y << ',';
                 AnalyzeDS << oppdistances.at(oppSIndex.at(i)) << ',';
                 AnalyzeDS << -1 * oppangles.at(oppSIndex.at(i))<<',';
                 AnalyzeDS << oppVelNorm.at(oppSIndex.at(i)).x << ','<< -1 * oppVelNorm.at(oppSIndex.at(i)).y << ',';
@@ -615,10 +620,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0;
+                AnalyzeDS << 10 << 10 << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0;
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 2.0 << ','<< 10.0;
+            AnalyzeDS << 10 << 10 << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0;
         }
 
         if(i!=7)

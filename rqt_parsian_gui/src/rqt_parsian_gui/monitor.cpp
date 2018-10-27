@@ -65,7 +65,7 @@ namespace rqt_parsian_gui {
 //        xx->setMaximumWidth(600);
         auto mainLayout = new QGridLayout();
 
-        mainLayout->addWidget(table,0,0,8,3);
+
 
 
 
@@ -74,22 +74,19 @@ namespace rqt_parsian_gui {
 
         clearButton=new QPushButton("Clear");
         clearButton->setFixedSize(400,30);
-        mainLayout->addWidget(clearButton,6,0,1,3);
+        mainLayout->addWidget(clearButton,0,0,1,3);
         connect(clearButton, SIGNAL(clicked(bool)) ,this, SLOT(clearField()));
 
         QPushButton *saveButton=new QPushButton("Save Analyze File");
         saveButton->setFixedSize(400,30);
-        mainLayout->addWidget(saveButton,7,0,1,3);
+        mainLayout->addWidget(saveButton,1,0,1,3);
         connect(saveButton, SIGNAL(clicked(bool)) ,this, SLOT(saveAnalysis()));
 
         QPushButton *browsebutton= new QPushButton("Browse");
-        mainLayout->addWidget(browsebutton,8,0,1,3);
+        mainLayout->addWidget(browsebutton,2,0,1,3);
         connect(browsebutton, SIGNAL(clicked(bool)) ,this, SLOT(loadAnalysis()));
 
-       QCheckBox *tt= new QCheckBox("nadia",analyzeW);
-        tt->setEnabled(true);
-        mainLayout->addWidget(tt,9,0);
-        connect(tt, SIGNAL(clicked()), this, SLOT(changeDrawMode(3)));
+
 
 
 
@@ -99,10 +96,15 @@ namespace rqt_parsian_gui {
         {
             btnDraws[i] = new QCheckBox(strDraws[i],analyzeW);
             btnDraws[i]->setEnabled(true);
-            mainLayout->addWidget(btnDraws[i],10+i%2,i/2+i/2);
+            mainLayout->addWidget(btnDraws[i],3+i%2,i/2+i/2);
             connect(btnDraws[i], SIGNAL(clicked()), this, SLOT(changeDrawMode()));
 
         }
+        modeChooser=new ModeChooserWidget(n);
+        mainLayout->addWidget(modeChooser,6,0,1,3);
+
+
+        mainLayout->addWidget(table,8,0,8,3);
 
 //        QFile file("FlightParam.csv");
 //        if (!file.open(QIODevice::ReadOnly)) {
@@ -116,8 +118,6 @@ namespace rqt_parsian_gui {
 //
 //
 
-        modeChooser=new ModeChooserWidget(n);
-        mainLayout->addWidget(modeChooser,8,0,1,3);
 
 
 

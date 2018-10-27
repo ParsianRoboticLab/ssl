@@ -91,38 +91,38 @@ namespace rqt_parsian_gui
 //    }
 
 
-    void MonitorWidget::wheelEvent(QWheelEvent *event)
-    {
-
-        centralPoint.x = 400 / WH_RATIO + cameraX * coeff;
-        centralPoint.y = 400 + cameraY * coeff;
-        if (event->delta() > 0) {
-            if (scaleFactor > 3) {
-                return;
-            }
-
-
-            scaleFactor += 0.1;
-            cameraX = (1 - scaleFactor) * ((double)event->pos().x() - centralPoint.x) / (coeff * scaleFactor);
-            cameraY = (1 - scaleFactor) * ((double)event->pos().y() - centralPoint.y) / (coeff * scaleFactor);
-
-
-        } else {
-
-
+//    void MonitorWidget::wheelEvent(QWheelEvent *event)
+//    {
 //
-            if (scaleFactor < 1) {
-                return;
-            }
-
-            scaleFactor -= 0.1;
-            cameraX = (1 - scaleFactor) * ((double)event->pos().x() - centralPoint.x) / (coeff * scaleFactor);
-            cameraY = (1 - scaleFactor) * ((double)event->pos().y() - centralPoint.y) / (coeff * scaleFactor);
-
-
-        }
-    }
-
+//        centralPoint.x = 400 / WH_RATIO + cameraX * coeff;
+//        centralPoint.y = 400 + cameraY * coeff;
+//        if (event->delta() > 0) {
+//            if (scaleFactor > 3) {
+//                return;
+//            }
+//
+//
+//            scaleFactor += 0.1;
+//            cameraX = (1 - scaleFactor) * ((double)event->pos().x() - centralPoint.x) / (coeff * scaleFactor);
+//            cameraY = (1 - scaleFactor) * ((double)event->pos().y() - centralPoint.y) / (coeff * scaleFactor);
+//
+//
+//        } else {
+//
+//
+////
+//            if (scaleFactor < 1) {
+//                return;
+//            }
+//
+//            scaleFactor -= 0.1;
+//            cameraX = (1 - scaleFactor) * ((double)event->pos().x() - centralPoint.x) / (coeff * scaleFactor);
+//            cameraY = (1 - scaleFactor) * ((double)event->pos().y() - centralPoint.y) / (coeff * scaleFactor);
+//
+//
+//        }
+//    }
+//
 
 
     void MonitorWidget::initializeGL()
@@ -437,6 +437,12 @@ namespace rqt_parsian_gui
     }
 
     void MonitorWidget::drawField() {
+        for(double i=-6; i<6;i+=1.5){
+            glCallList(drawLine(i, field.top(), i, field.bottom(),QColor("green")));
+        }
+        for(double i=-4.5; i<4.5;i+=1){
+            glCallList(drawLine(-6, i, 6, i,QColor("green")));
+        }
         glCallList(drawLine(0, field.top(), 0, field.bottom()));
         glCallList(drawArc(0, 0, fieldCenter.width() / 2, 0, 360));
 

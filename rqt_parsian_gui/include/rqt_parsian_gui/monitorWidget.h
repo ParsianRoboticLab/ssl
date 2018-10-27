@@ -76,7 +76,7 @@ namespace rqt_parsian_gui
 
 
 
-        void wheelEvent(QWheelEvent *event);
+//        void wheelEvent(QWheelEvent *event);
     private:
         bool isLogging,isReplaying;
         QSizeF viewportSize;
