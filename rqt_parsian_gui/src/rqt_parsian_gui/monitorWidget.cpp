@@ -45,6 +45,10 @@ namespace rqt_parsian_gui
         coeff=viewportSize.height()/stadiumSize.width();
         centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
         monitor_pub = n.advertise<parsian_msgs::vector2D>("/analyze_mousePos", 1000);
+        drawMode[0]= false;
+        drawMode[1]= false;
+        drawMode[2]= false;
+        drawMode[3]= false;
 
 
     }
@@ -69,22 +73,22 @@ namespace rqt_parsian_gui
     }
 
 
-    void MonitorWidget::mousePressEvent(QMouseEvent *event)
-    {
-
-        if(event->buttons() == Qt::RightButton){
-            cameraX=0.0;
-            cameraY=0.0;
-            scaleFactor=1;
-            centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
-        } else {
-            mousePos->y = (double(event->pos().x()) - centralPoint.x) / coeff / scaleFactor;
-            mousePos->x = (double(event->pos().y()) - centralPoint.y) / coeff / scaleFactor;
-//            mousePos->x = double(event->pos().x());
-//            mousePos->y = double(event->pos().y());
-            monitor_pub.publish(*mousePos);
-        }
-    }
+//    void MonitorWidget::mousePressEvent(QMouseEvent *event)
+//    {
+//
+//        if(event->buttons() == Qt::RightButton){
+//            cameraX=0.0;
+//            cameraY=0.0;
+//            scaleFactor=1;
+//            centralPoint=Vector2D(viewportSize.width()/2,(viewportSize.height()/2));
+//        } else {
+//            mousePos->y = (double(event->pos().x()) - centralPoint.x) / coeff / scaleFactor;
+//            mousePos->x = (double(event->pos().y()) - centralPoint.y) / coeff / scaleFactor;
+////            mousePos->x = double(event->pos().x());
+////            mousePos->y = double(event->pos().y());
+//            monitor_pub.publish(*mousePos);
+//        }
+//    }
 
 
     void MonitorWidget::wheelEvent(QWheelEvent *event)
@@ -152,52 +156,63 @@ namespace rqt_parsian_gui
         }
 
         CGraphicalRobot rob;
-        for(int i=0;i<drawerBuffer->shotterBuffer.size();i++){
-            rob = drawerBuffer->shotterBuffer.at(i);
-            drawRobot(rob.pos.x,
-                      rob.pos.y,
-                      rob.dir.th().degree(),
-                      rob.color,
-                      rob.newRobots);
+        if(drawMode[0]) {
 
+            for (int i = 0; i < drawerBuffer->shotterBuffer.size(); i++) {
+                rob = drawerBuffer->shotterBuffer.at(i);
+                drawRobot(rob.pos.x,
+                          rob.pos.y,
+                          rob.dir.th().degree(),
+                          rob.color,
+                          rob.newRobots);
+
+            }
+        }
+
+        if(drawMode[1]) {
+
+            for (int i = 0; i < drawerBuffer->passerBuffer.size(); i++) {
+                rob = drawerBuffer->passerBuffer.at(i);
+                drawRobot(rob.pos.x,
+                          rob.pos.y,
+                          rob.dir.th().degree(),
+                          rob.color,
+                          rob.newRobots);
+
+            }
+        }
+
+        if(drawMode[2]) {
+
+            for (int i = 0; i < drawerBuffer->receiverBuffer.size(); i++) {
+                rob = drawerBuffer->receiverBuffer.at(i);
+                drawRobot(rob.pos.x,
+                          rob.pos.y,
+                          rob.dir.th().degree(),
+                          rob.color,
+                          rob.newRobots);
+
+            }
         }
 
 
-        for(int i=0;i<drawerBuffer->passerBuffer.size();i++){
-            rob = drawerBuffer->passerBuffer.at(i);
-            drawRobot(rob.pos.x,
-                      rob.pos.y,
-                      rob.dir.th().degree(),
-                      rob.color,
-                      rob.newRobots);
-
-        }
+        if(drawMode[3]) {
 
 
-        for(int i=0;i<drawerBuffer->receiverBuffer.size();i++){
-            rob = drawerBuffer->receiverBuffer.at(i);
-            drawRobot(rob.pos.x,
-                      rob.pos.y,
-                      rob.dir.th().degree(),
-                      rob.color,
-                      rob.newRobots);
+            for (int i = 0; i < drawerBuffer->balls.size(); i++) {
 
-        }
-
-
-        for(int i=0; i<drawerBuffer->balls.size();i++){
-
-            QColor col=QColor("orange");
-            col.setAlpha(100);
-            drawArc(drawerBuffer->balls.at(i).pos.x,
-                    drawerBuffer->balls.at(i).pos.y,
-                    0.05,
-                    0,
-                    360,
-                    col,
-                    true);
+                QColor col = QColor("orange");
+                col.setAlpha(100);
+                drawArc(drawerBuffer->balls.at(i).pos.x,
+                        drawerBuffer->balls.at(i).pos.y,
+                        0.05,
+                        0,
+                        360,
+                        col,
+                        true);
 
 
+            }
         }
 
 

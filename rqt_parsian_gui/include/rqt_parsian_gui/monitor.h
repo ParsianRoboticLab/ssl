@@ -74,6 +74,8 @@ public:
     AnalyzeWidget *table;
     QStringList bvals,yvals;
     QPushButton *clearButton;
+    QCheckBox *btnDraws[4];
+    QStringList strDraws;
 
     void analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr& _analysis);
     void drawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
@@ -91,12 +93,14 @@ private:
     parsian_msgs::parsian_statistical_analyzeConstPtr analysisMeassage;
     parsian_msgs::parsian_team_configConstPtr mycolor;
     MonitorWidget* fieldWidget;
+    QWidget *analyzeW;
 
 
 public slots:
     void loadAnalysis();
     void saveAnalysis();
     void clearField();
+    void changeDrawMode();
 
 
 };

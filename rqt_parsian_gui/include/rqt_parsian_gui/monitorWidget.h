@@ -56,6 +56,7 @@ namespace rqt_parsian_gui
         void showLogMode(bool isLogMode,bool isReplayMode);
         QTimer *recShowTimer;
         bool recShowBool;
+        bool drawMode[3];
 
 
     public slots:
@@ -71,7 +72,7 @@ namespace rqt_parsian_gui
         double scaleFactor;
         void resizeGL(int width, int height);
         QPainter painter;
-        void mousePressEvent(QMouseEvent *event);
+//        void mousePressEvent(QMouseEvent *event);
 
 
 

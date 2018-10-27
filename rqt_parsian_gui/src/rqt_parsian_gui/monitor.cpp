@@ -58,36 +58,51 @@ namespace rqt_parsian_gui {
 
 
 
-        QWidget *analyzeW=new QWidget();
+        analyzeW=new QWidget();
 
         table=new AnalyzeWidget();
 //        xx->setMaximumHeight(30);
 //        xx->setMaximumWidth(600);
         auto mainLayout = new QGridLayout();
 
-
-        QCheckBox *btnDraws[3];
-        QStringList strDraws;
-        strDraws  << "Draw Shot"<< "Draw Pass" << "Draw Possession" ;
         mainLayout->addWidget(table,0,0,8,3);
-        for(int i=0 ; i<3 ; i++ )
-        {
-            btnDraws[i] = new QCheckBox(strDraws[i],analyzeW);
-            mainLayout->addWidget(btnDraws[i],3,i);
-        }
+
+
 
 
 
 
         clearButton=new QPushButton("Clear");
         clearButton->setFixedSize(400,30);
-        mainLayout->addWidget(clearButton,4,0,1,3);
+        mainLayout->addWidget(clearButton,6,0,1,3);
         connect(clearButton, SIGNAL(clicked(bool)) ,this, SLOT(clearField()));
 
+        QPushButton *saveButton=new QPushButton("Save Analyze File");
+        saveButton->setFixedSize(400,30);
+        mainLayout->addWidget(saveButton,7,0,1,3);
+        connect(saveButton, SIGNAL(clicked(bool)) ,this, SLOT(saveAnalysis()));
+
+        QPushButton *browsebutton= new QPushButton("Browse");
+        mainLayout->addWidget(browsebutton,8,0,1,3);
+        connect(browsebutton, SIGNAL(clicked(bool)) ,this, SLOT(loadAnalysis()));
+
+       QCheckBox *tt= new QCheckBox("nadia",analyzeW);
+        tt->setEnabled(true);
+        mainLayout->addWidget(tt,9,0);
+        connect(tt, SIGNAL(clicked()), this, SLOT(changeDrawMode(3)));
 
 
 
 
+        strDraws  << "Draw Shot"<< "Draw Pass" <<"Draw Receiver"<< "Draw Possession" ;
+        for(int i=0 ; i<4 ; i++ )
+        {
+            btnDraws[i] = new QCheckBox(strDraws[i],analyzeW);
+            btnDraws[i]->setEnabled(true);
+            mainLayout->addWidget(btnDraws[i],10+i%2,i/2+i/2);
+            connect(btnDraws[i], SIGNAL(clicked()), this, SLOT(changeDrawMode()));
+
+        }
 
 //        QFile file("FlightParam.csv");
 //        if (!file.open(QIODevice::ReadOnly)) {
@@ -100,12 +115,9 @@ namespace rqt_parsian_gui {
 //        }
 //
 //
-//        QString fileName;
-//
-//        fileName = QFileDialog::getOpenFileName(analyzeW, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
 
         modeChooser=new ModeChooserWidget(n);
-        mainLayout->addWidget(modeChooser,5,0,1,3);
+        mainLayout->addWidget(modeChooser,8,0,1,3);
 
 
 
@@ -122,7 +134,7 @@ namespace rqt_parsian_gui {
 
         possessionnumber=1;
         possessionopp=0;
-        shotNumber=1;
+        shotNumber=0;
         shotsucceed=0;
         passNumber=1;
         passsucceed=0;
@@ -138,19 +150,27 @@ namespace rqt_parsian_gui {
                 .arg(QString::number(QTime::currentTime().minute()) , 2 , cc)
                 .arg(QString::number(QTime::currentTime().second()) , 2 , cc);
 
-//            bool ok;
+            bool ok;
 //
 //
-//            QString baseFileName= QInputDialog::getText(fieldWidget, tr("Name") , tr("Enter the log name's: ") , QLineEdit::Normal , suggestionName , &ok);
-//            if( !ok ) {
-//                ROS_INFO_STREAM("log file not opened");
-//                baseFileName= QString("default");
-//            }
-//            else {
-////                System("mkdir logs/"+suggestionName.toStdString());
-//                QDir().mkdir("logs/"+baseFileName);
-//                suggestionName="logs/"+baseFileName+"/"+suggestionName+".bag";
-//            }
+            QString baseFileName= QInputDialog::getText(fieldWidget, tr("Name") , tr("Enter the log name's: ") , QLineEdit::Normal , suggestionName , &ok);
+            if( !ok ) {
+                ROS_INFO_STREAM("log file not opened");
+                baseFileName= QString("default");
+            }
+            else {
+//                System("mkdir logs/"+suggestionName.toStdString());
+                QDir().mkdir("logs/"+baseFileName);
+                suggestionName="logs/"+baseFileName+"/"+suggestionName+".csv";
+            }
+
+            QFile* saving_file=new QFile();
+
+        saving_file->setFileName(suggestionName);
+        if(!saving_file->open(QIODevice::WriteOnly | QIODevice::Append))
+            ROS_INFO_STREAM("Can't open the file to possessionFile");
+        else
+            ROS_INFO_STREAM("possessionFile file opened :) \n");
         std::string s;
         s = ros::package::getPath("rqt_parsian_gui");
         ROS_INFO_STREAM(s + "aa");
@@ -158,6 +178,12 @@ namespace rqt_parsian_gui {
     }
     void Monitor::loadAnalysis() {
         ROS_INFO_STREAM("Loaaaad");
+
+
+
+        QString fileName;
+
+        fileName = QFileDialog::getOpenFileName(analyzeW, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
 
     }
 
@@ -200,15 +226,27 @@ namespace rqt_parsian_gui {
         passsucceed=0;
     }
 
+
+
+    void Monitor::changeDrawMode(){
+        ROS_INFO_STREAM("gppp");
+        for(int i=0;i<4;i++) {
+
+                fieldWidget->drawMode[i] = btnDraws[i]->isChecked();
+        }
+        fieldWidget->update();
+
+    }
+
     void Monitor::analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr &_analysis) {
 
 
         analysisMeassage=_analysis;
 
 
-        oppCol.setAlpha(100);
+        oppCol.setAlpha(200);
         QColor faultcol=QColor("red");
-        faultcol.setAlpha(150);
+        faultcol.setAlpha(200);
 
         switch (analysisMeassage->shootOrPassOrPossession){
             case 0://Shot
@@ -324,8 +362,8 @@ namespace rqt_parsian_gui {
 
         yvals<<"0"<<"0"<<"0"<<QString::number((int)(possessionnumber==0?0:(1-possessionopp/(double)possessionnumber)*100))+"%"
              <<QString::number(shotNumber)
-             <<QString::number((int)(shotNumber==0?0:(1-shotsucceed/(double)shotNumber)*100))+"%"
-             <<QString::number((int)(passNumber==0?0:(1-passsucceed/(double)passNumber)*100))+"%";
+             <<QString::number((int)(shotNumber==0?0:(0.7*shotsucceed/(double)shotNumber)*100))+"%"
+             <<QString::number((int)(passNumber==0?0:(0.7*passsucceed/(double)passNumber)*100))+"%";
 
         table->updateTable(bvals,yvals);
 
