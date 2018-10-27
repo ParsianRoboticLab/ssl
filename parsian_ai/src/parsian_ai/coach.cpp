@@ -86,11 +86,9 @@ CCoach::~CCoach() {
     delete theirIndirect     ;
     delete ourBallPlacement  ;
     delete theirBallPlacement;
+    delete stopPlay          ;
     delete ourPlayOff        ;
     delete dynamicAttack     ;
-    delete stopPlay          ;
-    //    savePostAssignment();
-    //    saveLFUReapeatData(LFUList);
 }
 
 //void CCoach::saveGoalie()
@@ -583,7 +581,6 @@ void CCoach::updateAttackState() {
 }
 
 void CCoach::choosePlaymakeAndSupporter(bool defenseFirst){
-
     if (!gameState->isStart()) {
         playmakeId = -1;
         playMakeIntention.restart();
@@ -1175,7 +1172,7 @@ void CCoach::execute()
     }
 
 
-    // devcide the whole strategy for defense agents, including Goalie, defense and Mark
+    // decide the whole strategy for defense agents, including Goalie, defense and Mark
 
     checkTransitionToForceStart();
     virtualTheirPlayOffState();
@@ -1791,9 +1788,6 @@ void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
     plan_client = _plan_client;
 }
 
-void CCoach::setBehaviorPublisher(ros::Publisher& _behavior_publisher) {
-    ai_status_pub = &_behavior_publisher;
-}
 
 parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
     return receivedPlan;
@@ -1827,164 +1821,6 @@ int CCoach::findGoalie() {
     }
     assignGoalieAgent(preferedGoalieID);
     return preferedGoalieID;
-}
-
-void CCoach::sendBehaviorStatus() {
-
-    ai_status_pub->publish(fillAIStatus());
-}
-
-parsian_msgs::parsian_ai_statusPtr CCoach::fillAIStatus()
-{
-
-    parsian_msgs::parsian_ai_statusPtr ai_status{new parsian_msgs::parsian_ai_status};
-    ai_status->GK = preferedGoalieID;
-    ai_status->playmake_id = playmakeId;
-    ai_status->supporter_id = supporterId;
-
-    int _max{conf.numberOfDefenseEval > 0 ? preferedDefenseCounts + conf.numberOfDefenseEval : preferedDefenseCounts},
-            _min{conf.numberOfDefenseEval <= 0 ? preferedDefenseCounts + conf.numberOfDefenseEval : preferedDefenseCounts};
-
-
-    for (int i {_min}; i < _max+ 1; i++)
-    {
-        parsian_msgs::parsian_pair_roles prs;
-        ai_status->states.push_back(prs);
-        for (int j = 0; j < i; j++)
-        {
-            parsian_msgs::parsian_pair_role pr;
-            pr.id = defenseMatched[0][i][j].first;
-            pr.task = defenseMatched[0][i][j].second;
-            pr.role = parsian_msgs::parsian_pair_role::DEFENSE;
-            ai_status->states[i - _min].roles.push_back(pr);
-        }
-    }
-    return ai_status;
-}
-
-void CCoach::findDefneders(const int& max_number, const int& min_number) {
-    defenseMatched[0] = new QPair<int, parsian_msgs::parsian_robot_task>* [max_number + 1];
-    for (int i{ min_number }; i < max_number +1; i++) defenseMatched[0][i] = new QPair<int, parsian_msgs::parsian_robot_task>[i];
-    for (int i{min_number}; i < max_number + 1; i++) {
-        assignDefenseAgents(i);
-        assignGoalieAgent(preferedGoalieID);
-        selectedPlay->defensePlan.initGoalKeeper(goalieAgent);
-        selectedPlay->defensePlan.initDefense(defenseAgents);
-        selectedPlay->defensePlan.execute();
-        for (int j = 0; j < defenseAgents.size(); j++ )
-        {
-            defenseMatched[0][i][j].first = defenseAgents[j]->id();
-
-            parsian_msgs::parsian_robot_task task;
-            auto task_name = defenseAgents[j]->action->getActionName().toStdString();
-
-            if (task_name == "GotopointavoidAction")
-            {
-                task.select = task.GOTOPOINTAVOID;
-                task.gotoPointAvoidTask = *reinterpret_cast<parsian_msgs::parsian_skill_gotoPointAvoid*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-            else if(task_name == "GotopointAction")
-            {
-                task.select = task.GOTOPOINT;
-                task.gotoPointTask = *reinterpret_cast<parsian_msgs::parsian_skill_gotoPoint*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-
-            else if(task_name == "OnetouchAction")
-            {
-                task.select = task.ONETOUCH;
-                task.oneTouchTask = *reinterpret_cast<parsian_msgs::parsian_skill_oneTouch*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-
-            else if(task_name == "KickAction")
-            {
-                task.select = task.KICK;
-                task.kickTask = *reinterpret_cast<parsian_msgs::parsian_skill_kick*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-
-            else if(task_name == "ReceivepassAction")
-            {
-                task.select = task.RECIVEPASS;
-                task.receivePassTask = *reinterpret_cast<parsian_msgs::parsian_skill_receivePass*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-
-
-            else if(task_name == "NoAction")
-            {
-                task.select = task.NOTASK;
-                task.noTask = *reinterpret_cast<parsian_msgs::parsian_skill_no*>(defenseAgents[j]->action->getMessage());
-                defenseMatched[0][i][j].second = task;
-            }
-
-        }
-    }
-
-
-    //    defenseMatched[1] = new QPair<int, parsian_msgs::parsian_robot_task>* [max_number + 1];
-    //    for (int i = min_number; i <= max_number; i++) defenseMatched[0][i] = new QPair<int, parsian_msgs::parsian_robot_task>[i];
-
-    //    for (int i = min_number; i <= max_number; i++) {
-    //        assignDefenseAgents(i);
-    //        assignGoalieAgent(-1);
-    //        selectedPlay->defensePlan.initGoalKeeper(nullptr);
-    //        selectedPlay->defensePlan.initDefense(defenseAgents);
-    //        selectedPlay->defensePlan.execute();
-    //        for (int j = 0; j < defenseAgents.size(); j++ )
-    //        {
-    //            defenseMatched[0][i][j].first = defenseAgents[j]->id();
-
-    //            parsian_msgs::parsian_robot_task task;
-    //            auto task_name = defenseAgents[j]->action->getActionName().toStdString();
-
-    //            if (task_name == "GotopointavoidAction")
-    //            {
-    //                task.select = task.GOTOPOINTAVOID;
-    //                task.gotoPointAvoidTask = *reinterpret_cast<parsian_msgs::parsian_skill_gotoPointAvoid*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-    //            else if(task_name == "GotopointAction")
-    //            {
-    //                task.select = task.GOTOPOINT;
-    //                task.gotoPointTask = *reinterpret_cast<parsian_msgs::parsian_skill_gotoPoint*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-
-    //            else if(task_name == "OnetouchAction")
-    //            {
-    //                task.select = task.ONETOUCH;
-    //                task.oneTouchTask = *reinterpret_cast<parsian_msgs::parsian_skill_oneTouch*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-
-    //            else if(task_name == "KickAction")
-    //            {
-    //                task.select = task.KICK;
-    //                task.kickTask = *reinterpret_cast<parsian_msgs::parsian_skill_kick*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-
-    //            else if(task_name == "ReceivepassAction")
-    //            {
-    //                task.select = task.RECIVEPASS;
-    //                task.receivePassTask = *reinterpret_cast<parsian_msgs::parsian_skill_receivePass*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-
-
-    //            else if(task_name == "NoAction")
-    //            {
-    //                task.select = task.NOTASK;
-    //                task.noTask = *reinterpret_cast<parsian_msgs::parsian_skill_no*>(defenseAgents[j]->action->getMessage());
-    //                defenseMatched[0][i][j].second = task;
-    //            }
-
-    //        }
-    //    }
-
 }
 
 bool CCoach::isFastPlay() {

@@ -16,6 +16,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/parsian_team_config.h>
+#include <parsian_msgs/parsian_draw_monitor.h>
 #include <parsian_util/core/worldmodel.h>
 #include <parsian_msgs/parsian_statistical_analyze.h>
 #include <ros/package.h>
@@ -78,7 +79,7 @@ public:
     QStringList strDraws;
 
     void analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr& _analysis);
-    void drawCb(const parsian_msgs::parsian_drawConstPtr& _draw);
+    void drawCb(const parsian_msgs::parsian_draw_monitorConstPtr& _draw);
     void colorCb(const parsian_msgs::parsian_team_configConstPtr& _color);
     void timerCb(const ros::TimerEvent& _timer);
 

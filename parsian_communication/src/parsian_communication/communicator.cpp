@@ -175,7 +175,7 @@ void CCommunicator::packetCallBack(const parsian_msgs::parsian_packetsConstPtr &
         for (unsigned int j = 0 ; j < robotPacket.packets.size() ; j++) {
             tempStr[j] = robotPacket.packets.at(j);
         }
-        sprintf(test, "packet :%u", robotPacket.packets.size());
+        sprintf(test, "packet :%u", static_cast<unsigned int>(robotPacket.packets.size()));
         ROS_INFO_STREAM(test);
         tempStr[0] = static_cast<char>(0x99);
 

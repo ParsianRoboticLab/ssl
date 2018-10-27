@@ -19,9 +19,9 @@ DefensePreprocess::DefensePreprocess() {
         ROS_INFO_STREAM("Analyze file opened :) \n");
     AnalyzeDS.setDevice(&myfile);
 
-    monitor_pub = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
+//    monitor_pub = n.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
 
-drawer=new Drawer();
+//drawer=new Drawer();
 
 
     /*   AnalyzeDS << "refcommand,";
@@ -129,21 +129,21 @@ void DefensePreprocess::preprocess(){
 
     Vector2D apos;
 
-
-    drawer->draws.circles.clear();
-    drawer->draws.vectors.clear();
-
-    if(ballvel.length()>0.5)
-        drawer->draw(ballvel.norm(),QColor("red"));
-    else
-        drawer->draw(Vector2D(0,0),QColor("red"));
-
-    Vector2D vvv=wm->our.at(1).vel;
-    if(vvv.length()<0.7)
-        vvv=Vector2D(0,0);
-    drawer->draw(vvv.norm(), QColor("blue"));
-
-    monitor_pub.publish(drawer->draws);
+//
+//    drawer->draws.circles.clear();
+//    drawer->draws.vectors.clear();
+//
+//    if(ballvel.length()>0.5)
+//        drawer->draw(ballvel.norm(),QColor("red"));
+//    else
+//        drawer->draw(Vector2D(0,0),QColor("red"));
+//
+//    Vector2D vvv=wm->our.at(1).vel;
+//    if(vvv.length()<0.7)
+//        vvv=Vector2D(0,0);
+//    drawer->draw(vvv.norm(), QColor("blue"));
+//
+//    monitor_pub.publish(drawer->draws);
 
     for(int i=0 ; i < wm->our.size() ; i++)
     {

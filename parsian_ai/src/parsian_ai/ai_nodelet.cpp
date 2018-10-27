@@ -25,12 +25,10 @@ void AINodelet::onInit() {
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
-    drawPub = nh.advertise<parsian_msgs::parsian_draw>("/draws", 1000);
-    timer_ = nh.createTimer(ros::Duration(.062), boost::bind(&AINodelet::timerCb, this, _1));
+    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
     plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
     ai->getSoccer()->getCoach()->setPlanClient(plan_client);
-    ai->getSoccer()->getCoach()->setBehaviorPublisher(behaviorPub);
     //config server settings
     server.reset(new dynamic_reconfigure::Server<ai_config::aiConfig>(private_nh));
     dynamic_reconfigure::Server<ai_config::aiConfig>::CallbackType f;
@@ -45,17 +43,6 @@ void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _con
     teamConfig = *_conf;
 }
 
-void AINodelet::timerCb(const ros::TimerEvent& event){
-
-    if (drawer != nullptr)   drawPub.publish(drawer->draws);
-    drawer->draws.texts.clear();
-    drawer->draws.circles.clear();
-    drawer->draws.segments.clear();
-    drawer->draws.polygons.clear();
-    drawer->draws.rects.clear();
-    drawer->draws.vectors.clear();
-}
-
 void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     ai->updateWM(_wm);
     ROS_INFO("wm");
@@ -63,11 +50,15 @@ void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstP
 //
     for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
         robTask[wm->our.activeAgentID(i)].publish(ai->getTask(wm->our.activeAgentID(i)));
-
     }
-//
+
     parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
     ROS_INFO_STREAM("HSHM: last plan name: " << lastPlan.the_plan.planFile);
+
+    if (drawer != nullptr)  {
+        drawPub.publish(drawer->getDraws());
+        drawer->clear();
+    }
 
 }
 

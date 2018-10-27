@@ -56,13 +56,8 @@ catkin_python_setup()
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
-	###	cfg/pass.cfg
-		cfg/direct.cfg
-		cfg/mahi.cfg
-		cfg/move_forward.cfg
 		cfg/ai.cfg
 		cfg/def_test.cfg
-		cfg/behavior_server.cfg
 )
 
 ###################################
@@ -124,7 +119,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/fault.cpp
 		src/${PROJECT_NAME}/roles/dynamicrole.cpp
 		src/${PROJECT_NAME}/roles/playmake.cpp
-		)
+        )
 
 add_library(${PROJECT_NAME}_util
 		src/parsian_ai/util/defpos.cpp
@@ -144,7 +139,6 @@ add_executable(${PROJECT_NAME}_node
 		src/parsian_ai/ai_node.cpp
 		)
 
-### BEHAVIORS ### DO NOT REMOVE THIS LINE, IT'S FOR AUTO-GENERATION
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -158,12 +152,14 @@ add_dependencies(${PROJECT_NAME}_node
 		${${PROJECT_NAME}_EXPORTED_TARGETS}
 		${catkin_EXPORTED_TARGETS}
 		${PROJECT_NAME}_gencfg
+		${PROJECT_NAME}_nodelet
 		)
 
 add_dependencies(${PROJECT_NAME}_nodelet
 		${${PROJECT_NAME}_EXPORTED_TARGETS}
 		${catkin_EXPORTED_TARGETS}
 		${PROJECT_NAME}_gencfg
+        ${PROJECT_NAME}
 		)
 
 ## Specify libraries to link a library or executable target against
@@ -215,6 +211,7 @@ target_link_libraries(${PROJECT_NAME}_util
 install(PROGRAMS
    		scripts/plan_service_server
 		scripts/plan_service_client
+		scripts/state_machine/state_machine_node.py
    		DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 		)
 
@@ -240,8 +237,8 @@ install(FILES
 
 catkin_install_python(PROGRAMS
 scripts/plan_server/planserver_node.py
-scripts/behavior_server/behavior_server_node.py
 scripts/auto_defense_test/def_test_node.py
+		scripts/state_machine/state_machine_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
@@ -249,10 +246,15 @@ scripts/auto_defense_test/def_test_node.py
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_parsian_ai.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-test test/${PROJECT_NAME}/utest.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+   target_link_libraries(${PROJECT_NAME}-test
+           ${PROJECT_NAME}
+           ${catkin_LIBRARIES}
+           ${QT_LIBRARIES}
+           ${PROJECT_NAME}_util
+           )
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

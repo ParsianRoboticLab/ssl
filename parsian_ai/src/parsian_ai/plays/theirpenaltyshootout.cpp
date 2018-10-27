@@ -41,7 +41,6 @@ void CTheirPenaltyShootout::execute_x()
     }
     else
     {
-        runShootOut();
     }
 }
 

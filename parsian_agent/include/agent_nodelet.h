@@ -10,7 +10,7 @@
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_msgs/parsian_robot_command.h>
 #include <parsian_msgs/parsian_ai_status.h>
-#include <parsian_msgs/parsian_draw.h>
+#include <parsian_msgs/parsian_draws.h>
 #include <parsian_agent/agent.h>
 #include <parsian_agent/config.h>
 #include <parsian_agent/skills.h>
@@ -21,8 +21,6 @@ class AgentNodelet : public nodelet::Nodelet {
 private:
 
     void onInit() override;
-
-    void timerCb(const ros::TimerEvent &event);
 
     ros::NodeHandle nh;
     ros::NodeHandle private_nh;
@@ -36,8 +34,6 @@ private:
 
     ros::Publisher draw_pub;
     ros::Publisher parsian_robot_command_pub;
-
-    ros::Timer timer_;
 
     void commonConfigCb(const dynamic_reconfigure::ConfigConstPtr & _cnf);
 

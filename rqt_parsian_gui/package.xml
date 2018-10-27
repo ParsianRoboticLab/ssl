@@ -42,6 +42,7 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
   <build_depend>roslint</build_depend>
   <build_depend>rqt_gui</build_depend>
   <build_depend>rqt_gui_cpp</build_depend>
@@ -49,7 +50,10 @@
   <build_depend>rosbag</build_depend>
   <build_depend>parsian_msgs</build_depend>
   <build_depend>parsian_util</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
   <run_depend>rqt_gui</run_depend>
   <run_depend>rqt_gui_cpp</run_depend>
   <run_depend>std_msgs</run_depend>
@@ -68,5 +72,6 @@
     <rqt_gui plugin="${prefix}/playoff_plugin.xml"/>
     <rqt_gui plugin="${prefix}/task_runner_plugin.xml"/>
     <rqt_gui plugin="${prefix}/referee_plugin.xml"/>
+    <rqt_gui plugin="${prefix}/graphical.xml"/>
   </export>
 </package>

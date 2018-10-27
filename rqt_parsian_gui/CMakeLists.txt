@@ -14,16 +14,26 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         parsian_util
         rosbag
+        rospy
+	dynamic_reconfigure
         )
 
 ## System dependencies are found with CMake's conventions
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5OpenGL REQUIRED)
+    find_package(Qt5Core REQUIRED)
+
 else()
-    find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+    find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
     include(${QT_USE_FILE})
 endif()
+
+find_package(OpenGL REQUIRED)
+# find_package(Boost REQUIRED COMPONENTS system)
+file(GLOB_RECURSE LibFiles "include/*.h")
+add_custom_target(headers SOURCES ${LibFiles})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -32,57 +42,6 @@ catkin_python_setup()
 
 roslint_cpp()
 roslint_python()
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
-
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -98,10 +57,9 @@ roslint_python()
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/drawbuffer.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -126,6 +84,8 @@ set (${PROJECT_NAME}_SRCS
         src/${PROJECT_NAME}/robotstatus_widget.cpp
         src/${PROJECT_NAME}/monitorWidget.cpp
         src/${PROJECT_NAME}/guiDrawer.cpp
+        src/${PROJECT_NAME}/robotstatus.cpp
+        src/${PROJECT_NAME}/robotstatus_widget.cpp
         src/${PROJECT_NAME}/mode_chooser.cpp
         src/${PROJECT_NAME}/modeChooserWidget.cpp
         src/${PROJECT_NAME}/handycontroller.cpp
@@ -144,6 +104,8 @@ set(${PROJECT_NAME}_HDRS
         include/${PROJECT_NAME}/robotstatus_widget.h
         include/${PROJECT_NAME}/monitorWidget.h
         include/${PROJECT_NAME}/guiDrawer.h
+        include/${PROJECT_NAME}/robotstatus.h
+        include/${PROJECT_NAME}/robotstatus_widget.h
         include/${PROJECT_NAME}/mode_chooser.h
         include/${PROJECT_NAME}/modeChooserWidget.h
         include/${PROJECT_NAME}/handycontroller.h
@@ -155,13 +117,38 @@ set(${PROJECT_NAME}_HDRS
         include/${PROJECT_NAME}/refereeWidget.h
         include/${PROJECT_NAME}/analyzeWidget.h
 
-        )
 
+        )
 
 set(${PROJECT_NAME}_UIS
         resource/handycontroller.ui
         )
 
+
+set(${PROJECT_NAME}_graphical_SRCS
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        )
+
+set(${PROJECT_NAME}_graphical_HDRS
+        include/rqt_parsian_gui/graphical/bbox.h
+        include/rqt_parsian_gui/graphical/field.h
+        include/rqt_parsian_gui/graphical/field_default_constants.h
+        include/rqt_parsian_gui/graphical/geomalgo.h
+        include/rqt_parsian_gui/graphical/geometry.h
+        include/rqt_parsian_gui/graphical/gltext.h
+        include/rqt_parsian_gui/graphical/graphical.h
+        include/rqt_parsian_gui/graphical/gvector.h
+        include/rqt_parsian_gui/graphical/pose.h
+        include/rqt_parsian_gui/graphical/quaternion.h
+        include/rqt_parsian_gui/graphical/range.h
+        include/rqt_parsian_gui/graphical/soccerview.h
+        include/rqt_parsian_gui/graphical/timer.h
+        include/rqt_parsian_gui/graphical/util.h
+        )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
     qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
@@ -170,6 +157,8 @@ else()
     qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
     qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
 endif()
+
+qt5_wrap_cpp(${PROJECT_NAME}_graphical_MOCS ${${PROJECT_NAME}_graphical_HDRS})
 
 ###########
 ## Build ##
@@ -190,6 +179,14 @@ add_library(${PROJECT_NAME}
         ${${PROJECT_NAME}_UIS_H}
         )
 
+add_library(${PROJECT_NAME}_graphical
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        ${${PROJECT_NAME}_graphical_MOCS}
+        )
 
 ## Declare a C++ executable
 # add_executable(rqt_example_cpp_node src/rqt_example_cpp_node.cpp)
@@ -201,6 +198,14 @@ add_library(${PROJECT_NAME}
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
+        )
+
+target_link_libraries(${PROJECT_NAME}_graphical
+        ${catkin_LIBRARIES}
+        Qt5::Widgets
+        Qt5::OpenGL
+        ${OPENGL_gl_LIBRARY}
+        ${OPENGL_glu_LIBRARY}
         )
 
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
@@ -224,7 +229,7 @@ endif()
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_graphical
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -246,9 +251,14 @@ install(FILES
         referee_plugin.xml
         mode_plugin.xml
         task_runner_plugin.xml
+        graphical.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
         )
 
+catkin_install_python(PROGRAMS
+        script/drawbuffer/drawbuffer_node.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 #############
 ## Testing ##

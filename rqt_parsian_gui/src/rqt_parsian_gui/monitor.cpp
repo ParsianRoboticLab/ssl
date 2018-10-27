@@ -316,7 +316,7 @@ namespace rqt_parsian_gui {
 
 
 
-    void Monitor::drawCb(const parsian_msgs::parsian_drawConstPtr &_draw) {
+    void Monitor::drawCb(const parsian_msgs::parsian_draw_monitorConstPtr &_draw) {
 
         for (parsian_msgs::parsian_draw_circle cir : _draw->circles) {
             drawer->arcBuffer->append(cir);
