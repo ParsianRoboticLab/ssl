@@ -17,41 +17,46 @@ enum class BallPlacement {
 class COurBallPlacement : public CMasterPlay{
 public:
         COurBallPlacement();
-        ~COurBallPlacement();
-        void execute_x();
-        void init(const QList <Agent*>& _agents);
+        ~COurBallPlacement() override;
+        void execute_x() override;
+        void init(const QList <Agent*>& _agents) override;
         bool first;
         static int chooseFirst();
-        GotopointavoidAction* gpa;
-        GotopointavoidAction* gpar;
-        ReceivepassAction* recivePass;
-        KickAction* pass;
-
 
 
 private:
-        void reset();
-        void otherRobotsFormation(int , bool);
-        int agentFinder(Vector2D , int);
-        int firstStep(Vector2D );
-        double xFinder(Vector2D desired , Vector2D ballPos ,  double dist);
-        double yFinder(Vector2D desired , Vector2D ballPos ,  double dist);
-        double tetaFinder(Vector2D desired, Vector2D ballPos);
+        void reset() override;
+        void otherRobotsFormation(const int&) const;
+        int agentFinder(const Vector2D& pos , int) const;
+        int firstStep(const Vector2D&);
+        double xFinder(const Vector2D& desired , const Vector2D& ballPos , const double& dist) const ;
+        double yFinder(const Vector2D& desired , const Vector2D& ballPos , const double& dist) const ;
+        double tetaFinder(const Vector2D& desired, const Vector2D& ballPos) const ;
         BallPlacement state;
         bool flag;
         Vector2D passballpos;
         int minIndexPos;
         CAgent *ap;
-        int minIndex;
+        int nearAgentToBall;
         CAgent *a;
         double array[2][2];
-        bool nearFlag , restFlag , shotFlag , firstLoopFlag ,updateFlag ,reciveFlag;
+        bool nearFlag , phFlag , shotFlag ,updateFlag ,reciveFlag;
         int nearID , nearTargetAgent;
         Vector2D currentBallPos;
         Vector2D lastBallPos;
-        Vector2D desiredPos;
         Vector2D ballPosBeforKick;
-        bool phFlag;
+        GotopointavoidAction* gpa;
+        GotopointavoidAction* gpa0;GotopointavoidAction* gpa1;GotopointavoidAction* gpa2;GotopointavoidAction* gpa3;
+        GotopointavoidAction* gpa4;GotopointavoidAction* gpa5;GotopointavoidAction* gpa6;;GotopointavoidAction* gpa7;
+        ReceivepassAction* recivePass;
+        KickAction* pass;
+        bool ballHaseMoved(const Vector2D& , const Vector2D&) const;
+        bool ballDidntAriveToTarget(const Vector2D& ballPos , const Vector2D& desiredPos , const Vector2D& ballPosBeforKick) const;
+        bool ballDidntKickedWell(const Vector2D& ballPos, const Vector2D& ballPosBeforKick) const;
+        bool reciverAgentIsOnThePosition(const int &agent, const Vector2D &targetPos) const;
+        bool ballIsNearToTarget(const Vector2D &ballPos, const Vector2D &targetPos) const ;
+        bool ballSpeedIsLow();
+        bool kickerAgentIsNearToBall(const Vector2D &ballPos, const int &agent) const ;
 };
 
 #endif // OURBALLPLACEMENT_H

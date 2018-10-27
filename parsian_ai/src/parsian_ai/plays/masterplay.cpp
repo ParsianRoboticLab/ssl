@@ -274,7 +274,7 @@ void CMasterPlay::execute() {
     for (int i = 0; i < agents.size(); i++) {
         if (agents[i]->isVisible() && agents[i]->action != nullptr) {
             Action *mahi = agents[i]->action;
-            ROS_INFO_STREAM(i << ": " << mahi->getActionName().toStdString().c_str());
+//            ROS_INFO_STREAM(i << ": " << mahi->getActionName().toStdString().c_str());
         }
     }
     execPlay();
