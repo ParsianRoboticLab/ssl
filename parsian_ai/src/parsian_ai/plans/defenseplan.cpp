@@ -3919,9 +3919,9 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
             }
         }
         if(!wm->field->isInField(target) /*|| target.x < -5.9*/){
-            //target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());//LhumWillTestIt
             //target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
-            target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);//LhumChangeSomething
+            //target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);//LhumChangeSomething
+            target = Line2D(wm->field->ourGoalL() + Vector2D(0.1 , 0) , wm->field->ourGoalR() + Vector2D(0.1 , 0)).intersection(Line2D(wm->field->ourGoal() , _ballPos));
             drawer->draw(Circle2D(target , 0.2) , "cyan");
         }
     }
