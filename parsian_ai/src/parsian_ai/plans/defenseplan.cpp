@@ -499,10 +499,6 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
             ballArea.addVertex(solutions[i]);
         }
         ballArea.addVertex(solution);
-        drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
-        drawer->draw(Segment2D(solutions[1] , solutions[2]) , "cyan");
-        drawer->draw(Segment2D(solutions[2] , solutions[3]) , "cyan");
-        drawer->draw(Segment2D(solutions[3] , solutions[0]) , "cyan");
 
     }
     drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
