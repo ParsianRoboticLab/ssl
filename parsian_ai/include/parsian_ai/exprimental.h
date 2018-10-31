@@ -26,7 +26,6 @@
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 #include <parsian_util/action/autogenerate/kickaction.h>
 #include <parsian_util/geom/geom.h>
-#include <behavior/move_forward/move_forward.h>
 
 #include <parsian_msgs/plan_service.h>
 
@@ -40,12 +39,11 @@ enum class State{
 
 class Exprimental {
 public:
-    Exprimental(Agent** _agent) {
+    explicit Exprimental(Agent** _agent) {
 
     }
-    ~Exprimental() {
+    ~Exprimental() = default;
 
-    }
     void reset() {
 
     }

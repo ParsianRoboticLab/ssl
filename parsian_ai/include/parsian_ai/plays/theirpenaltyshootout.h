@@ -32,7 +32,6 @@ public:
     Vector2D getEmptyTarget(Vector2D _position, double _radius);
     void assignSkills();
     void playmakeInitialPositioning();
-    void runShootOut();
 
 private:
     void reset();

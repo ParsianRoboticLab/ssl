@@ -65,6 +65,7 @@ void CNewBangBang::trajectoryPlanner() {
 
     thPid->pError = thPid->error;
 }
+
 void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2D _agentDir, Vector2D _pos2, Vector2D _dir2, double _V2, double dt, double & _Vx, double & _Vy, double & _W) {
     pos2 = _pos2;
     dir2 = _dir2;
@@ -83,7 +84,7 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
     } else {
         angPid->kp = 3;
     }
-    angPid->error = (dir2.th() -  agentDir.th()).radian();
+    angPid->error = (dir2.th() - agentDir.th()).radian();
     agentMovementTh = movementTh.th();
 
     if (oneTouch || diveMode) {
@@ -154,7 +155,6 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
     _Vy =  desiredVy;//(vDes)*sin(appliedTh);
     _W = angPid->PID_OUT();
     DEBUG(QString("v1: %1 ").arg(_W), D_MHMMD);
-
     lastVx = _Vx;
     lastVy = _Vy;
     angPid->pError = angPid->error;

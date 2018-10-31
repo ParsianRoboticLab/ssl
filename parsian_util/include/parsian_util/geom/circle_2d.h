@@ -178,6 +178,14 @@ public:
                      Vector2D * sol2) const;
 
 
+    /*!
+      \brief calculate the intersection with segment
+      \param seg considerd segment
+      \return the number of solution
+     */
+
+
+    int intersection(const Segment2D & seg) const;
 
     int tangent(Vector2D p, Vector2D * sol1, Vector2D * sol2);
 

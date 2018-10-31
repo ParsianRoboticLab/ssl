@@ -28,10 +28,6 @@ void WMNodelet::onInit() {
 
 }
 
-//void WMNodelet::geomCb(const parsian_msgs::ssl_vision_geometryConstPtr &_geom) {
-//
-//}
-
 void WMNodelet::robotsCommandCb(const parsian_msgs::parsian_robot_commandConstPtr &_robotCommad) {
     wm->vForwardCmd[_robotCommad->robot_id] = _robotCommad->vel_F;
     wm->vNormalCmd [_robotCommad->robot_id] = _robotCommad->vel_N;
@@ -50,6 +46,8 @@ void WMNodelet::detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr &_d
         parsian_msgs::parsian_world_modelPtr temp = wm->getParsianWorldModel();
         temp->header.stamp = ros::Time::now();
         temp->header.frame_id = std::to_string(_detection->frame_number);
+	temp->isLeft = isOurSideLeft;
+        temp->isYellow = yellow;
         wm_pub.publish(temp);
     }
 
@@ -59,6 +57,7 @@ void WMNodelet::detectionCb(const parsian_msgs::ssl_vision_detectionConstPtr &_d
 void WMNodelet::teamConfigCb(const parsian_msgs::parsian_team_configConstPtr& msg) {
     isOurSideLeft = msg->side == parsian_msgs::parsian_team_config::LEFT;
     wm->setMode(msg->mode == parsian_msgs::parsian_team_config::SIMULATION);
+    yellow = msg->color;
 }
 
 void WMNodelet::ConfigServerCallBack(const world_model_config::world_modelConfig &config, uint32_t level) {

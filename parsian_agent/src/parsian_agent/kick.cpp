@@ -27,8 +27,6 @@
 //}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-INIT_SKILL(CSkillKick, "kick");
-
 CSkillKick::CSkillKick(Agent *_agent) : CSkill(_agent) {
 
     kickSpeed = 15;
@@ -82,10 +80,6 @@ CSkillKick::~CSkillKick() {
 }
 
 void CSkillKick::resetI() {
-}
-
-double CSkillKick::progress() {
-    return 0.0;
 }
 
 bool CSkillKick::kickable() {
@@ -347,7 +341,7 @@ void CSkillKick::avoidOppPenalty() {
     Segment2D penaltyStraightLine;
 
     Rect2D penalty = wm->field->oppPenaltyRect();
-    drawer->draw(penalty , QColor(Qt::red));
+    //drawer->draw(penalty , QColor(Qt::red));
     ballSeg.assign(wm->field->oppGoal(),wm->field->oppGoal() + (wm->ball->pos - wm->field->oppGoal()).norm()* 10);
 
     if(wm->ball->vel.length() > 0.3 && !wm->field->isInOppPenaltyArea(wm->ball->getPosInFuture(1000)) && wm->field->isInField(wm->ball->getPosInFuture(1000))) {
@@ -756,7 +750,7 @@ void CSkillKick::findPosToGo() {
             for (double i = 0.5 ; i < 5 ; i += 0.1) {
                 finalPos = wm->ball->getPosInFuture(i);// - (target-wm->ball->getPosInFuture(i)).norm()*0.15;
                 QList <int> dummy;
-                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, finalPos - addVec, conf->VelMax, dummy, dummy, false, 0, true);
+                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, finalPos - addVec, conf->VelMax);
 
 
                 if (agentTime < (i - (0.5))) {
@@ -845,7 +839,7 @@ void CSkillKick::findPosToGo() {
     }
     if(finalPos.x < -1 * wm->field->_FIELD_WIDTH/2 +  wm->field->_PENALTY_DEPTH + 0.1 && fabs(finalPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
         if(wm->field->ourBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
-            drawer->draw(wm->field->ourBigPenaltyArea(1,0.1,0),QColor(Qt::red),true);
+           // drawer->draw(wm->field->ourBigPenaltyArea(1,0.1,0),QColor(Qt::red),true);
             if(sol1.dist(finalPos) > sol2.dist(finalPos)) {
                 if(sol2.x >= -1 * wm->field->_FIELD_WIDTH/2 + 0.02) {
                     sol1 = sol2;

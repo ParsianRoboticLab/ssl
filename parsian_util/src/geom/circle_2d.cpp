@@ -262,6 +262,25 @@ Circle2D::intersection(const Segment2D & seg,
     }
 }
 
+    int
+    Circle2D::intersection(const Segment2D & seg) const {
+
+        Line2D line = seg.line();
+        Vector2D tsol1(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
+        Vector2D tsol2(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE);
+
+        int n_sol = intersection(line, &tsol1, &tsol2);
+        if (n_sol > 1) {
+            if (seg.contains(tsol1) && seg.contains(tsol2)) return 2;
+            else if (seg.contains(tsol1) || seg.contains(tsol2)) return 1;
+            else return 0;
+        } else if (n_sol > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
 /*-------------------------------------------------------------------*/
 /*!
 
