@@ -9,15 +9,15 @@ CSkillReceivePass::CSkillReceivePass(Agent *_agent) : CSkill(_agent) {
 
 }
 
-CSkillReceivePass::~CSkillReceivePass() = default;
+CSkillReceivePass::~CSkillReceivePass() {
+    delete gotopointavoid;
+}
 
 RPMode CSkillReceivePass::decideMode() {
-    Circle2D tempCircle(target, 0.2);
-    Circle2D reciveCircle(target, receiveRadius);
-    Circle2D tempKickCircle(agent->pos(), 0.3);
+    Circle2D receiveCircle(target, receiveRadius);
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 10);
     drawer->draw(ballPath, QColor(Qt::yellow));
-    if ((reciveCircle.intersection(ballPath) && wm->ball->vel.length() > 0.2)) { // TODO : Add Threshold
+    if ((receiveCircle.intersection(ballPath) && wm->ball->vel.length() > 0.2)) { // TODO : Add Threshold
         return RPMode::RPINTERSECT;
     }
 
@@ -112,19 +112,14 @@ void CSkillReceivePass::validatePoint(Vector2D& _point) {
 }
 
 Vector2D CSkillReceivePass::bestPointToIntersect() {
-    Vector2D best; best.invalidate();
-    for (double i = 0 ; i < 5 ; i += 0.1) {
-        const Vector2D& futureBall = wm->ball->getPosInFuture(i);
-        double agentTime = CSkillGotoPointAvoid::timeNeeded(agent, futureBall, conf->VelMax);
-        if (agentTime < (i - 0.5)) {
-            best = futureBall;
-            break;
-        }
-    }
-    return best;
+    bestPointToIntersect(agent);
 }
 
 void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D& _penalty) {
+    validatePointFromPenaltyWithTarget(_point, _penalty, target);
+}
+
+void CSkillReceivePass::validatePointFromPenaltyWithTarget(Vector2D &_point, const Rect2D& _penalty, const Vector2D& _target) {
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 20);
     Vector2D sol1, sol2;
     sol1.invalidate(); sol2.invalidate();
@@ -134,7 +129,7 @@ void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D&
         if (sol1.x == wm->field->oppGoal().x || sol1.x == wm->field->ourGoal().x) sol1.invalidate();
         if (sol2.x == wm->field->oppGoal().x || sol2.x == wm->field->ourGoal().x) sol2.invalidate();
 
-        if      (!sol1.isValid() && !sol2.isValid())    _point = target;
+        if      (!sol1.isValid() && !sol2.isValid())    _point = _target;
         else if ( sol1.isValid() && !sol2.isValid())    _point = sol1;
         else if (!sol1.isValid() &&  sol2.isValid())    _point = sol2;
         else if (sol1.dist(_point) < sol2.dist(_point)) _point = sol1;
@@ -142,7 +137,7 @@ void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D&
 
     } else {
 
-        ROS_WARN_STREAM("Receive Point is in Penalty Area. ID: " << agent->id() << "Targer: {" << target.x << ", " << target.y << "} RR: " << receiveRadius);
+        ROS_WARN("Receive Point is in Penalty Area.");
     }
 }
 
@@ -155,6 +150,18 @@ void CSkillReceivePass::validatePointOutofField(Vector2D &_point) {
         _point = (sol1.valid()) ? sol1 : sol2;
 
     } else {
-        ROS_WARN_STREAM("Receive Point is in OUT OF FIELD. ID: " << agent->id() << "Targer: {" << target.x << ", " << target.y << "} RR: " << receiveRadius);
+        ROS_WARN("Receive Point is in OUT OF FIELD.");
     }
 }
+
+Vector2D CSkillReceivePass::bestPointToIntersect(const Agent *_agent, const double& reachBeforeBall) {
+    Vector2D best; best.invalidate();
+    for (double i = 0 ; i < 5 ; i += 0.1) {
+        const Vector2D& futureBall = wm->ball->getPosInFuture(i);
+        double agentTime = CSkillGotoPointAvoid::timeNeeded(_agent, futureBall, conf->VelMax);
+        if (agentTime < (i - reachBeforeBall)) {
+            best = futureBall;
+            break;
+        }
+    }
+    return best;}

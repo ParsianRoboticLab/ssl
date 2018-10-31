@@ -25,13 +25,15 @@ private:
     void intersect();
     void receive();
 
-    Vector2D bestPointToIntersect();
-    void validatePoint(Vector2D& _point);
-    void validatePointFromPenalty(Vector2D& _point, const Rect2D& _penalty);
-    void validatePointOutofField(Vector2D& _point);
 
+    Vector2D bestPointToIntersect();
+    void validatePointFromPenalty(Vector2D& _point, const Rect2D& _penalty);
+    void validatePoint(Vector2D& _point);
     CSkillGotoPointAvoid* gotopointavoid;
 public:
+    static void validatePointOutofField(Vector2D& _point);
+    static Vector2D bestPointToIntersect(const Agent* _agent, const double& reachBeforeBall = 0.5);
+    static void validatePointFromPenaltyWithTarget(Vector2D& _point, const Rect2D& _penalty, const Vector2D& _target);
 
     explicit DEF_SKILL(CSkillReceivePass);
 };
