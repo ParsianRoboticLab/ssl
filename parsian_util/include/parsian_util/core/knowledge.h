@@ -29,7 +29,7 @@ inline double normalangabs(double dir);
 
 double kickTimeEstimation(CAgent *_agent, Vector2D _target, const CBall& _ball, const double& _VMax, double AccMaxForward, double DecMax, double AccMaxNormal);
 double timeNeeded(CAgent *_agentT, Vector2D posT, double vMax, double AccMaxForward, double DecMax, double AccMaxNormal);
-double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double lambda, double gamma);
+double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double lambda, double gamma, double v_kick);
 
 double getEmptyAngle(const CField&, Vector2D p, Vector2D p1, Vector2D p2, QList<Circle2D> obs, double& percent, double &mostOpenAngle, double& biggestAngle, bool oppGoal = true, bool _draw = false);
 Vector2D getReflectPos(const CField& field, Vector2D goal, double dist, Vector2D _ballpos);

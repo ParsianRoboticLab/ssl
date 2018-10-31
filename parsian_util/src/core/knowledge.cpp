@@ -398,12 +398,12 @@ double CKnowledge::oneTouchAngle(Vector2D pos,
                                  Vector2D ballDir,
                                  Vector2D goal,
                                  double lambda,
-                                 double gamma) {
+                                 double gamma
+                                 double v_kick) {
     const double &ang1 = (-ballDir).th().degree();
     const double &ang2 = (goal - pos).th().degree();
     double theta = AngleDeg::normalize_angle(ang2 - ang1);
     double th = fabs(theta) * _DEG2RAD;
-    float vkick = 8; // agent->self()->kickValueSpeed(kickSpeed, false);// + Vector2D::unitVector(self().pos.d).innerProduct(self().vel);
     double v = (ballVel - vel).length();
     double th1;
     double fmin = 1e10;
@@ -411,7 +411,7 @@ double CKnowledge::oneTouchAngle(Vector2D pos,
     double th1best = 0;
     for (int k = 0; k < 6000; k++) {
         th1 = ((float)k / 6000.0) * th;
-        f  = gamma * v * (1.0 / std::tan(th - th1)) * sin(th1) - lambda * v * cos(th1) - vkick;
+        f  = gamma * v * (1.0 / std::tan(th - th1)) * sin(th1) - lambda * v * cos(th1) - v_kick;
         if (fabs(f) < fmin) {
             fmin = fabs(f);
             th1best = th1;
