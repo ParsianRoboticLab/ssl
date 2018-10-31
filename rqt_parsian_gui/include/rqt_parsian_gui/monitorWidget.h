@@ -56,7 +56,7 @@ namespace rqt_parsian_gui
         void showLogMode(bool isLogMode,bool isReplayMode);
         QTimer *recShowTimer;
         bool recShowBool;
-        bool drawMode[3];
+        bool drawMode[4], ballDrawmode[4];
 
 
     public slots:

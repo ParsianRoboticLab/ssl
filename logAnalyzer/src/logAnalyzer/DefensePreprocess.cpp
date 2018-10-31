@@ -155,7 +155,7 @@ void DefensePreprocess::preprocess(){
         ourangles.append(sign(apos.y)*apos.angleOf(apos,field.oppGoal(),field.center()).degree());
 
         apos=wm->our.at(i).vel;
-        if(apos.length()>0.7)
+        if(apos.length()>0.2)
             ourVelNorm.append(apos.norm());
         else
             ourVelNorm.append(Vector2D(0,0));
@@ -244,7 +244,7 @@ void DefensePreprocess::preprocess(){
 
 
         apos=wm->opp.at(i).vel;
-        if(apos.length()>0.7)
+        if(apos.length()>0.2)
             oppVelNorm.append(apos.norm());
         else
             oppVelNorm.append(Vector2D(0,0));
@@ -478,7 +478,7 @@ void DefensePreprocess::writeData(){
 
     Vector2D ballNextPos;
     ballNextPos=ballPos+ballvel;
-    ROS_INFO_STREAM(ballvel.length());
+//    ROS_INFO_STREAM(ballvel.length());
     double ballNextDegree=sign(ballNextPos.y)*ballNextPos.angleOf(ballNextPos,field.oppGoal(),field.center()).degree();
     double ballNextDistance=ballNextPos.dist(field.oppGoal());
     Vector2D ballvelNorm=ballvel.norm();
@@ -494,17 +494,16 @@ void DefensePreprocess::writeData(){
         if(i<ourSIndex.size()) {
             if (ourdistances.at(ourSIndex.at(i)) < 15){
                 AnalyzeDS << wm->our.at(ourSIndex.at(i)).pos.x << ',' << wm->our.at(ourSIndex.at(i)).pos.y << ',';
-                AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourdistances.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourangles.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourVelNorm.at(ourSIndex.at(i)).x << ',' << ourVelNorm.at(ourSIndex.at(i)).y<< ',';
                 AnalyzeDS << ourvellength.at(ourSIndex.at(i)) << ',';
                 AnalyzeDS << ourVels.at(ourSIndex.at(i)).x << ',' << ourVels.at(ourSIndex.at(i)).y<< ',';
             }else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';
+                AnalyzeDS << 10.0 << ','<< 10.0 <<','<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';;
+            AnalyzeDS << 10.0 << ','<< 10.0<<','<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ','<< 10.0 << ','<< 10.0 << ',';;
         }
 
     }
@@ -545,10 +544,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0 ;
+                AnalyzeDS << 10.0 << ','<< 10.0<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0<<',' << 10.0 << ','<< 10.0 ;
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0 ;
+            AnalyzeDS << 10.0 << ','<< 10.0<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 <<','<< 10.0 << ','<< 10.0 ;
         }
 
         if(i!=7)
@@ -578,10 +577,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
+                AnalyzeDS << 10.0 << ','<< 10.0 << ',' << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
             }
         } else {
-            AnalyzeDS << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
+            AnalyzeDS << 10.0 << ','<< 10.0 << ','<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << ',' << 10.0 << ','<< 10.0 << ',';
         }
 
     }
@@ -620,10 +619,10 @@ void DefensePreprocess::writeData(){
 
             }
             else {
-                AnalyzeDS << 10 << 10 << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0;
+                AnalyzeDS << 10<< ',' << 10 << ','<< -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 <<','<< 10.0 << ','<< 10.0;
             }
         } else {
-            AnalyzeDS << 10 << 10 << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 << 10.0 << ','<< 10.0;
+            AnalyzeDS << 10<< ',' <<10<<',' << -1.0 << ',' << 100.0 << ','<< 2.0 << ',' << 2.0 << ','<< 10.0 <<','<< 10.0 << ','<< 10.0;
         }
 
         if(i!=7)

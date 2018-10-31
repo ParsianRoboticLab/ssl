@@ -75,6 +75,7 @@ public:
     QStringList bvals,yvals;
     QPushButton *clearButton;
     QCheckBox *btnDraws[4];
+    QCheckBox *ballDraws[4];
     QStringList strDraws;
 
     void analysisCb(const parsian_msgs::parsian_statistical_analyzeConstPtr& _analysis);
@@ -101,6 +102,7 @@ public slots:
     void saveAnalysis();
     void clearField();
     void changeDrawMode();
+    void changeballDrawMode();
 
 
 };

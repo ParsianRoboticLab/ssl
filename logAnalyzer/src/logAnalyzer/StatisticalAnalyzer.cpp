@@ -62,10 +62,6 @@ void StatisticalAnalyzer::wmCb(const parsian_msgs::parsian_world_modelConstPtr &
     wm = _wm;
 //    BallPossession newbp=BPsaved;
     updatewm();
-    if(ballPos.y <-4.7 || ballPos.y>4.7 || ballPos.x<-6 || ballPos.x>6){
-        outflag=true;
-//        ROS_INFO_STREAM("ouuuuut"<<ballPos.x<<"___"<<ballPos.y);
-    }
 
     if(ref== nullptr)
         return;
@@ -88,16 +84,18 @@ void StatisticalAnalyzer::preprocess(){
 
     }
 
-//    ROS_INFO_STREAM("possession"<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<"__"<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<"___");
 
     writeToPossession();
 
     int shotOrPass=validShotOrPass();
+    ROS_INFO_STREAM("possession"<<(int)BP<<(int)BP<<(int)BP<<(int)BP<<"__"<<(int)BPsaved<<(int)BPsaved<<(int)BPsaved<<"___"<<(int)BPLast<<(int)BPLast<<"___"<<shotOrPass<<"__"<<passFlag<<"__"<< field.fieldRect().contains(ballPos)<<"__"<<oppBPID<<"__"<<shotterRobot.x);
 
     if(shotOrPass==0)
         writeToShot();
-    else if(shotOrPass==2)
+    else if(shotOrPass==2) {
+
         writeToPass();
+    }
 
 
 }
@@ -107,7 +105,8 @@ int StatisticalAnalyzer::validShotOrPass(){
 
 
 //update shotter and shotDir if pass or shot hasn't occurd
-    if((!shottedFlag || !passFlag)) {
+    if((!shottedFlag && !passFlag)) {
+        ROS_INFO_STREAM("oooooo");
         shotterRobot.x = wm->opp.at(oppBPID).pos.x;
         shotterRobot.y = wm->opp.at(oppBPID).pos.y;
         shotDir.x = wm->opp.at(oppBPID).dir.x;
@@ -118,10 +117,10 @@ int StatisticalAnalyzer::validShotOrPass(){
 
     Vector2D ballTarget=Line2D(ballPos,ballPos+ballvel).intersection(Line2D(field.ourCornerL(),field.ourCornerR()));
     //robot points to Goal
-    if(((shotTarget.y<1.2
-         && shotTarget.y>-1.2
+    if(((shotTarget.y<1
+         && shotTarget.y>-1
          && sign(shotDir.x)==-1) ||
-        (ballvel.length()>1 && ballTarget.y<1 && ballTarget.y>-1 && field.ourPenaltyRect().contains(ballPos)))
+        (ballvel.length()>3.5 && ballTarget.y<1 && ballTarget.y>-1 ))
        && !shottedFlag
        && !passFlag
        && field.fieldRect().contains(ballPos)
@@ -202,6 +201,7 @@ int StatisticalAnalyzer::validShotOrPass(){
         shotInGoal=false;
         passSucceed=true;
         ballDir=Vector2D(0,0);
+        getNearestRobotToPoint(ballPos);
         receiverRobot.x = wm->opp.at(oppBPID).pos.x;
         receiverRobot.y = wm->opp.at(oppBPID).pos.y;
         ROS_INFO_STREAM("Pass Succeeed"<<(int)BP<<"__");
@@ -220,6 +220,9 @@ int StatisticalAnalyzer::validShotOrPass(){
         shotInGoal=false;
         passSucceed=false;
         ballDir=Vector2D(0,0);
+        getNearestRobotToPoint(ballPos);
+        receiverRobot.x = wm->opp.at(oppBPID).pos.x;
+        receiverRobot.y = wm->opp.at(oppBPID).pos.y;
         ROS_INFO_STREAM("Pass Failed"<<(int)BP<<"__");
         return 2;
     }
@@ -244,6 +247,12 @@ int StatisticalAnalyzer::validShotOrPass(){
         shotInGoal=false;
         passSucceed=false;
         ballDir=Vector2D(0,0);
+    }
+
+
+    if(ballPos.y <-4.7 || ballPos.y>4.7 || ballPos.x<-6.2 || ballPos.x>6.2){
+        outflag=true;
+//        ROS_INFO_STREAM("ouuuuut"<<ballPos.x<<"___"<<ballPos.y);
     }
 
 
@@ -405,6 +414,8 @@ void StatisticalAnalyzer::writeToShot(){
     shotanalysis.shotter.x=shotterRobot.x;
     shotanalysis.shotter.y=shotterRobot.y;
     shotanalysis.succeed=shotInGoal;
+    shotanalysis.shotDir.x=shotDir.x;
+    shotanalysis.shotDir.y=shotDir.y;
     shotanalysis.receiver.y=shotTarget.y;
     analyze_pub.publish(shotanalysis);
 
@@ -435,6 +446,8 @@ void StatisticalAnalyzer::writeToPass(){
     passanalysis.succeed=passSucceed;
     passanalysis.receiver.x=receiverRobot.x;
     passanalysis.receiver.y=receiverRobot.y;
+    passanalysis.shotDir.x=shotDir.x;
+    passanalysis.shotDir.y=shotDir.y;
     analyze_pub.publish(passanalysis);
 }
 
@@ -453,7 +466,7 @@ void StatisticalAnalyzer::writeToPossession(){
 
 
 
-    ROS_INFO_STREAM("nadi");
+//    ROS_INFO_STREAM("nadi");
 
     parsian_msgs::parsian_statistical_analyze possessionanalysis;
     possessionanalysis.shootOrPassOrPossession=2;

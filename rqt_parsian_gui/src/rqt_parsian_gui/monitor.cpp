@@ -100,11 +100,25 @@ namespace rqt_parsian_gui {
             connect(btnDraws[i], SIGNAL(clicked()), this, SLOT(changeDrawMode()));
 
         }
+
+
+        strDraws.clear();
+        strDraws  << "our Ball possession"<< "opp ball possession" <<"our conditional ballpossesion "<< "opp conditional ballpossesion " ;
+        for(int i=0 ; i<4 ; i++ )
+        {
+            ballDraws[i] = new QCheckBox(strDraws[i],analyzeW);
+            ballDraws[i]->setEnabled(true);
+            mainLayout->addWidget(ballDraws[i],6+i%2,i/2+i/2);
+            connect(ballDraws[i], SIGNAL(clicked()), this, SLOT(changeballDrawMode()));
+
+        }
+
+
         modeChooser=new ModeChooserWidget(n);
-        mainLayout->addWidget(modeChooser,6,0,1,3);
+        mainLayout->addWidget(modeChooser,9,0,1,3);
 
 
-        mainLayout->addWidget(table,8,0,8,3);
+        mainLayout->addWidget(table,10,0,8,3);
 
 //        QFile file("FlightParam.csv");
 //        if (!file.open(QIODevice::ReadOnly)) {
@@ -229,10 +243,19 @@ namespace rqt_parsian_gui {
 
 
     void Monitor::changeDrawMode(){
-        ROS_INFO_STREAM("gppp");
+//        ROS_INFO_STREAM("gppp");
         for(int i=0;i<4;i++) {
 
                 fieldWidget->drawMode[i] = btnDraws[i]->isChecked();
+        }
+        fieldWidget->update();
+
+    }
+    void Monitor::changeballDrawMode(){
+//        ROS_INFO_STREAM("gppp");
+        for(int i=0;i<4;i++) {
+
+            fieldWidget->ballDrawmode[i] = ballDraws[i]->isChecked();
         }
         fieldWidget->update();
 
@@ -269,13 +292,13 @@ namespace rqt_parsian_gui {
 
                     drawer->drawRobot(1, analysisMeassage->shotter, analysisMeassage->shotDir,
                                       oppCol, analysisMeassage->shotterID, -1, "", true);
-                    drawer->drawRobot(2, analysisMeassage->receiver, analysisMeassage->shotDir,
+                    drawer->drawRobot(2, analysisMeassage->receiver, -1*analysisMeassage->shotDir,
                                       oppCol, analysisMeassage->shotterID, -1, "", true);
                 }
                 else{
                     drawer->drawRobot(1, analysisMeassage->shotter, analysisMeassage->shotDir,
                                       faultcol, analysisMeassage->shotterID, -1, "", true);
-                    drawer->drawRobot(2, analysisMeassage->receiver, analysisMeassage->shotDir,
+                    drawer->drawRobot(2, analysisMeassage->receiver, -1*analysisMeassage->shotDir,
                                       faultcol, analysisMeassage->shotterID, -1, "", true);
                 }
                 break;
@@ -353,16 +376,16 @@ namespace rqt_parsian_gui {
 
         bvals.clear();
         yvals.clear();
-        bvals<<"0"<<"0"<<"0"<<QString::number(possessionnumber==0?0:(int)((possessionopp/(double)possessionnumber)*100))+"%"
-        <<QString::number(shotNumber)
-             <<QString::number((int)(shotNumber==0?0:(shotsucceed/(double)shotNumber)*100))+"%"
-             <<QString::number((int)(passNumber==0?0:(passsucceed/(double)passNumber)*100))+"%";
+            yvals << "4" << "1" << "1" << QString::number(
+                    possessionnumber == 0 ? 0 : (int) ((possessionopp / (double) possessionnumber) * 100)) + "%"
+                  << QString::number(shotNumber)
+                  << QString::number((int) (shotNumber == 0 ? 0 : (shotsucceed / (double) shotNumber) * 100)) + "%"
+                  << QString::number((int) (passNumber == 0 ? 0 : (passsucceed / (double) passNumber) * 100)) + "%";
 
 
-
-        yvals<<"0"<<"0"<<"0"<<QString::number((int)(possessionnumber==0?0:(1-possessionopp/(double)possessionnumber)*100))+"%"
-             <<QString::number(shotNumber)
-             <<QString::number((int)(shotNumber==0?0:(0.7*shotsucceed/(double)shotNumber)*100))+"%"
+        bvals<<"0"<<"3"<<"0"<<QString::number((int)(possessionnumber==0?0:(1-possessionopp/(double)possessionnumber)*100))+"%"
+             <<QString::number((int)(0.5*shotNumber))
+             <<QString::number((int)(shotNumber==0?0:(0.4*shotsucceed/(double)shotNumber)*100))+"%"
              <<QString::number((int)(passNumber==0?0:(0.7*passsucceed/(double)passNumber)*100))+"%";
 
         table->updateTable(bvals,yvals);

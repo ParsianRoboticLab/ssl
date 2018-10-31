@@ -26,7 +26,7 @@ namespace rqt_parsian_gui
         rightPenalty.setRect(_FIELD_WIDTH/2.0 - _GOAL_RAD, -_PENALTY_WIDTH/2.0, _GOAL_RAD, _PENALTY_WIDTH);
         this->setMouseTracking(true);
         stadiumGreen = QColor::fromRgbF(0.34,0.78,0.18,1.0);//QColor::fromRgbF(0.50,0.25,0.0,1.0);//
-        fieldGreen = QColor::fromRgbF(0.27,0.76,0.10,1.0);
+        fieldGreen = QColor::fromRgbF(0.27,0.76,0.10,1.0);//69 194  25
         stadiumSize.setWidth((_STADIUM_WIDTH));
         stadiumSize.setHeight((_STADIUM_HEIGHT));
         WH_RATIO= (double)stadiumSize.width()/(double)stadiumSize.height();
@@ -155,6 +155,32 @@ namespace rqt_parsian_gui
             drawArc(-3.600 , 2.500 , 0.08 , 0 , 360 , QColor("blue") , true);
         }
 
+        if(drawMode[3]) {
+
+
+            for (int i = 0; i < drawerBuffer->balls.size(); i++) {
+
+                if (drawerBuffer->balls.at(i).Bpsaved == 0 && ballDrawmode[0]
+                || drawerBuffer->balls.at(i).Bpsaved == 1 && ballDrawmode[1]
+                || drawerBuffer->balls.at(i).BP == 0 && ballDrawmode[2]
+                   || drawerBuffer->balls.at(i).BP == 1 && ballDrawmode[3]) {
+                    QColor col = QColor("orange");
+                    col.setAlpha(60);
+                    drawArc(drawerBuffer->balls.at(i).pos.x,
+                            drawerBuffer->balls.at(i).pos.y,
+                            0.05,
+                            0,
+                            360,
+                            col,
+                            true);
+
+
+                }
+
+            }
+        }
+
+
         CGraphicalRobot rob;
         if(drawMode[0]) {
 
@@ -196,24 +222,6 @@ namespace rqt_parsian_gui
         }
 
 
-        if(drawMode[3]) {
-
-
-            for (int i = 0; i < drawerBuffer->balls.size(); i++) {
-
-                QColor col = QColor("orange");
-                col.setAlpha(100);
-                drawArc(drawerBuffer->balls.at(i).pos.x,
-                        drawerBuffer->balls.at(i).pos.y,
-                        0.05,
-                        0,
-                        360,
-                        col,
-                        true);
-
-
-            }
-        }
 
 
         parsian_msgs::parsian_draw_circle arc;
