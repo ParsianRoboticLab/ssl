@@ -28,7 +28,6 @@ public:
     explicit CSkillKickOneTouch(Agent* _agent);
     ~CSkillKickOneTouch();
     void execute() override;
-    static double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double lambda, double gamma,double vkick);
 };
 
 #endif //PARSIAN_SKILLS_ONETOUCH_H

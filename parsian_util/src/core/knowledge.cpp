@@ -398,7 +398,7 @@ double CKnowledge::oneTouchAngle(Vector2D pos,
                                  Vector2D ballDir,
                                  Vector2D goal,
                                  double lambda,
-                                 double gamma
+                                 double gamma,
                                  double v_kick) {
     const double &ang1 = (-ballDir).th().degree();
     const double &ang2 = (goal - pos).th().degree();

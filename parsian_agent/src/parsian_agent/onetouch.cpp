@@ -19,44 +19,6 @@ CSkillKickOneTouch::~CSkillKickOneTouch() {
     delete timeAfterForceKick;
 }
 
-double CSkillKickOneTouch::oneTouchAngle(Vector2D pos,
-                                         Vector2D vel,
-                                         Vector2D ballVel,
-                                         Vector2D ballDir,
-                                         Vector2D goal,
-                                         double lambda,
-                                         double gamma,
-                                         double vkick) {
-    double ang1 = (-ballDir).th().degree();
-    double ang2 = (goal - pos).th().degree();
-    double theta = AngleDeg::normalize_angle(ang2 - ang1);
-    double th = fabs(theta) * _DEG2RAD;
-    double v = (ballVel - vel).length();
-    double th1;
-    double f, f_min = 1e10;
-    double th1best{};
-    for (int k = 0; k < 6000; k++) {
-        th1 = (k / 6000.0) * th;
-        f  = gamma * v * (1.0 / tan(th - th1)) * sin(th1) - lambda * v * cos(th1) - vkick;
-        if (fabs(f) < f_min) {
-            f_min = fabs(f);
-            th1best = th1;
-        }
-    }
-    th1 = th1best;
-    th1 *= _RAD2DEG;
-    AngleDeg::normalize_angle(th1);
-    double ang = 0;
-    if (theta > 0) {
-        ang = ang1 + th1;
-    } else {
-        ang = ang1 - th1;
-    }
-
-    return ang;
-}
-
-
 Vector2D CSkillKickOneTouch::findMostPossible() {
 
     QList <Circle2D> obstacles;
@@ -120,7 +82,7 @@ OTMode CSkillKickOneTouch::decideMode() {
 }
 
 void CSkillKickOneTouch::wait() {
-    Vector2D oneTouchDir = Vector2D::unitVector(oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma,6.5));
+    Vector2D oneTouchDir = Vector2D::unitVector(CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma, 6.5));
     gotopointavoid->init(waitPos, oneTouchDir);
     gotopointavoid->execute();
     agent->setRoller(0);
@@ -145,7 +107,7 @@ void CSkillKickOneTouch::intersect() {
     validatePoint(intersectPos);
 
     Vector2D addVec = (intersectPos - target).norm() * stopParam;
-    Vector2D oneTouchDir = Vector2D::unitVector(oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma,6.5));
+    Vector2D oneTouchDir = Vector2D::unitVector(CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma, 6.5));
     gotopointavoid->init(intersectPos + addVec, oneTouchDir);
     gotopointavoid->setNoavoid(true);
     gotopointavoid->setOnetouchmode(true);
