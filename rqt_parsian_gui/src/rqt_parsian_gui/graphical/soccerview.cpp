@@ -101,7 +101,6 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
     rightButton = event->buttons().testFlag(Qt::RightButton);
 
     QPointF mp = mouseToFieldPos(event->pos());
-    ROS_INFO_STREAM("MousePos: " << mp.x() <<"x, "  << mp.y() << "y");
 
     if(leftButton)
         setCursor(Qt::ClosedHandCursor);
@@ -137,25 +136,6 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
             choosen.id = r.id;
         }
     }
-
-    ROS_INFO_STREAM("MOUSE:" << event->x() << "  " << event->y());
-    double mahi = (fieldDim.field_length + fieldDim.boundary_width)/width();
-    double mahi2 = (fieldDim.field_width + fieldDim.boundary_width)/height();
-    double max;
-    if (mahi > mahi2) {
-        max = mahi;
-        mahi2 = height()*mahi;
-        mahi = (fieldDim.field_length + fieldDim.boundary_width);
-    } else {
-        max = mahi2;
-        mahi = width()*mahi2;
-        mahi2 = (fieldDim.field_width + fieldDim.boundary_width);
-    }
-    ROS_INFO_STREAM("FINAL:"
-    << (1 - 2*(double)(event->x() + (viewXOffset/viewScale)) / width())*(-mahi) / 2 * (viewScale/max) << "  "
-    << ((1 - 2*(double)(event->y() - (viewYOffset/viewScale))/ height())*(mahi2)/2) * (viewScale/max));
-
-
 }
 
 void GLSoccerView::mouseReleaseEvent(QMouseEvent* event)
