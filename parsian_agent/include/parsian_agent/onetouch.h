@@ -4,19 +4,31 @@
 #include <parsian_agent/skill.h>
 #include <parsian_agent/kick.h>
 #include <parsian_util/action/autogenerate/onetouchaction.h>
+#include <parsian_agent/receivepass.h>
+
+enum class OTMode {
+    None = 0,
+    Wait = 1,
+    Kick = 2,
+    Intersect = 3
+};
 
 class CSkillKickOneTouch : public CSkill, public OnetouchAction {
-protected:
-    CSkillGotoPointAvoid* gotopointavoid;
-    CSkillKick* kick;
-    QTime* timeAfterForceKick;
 private:
     Vector2D findMostPossible();
-    Vector2D ballLastVel;
-    Vector2D lastInterceptPos;
+    OTMode decideMode();
+    void wait();
+    void kick();
+    void intersect();
+    void validatePoint(Vector2D& _point);
+    CSkillGotoPointAvoid* gotopointavoid;
+    CSkillKick* kickSkill;
+    QTime* timeAfterForceKick;
 public:
-    static double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double landa, double gamma,double vkick);
-    DEF_SKILL(CSkillKickOneTouch);
+    explicit CSkillKickOneTouch(Agent* _agent);
+    ~CSkillKickOneTouch();
+    void execute() override;
+    static double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double lambda, double gamma,double vkick);
 };
 
 #endif //PARSIAN_SKILLS_ONETOUCH_H
