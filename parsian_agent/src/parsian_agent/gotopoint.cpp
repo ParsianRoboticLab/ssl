@@ -1,6 +1,5 @@
 #include <parsian_agent/gotopoint.h>
 
-INIT_SKILL(CSkillGotoPoint, "gotopoint");
 CSkillGotoPoint::CSkillGotoPoint(Agent *_agent) : CSkill(_agent) {
     lookAt.invalidate();
     agent = _agent;
@@ -252,24 +251,4 @@ void CSkillGotoPoint::execute() {
 
     lastPath = agentVel.th();
 
-}
-
-double CSkillGotoPoint::progress() {
-    if (agent == nullptr) {
-        return 0;
-    }
-    double d = (agentPos - targetPos).length();
-    if (d < 0.04) {
-        return 1.0;
-    }
-    if (d < 0.05) {
-        return 0.8;
-    }
-    if (d < 0.10) {
-        return 0.7;
-    }
-    if (d < 0.20) {
-        return 0.6;
-    }
-    return 0;
 }
