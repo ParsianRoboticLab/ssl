@@ -4,7 +4,6 @@
 
 #include "parsian_agent/onetouch.h"
 
-INIT_SKILL(CSkillKickOneTouch, "kickonetouch");
 
 CSkillKickOneTouch::CSkillKickOneTouch(Agent *_agent) : CSkill(_agent) {
     gotopointavoid = new CSkillGotoPointAvoid(agent);
@@ -21,10 +20,6 @@ CSkillKickOneTouch::~CSkillKickOneTouch() {
     delete gotopointavoid;
     delete kick;
     delete timeAfterForceKick;
-}
-
-double CSkillKickOneTouch::progress() {
-    return 0.0;
 }
 
 double CSkillKickOneTouch::oneTouchAngle(Vector2D pos,
@@ -164,7 +159,7 @@ void CSkillKickOneTouch::execute() {
                 intersectPos = wm->ball->getPosInFuture(i);// - (target-wm->ball->getPosInFuture(i)).norm()*0.15;
                 QList <int> dummy;
                 (intersectPos - target).norm() * stopParam;
-                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, intersectPos + addVec, conf->VelMax, dummy, dummy, false, 0, true);
+                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, intersectPos + addVec, conf->VelMax);
 
 
                 if (agentTime < (i - (reachBeforeBallTime))) {
