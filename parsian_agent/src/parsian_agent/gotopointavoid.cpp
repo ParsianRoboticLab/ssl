@@ -273,7 +273,7 @@ void CSkillGotoPointAvoid::init(Vector2D target, Vector2D _targetDir, Vector2D _
     targetVel = _targetVel;
 }
 
-double CSkillGotoPointAvoid::timeNeeded(Agent *_agentT, Vector2D posT, double vMax) {
+double CSkillGotoPointAvoid::timeNeeded(const Agent *_agentT, const Vector2D& posT,const double& vMax) {
 
     double dec = conf->DecMax;
     Vector2D tAgentVel = _agentT->vel();

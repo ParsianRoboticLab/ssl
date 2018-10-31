@@ -190,8 +190,6 @@ void CSkillGotoPoint::execute() {
     ////////////////////////////
     if (currentGPmode == GPPOS) {
         ////////////////ACC + DEC
-        agent->_ACC = 0;// conf->AccMaxNormal; // TODO : is correct? in ai is zero
-        agent->_DEC = 0;// conf->DecMax; // TODO : is correct?
         ////////////////
         posPid->error = agentDist;
         _Vx = posPid->PID_OUT() * cos(agentMovementTh.radian());
@@ -205,8 +203,6 @@ void CSkillGotoPoint::execute() {
         velPid->_I = 0;
     } else if (currentGPmode == GPVCONST) {
         /////////////////ACC + DEC
-        agent->_ACC = 0;
-        agent->_DEC = 0;
         agentVDesire = maxVelocity;
         velPid->_I = 0;
         ////////////////
@@ -214,24 +210,17 @@ void CSkillGotoPoint::execute() {
         _Vy = maxVelocity * sin(appliedTh);
 
     } else if (currentGPmode == GPDEC1) {
-        agent->_ACC = 0;
-        agent->_DEC = 0;
         agentVDesire = sqrt(fabs(2 * maxDeceleration * agentDist * moreDec) + vp * vp) - decOffset;
         _Vx =  agentVDesire * cos(appliedTh) ;
         _Vy =  agentVDesire * sin(appliedTh) ;
 
     } else if (currentGPmode == GPACC1) {
         if (agentVc > 0.3) {
-            agent->_ACC = appliedAcc;
-            agent->_DEC = 0;
             agentVDesire = maxVelocity ;
         } else if (!slowMode && !penaltyKick) {
-            agent->_ACC = 0;
-            agent->_DEC = 0;
             agentVDesire = 0.7;
         } else {
-            agent->_ACC = 0;
-            agent->_DEC = 0;
+
             agentVDesire = 0.5;
         }
         ////////////////
