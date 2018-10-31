@@ -27,8 +27,6 @@
 //}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-INIT_SKILL(CSkillKick, "kick");
-
 CSkillKick::CSkillKick(Agent *_agent) : CSkill(_agent) {
 
     kickSpeed = 15;
@@ -82,10 +80,6 @@ CSkillKick::~CSkillKick() {
 }
 
 void CSkillKick::resetI() {
-}
-
-double CSkillKick::progress() {
-    return 0.0;
 }
 
 bool CSkillKick::kickable() {
@@ -756,7 +750,7 @@ void CSkillKick::findPosToGo() {
             for (double i = 0.5 ; i < 5 ; i += 0.1) {
                 finalPos = wm->ball->getPosInFuture(i);// - (target-wm->ball->getPosInFuture(i)).norm()*0.15;
                 QList <int> dummy;
-                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, finalPos - addVec, conf->VelMax, dummy, dummy, false, 0, true);
+                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, finalPos - addVec, conf->VelMax);
 
 
                 if (agentTime < (i - (0.5))) {
