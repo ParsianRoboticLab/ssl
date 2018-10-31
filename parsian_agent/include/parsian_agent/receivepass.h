@@ -11,27 +11,29 @@
 #include <parsian_util/action/autogenerate/receivepassaction.h>
 
 /////////////////////////////////////////////////////////////// receive pass skill created by DON MHMMD SHIRAZI
-enum kkRPMode {
+enum class RPMode {
+    RPNONE = 0,
     RPWAITPOS = 1,
     RPINTERSECT = 2,
-    RPDAMP = 3,
-    RPRECEIVE = 4,
-    RPNONE = 5
+    RPRECEIVE = 3
 };
 
 class CSkillReceivePass : public CSkill, public ReceivepassAction {
 private:
+    RPMode decideMode();
+    void waitPos();
+    void intersect();
+    void receive();
+
+    Vector2D bestPointToIntersect();
+    void validatePoint(Vector2D& _point);
+    void validatePointFromPenalty(Vector2D& _point, const Rect2D& _penalty);
+    void validatePointOutofField(Vector2D& _point);
+
     CSkillGotoPointAvoid* gotopointavoid;
-    Vector2D ballPos;
-    Vector2D kkAgentPos;
-    kkRPMode receivePassMode;
-    kkRPMode decideMode();
-    Circle2D receiveArea;
-    double cirThresh;
-    double kickCirThresh;
 public:
-    double ballRealVel;
-    DEF_SKILL(CSkillReceivePass);
+
+    explicit DEF_SKILL(CSkillReceivePass);
 };
 
 

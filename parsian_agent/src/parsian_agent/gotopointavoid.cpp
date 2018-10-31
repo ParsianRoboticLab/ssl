@@ -6,9 +6,6 @@
 #include <parsian_agent/config.h>
 
 
-INIT_SKILL(CSkillGotoPointAvoid, "gotopointavoid");
-
-
 CSkillGotoPointAvoid::CSkillGotoPointAvoid(Agent *_agent) : CSkill(_agent) {
     counter = 0;
     avoidPenaltyArea = static_cast<unsigned char>(true);
@@ -240,7 +237,7 @@ void CSkillGotoPointAvoid::execute()
     // ROS_INFO_STREAM("x: "<<agentPos.x<<"y: "<<agentPos.y<<"w: "<< dW);
     QList <int> dumm;
 
-    drawer -> draw(QString("time : %1").arg(timeNeeded(agent, targetPos, conf->VelMax, dumm, dumm, 0, 0, 0)), Vector2D(1, 1));
+    drawer -> draw(QString("time : %1").arg(timeNeeded(agent, targetPos, conf->VelMax)), Vector2D(1, 1));
 
     counter ++;
     if(oneTouchFlag){
@@ -252,13 +249,6 @@ void CSkillGotoPointAvoid::execute()
             }
         }
     }
-}
-
-double CSkillGotoPointAvoid::progress() {
-    if (agentPos.dist(targetPos) < 0.05) {
-        return 1;
-    }
-    return 0;
 }
 
 CSkillGotoPointAvoid* CSkillGotoPointAvoid::setTargetLook(Vector2D finalPos, Vector2D lookAtPoint) {
@@ -283,61 +273,19 @@ void CSkillGotoPointAvoid::init(Vector2D target, Vector2D _targetDir, Vector2D _
     targetVel = _targetVel;
 }
 
-double CSkillGotoPointAvoid::timeNeeded(Agent *_agentT, Vector2D posT, double vMax, QList <int> _ourRelax, QList <int> _oppRelax , bool avoidPenalty, double ballObstacleReduce, bool _noAvoid) {
+double CSkillGotoPointAvoid::timeNeeded(Agent *_agentT, Vector2D posT, double vMax) {
 
-    double _x3;
-    double acc = conf->AccMaxForward;
     double dec = conf->DecMax;
-    double xSat;
     Vector2D tAgentVel = _agentT->vel();
     Vector2D tAgentDir = _agentT->dir();
-    double veltan = (tAgentVel.x) * cos(tAgentDir.th().radian()) + (tAgentVel.y) * sin(tAgentDir.th().radian());
-    double offset = 0;
-    double velnorm = -1 * (tAgentVel.x) * sin(tAgentDir.th().radian()) + (tAgentVel.y) * cos(tAgentDir.th().radian());
-    double distCoef = 1, distEffect = 1, angCoef = 0.003;
     double dist = 0;
-    double rrtAngSum = 0;
-    QList <Vector2D> _result;
-    Vector2D _target;
-
     double tAgentVelTanjent =  tAgentVel.length() * cos(Vector2D::angleBetween(posT - _agentT->pos() , _agentT->vel().norm()).radian());
-    /*if(_noAvoid)
-    {
-        _result.clear();
-    }
-    else
-    {
-
-        _agentT->initPlanner(posT,_ourRelax,_oppRelax,avoidPenalty,false,ballObstacleReduce);
-        _result.clear();
-        for(unsigned long i = _agentT->pathPlannerResult.size()-1 ; i>=0 ; i-- )
-        {
-            _result.append(_agentT->pathPlannerResult[i]);
-        }
-    }
-
-    if( _result.size() >= 3) {
-        for(int i = 0 ; i < _result.size() - 1; i++)
-        {
-            dist += _result[i].dist(_result[i+1]);
-        }
-        for(int i = 1 ; i < _result.size() - 1; i++)
-        {
-            rrtAngSum += fabs(Vector2D::angleBetween(_result[i] - _result[i-1] , _result[i+1] - _result[i]).degree());
-        }
-        distEffect = dist / _agentT->pos().dist(posT);
-        distEffect += rrtAngSum*angCoef;
-        distEffect = std::max(1.0, distEffect);
-    }
-    */
     double vXvirtual = (posT - _agentT->pos()).x;
     double vYvirtual = (posT - _agentT->pos()).y;
     double veltanV = (vXvirtual) * cos(tAgentDir.th().radian()) + (vYvirtual) * sin(tAgentDir.th().radian());
     double velnormV = -1 * (vXvirtual) * sin(tAgentDir.th().radian()) + (vYvirtual) * cos(tAgentDir.th().radian());
-    double accCoef = 1, realAcc = 4;
-
-    accCoef = atan(fabs(veltanV) / fabs(velnormV)) / _PI * 2;
-    acc = accCoef * conf->AccMaxForward + (1 - accCoef) * conf->AccMaxNormal;
+    double accCoef = atan(fabs(veltanV) / fabs(velnormV)) / _PI * 2;
+    double acc = accCoef * conf->AccMaxForward + (1 - accCoef) * conf->AccMaxNormal;
 
     double tDec = vMax / dec;
     double tAcc = (vMax - tAgentVelTanjent) / acc;
