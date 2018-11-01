@@ -24,12 +24,8 @@ public:
     //these functions should be defined in child classes
     virtual void execute() = 0;
 
-    Property(Agent*, Agent, agent){};
+protected:
+    Agent * const agent;
 };
-
-#define DEF_SKILL(skill) \
-    skill(Agent* _agent); \
-    ~skill(); \
-    virtual void execute();
 
 #endif // BASICSKILL_H
