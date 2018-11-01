@@ -11,9 +11,7 @@ CBall::CBall(const parsian_msgs::parsian_robot &_ball) : CMovingObject(_ball) {
 
 CBall::CBall() : CMovingObject() {}
 
-CBall::~CBall() {
-
-}
+CBall::~CBall() = default;
 
 double CBall::whenBallReachToPoint(double dist) const {
     double v2 = vel.length() * vel.length();
@@ -39,5 +37,14 @@ Vector2D CBall::getPosInFuture(double _t) const {
     } else {
         return pos + (vel.length() * vel.length() / (2 * getBallAcc())) * vel.norm();
     }
+}
+
+Segment2D CBall::seg(const double& _size) const {
+    return Segment2D{pos, pos + vel.norm()*_size};
+}
+
+
+Ray2D CBall::path() const {
+    return Ray2D{pos, pos + vel};
 }
 
