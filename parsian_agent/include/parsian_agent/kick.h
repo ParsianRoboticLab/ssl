@@ -13,8 +13,8 @@
 enum class KMode {
     NOMODE          = 0,
     DIRECT          = 1,
-    AvoidOurPenalty    = 2,
-    AvoidOppPenalty    = 3,
+    AvoidOurPenalty = 2,
+    AvoidOppPenalty = 3,
     DONTKICK        = 4,
     JTurn           = 5,
     TurnForKick     = 6
@@ -25,17 +25,6 @@ enum class KMode {
 class CSkillKick : public CSkill, public KickAction {
 private:
     KMode decideMode();
-    _PID *angPid;
-    _PID *speedPid;
-    _PID *posPid;
-
-
-    Circle2D kickerArea;
-    double distThr;
-
-    AngleDeg kickFinalDir;
-    Vector2D finalDirVec;
-    Vector2D finalPos;
     void direct();
     void jTurn();
     void turnForKick();
@@ -43,8 +32,15 @@ private:
     void avoidOurPenalty();
     void doNotKick();
     void validateKickerState();
+    bool isOppPenaltyMode();
+    bool isJTurnMode();
+
+
     CSkillGotoPointAvoid *gpa;
-    bool kickerOn;
+    _PID *angPid;
+    _PID *speedPid;
+    _PID *posPid;
+    double distThr;
 
 public:
     explicit CSkillKick(Agent* _agent);
@@ -52,6 +48,7 @@ public:
     void execute() override;
 
     Vector2D findMostPossible();
+    static Vector2D findMostPossible(const Agent* _agent);
 };
 
 
