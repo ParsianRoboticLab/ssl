@@ -144,7 +144,8 @@ Vector2D CSkillReceivePass::bestPointToIntersect(const Agent *_agent, const doub
             break;
         }
     }
-    return best;}
+    return best;
+}
 
 void CSkillReceivePass::validatePoint(Vector2D &_point, const Vector2D &_default) {
     const Rect2D& biggerOppPenalty = wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, false);
