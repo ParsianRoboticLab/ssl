@@ -20,8 +20,7 @@ private:
     void wait();
     void kick();
     void intersect();
-    void validatePoint(Vector2D& _point);
-    CSkillGotoPointAvoid* gotopointavoid;
+    CSkillGotoPointAvoid* gotoPointAvoid;
     CSkillKick* kickSkill;
     QTime* timeAfterForceKick;
 public:
