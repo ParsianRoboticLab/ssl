@@ -13,14 +13,12 @@
 #include <math.h>
 #include <parsian_util/action/autogenerate/gotopointaction.h>
 
-enum gpMode {
-    GPACC1 = 0,
-    GPACC2 = 1,
-    GPVCONST = 2,
-    GPDEC1 = 3,
-    GPDEC2 = 4,
-    GPPOS = 5,
-    GPDIVE = 6
+enum class GPMode {
+    NoMode      = 0,
+    ACC1        = 1,
+    VCONST      = 2,
+    DEC1        = 3,
+    POS         = 4
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,10 +28,6 @@ class CSkillGotoPoint : public CSkill, public GotopointAction {
 private:
     _PID *angPid;
     _PID *posPid;
-    _PID *posXpid;
-    _PID *posYpid;
-    _PID *speedPidX;
-    _PID *speedPidY;
     _PID *thPid;
     _PID *velPid;
     Vector2D startingPoint;
@@ -45,12 +39,7 @@ private:
 
 protected:
 
-    Vector2D agentPos;
-    Vector2D agentVel;
-    double agentDist;
     double agentVc;
-    double _Vx, _Vy;
-    double appliedAcc;
     double posPidDist;
     double agentVDesire;
     double decThr;
@@ -58,14 +47,14 @@ protected:
 
     double agentX3;
 
-    gpMode decideMode();
+    GPMode decideMode();
     AngleDeg agentMovementTh;
     AngleDeg lastPath;
 
 public:
-    virtual double timeNeeded();
-    DEF_SKILL(CSkillGotoPoint);
-    gpMode currentGPmode;
+    explicit CSkillGotoPoint(Agent* _agent);
+    ~CSkillGotoPoint();
+    void execute() override;
 };
 
 

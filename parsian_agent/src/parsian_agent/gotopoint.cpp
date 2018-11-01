@@ -2,14 +2,9 @@
 
 CSkillGotoPoint::CSkillGotoPoint(Agent *_agent) : CSkill(_agent) {
     lookAt.invalidate();
-    agent = _agent;
-    speedPidX = new _PID(1, 0, 0, 0, 0);
-    speedPidY = new _PID(1, 0, 0, 0, 0);
     posPid = new _PID(1, 0, 0, 0, 0);
     velPid = new _PID(1, 0, 0, 0, 0);
     angPid = new _PID(2, 0, 0, 0, 0);
-    posXpid = new _PID(1, 0, 0, 0, 0);
-    posYpid = new _PID(1, 0, 0, 0, 0);
     thPid = new _PID(1, 0, 0, 0, 0);
 
     maxAcceleration = 4;
@@ -34,25 +29,19 @@ CSkillGotoPoint::CSkillGotoPoint(Agent *_agent) : CSkill(_agent) {
 }
 
 CSkillGotoPoint::~CSkillGotoPoint() {
-    //    delete speedPidX;
-    //    delete speedPidY;
-    //    delete posPid;
-    //    delete angPid;
-    //    delete posXpid;
-    //    delete posYpid;
-    //    delete thPid;
+        delete posPid;
+        delete angPid;
+        delete velPid;
+        delete thPid;
 }
 
-double CSkillGotoPoint::timeNeeded() {
-    return 0 ;
-}
-gpMode CSkillGotoPoint::decideMode() {
-    //    posPidDist = 1/agentVc;
-    //    if(posPidDist > 1)
-    //        posPidDist = 1;
+
+GPMode CSkillGotoPoint::decideMode() {
+    double agentDist = agent->pos().dist(targetPos);
+
     if (agentDist < posPidDist + posThr) {
         decThr = 0;
-        return GPPOS;
+        return GPMode::POS;
     } else {
         agentX3 = fabs(((posPidDist * posPid->kp) * (posPidDist * posPid->kp) - (agentVc * agentVc)) / (2 * maxDeceleration)) + 0.05 * agentVc;
 
@@ -62,13 +51,13 @@ gpMode CSkillGotoPoint::decideMode() {
             } else {
                 decThr = 0.5;
             }
-            return GPDEC1;
+            return GPMode::DEC1;
         } else if (agentVc >= maxVelocity) {
             decThr = 0;
-            return GPVCONST;
+            return GPMode::VCONST;
         } else {
             decThr = 0;
-            return GPACC1;
+            return GPMode::ACC1;
         }
 
     }
@@ -76,30 +65,27 @@ gpMode CSkillGotoPoint::decideMode() {
 }
 
 void CSkillGotoPoint::trajectoryPlanner() {
-    agentMovementTh = (targetPos - agentPos).th();
+    double agentDist = agent->pos().dist(targetPos);
+
+    agentMovementTh = (targetPos - agent->pos()).th();
     //////////////////acc dec
-    appliedAcc = 1.5 * maxAcceleration;
 
     if (smooth) {
         if ((agentMovementTh - lastPath).degree() > 20 && (agentMovementTh - lastPath).degree() < 100 && agentVc > 1) {
             agentMovementTh = lastPath + 60;
             maxVelocity = 1;
-            appliedAcc = 0;
 
         } else if ((agentMovementTh - lastPath).degree() < -20 && (agentMovementTh - lastPath).degree() > -100 && agentVc > 1) {
             agentMovementTh = lastPath - 60;
             maxVelocity = 1;
-            appliedAcc = 0;
 
         } else if ((agentMovementTh - lastPath).degree() >= 100 && agentVc > 1) {
             agentMovementTh = lastPath + 80;
             maxVelocity = 0.5;
-            appliedAcc = 0;
 
         } else if ((agentMovementTh - lastPath).degree() <= -100 && agentVc > 1) {
             agentMovementTh = lastPath - 80;
             maxVelocity = 0.5;
-            appliedAcc = 0;
 
         }
     }
@@ -109,7 +95,7 @@ void CSkillGotoPoint::trajectoryPlanner() {
     if ((fabs(thPid->error) > 1)
             || agentVc < 0.5
             || agentDist > 3
-            || fabs((agentMovementTh - agent->dir().th()).degree()) > 80 && fabs((agentMovementTh - agent->dir().th()).degree()) < 100) {
+            || (fabs((agentMovementTh - agent->dir().th()).degree()) > 80 && fabs((agentMovementTh - agent->dir().th()).degree()) < 100)) {
         thPid->error = 0;
     }
 
@@ -128,22 +114,17 @@ void CSkillGotoPoint::execute() {
         maxVelocity = 4;
     }
 
-//    targetValidate();
-
     /////////////////decide and exec
 
-    agentPos = agent->pos();
-    agentVel = agent->vel();
-    agentDist = agentPos.dist(targetPos);
-    currentGPmode = decideMode();
+    double agentDist = agent->pos().dist(targetPos);
     angPid->error = (targetDir.th() - agent->dir().th()).radian();
-    agentVc = agentVel.length();
+    agentVc = agent->vel().length();
     //////////////// set params
     posPid->kd = 3;
-    if (startingPoint.dist(agentPos) < 0.05) {
+    if (startingPoint.dist(agent->pos()) < 0.05) {
         posPid->kp = 4;
         posPid->kd = 0;
-    } else if (startingPoint.dist(agentPos) < 0.3) {
+    } else if (startingPoint.dist(agent->pos()) < 0.3) {
         posPid->kp = 0.37 / agentDist;
         if (posPid->kp > 3) {
             posPid->kp = 3;
@@ -183,61 +164,67 @@ void CSkillGotoPoint::execute() {
     double moreDec = 0.65;
     double decOffset = 0.8;
     if (agentVc < 0.2) {
-        startingPoint = agentPos;
+        startingPoint = agent->pos();
     }
+    double _Vx{0.0}, _Vy{0.0};
+    GPMode currentGPmode = decideMode();
+    switch (currentGPmode) {
 
-
-    ////////////////////////////
-    if (currentGPmode == GPPOS) {
-        ////////////////ACC + DEC
-        ////////////////
-        posPid->error = agentDist;
-        _Vx = posPid->PID_OUT() * cos(agentMovementTh.radian());
-        _Vy = posPid->PID_OUT() * sin(agentMovementTh.radian());
-        if (agentDist  < 0.015) {
+        case GPMode::NoMode:
             _Vx = 0;
             _Vy = 0;
-        }
-        ///////////////////////////////////////////////PID Previous error
-        posPid->pError = agentDist;
-        velPid->_I = 0;
-    } else if (currentGPmode == GPVCONST) {
-        /////////////////ACC + DEC
-        agentVDesire = maxVelocity;
-        velPid->_I = 0;
-        ////////////////
-        _Vx = maxVelocity * cos(appliedTh);
-        _Vy = maxVelocity * sin(appliedTh);
+            agent->waitHere();
+            velPid->_I = 0;
+            break;
+        case GPMode::ACC1:
+            if (agentVc > 0.3) {
+                agentVDesire = maxVelocity ;
+            } else if (!slowMode && !penaltyKick) {
+                agentVDesire = 0.7;
+            } else {
 
-    } else if (currentGPmode == GPDEC1) {
-        agentVDesire = sqrt(fabs(2 * maxDeceleration * agentDist * moreDec) + vp * vp) - decOffset;
-        _Vx =  agentVDesire * cos(appliedTh) ;
-        _Vy =  agentVDesire * sin(appliedTh) ;
+                agentVDesire = 0.5;
+            }
+            ////////////////
+            _Vx = agentVDesire * cos(appliedTh);
+            _Vy = agentVDesire * sin(appliedTh);
+            ///////////////////////////////////////////////PID Previous error
+            break;
+        case GPMode::VCONST:
+            /////////////////ACC + DEC
+            agentVDesire = maxVelocity;
+            velPid->_I = 0;
+            ////////////////
+            _Vx = maxVelocity * cos(appliedTh);
+            _Vy = maxVelocity * sin(appliedTh);
+            break;
+        case GPMode::DEC1:
+            agentVDesire = sqrt(fabs(2 * maxDeceleration * agentDist * moreDec) + vp * vp) - decOffset;
+            _Vx =  agentVDesire * cos(appliedTh) ;
+            _Vy =  agentVDesire * sin(appliedTh) ;
 
-    } else if (currentGPmode == GPACC1) {
-        if (agentVc > 0.3) {
-            agentVDesire = maxVelocity ;
-        } else if (!slowMode && !penaltyKick) {
-            agentVDesire = 0.7;
-        } else {
-
-            agentVDesire = 0.5;
-        }
-        ////////////////
-        _Vx = agentVDesire * cos(appliedTh);
-        _Vy = agentVDesire * sin(appliedTh);
-        ///////////////////////////////////////////////PID Previous error
-    } else {
-        agent->waitHere();
-        velPid->_I = 0;
+            break;
+        case GPMode::POS:
+            ////////////////ACC + DEC
+            ////////////////
+            posPid->error = agentDist;
+            _Vx = posPid->PID_OUT() * cos(agentMovementTh.radian());
+            _Vy = posPid->PID_OUT() * sin(agentMovementTh.radian());
+            if (agentDist  < 0.015) {
+                _Vx = 0;
+                _Vy = 0;
+            }
+            ///////////////////////////////////////////////PID Previous error
+            posPid->pError = agentDist;
+            velPid->_I = 0;
+            break;
     }
+
     ROS_INFO_STREAM("DI : " << agentDist);
     ROS_INFO_STREAM("DIST : " << agentDist);
 
     agent->setRobotAbsVel(_Vx, _Vy, angPid->PID_OUT());
     angPid->pError = angPid->error;
-
-
-    lastPath = agentVel.th();
+    lastPath = agent->vel().th();
 
 }
