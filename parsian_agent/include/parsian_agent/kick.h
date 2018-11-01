@@ -7,6 +7,7 @@
 #include <parsian_util/core/movingobject.h>
 #include <parsian_util/action/autogenerate/kickaction.h>
 #include <parsian_util/core/knowledge.h>
+#include <parsian_agent/receivepass.h>
 
 
 enum class KMode {
@@ -14,6 +15,7 @@ enum class KMode {
     DIRECT          = 1,
     AVOIDOPPENALTY  = 2,
     DONTKICK        = 3,
+    JTurn           = 4
 
 
 };
@@ -42,7 +44,6 @@ private:
     void doNotKick();
     void findPosToGo();
     void validateKickerState();
-    double oneTouchAngle(Vector2D pos, Vector2D vel, Vector2D ballVel, Vector2D ballDir, Vector2D goal, double landa, double gamma);
     CSkillGotoPointAvoid *gpa;
     bool kickerOn;
 

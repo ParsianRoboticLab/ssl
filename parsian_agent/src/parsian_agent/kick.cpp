@@ -114,7 +114,6 @@ void CSkillKick::avoidOurPenalty() {
     if (wm->field->isInField(dummyPos1)) {
         finalPos = dummyPos1;
     }
-//    draw(finalPos);
     if (wm->ball->pos.dist(agent->pos()) > 0.2) {
         finalDirVec = target - agent->pos();
     }
@@ -124,7 +123,6 @@ void CSkillKick::avoidOurPenalty() {
 
     gpa->init(finalPos, finalDirVec);
     gpa->execute();
-//    agent->setKick(kickSpeed);
 }
 
 void CSkillKick::avoidOppPenalty() {
@@ -190,13 +188,6 @@ void CSkillKick::indirect() {
 
 void CSkillKick::jTurn() {
 
-    if (shotEmptySpot) {
-        target = findMostPossible();
-    }
-    //    //// vars
-    bool isFinalController = false;
-    double posPidKp = 1;
-    double speedPidKp = 1;
     Vector2D targetForJturnSpeed, targetForJturnPos;
     Vector2D idealPass;
     Vector2D movementThSpeed, movementThPos;
@@ -375,104 +366,31 @@ Vector2D CSkillKick::findMostPossible() {
     return  goalSeg.intersection(Segment2D(wm->ball->pos , wm->ball->pos + Vector2D(cos(_PI * (angle) / 180), sin(_PI * (angle) / 180)).norm() * 12));
 }
 
-
-double CSkillKick::oneTouchAngle(Vector2D pos,
-                                 Vector2D vel,
-                                 Vector2D ballVel,
-                                 Vector2D ballDir,
-                                 Vector2D goal,
-                                 double landa,
-                                 double gamma) {
-    float ang1 = (-ballDir).th().degree();
-    float ang2 = (goal - pos).th().degree();
-    float theta = AngleDeg::normalize_angle(ang2 - ang1);
-    float th = fabs(theta) * _DEG2RAD;
-    float vkick = 8; // agent->self()->kickValueSpeed(kickSpeed, false);// + Vector2D::unitVector(self().pos.d).innerProduct(self().vel);
-    float v = (ballVel - vel).length();
-    float th1 = th * 0.5;
-    float f, fmin = 1e10;
-    float th1best;
-    for (int k = 0; k < 6000; k++) {
-        th1 = ((float)k / 6000.0) * th;
-        f  = gamma * v * (1.0 / tan(th - th1)) * sin(th1) - landa * v * cos(th1) - vkick;
-        if (fabs(f) < fmin) {
-            fmin = fabs(f);
-            th1best = th1;
-        }
-    }
-    th1 = th1best;
-    th1 *= _RAD2DEG;
-    AngleDeg::normalize_angle(th1);
-    th  *= _RAD2DEG;
-    float ang = 0;
-    if (theta > 0) {
-        ang = ang1 + th1;
-    } else {
-        ang = ang1 - th1;
-    }
-
-    return ang;
-
-}
-
 void CSkillKick::findPosToGo() {
-    Circle2D  agentNearArea(agent->pos(), 0.15);
-    Vector2D sol1, sol2;
-    QList<int> ourRelax, oppRelax;
-    double agentTime = 0;
+    Circle2D agentNearArea(agent->pos(), 0.15);
     Vector2D finalDir;
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
-    Circle2D dribblerArea(agent->pos() + agent->dir().norm() * 0.1, 0.25);
-    Circle2D robotArea(agent->pos(), 1);
-    gpa->setAddvel(Vector2D(0, 0));
     kickerArea.assign(agent->pos() + agent->dir().norm() * 0.09 , 0.15);
     Segment2D kickerSeg(agent->pos() + agent->dir().norm() * 0.08 + agent->dir().rotate(90).norm() * 0.02 , agent->pos() + agent->dir().norm() * 0.08 - agent->dir().rotate(90).norm() * 0.02);
-    Vector2D dummy;
     Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);
     Vector2D kickerPoint = agent->pos() + agent->dir().norm() * 0.08;
     Vector2D addVec = agent->dir().norm() * 0.08;
     gpa->setOnetouchmode(false);
 
-    if (wm->ball->vel.length() > 0.5 - distThr  ) {
+    if (wm->ball->vel.length() > 0.5 - distThr) {
         distThr = 0.45;
-        if(isKhafan)
-            distThr = 0.45;
-        if (Circle2D(agent->pos(), 0.1).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)), &dummy, &dummy)) {
-            gpa->setOnetouchmode(false);
-            finalPos = ballPath.nearestPoint(kickerPoint);
-
-        } else {
-            bool posFound  = false;
-            for (double i = 0.5 ; i < 5 ; i += 0.1) {
-                finalPos = wm->ball->getPosInFuture(i);// - (target-wm->ball->getPosInFuture(i)).norm()*0.15;
-                QList <int> dummy;
-                agentTime = CSkillGotoPointAvoid::timeNeeded(agent, finalPos - addVec, conf->VelMax);
-
-
-                if (agentTime < (i - (0.5))) {
-                    posFound  = true;
-                    break;
-                }
-            }
-
-            if (posFound == false  /*intersectPos.dist(wm->ball->pos) > ballPath.nearestPoint(kickerPoint).dist(wm->ball->pos) ||*/ /*!wm->field->isInField(finalPos + addVec)*/) {
-                finalPos = ballPath.nearestPoint(kickerPoint);
-            }
-
+        Vector2D bestPoint = CSkillReceivePass::bestPointToIntersect(agent);
+        if (!bestPoint.valid() || Circle2D(agent->pos(), 0.15).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)))) {
+            bestPoint = ballPath.nearestPoint(agent->pos());
         }
-        finalPos = finalPos - addVec;
-        Vector2D s1,s2;
-        if(!wm->field->isInField(finalPos)) {
-            wm->field->fieldRect().intersection(ballPath,&s1,&s2);
-            if(!s1.isValid())
-                finalPos = s2 - addVec;
-            else
-                finalPos = s1 - addVec;
-        }
-        if (Circle2D(agent->pos(), 0.1).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)), &dummy, &dummy)) {
+        bestPoint -= addVec;
+        CSkillReceivePass::validatePoint(bestPoint, wm->ball->pos);
+        finalPos = bestPoint;
+
+        if (Circle2D(agent->pos(), 0.1).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)))) {
             if (fabs(((target - agent->pos()).th().degree() - (wm->ball->pos - agent->pos()).th().degree())) < 60 || isKhafan) {
                 finalDir = Vector2D::unitVector(
-                        oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target,
+                        CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target,
                                       conf->Landa,
                                       conf->Gamma));
             } else {
@@ -489,10 +407,8 @@ void CSkillKick::findPosToGo() {
         }
 
 
-        //   drawer->draw(QString("agentT : %1").arg(agentTime) , Vector2D(1,-1));
         if ((ballPath.intersection(targetNormalSeg).isValid())  && (fabs(((wm->ball->pos - agent->pos()).th() - kickFinalDir).degree()) < 60)) {
             finalDir = target - agent->pos();
-            // finalPos = wm->ball->pos - (target - finalPos).norm() * 0.15;
 
         }
 
@@ -520,33 +436,9 @@ void CSkillKick::findPosToGo() {
         finalDir = Vector2D(cos(kickFinalDir.radian()), sin(kickFinalDir.radian()));
     }
 
-    if(finalPos.x >wm->field->_FIELD_WIDTH/2 -  wm->field->_PENALTY_DEPTH - 0.1 && fabs(finalPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
-        if(wm->field->oppBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
-            if(sol1.dist(finalPos) > sol2.dist(finalPos)) {
-                if(sol2.x != wm->field->oppGoal().x) {
-                    sol1 = sol2;
-                }
-            }
-            if(sol1.x == wm->field->oppGoal().x)
-                sol1 = sol2;
-            finalPos = sol1;
-        }
-        finalDir = wm->ball->pos - finalPos;
-    }
-    if(finalPos.x < -1 * wm->field->_FIELD_WIDTH/2 +  wm->field->_PENALTY_DEPTH + 0.1 && fabs(finalPos.y) < wm->field->_PENALTY_WIDTH/2 +0.1 ) {
-        if(wm->field->ourBigPenaltyArea(1,0.1,0).intersection(ballPath,&sol1,&sol2)) {
-            // drawer->draw(wm->field->ourBigPenaltyArea(1,0.1,0),QColor(Qt::red),true);
-            if(sol1.dist(finalPos) > sol2.dist(finalPos)) {
-                if(sol2.x >= -1 * wm->field->_FIELD_WIDTH/2 + 0.02) {
-                    sol1 = sol2;
-                }
-            }
-            if(sol1.x == wm->field->ourGoal().x)
-                sol1 = sol2;
-            finalPos = sol1;
-        }
-        finalDir = wm->ball->pos - finalPos;
-    }
+    Vector2D temp = finalPos;
+    CSkillReceivePass::validatePoint(finalPos, agent->pos());
+    if (temp != finalPos) finalDir = wm->ball->pos - finalPos;
 
     Vector2D s1, s2;
     Circle2D finalPosArea;
