@@ -15,7 +15,6 @@ enum class OTMode {
 
 class CSkillKickOneTouch : public CSkill, public OnetouchAction {
 private:
-    Vector2D findMostPossible();
     OTMode decideMode();
     void wait();
     void kick();

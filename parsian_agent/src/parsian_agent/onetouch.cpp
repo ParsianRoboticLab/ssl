@@ -19,30 +19,11 @@ CSkillKickOneTouch::~CSkillKickOneTouch() {
     delete timeAfterForceKick;
 }
 
-Vector2D CSkillKickOneTouch::findMostPossible() {
-
-    QList <Circle2D> obstacles;
-    for (int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
-        obstacles.append(Circle2D(wm->opp.active(i)->pos, Robot::robot_radius_new + 0.01));
-    }
-    for (int i = 0 ; i < wm->our.activeAgentsCount() ; i++) {
-        if (wm->our.active(i)->id != agent->id()) {
-            obstacles.append(Circle2D(wm->our.active(i)->pos, Robot::robot_radius_new + 0.01));
-        }
-    }
-
-    double prob, angle, biggestAngle;
-    CKnowledge::getEmptyAngle(*wm->field, wm->ball->pos - (wm->field->oppGoal() - wm->ball->pos).norm() * 0.15, wm->field->oppGoalL(), wm->field->oppGoalR(), obstacles, prob, angle, biggestAngle);
-    Segment2D goalSeg(wm->field->oppGoalL(), wm->field->oppGoalR());
-    return goalSeg.intersection(Segment2D(wm->ball->pos , wm->ball->pos + Vector2D(cos(_PI * (angle) / 180), sin(_PI * (angle) / 180)).norm() * 12));
-}
-
-
 void CSkillKickOneTouch::execute() {
     gotoPointAvoid->setOnetouchmode(false);
     gotoPointAvoid->setNoavoid(false);
 
-    if (shotToEmptySpot) target = findMostPossible();
+    if (shotToEmptySpot) target = CSkillKick::findMostPossible(agent);
     if (!target.valid()) target = wm->field->oppGoal();
     if (!waitPos.isValid()) waitPos = agent->pos();
 
