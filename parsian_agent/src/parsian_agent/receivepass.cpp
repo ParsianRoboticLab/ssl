@@ -28,7 +28,6 @@ RPMode CSkillReceivePass::decideMode() {
 void CSkillReceivePass::execute() {
 
     gotopointavoid->setSlowmode(slow);
-    gotopointavoid->setAgent(agent);
     gotopointavoid->setNoavoid(false);
     gotopointavoid->setBallobstacleradius(0.4);
 
