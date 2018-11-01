@@ -15,13 +15,11 @@ enum class OTMode {
 
 class CSkillKickOneTouch : public CSkill, public OnetouchAction {
 private:
-    Vector2D findMostPossible();
     OTMode decideMode();
     void wait();
     void kick();
     void intersect();
-    void validatePoint(Vector2D& _point);
-    CSkillGotoPointAvoid* gotopointavoid;
+    CSkillGotoPointAvoid* gotoPointAvoid;
     CSkillKick* kickSkill;
     QTime* timeAfterForceKick;
 public:

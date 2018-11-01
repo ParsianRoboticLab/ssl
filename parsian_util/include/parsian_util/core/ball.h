@@ -12,11 +12,13 @@
 
 class CBall : public CMovingObject {
 public:
+    explicit CBall(const parsian_msgs::parsian_robot& _robot);
     CBall();
-    CBall(const parsian_msgs::parsian_robot& _robot);
     ~CBall();
     double whenBallReachToPoint(double dist) const;
     Vector2D getPosInFuture(double _t) const;
+    Segment2D seg(const double& _size = 20) const;
+    Ray2D path() const;
 //    double distToBallReachToPoint(double time,Vector2D point);
 
     double getBallAcc() const;

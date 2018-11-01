@@ -28,7 +28,6 @@ RPMode CSkillReceivePass::decideMode() {
 void CSkillReceivePass::execute() {
 
     gotopointavoid->setSlowmode(slow);
-    gotopointavoid->setAgent(agent);
     gotopointavoid->setNoavoid(false);
     gotopointavoid->setBallobstacleradius(0.4);
 
@@ -88,27 +87,7 @@ void CSkillReceivePass::receive() {
 }
 
 void CSkillReceivePass::validatePoint(Vector2D& _point) {
-
-    const Rect2D& biggerOppPenalty = wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, false);
-    const Rect2D& biggerOurPenalty = wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, false);
-
-    if (biggerOppPenalty.contains(_point)) validatePointFromPenalty(_point, biggerOppPenalty);
-    else if (biggerOurPenalty.contains(_point)) validatePointFromPenalty(_point, biggerOurPenalty);
-    else if (!wm->field->fieldRect().contains(_point)) validatePointOutofField(_point);
-
-
-// TODO: Another Area Should be defined for this option [MAHI/2018/10/30]
-//    Circle2D receiveArea{target, receiveRadius};
-//    Vector2D sol1, sol2;
-//    drawer->draw(receiveArea, QColor(Qt::cyan));
-//    if (!receiveArea.contains(intersectPos)) {
-//        receiveArea.intersection(ballPath, &sol1, &sol2);
-//        if (sol2.dist(intersectPos) < sol1.dist(intersectPos)) {
-//            sol1 = sol2;
-//        }
-//        intersectPos = sol1;
-//    }
-
+    validatePoint(_point, target);
 }
 
 Vector2D CSkillReceivePass::bestPointToIntersect() {
@@ -116,10 +95,10 @@ Vector2D CSkillReceivePass::bestPointToIntersect() {
 }
 
 void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D& _penalty) {
-    validatePointFromPenaltyWithTarget(_point, _penalty, target);
+    validatePointFromPenalty(_point, _penalty, target);
 }
 
-void CSkillReceivePass::validatePointFromPenaltyWithTarget(Vector2D &_point, const Rect2D& _penalty, const Vector2D& _target) {
+void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D &_penalty, const Vector2D &_target) {
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 20);
     Vector2D sol1, sol2;
     sol1.invalidate(); sol2.invalidate();
@@ -164,4 +143,27 @@ Vector2D CSkillReceivePass::bestPointToIntersect(const Agent *_agent, const doub
             break;
         }
     }
-    return best;}
+    return best;
+}
+
+void CSkillReceivePass::validatePoint(Vector2D &_point, const Vector2D &_default) {
+    const Rect2D& biggerOppPenalty = wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, false);
+    const Rect2D& biggerOurPenalty = wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, false);
+
+    if (biggerOppPenalty.contains(_point)) validatePointFromPenalty(_point, biggerOppPenalty, _default);
+    else if (biggerOurPenalty.contains(_point)) validatePointFromPenalty(_point, biggerOurPenalty, _default);
+    else if (!wm->field->fieldRect().contains(_point)) validatePointOutofField(_point);
+
+
+// TODO: Another Area Should be defined for this option [MAHI/2018/10/30]
+//    Circle2D receiveArea{target, receiveRadius};
+//    Vector2D sol1, sol2;
+//    drawer->draw(receiveArea, QColor(Qt::cyan));
+//    if (!receiveArea.contains(intersectPos)) {
+//        receiveArea.intersection(ballPath, &sol1, &sol2);
+//        if (sol2.dist(intersectPos) < sol1.dist(intersectPos)) {
+//            sol1 = sol2;
+//        }
+//        intersectPos = sol1;
+//    }
+}

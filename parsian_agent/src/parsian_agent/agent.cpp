@@ -742,7 +742,7 @@ void Agent::initPlanner(const Vector2D &_target, const QList<int> &_ourRelaxList
                         const QList<int> &_oppRelaxList, const bool &_avoidPenaltyArea, const bool &_avoidCenterCircle,
                         const double &_ballObstacleRadius) {
     parsian_msgs::parsian_get_planPtr plan{new parsian_msgs::parsian_get_plan};
-    plan->robotID = this->id();
+    plan->robotID = static_cast<unsigned char>(this->id());
     plan->goal = _target.toParsianMessage();
     plan->start = this->pos().toParsianMessage();
     Q_FOREACH (const int &id, _ourRelaxList) {
@@ -751,16 +751,13 @@ void Agent::initPlanner(const Vector2D &_target, const QList<int> &_ourRelaxList
     Q_FOREACH (const int&id, _oppRelaxList) {
         plan->oppRelaxList.push_back(id);
     }
-    plan->avoidCenterCircle = _avoidCenterCircle;
-    plan->ballObstacleRadius = _ballObstacleRadius;
-    plan->avoidPenaltyArea = _avoidPenaltyArea;
+    plan->avoidCenterCircle = (unsigned char) _avoidCenterCircle;
+    plan->ballObstacleRadius = (float) _ballObstacleRadius;
+    plan->avoidPenaltyArea = (unsigned char) _avoidPenaltyArea;
     plan->header.stamp = ros::Time::now();
     // TODO : Add Virtual Obstacle to This
     planner_pub.publish(plan);
     ROS_INFO_STREAM("PUBLISHED");
-    // TODO : remove below kindly
-//    planner.initPathPlanner(_target , _ourRelaxList , _oppRelaxList ,  _avoidPenaltyArea, _avoidCenterCircle, _ballObstacleRadius);
-//    getPathPlannerResult(planner.getResultModified(), planner.getAverageDir());
 }
 
 void Agent::getPathPlannerResult(vector<Vector2D> _result , Vector2D _averageDir) {
@@ -769,12 +766,7 @@ void Agent::getPathPlannerResult(vector<Vector2D> _result , Vector2D _averageDir
 }
 
 void Agent::execute() {
-
     skill->execute();
-
-    //planner.generateObstacleSpace(obst  , ourRelaxList , oppRelaxList , avoidPenaltyArea, avoidCenterArea , ballObstacleRadius,ID,goal);
-    //planner.runPlanner();
-    //emit pathPlannerResult(resultModified ,averageDir); get this variables
 }
 
 parsian_msgs::parsian_robot_commandPtr Agent::getCommand() {

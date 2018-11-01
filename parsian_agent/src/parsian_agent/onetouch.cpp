@@ -7,42 +7,23 @@
 
 
 CSkillKickOneTouch::CSkillKickOneTouch(Agent *_agent) : CSkill(_agent) {
-    gotopointavoid = new CSkillGotoPointAvoid(agent);
+    gotoPointAvoid = new CSkillGotoPointAvoid(agent);
     kickSkill = new CSkillKick(_agent);
     timeAfterForceKick = new QTime();
     timeAfterForceKick->start();
 }
 
 CSkillKickOneTouch::~CSkillKickOneTouch() {
-    delete gotopointavoid;
+    delete gotoPointAvoid;
     delete kickSkill;
     delete timeAfterForceKick;
 }
 
-Vector2D CSkillKickOneTouch::findMostPossible() {
-
-    QList <Circle2D> obstacles;
-    for (int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
-        obstacles.append(Circle2D(wm->opp.active(i)->pos, Robot::robot_radius_new + 0.01));
-    }
-    for (int i = 0 ; i < wm->our.activeAgentsCount() ; i++) {
-        if (wm->our.active(i)->id != agent->id()) {
-            obstacles.append(Circle2D(wm->our.active(i)->pos, Robot::robot_radius_new + 0.01));
-        }
-    }
-
-    double prob, angle, biggestAngle;
-    CKnowledge::getEmptyAngle(*wm->field, wm->ball->pos - (wm->field->oppGoal() - wm->ball->pos).norm() * 0.15, wm->field->oppGoalL(), wm->field->oppGoalR(), obstacles, prob, angle, biggestAngle);
-    Segment2D goalSeg(wm->field->oppGoalL(), wm->field->oppGoalR());
-    return goalSeg.intersection(Segment2D(wm->ball->pos , wm->ball->pos + Vector2D(cos(_PI * (angle) / 180), sin(_PI * (angle) / 180)).norm() * 12));
-}
-
-
 void CSkillKickOneTouch::execute() {
-    gotopointavoid->setOnetouchmode(false);
-    gotopointavoid->setNoavoid(false);
+    gotoPointAvoid->setOnetouchmode(false);
+    gotoPointAvoid->setNoavoid(false);
 
-    if (shotToEmptySpot) target = findMostPossible();
+    if (shotToEmptySpot) target = CSkillKick::findMostPossible(agent);
     if (!target.valid()) target = wm->field->oppGoal();
     if (!waitPos.isValid()) waitPos = agent->pos();
 
@@ -83,8 +64,8 @@ OTMode CSkillKickOneTouch::decideMode() {
 
 void CSkillKickOneTouch::wait() {
     Vector2D oneTouchDir = Vector2D::unitVector(CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma, 6.5));
-    gotopointavoid->init(waitPos, oneTouchDir);
-    gotopointavoid->execute();
+    gotoPointAvoid->init(waitPos, oneTouchDir);
+    gotoPointAvoid->execute();
     agent->setRoller(0);
 }
 
@@ -104,15 +85,15 @@ void CSkillKickOneTouch::intersect() {
         intersectPos = ballPath.nearestPoint(kickerPoint);
     }
 
-    validatePoint(intersectPos);
+    CSkillReceivePass::validatePoint(intersectPos, waitPos);
 
     Vector2D addVec = (intersectPos - target).norm() * stopParam;
     Vector2D oneTouchDir = Vector2D::unitVector(CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target, conf->Landa, conf->Gamma, 6.5));
-    gotopointavoid->init(intersectPos + addVec, oneTouchDir);
-    gotopointavoid->setNoavoid(true);
-    gotopointavoid->setOnetouchmode(true);
-    gotopointavoid->setNoavoid(true);
-    gotopointavoid->execute();
+    gotoPointAvoid->init(intersectPos + addVec, oneTouchDir);
+    gotoPointAvoid->setNoavoid(true);
+    gotoPointAvoid->setOnetouchmode(true);
+    gotoPointAvoid->setNoavoid(true);
+    gotoPointAvoid->execute();
     drawer->draw(intersectPos);
 
     if (agent->pos().dist(wm->ball->pos) < 1) {
@@ -120,14 +101,4 @@ void CSkillKickOneTouch::intersect() {
         else agent->setKick(kickSpeed);
     }
     agent->setRoller(0);
-}
-
-void CSkillKickOneTouch::validatePoint(Vector2D &_point) {
-    const Rect2D& biggerOppPenalty = wm->field->oppBigPenaltyArea(1, Robot::robot_radius_new, false);
-    const Rect2D& biggerOurPenalty = wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, false);
-
-    if (biggerOppPenalty.contains(_point)) CSkillReceivePass::validatePointFromPenaltyWithTarget(_point, biggerOppPenalty, waitPos);
-    else if (biggerOurPenalty.contains(_point)) CSkillReceivePass::validatePointFromPenaltyWithTarget(_point, biggerOurPenalty, waitPos);
-    else if (!wm->field->fieldRect().contains(_point)) CSkillReceivePass::validatePointOutofField(_point);
-
 }
