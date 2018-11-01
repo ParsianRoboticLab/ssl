@@ -42,7 +42,7 @@ KMode CSkillKick::decideMode() {
     }
 
     if (playMakeMode && wm->field->isInOurPenaltyArea(wm->ball->pos)) {
-        return KMode::AVOIDOPPENALTY;
+        return KMode::AvoidOurPenalty;
     }
 
 
@@ -61,11 +61,32 @@ KMode CSkillKick::decideMode() {
 
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * (12));
     if ((!penaltyKick) && wm->field->isInOppPenaltyArea(wm->ball->pos) && !passProfiler && avoidOppPenaltyArea && !((robotArea.intersection(ballPath) == 2 && wm->ball->vel.length() > 1))) {
-        return KMode::AVOIDOPPENALTY;
+        return KMode::AvoidOppPenalty;
     }
 
     if (dontKick) {
         return KMode::DONTKICK;
+    }
+////////////
+    Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);
+    if (wm->ball->vel.length() > 0.5 - distThr) {
+        distThr = 0.45;
+        //TODO : penalty area
+        if(((agent->pos().dist(wm->ball->pos + wm->ball->vel*0.5) < 0.6) && isKhafan)) {
+            return KMode::JTurn;
+        }
+        if ((ballPath.intersection(targetNormalSeg).isValid()) && ((agent->pos().dist(wm->ball->pos) < 1) || isKhafan) && (fabs(((wm->ball->pos - agent->pos()).th() - kickFinalDir).degree()) < 60)) {
+            return KMode::JTurn;
+        }
+    } else {
+        distThr = 0;
+        if (wm->ball->pos.dist(agent->pos()) < 0.6) {
+            if (fabs((kickFinalDir - agent->dir().th()).degree()) > 30 && kickerArea.contains(wm->ball->pos)) {
+                return KMode::TurnForKick;
+            } else {
+                return KMode::JTurn;
+            }
+        }
     }
 
     return KMode::DIRECT;
@@ -76,14 +97,16 @@ KMode CSkillKick::decideMode() {
 void CSkillKick::doNotKick() {
 
     Vector2D finalPos;
-    gpa->setSlowmode(false);
-    finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.3;
-    gpa->setBallobstacleradius(0.4);
-    if (fabs((kickFinalDir - agent->dir().th()).degree()) < 10) {
+    if (std::fabs((kickFinalDir - agent->dir().th()).degree()) < 10) {
         agent->setRoller(0);
-        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.13;
         gpa->setSlowmode(true);
         gpa->setBallobstacleradius(0);
+        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.13;
+    } else {
+        agent->setRoller(spin);
+        gpa->setSlowmode(false);
+        gpa->setBallobstacleradius(0.4);
+        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.3;
     }
     gpa->setDivemode(false);
     gpa->setNoavoid(false);
@@ -91,23 +114,13 @@ void CSkillKick::doNotKick() {
     gpa->execute();
 }
 
-void CSkillKick::direct() {
-    findPosToGo();
-}
-
-
 void CSkillKick::avoidOurPenalty() {
     gpa->setSlowmode(slow);
     Vector2D finalPos , dummyPos1, dummyPos;
-    Vector2D tempVector;
-    tempVector = wm->ball->pos - wm->field->ourGoal();
-    Circle2D penaltyCircle;
-    Segment2D ballSeg;
-    Segment2D ballPosSeg;
-    ballPosSeg.assign(wm->field->ourGoal(), wm->field->ourGoal() + tempVector.norm() * 2);
-    ballSeg.assign(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 10);
-    penaltyCircle.assign(wm->field->ourGoal(), 1.8);
-
+    Vector2D tempVector = wm->ball->pos - wm->field->ourGoal();
+    Circle2D penaltyCircle(wm->field->ourGoal(), 1.8);
+    Segment2D ballSeg(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 10);
+    Segment2D ballPosSeg(wm->field->ourGoal(), wm->field->ourGoal() + tempVector.norm() * 2);
 
     penaltyCircle.intersection(ballPosSeg, &dummyPos1, &dummyPos);
 
@@ -128,20 +141,14 @@ void CSkillKick::avoidOurPenalty() {
 void CSkillKick::avoidOppPenalty() {
     gpa->setSlowmode(slow);
     Vector2D finalPos , dummyPos1, dummyPos;
-    Circle2D penaltyCircle;
-    Segment2D ballSeg;
-    Segment2D ballPosSeg;
-    Segment2D penaltyStraightLine;
-
+    Segment2D ballSeg(wm->field->oppGoal(),wm->field->oppGoal() + (wm->ball->pos - wm->field->oppGoal()).norm()* 10);
     Rect2D penalty = wm->field->oppPenaltyRect();
-    //drawer->draw(penalty , QColor(Qt::red));
-    ballSeg.assign(wm->field->oppGoal(),wm->field->oppGoal() + (wm->ball->pos - wm->field->oppGoal()).norm()* 10);
 
     if(wm->ball->vel.length() > 0.3 && !wm->field->isInOppPenaltyArea(wm->ball->getPosInFuture(1000)) && wm->field->isInField(wm->ball->getPosInFuture(1000))) {
         ballSeg.assign(wm->ball->pos,wm->ball->pos + wm->ball->vel.norm()*10);
     }
     penalty.intersection(ballSeg,&dummyPos,&dummyPos1);
-    if(dummyPos == wm->field->oppGoal()) {
+    if(dummyPos.x == wm->field->oppGoal().x) {
         finalPos = dummyPos1 + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
     } else {
         finalPos = dummyPos + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
@@ -152,38 +159,7 @@ void CSkillKick::avoidOppPenalty() {
     gpa->setAvoidpenaltyarea(true);
     gpa->init(finalPos, finalDirVec);
     gpa->execute();
-//    agent->setKick(kickSpeed); // TODO : Robot Command
-}
-
-void CSkillKick::indirect() {
-
-    if (shotEmptySpot) {
-        target = findMostPossible();
-    }
-    Vector2D sol1, sol2;
-
-    Circle2D ballArea(wm->ball->pos, 0.15);
-    ballArea.tangent(agent->pos(), &sol1, &sol2);
-    Vector2D finalPos;
-    finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.15;
-
-    if (sol1.dist(finalPos) >= sol2.dist(finalPos)) {
-        sol1 = sol2;
-    }
-
-    if (wm->ball->vel > 0.3) {
-        for (double i = 0 ; i < 5 ; i += 0.1) {
-            if (wm->ball->getPosInFuture(i).dist(agent->pos()) / 1 < i) {
-                sol1 = wm->ball->getPosInFuture(i) - (target - wm->ball->getPosInFuture(i)).norm() * 0.15;
-                break;
-            }
-        }
-    }
-
-    gpa->setSlowmode(slow);
-    gpa->setDivemode(false);
-    gpa->init(sol1  , target - sol1);
-    gpa->execute();
+    agent->setKick(kickSpeed);
 }
 
 void CSkillKick::jTurn() {
@@ -214,7 +190,6 @@ void CSkillKick::jTurn() {
         } else {
             shift = 20 + (1 - agent->pos().dist(wm->ball->pos)) * 30;
         }
-        distCoef = 0.17;
     } else if (movementDir < -30) {
         if (wm->field->isInOppPenaltyArea(wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 0.15)) {
             shift = -30 - (1 - agent->pos().dist(wm->ball->pos)) * 20;
@@ -224,7 +199,6 @@ void CSkillKick::jTurn() {
             shift = -20 - (1 - agent->pos().dist(wm->ball->pos)) * 30;
         }
 
-        distCoef = 0.17;
     } else if (movementDir > 0) {
         if (wm->field->isInOppPenaltyArea(wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 0.15)) {
             shift = 25 + (1 - agent->pos().dist(wm->ball->pos)) * 20;
@@ -233,7 +207,6 @@ void CSkillKick::jTurn() {
         } else {
             shift = 15 + (1 - agent->pos().dist(wm->ball->pos)) * 12;
         }
-        distCoef = 0.17;
     } else if (movementDir < 0) {
         if (wm->field->isInOppPenaltyArea(wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 0.15)) {
             shift = -25 - (1 - agent->pos().dist(wm->ball->pos)) * 20;
@@ -243,8 +216,6 @@ void CSkillKick::jTurn() {
         } else {
             shift = -15 - (1 - agent->pos().dist(wm->ball->pos)) * 12;
         }
-
-        distCoef = 0.17;
     }
 
     idealPass.rotate(shift);
@@ -366,7 +337,7 @@ Vector2D CSkillKick::findMostPossible() {
     return  goalSeg.intersection(Segment2D(wm->ball->pos , wm->ball->pos + Vector2D(cos(_PI * (angle) / 180), sin(_PI * (angle) / 180)).norm() * 12));
 }
 
-void CSkillKick::findPosToGo() {
+void CSkillKick::direct() {
     Circle2D agentNearArea(agent->pos(), 0.15);
     Vector2D finalDir;
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
@@ -391,8 +362,8 @@ void CSkillKick::findPosToGo() {
             if (fabs(((target - agent->pos()).th().degree() - (wm->ball->pos - agent->pos()).th().degree())) < 60 || isKhafan) {
                 finalDir = Vector2D::unitVector(
                         CKnowledge::oneTouchAngle(agent->pos(), agent->vel(), wm->ball->vel, agent->pos() - wm->ball->pos, target,
-                                      conf->Landa,
-                                      conf->Gamma));
+                                                  conf->Landa,
+                                                  conf->Gamma));
             } else {
                 finalDir = wm->ball->pos - finalPos;
             }
@@ -412,26 +383,8 @@ void CSkillKick::findPosToGo() {
 
         }
 
-        //TODO : penalty area
-        if(((agent->pos().dist(wm->ball->pos + wm->ball->vel*0.5) < 0.6) && isKhafan)) {
-            jTurn();
-            return;
-        }
-        if ((ballPath.intersection(targetNormalSeg).isValid()) && ((agent->pos().dist(wm->ball->pos) < 1) || isKhafan) && (fabs(((wm->ball->pos - agent->pos()).th() - kickFinalDir).degree()) < 60)) {
-            jTurn();
-            return;
-        }
-
     } else {
         distThr = 0;
-        if (wm->ball->pos.dist(agent->pos()) < 0.6) {
-            if (fabs((kickFinalDir - agent->dir().th()).degree()) > 30 && kickerArea.contains(wm->ball->pos)) {
-                turnForKick();
-            } else {
-                jTurn();
-            }
-            return;
-        }
         finalPos = wm->ball->pos - (target - finalPos).norm() * 0.15;
         finalDir = Vector2D(cos(kickFinalDir.radian()), sin(kickFinalDir.radian()));
     }
@@ -472,36 +425,37 @@ void CSkillKick::findPosToGo() {
 
 void CSkillKick::execute() {
 
-
     if (shotEmptySpot) target = findMostPossible();
     drawer->draw(target,QColor(Qt::cyan));
     finalDirVec = target - wm->ball->pos;
     kickFinalDir = finalDirVec.th();
+
+    validateKickerState();
 
     KMode kickMode = decideMode();
     switch (kickMode) {
         case KMode::DIRECT:
             direct();
             break;
-        case KMode::AVOIDOPPENALTY:
-            avoidPenalty();
+        case KMode::AvoidOurPenalty:
+            avoidOurPenalty();
+            break;
+        case KMode::AvoidOppPenalty:
+            avoidOppPenalty();
             break;
         case KMode::DONTKICK:
             doNotKick();
             break;
+        case KMode::JTurn:
+            jTurn();
+            break;
+        case KMode::TurnForKick:
+            turnForKick();
+            break;
         case KMode::NOMODE:break;
     }
 
-    validateKickerState();
 
-}
-
-void CSkillKick::avoidPenalty() {
-    if (wm->ball->pos.x  > 0) {
-        avoidOppPenalty();
-    } else {
-        avoidOurPenalty();
-    }
 }
 
 void CSkillKick::validateKickerState() {

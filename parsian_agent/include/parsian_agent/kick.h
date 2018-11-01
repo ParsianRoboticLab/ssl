@@ -13,9 +13,11 @@
 enum class KMode {
     NOMODE          = 0,
     DIRECT          = 1,
-    AVOIDOPPENALTY  = 2,
-    DONTKICK        = 3,
-    JTurn           = 4
+    AvoidOurPenalty    = 2,
+    AvoidOppPenalty    = 3,
+    DONTKICK        = 4,
+    JTurn           = 5,
+    TurnForKick     = 6
 
 
 };
@@ -35,14 +37,11 @@ private:
     Vector2D finalDirVec;
     Vector2D finalPos;
     void direct();
-    void avoidPenalty();
-    void indirect();
     void jTurn();
     void turnForKick();
     void avoidOppPenalty();
     void avoidOurPenalty();
     void doNotKick();
-    void findPosToGo();
     void validateKickerState();
     CSkillGotoPointAvoid *gpa;
     bool kickerOn;
