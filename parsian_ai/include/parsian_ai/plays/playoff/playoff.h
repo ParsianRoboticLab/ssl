@@ -11,15 +11,15 @@
 
 #define POBALLPOS Vector2D(1234, 8456)
 
-enum POffSkills {
-    NoSkill = 0,
-    PassSkill = 1,
-    ReceivePassSkill = 2,
-    ShotToGoalSkill = 3,
-    ChipToGoalSkill = 4,
-    OneTouchSkill = 5,
-    MoveSkill = 6,
-    ReceivePassIASkill = 7,
+enum class POFFSKILL {
+    None = 0,
+    Pass = 1,
+    ReceivePass = 2,
+    ShotToGoal = 3,
+    ChipToGoal = 4,
+    OneTouch = 5,
+    Move = 6,
+    ReceivePassIA = 7,
     //////////// Afterlife Roles
     Defense = 8,
     Support = 9,
@@ -28,7 +28,7 @@ enum POffSkills {
     Mark = 12
 };
 
-enum ShotSpot {
+enum SHOT_SPOT {
     EveryWhere  = 0b11111111,
     KillSpot    = 0b00000001,
     CloseNear   = 0b00000010,
@@ -40,7 +40,7 @@ enum ShotSpot {
 };
 
 struct playOffSkill {
-    POffSkills name;
+    POFFSKILL name;
     int data[2];
     int targetIndex;
     int targetAgent;
@@ -58,28 +58,19 @@ struct POInitPos {
     Vector2D Agent[_NUM_PLAYERS];
 };
 
-enum POMODE {
-    DIRECT   = 1,
-    INDIRECT = 2,
-    KICKOFF  = 3
+enum class POMODE {
+    None     = 0,
+    Direct   = 1,
+    Indirect = 2,
+    Kickoff  = 3
 };
 
-enum DynamicSelect {
-    NOSELECT = 0,
-    KHAFAN = 1,
-    CHIP = 2,
-    KICK = 3,
-    BLOCKER = 4
-};
-
-struct STuneParams {
-    double lastDist = 0.5;
-};
-
-struct SPlanConfig {
-    int         chance = 1;
-    QString     name   = "mahi";
-    STuneParams tuneParams;
+enum class DynamicSelect {
+    NoSelect = 0,
+    Khafan = 1,
+    Chip = 2,
+    Kick = 3,
+    Blocker = 4
 };
 
 struct SPlayOffPlan {
@@ -90,7 +81,6 @@ struct SPlayOffPlan {
         this->planMode  = _toCopy.planMode ;
         this->agentSize = _toCopy.agentSize;
         this->initPos   = _toCopy.initPos  ;
-        this->config    = _toCopy.config   ;
         for (int i = 0; i < _NUM_PLAYERS; i++) {
             this->AgentPlan[i].clear();
             for (int j = 0; j < _toCopy.AgentPlan[i].size(); j++) {
@@ -103,7 +93,6 @@ struct SPlayOffPlan {
         this->planMode  = _insert.planMode ;
         this->agentSize = _insert.agentSize;
         this->initPos   = _insert.initPos  ;
-        this->config    = _insert.config   ;
         for (int i = 0; i < _NUM_PLAYERS; i++) {
             this->AgentPlan[i].clear();
             for (int j = 0; j < _insert.AgentPlan[i].size(); j++) {
@@ -116,22 +105,20 @@ struct SPlayOffPlan {
     POMODE planMode;
     int agentSize{};
     POInitPos initPos;
-    SPlanConfig config;
-    QString tags;
 };
 
 struct SPositioningArg {
 
-    Vector2D staticPos;
-    Vector2D staticAng;
-    long rightData;
-    long leftData;
-    double staticEscapeRadius;
-    POffSkills staticSkill;
+    Vector2D staticPos{Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE};
+    Vector2D staticAng{Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE};
+    long rightData{};
+    long leftData{};
+    double staticEscapeRadius{};
+    POFFSKILL staticSkill = POFFSKILL::None;
     int PassToId = -1;
     int PassToState = -1;
 
-    // TODO : Have Reciver Pointer
+    // TODO : Have Receiver Pointer
 };
 
 struct SPositioningAgent {
@@ -150,9 +137,7 @@ struct SPositioningAgent {
         } else {
 
             DBUG(QString("getArgs : wrong arg %1 < %2").arg(positionArg.size()).arg(_state + stateNumber), D_ERROR);
-            qWarning() << QString("getArgs : wrong arg %1 < %2").arg(positionArg.size()).arg(_state + stateNumber);
-            SPositioningArg null;
-            return null;
+            return SPositioningArg{};
 
         }
     }
@@ -164,20 +149,11 @@ struct SPositioningAgent {
         } else {
 
             DBUG(QString("getArgs : wrong absarg %1 < %2").arg(positionArg.size()).arg(_state), D_ERROR);
-            SPositioningArg null;
-            return null;
+            return SPositioningArg{};
 
         }
     }
 
-};
-
-struct POOwnerReceive {
-    int ballOwnerAgent;
-    int ballOwnerIndex;
-    int receiveAgent;
-    int receiveIndex;
-    POffSkills skill;
 };
 
 struct SBallOwner {
@@ -187,115 +163,90 @@ struct SBallOwner {
 
 ////Play Off Plans
 namespace NGameOff {
-
-enum EType {
-    None   = 0,
-    File   = 1,
-    Link   = 2,
-    SubDir = 3
-};
-
-enum EMode {
-    FirstPlay   = 0,
-    FastPlay    = 1,
-    StaticPlay  = 2,
-    DynamicPlay = 3
-};
-
-struct SFail {
-    bool fail;
-    int agentID, roleID, planID, taskID;
-    EMode mode;
-    RoleSkill skill;
-    int succesRate;
-};
-
-struct SCommon {
-    int agentSize;
-    int currentSize;
-    double chance;
-    double lastDist;
-    POMODE planMode;
-    QStringList tags;
-    int succesRate = 0; // {},{},{},{},{},{},{}
-    QMap<int, int> matchedID;
-    int planRepeat;
-    void addHistory(const int _story) {
-        int tempSucces = _story - succesRate;
-        history.append(_story);
-        succesRate += tempSucces / history.size();
-    }
-
-private:
-    QList<int> history;
-
-};
-
-struct SMatching {
-    struct SInitPos {
-        Vector2D ball;
-        QList<Vector2D> agents;
+    enum EMode {
+        FirstPlay   = 0,
+        FastPlay    = 1,
+        StaticPlay  = 2,
+        DynamicPlay = 3
     };
-    SInitPos initPos;
-    SCommon *common;
-    Vector2D shotPos;
-};
 
-struct AgentPoint {
+    struct SFail {
+        bool fail;
+        int agentID, roleID, planID, taskID;
+        EMode mode;
+        RoleSkill skill;
+        int succesRate;
+    };
 
-    AgentPoint() {
-        id    = -1;
-        state = -1;
-    }
+    struct SCommon {
+        int agentSize;
+        int currentSize;
+        double chance;
+        double lastDist;
+        POMODE planMode;
+        QStringList tags;
+        int succesRate = 0; // {},{},{},{},{},{},{}
+        QMap<int, int> matchedID;
+        void addHistory(const int _story) {
+            int tempSucces = _story - succesRate;
+            history.append(_story);
+            succesRate += tempSucces / history.size();
+        }
 
-    AgentPoint(int id, int state) {
-        this->id    = id;
-        this->state = state;
-    }
+    private:
+        QList<int> history;
 
-    int id;
-    int state;
-};
+    };
 
-struct SExecution {
+    struct SMatching {
+        struct SInitPos {
+            Vector2D ball;
+            QList<Vector2D> agents;
+        };
+        SInitPos initPos;
+        SCommon *common;
+    };
 
-    QList< QList<playOffRobot> > AgentPlan;
-    SCommon *common;
-    int symmetry     =  1;
-    int theLastAgent = -1;
-    int theLastState = -1;
-    int passCount;
-    QList<AgentPoint> passer;
-    QList<AgentPoint> reciver;
-};
+    struct AgentPoint {
 
-struct SGUI {
+        AgentPoint() {
+            id    = -1;
+            state = -1;
+        }
 
-    QString name;
-    QString planFile;
-    QString package;
-    bool active = true;
-    bool master = false;
-    unsigned int index[3]; // {package_index, file_index, plan_index}
-    SCommon *common;
-};
+        AgentPoint(int id, int state) {
+            this->id    = id;
+            this->state = state;
+        }
+
+        int id;
+        int state;
+    };
+
+    struct SExecution {
+
+        QList< QList<playOffRobot> > AgentPlan;
+        int symmetry     =  1;
+        int theLastAgent = -1;
+        int theLastState = -1;
+        int passCount = -1;
+        QList<AgentPoint> passer;
+        QList<AgentPoint> receiver;
+    };
 
 
-struct SPlan {
+    struct SPlan {
 
-    SPlan() {
-        gui.common       = &common;
-        matching.common  = &common;
-        execution.common = &common;
-    }
+        SPlan() {
+            matching.common  = &common;
+        }
 
-    SGUI       gui;
-    SCommon    common;
-    SMatching  matching;
-    SExecution execution;
+        SCommon    common;
+        SMatching  matching;
+        SExecution execution;
 
-    //    friend QDebug operator<< (QDebug d, const SPlan plan);
-};
+        //    friend QDebug operator<< (QDebug d, const SPlan plan);
+    };
 
 }
 
@@ -310,29 +261,27 @@ class CPlayOff : public CMasterPlay {
 
 public:
     CPlayOff();
-    virtual ~CPlayOff();
 
-    void execute_x();
-    void init(const QList <Agent*>& _agents);
-    virtual QString whoami() {
-        return "PlayOff";
-    }
+    ~CPlayOff() override;
+
+    void execute_x() override;
+    void init(const QList <Agent*>& _agents) override;
+
+    QString whoami() override { return "PlayOff"; }
     bool deleted;
 
     void setMasterPlan(SPlan* _thePlan);
     void analyseShoot();
     void analysePass();
 
-
     void setMasterMode(EMode _mode);
     EMode getMasterMode();
-    void reset();
+    void reset() override;
     void setInitial(bool _init);
 
     void kickoffPositioning(int playersNum);
+
 private:
-
-
     // Critical Play
     bool criticalPlay();
     KickAction* criticalKick;
@@ -355,9 +304,7 @@ private:
 
     SPositioningAgent positionAgent[_NUM_PLAYERS];
 
-    int agentSize;
     Vector2D getEmptyTarget(const Vector2D& _position, const double& _radius);
-    QList<POOwnerReceive> ownerReceiveList;
 
     /////////////////////////////////////////////////////////////////////
     /////////////////////////MAHI PLANNER////////////////////////////////
@@ -373,8 +320,6 @@ private:
 
     ////////////////////////////Blocker//////////////////////////////////
     bool BlockerExecute(int agentID);
-    Agent* BlockerAgent;
-    GotopointavoidAction* blockergpa;
     enum BlockerStop {
         Diversion,
         BlockStop,
@@ -383,42 +328,21 @@ private:
     BlockerStop blockerStopStates;
 
 
-    POMODE getPlayOffMode();
     void getCostRec(double costArr[][_NUM_PLAYERS], int arrSize, QList<kkValue> &valueList, kkValue value, int size, int aId = 0);
     int kkGetIndex(kkValue &value, int cIndex);
-    bool chipOrNot(int passerID, int ReceiverID, int ReceiverState);
     bool chipOrNot(const SPositioningArg& _posArg);
-    Vector2D getGoalTarget(int shoterID, int shoterState);
     Vector2D getGoalTarget(const long& _posArg);
-    double getMaxVel(int agentID, int agentState);
     double getMaxVel(const CRolePlayOff* _roleAgent, const SPositioningArg& _posArg);
-    Vector2D getMoveTarget(int agentID, int agentState);
     Vector2D getMoveTarget(const SPositioningArg& _posArg);
-    /// After life points
-    Vector2D getMarkTarget(const SPositioningArg&);
-    Vector2D getDefenseTarget(const SPositioningArg&);
-    Vector2D getSupportTarget(const SPositioningArg&);
-    ///
 
     bool isTaskDone(CRolePlayOff*);
     void passManager();
-    /////////////////////////////////////
-    void oneBehindBall();
-    void oneLeftOneCentre();
-    void oneRightOneCentre();
-    void twoSidesOneCentre();
-    void twoSideOneCentreOneDef();
-    void twoSideOneCentreTwoDef();
-    void twoSideOneCentreTwoDefAndGoalie();
-    ////////////////////////////////////
+
     bool isFinalShotDone();
 
     Vector2D lastBallPos;
     unsigned int lastTime;
-    bool decidePlan;
-    int kkAgentsID[_NUM_PLAYERS];
 
-    SPlayOffPlan* currentPlan;
     QList<Agent*> activeAgents;
     CRolePlayOff *roleAgent[_NUM_PLAYERS];
     CRolePlayOff *tempAgent;
@@ -437,18 +361,10 @@ private:
     Vector2D kickOffPos[_NUM_PLAYERS];
 
     bool isBallIn;
-    double debugs[10];
-    Vector2D draws[10];
-    Circle2D circles[10];
-
-    void mahiDebug(int limit);
-    void mahiCircle(int limit);
-    void mahiVector(int limit);
 
     bool doPass, doAfterlife;
 
     //////////////End  Plan
-    bool isBallPushed();
     bool isTimeOver();
     bool isBallDirChanged();
     SFail isAnyTaskFaild();
@@ -516,7 +432,6 @@ private:
     FirstStep firstStepEnums;
     BlockerSteps blockerStep;
     int shotSpot;
-    double mx;
     void stayPoistioning();
     void movePositioning();
     void donePositioning();
@@ -530,6 +445,6 @@ private:
 
 };
 ///////////OverLoading Operators
-QDebug operator<< (QDebug d, const NGameOff::SPlan _plan);
+QDebug operator<< (QDebug d, const NGameOff::SPlan& _plan);
 
 #endif // CPLAYOFF_H

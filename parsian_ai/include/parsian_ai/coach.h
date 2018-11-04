@@ -170,7 +170,7 @@ private:
 
     void decideDefense();
 
-    void decidePlayOff(QList<int> &_ourPlayers, POMODE _mode = INDIRECT);
+    void decidePlayOff(QList<int> &_ourPlayers, POMODE _mode = POMODE::Indirect);
 
     void decidePlayOn(QList<int> &ourPlayers, QList<int> &lastPlayers);
 
@@ -305,7 +305,7 @@ private:
     QString stateForMark;
     QPair<int, parsian_msgs::parsian_robot_task>** defenseMatched[2];
 
-    POffSkills strToEnum(const std::string &_str);
+    POFFSKILL strToEnum(const std::string &_str);
 
     NoAction* haltAction;
 
