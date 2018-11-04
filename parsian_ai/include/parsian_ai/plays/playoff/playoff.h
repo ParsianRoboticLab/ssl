@@ -9,7 +9,7 @@
 
 #include <QMessageBox>
 
-#define POBALLPOS Vector2D(1234, 8456)
+#define BEHIND_BALL_POS Vector2D(1234, 5678)
 
 enum class POFFSKILL {
     None = 0,
@@ -170,31 +170,10 @@ namespace NGameOff {
         DynamicPlay = 3
     };
 
-    struct SFail {
-        bool fail;
-        int agentID, roleID, planID, taskID;
-        EMode mode;
-        RoleSkill skill;
-        int succesRate;
-    };
-
     struct SCommon {
-        int agentSize;
         int currentSize;
-        double chance;
         double lastDist;
-        POMODE planMode;
-        QStringList tags;
-        int succesRate = 0; // {},{},{},{},{},{},{}
         QMap<int, int> matchedID;
-        void addHistory(const int _story) {
-            int tempSucces = _story - succesRate;
-            history.append(_story);
-            succesRate += tempSucces / history.size();
-        }
-
-    private:
-        QList<int> history;
 
     };
 
@@ -245,7 +224,6 @@ namespace NGameOff {
         SMatching  matching;
         SExecution execution;
 
-        //    friend QDebug operator<< (QDebug d, const SPlan plan);
     };
 
 }
@@ -283,24 +261,21 @@ public:
 
 private:
     // Critical Play
-    bool criticalPlay();
+    void criticalPlay();
     KickAction* criticalKick;
     bool criticalInit;
 
     bool initial;
 
     bool firstPass;
-    bool isOnetouch;
 
     SPlan* masterPlan;
     EMode masterMode;
 
     void globalExecute();
-    bool isBlockDisturbing();
 
-    int BlockerStopperID;
-
-    bool isPathClear(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold);
+    bool isPathClear(Vector2D _pos1, Vector2D _pos2, double _radius, double threshold);
+    Polygon2D getPathPolygon(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold);
 
     SPositioningAgent positionAgent[_NUM_PLAYERS];
 
@@ -319,19 +294,9 @@ private:
 
 
     ////////////////////////////Blocker//////////////////////////////////
-    bool BlockerExecute(int agentID);
-    enum BlockerStop {
-        Diversion,
-        BlockStop,
-        TurnAndKick
-    };
-    BlockerStop blockerStopStates;
 
-
-    void getCostRec(double costArr[][_NUM_PLAYERS], int arrSize, QList<kkValue> &valueList, kkValue value, int size, int aId = 0);
-    int kkGetIndex(kkValue &value, int cIndex);
     bool chipOrNot(const SPositioningArg& _posArg);
-    Vector2D getGoalTarget(const long& _posArg);
+    Vector2D getGoalTarget(long _posArg);
     double getMaxVel(const CRolePlayOff* _roleAgent, const SPositioningArg& _posArg);
     Vector2D getMoveTarget(const SPositioningArg& _posArg);
 
@@ -367,12 +332,10 @@ private:
     //////////////End  Plan
     bool isTimeOver();
     bool isBallDirChanged();
-    SFail isAnyTaskFaild();
-    bool isAllTasksDone();
     bool isPlanDone();
     bool isPlanFailed();
     bool setTimer;
-    unsigned int tempStart;
+    unsigned int startTime;
     ////////////////////////////
 
     bool isKickDone(CRolePlayOff*);
@@ -380,7 +343,7 @@ private:
     bool isOneTouchDone(CRolePlayOff*);
     bool isMoveDone(const CRolePlayOff*);
     bool isReceiveDone(const CRolePlayOff*);
-    void assignTasks();
+    void assignTasks(const SPlan* _plan);
     void fillRoleProperties();
     void posExecute();
     void checkEndState();
@@ -395,10 +358,13 @@ private:
     void assignPosition(CRolePlayOff*, const SPositioningAgent&);
     void assignSupport(CRolePlayOff*, const SPositioningAgent&);
 
+    int getIndex(int _planID);
+    Agent* getAgent(int _planID);
+
     void assignKick(CRolePlayOff*, const SPositioningAgent&, bool _chip);
     void assignReceive(CRolePlayOff*, const SPositioningAgent&, bool _ignoreAngle);
     QPair<int, int> findTheLastShoot(const SExecution& _plan);
-    void findThePasserandReciver(const SExecution&, QList<AgentPair> &_pairList);
+    QList<AgentPair> findThePasserandReciver(const SExecution&);
     int findReceiver(int _passer, int _state);
     QList<SBallOwner> ownerList;
     bool havePassInPlan;
@@ -421,6 +387,7 @@ private:
     bool ready, pass, shot;
     int dynamicState;
     unsigned int dynamicStartTime;
+
 
 ////////////First
 public:
