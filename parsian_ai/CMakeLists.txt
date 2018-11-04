@@ -97,7 +97,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/plays/dynamicattack.cpp
 		src/${PROJECT_NAME}/plays/masterplay.cpp
 		src/${PROJECT_NAME}/plays/ourballplacement.cpp
-		src/${PROJECT_NAME}/plays/playoff.cpp
+		src/${PROJECT_NAME}/plays/playoff/playoff.cpp
 		src/${PROJECT_NAME}/plays/ourpenalty.cpp
 		src/${PROJECT_NAME}/plays/theirpenalty.cpp
 		src/${PROJECT_NAME}/plays/theirkickoff.cpp
