@@ -55,9 +55,6 @@ class CCoach {
 
 public:
 
-    bool inited;
-    double playOnTime;
-
     explicit CCoach(Agent **_agents);
 
     ~CCoach();
@@ -76,7 +73,6 @@ public:
     parsian_msgs::plan_serviceRequest planRequest;
     parsian_msgs::plan_serviceResponse receivedPlan;
 
-    ros::Publisher *ai_status_pub;
     ros::ServiceClient plan_client;
 
     bool gotplan;
@@ -107,7 +103,7 @@ private:
     Agent *goalieAgent;
 
     QList<Agent *> defenseAgents;
-    int preferedDefenseCounts, lastPreferredDefenseCounts;
+    int preferedDefenseCounts;
     int preferedGoalieID;
     Vector2D defenseTargets[_MAX_NUM_PLAYERS];
     QTime intentionTimePossession;
@@ -133,12 +129,8 @@ public:
     CRoleStop *stopRoles[_MAX_NUM_PLAYERS];
 private:
     QTime goalieTimer;
-    bool goalieTrappedUnderGoalNet;
 
     Agent **agents;
-    int lastAssignCycle;
-
-    void checkRoleAssignments();
 
     ///////manage over number of agents
     ///
@@ -152,9 +144,6 @@ private:
     QList<Agent *> lastDefenseAgents;
 
     void matchPlan(NGameOff::SPlan *_plan, const QList<int> &_ourplayers);
-    void getBadsAndGoods(const QList<int>& _ourplayers);
-    QList<int> badshooters;
-    QList<int> goodshooters;
 
     NGameOff::SPlan *planMsgToSPlan(parsian_msgs::plan_serviceResponse planMsg, int _currSize);
 
@@ -162,15 +151,13 @@ private:
 
     void assignDefenseAgents(int defenseCount);
 
-    void checkGoalieInsight();
-
     void decidePreferredDefenseAgentsCount();
 
     void decideAttack();
 
     void decideDefense();
 
-    void decidePlayOff(QList<int> &_ourPlayers, POMODE _mode = POMODE::Indirect);
+    void decidePlayOff(const QList<int> &_ourPlayers, POMODE _mode = POMODE::Indirect);
 
     void decidePlayOn(QList<int> &ourPlayers, QList<int> &lastPlayers);
 
@@ -185,11 +172,8 @@ private:
 
     bool isBallcollide(int frameCount = 5, double diffDir = 15);
 
-    void calcDesiredMarkCounts(); // not used at all
     ///////////////////////new play make and supporter chooser
     int playmakeId;
-    int supporterId;
-    int lastSupporterId;
     int lastPlayMake;
 
     void choosePlaymakeAndSupporter(bool defenseFirst);
@@ -235,16 +219,11 @@ private:
 
     void checkGUItoRefineMatch(SPlan *_plan, const QList<int> &_ourplayers);
 
-
-    int preferedShotSpot;
-
     QList<int> lastPlayers;
 
     //////////////////////////////////// ALI GAVAHI
-    double lastNearestBallDist;
     double averageVel;
     QList<Vector2D> lastBallVels;
-    Vector2D startTransientBallPos;
 
     void removeLastBallVel(int frameCount = 5);
     void clearBallVels();
@@ -253,47 +232,42 @@ private:
 
     void decideHalt(QList<int> &);
 
-    void decideStop(QList<int> &);
+    void decideStop(const QList<int> &);
 
-    void decideOurKickOff(QList<int> &);
+    void decideOurKickOff(const QList<int> &);
 
-    void decideTheirKickOff(QList<int> &);
+    void decideTheirKickOff(const QList<int> &);
 
-    void decideOurIndirect(QList<int> &);
+    void decideOurIndirect(const QList<int> &);
 
-    void decideTheirIndirect(QList<int> &);
+    void decideTheirIndirect(const QList<int> &);
 
-    void decideOurDirect(QList<int> &);
+    void decideOurDirect(const QList<int> &);
 
-    void decideTheirDirect(QList<int> &);
+    void decideTheirDirect(const QList<int> &);
 
     void decideOurPenalty(QList<int> &);
 
-    void decideTheirPenalty(QList<int> &);
+    void decideTheirPenalty(const QList<int> &);
 
     void decideOurPenaltyshootout(QList<int> &);
 
-    void decideTheirPenaltyshootout(QList<int> &);
+    void decideTheirPenaltyshootout(const QList<int> &);
 
     void decideStart(QList<int> &);
 
-    void decideOurBallPlacement(QList<int> &);
+    void decideOurBallPlacement(const QList<int> &);
 
-    void decideTheirBallPlacement(QList<int> &);
+    void decideTheirBallPlacement(const QList<int> &);
 
-    void decideHalfTimeLineUp(QList<int> &);
+    void decideHalfTimeLineUp(const QList<int> &);
 
-    void decideNull(QList<int> &);
+    void decideNull(const QList<int> &);
 
     /////////////////////////////////////
     QTextStream out;
 
     bool isFastPlay();
-
-    double overDefThr;
-
-    // inter change
-    void checkSensorShootFault();
 
     int faultDetectionCounter[_MAX_NUM_PLAYERS];
 
@@ -301,15 +275,10 @@ private:
     double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
     // MAHI ADD IN ROS
     QList<CRobot *> toBeMopps;
-    int desiredDefCount;
-    QString stateForMark;
-    QPair<int, parsian_msgs::parsian_robot_task>** defenseMatched[2];
 
     POFFSKILL strToEnum(const std::string &_str);
 
     NoAction* haltAction;
-
-    QList<Vector2D> lastBallDir;
 
 };
 #endif //PARSIAN_AI_COACH_H
