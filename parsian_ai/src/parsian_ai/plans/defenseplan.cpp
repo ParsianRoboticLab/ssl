@@ -38,18 +38,7 @@ Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D o
     defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
     goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
     /////////////////// Az bi chizi bar sikhaki malideh im :) ///////////////////////////////
-    if(firstPoint == wm->field->ourGoalL() || firstPoint == wm->field->ourGoalR()){
-        biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint);
-    }
-    else{
-        biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint).length() < Segment2D(secondPoint , originPoint).length() ? Segment2D(firstPoint , originPoint) : Segment2D(secondPoint , originPoint);
-    }
-    if(secondPoint == wm->field->ourGoalL() || secondPoint == wm->field->ourGoalR()){
-        biggestLineOfBallTriangle = Segment2D(secondPoint , originPoint);
-    }
-    else{
-        biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint).length() < Segment2D(secondPoint , originPoint).length() ? Segment2D(firstPoint , originPoint) : Segment2D(secondPoint , originPoint);
-    }
+    biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint).length() < Segment2D(secondPoint , originPoint).length() ? Segment2D(firstPoint , originPoint) : Segment2D(secondPoint , originPoint);//Lhum delete something
     double distanceFromYalForFirstPosition = biggestLineOfBallTriangle.dist(goalkeeperPosition);
     if(distanceFromYalForFirstPosition > robotRadius){
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(goalkeeperPosition);
@@ -59,6 +48,7 @@ Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D o
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(goalkeeperPosition);
         goalkeeperPosition += Vector2D(goalkeeperPosition - anotherIntesection).norm()*(robotRadius - distanceFromYalForFirstPosition);
     }
+    drawer->draw(Circle2D(goalkeeperPosition , 0.3) , "cyan");
     return goalkeeperPosition;
 }
 
@@ -96,7 +86,7 @@ Vector2D DefensePlan::getGKPositionWithoutDefense(double downLimit , double upLi
     return goalkeeperPosition;
 }
 
-Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){
+Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){//lhum1
     Vector2D goalKeeperPosition;
     double downLimit , upLimit;
 
@@ -104,28 +94,28 @@ Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders ,
     case 0:{
         downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         drawer->draw(Circle2D(wm->field->center() , 0.5) , 0, 360 , "black");
-        ROS_INFO_STREAM("E: 1");
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionWithoutDefense(downLimit , upLimit);
         break;
     }
     case 1:{
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "blue");
         downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        ROS_INFO_STREAM("E: 2");
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInOneDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
     }
-    case 2:{//lhum1
+    case 2:{
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "cyan");
         PDEBUG("AYA" ,2, D_AHZ);
-        ROS_INFO_STREAM("E: 3");
         downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInTwoDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
     }
     case 3:{
-        ROS_INFO_STREAM("E: 4");
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "black");
         downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionInThreeDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
@@ -150,9 +140,11 @@ double DefensePlan::findBestRadiusForGK(Line2D bestLineWithTalles ,Vector2D firs
     }
     bestRadiusForDefenseArea = biggerFrontageOfTriangle.intersection(bestLineWithTalles).dist(wm->field->ourGoal());
     if(bestRadiusForDefenseArea <= downLimit){
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
         bestRadiusForDefenseArea = downLimit;
     }
     if(bestRadiusForDefenseArea >= upLimit){
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "yellow");
         bestRadiusForDefenseArea = upLimit;
     }
     return bestRadiusForDefenseArea;
@@ -477,7 +469,7 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForCircularPositioning(double 
     return defensePosition;
 }
 
-QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){//Lhum2
+QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
     QList<int> IDOfOpponentsInPolygon;
     Vector2D solutions[4];
     Vector2D solution;
@@ -1648,7 +1640,7 @@ void DefensePlan::setGoalKeeperState(){
     }
 }
 
-void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
+void DefensePlan::setGoalKeeperTargetPoint() {
     //// This function determine the target point that goalkeeper must go to it.
     //// For producing the target point, we certainly consider the states that
     //// is result from the "setGoalKeeperState" function.  :)
@@ -1715,7 +1707,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
                 goalKeeperTarget = wm->field->ourGoal() + goalKeeperTargetOffSet;
             }
             else {
-                goalKeeperTarget = strictFollowBall(ballPrediction(true));//lhum?
+                goalKeeperTarget = strictFollowBall(ballPrediction(true));
             }
             return;
         }
@@ -2035,7 +2027,6 @@ void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
             }
             //////////////// End of Danger Mode ////////////////////////////////
             else {
-                //ROS_INFO_STREAM("E: str");
                 lastStateForGoalKeeper = QString("noBesidePoleMode");
                 DBUG(QString("strict follow"), D_AHZ);
                 predictedBall = ballPrediction(true);
@@ -2046,15 +2037,12 @@ void DefensePlan::setGoalKeeperTargetPoint() {//lhum0
                     if (ball2PredictedBall.intersection(robotPrGoalLine).valid()) {
                         predictedBall = ball2PredictedBall.intersection(robotPrGoalLine);
                     }
-                }*///LhumChangeSomething
+                }*/
                 goalKeeperTarget = strictFollowBall(predictedBall);
-                drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "red");
-                drawer->draw(Circle2D(predictedBall , 0.3) , "black");
                 return;
             }
         }
     }
-    drawer->draw(Circle2D(goalKeeperTarget , 0.2) , QColor(Qt::red));
 }
 
 void DefensePlan::assignSkill(Agent *_agent , Action *_skill) {
@@ -2977,7 +2965,6 @@ void DefensePlan::executeGoalKeeper() {
                 DBUG("One touch Mode" , D_AHZ);
                 know->variables["goalKeeperClearMode"] = false;
                 know->variables["goalKeeperOneTouchMode"] = true;
-                drawer->draw(Circle2D(goalKeeperTarget , 0.1) , "red");
                 AHZSkills = gpa[goalKeeperAgent->id()];
                 gpa[goalKeeperAgent->id()]->setSlowmode(false);
                 gpa[goalKeeperAgent->id()]->setDivemode(true);
@@ -3029,9 +3016,9 @@ void DefensePlan::executeGoalKeeper() {
             }
             else {
                 //// strict follow
+                drawer->draw(Circle2D(goalKeeperTarget , 0.3) , "cyan");
                 know->variables["goalKeeperClearMode"] = false;
                 know->variables["goalKeeperOneTouchMode"] = false;
-                drawer->draw(Circle2D(goalKeeperTarget , 0.5), QColor(Qt::red));
                 AHZSkills = gpa[goalKeeperAgent->id()];
                 gpa[goalKeeperAgent->id()]->setSlowmode(false);
                 gpa[goalKeeperAgent->id()]->setDivemode(false);
@@ -3384,7 +3371,7 @@ int DefensePlan::decideNumOfMarks(){
     return 0;
 }
 
-Vector2D DefensePlan::ballPrediction(bool _isGoalie) {//Lhum1
+Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
     //// When ballLine is in field we predict the ball line : If ball moves toward the
     //// our field, we consider the ballLine (ballPos + ballVel) && If moves toward
     //// the opponent field we consider the ballPos + ballVel.y for the location
@@ -3900,31 +3887,34 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
             target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());
             drawer->draw(Circle2D(target , 0.2) , "red");
             thr = 0;
+            lastTargetForStrictFollow = target;
         }
         else{
             thr = 0.1;
-            if(AZBigestOpenAngle > 2 + AHZDegThreshOld){
+            drawer->draw(Circle2D(openAngGoalIntersectionBottom , 0.1) , "brown");
+            target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
+            if(AZBigestOpenAngle > 2 + AHZDegThreshOld || target.dist(goalKeeperAgent->pos()) > 0.1){//lhum2
                 AHZDegThreshOld = 0;
-                target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
-                drawer->draw(Circle2D(target , 0.2) , "blue");
+                lastTargetForStrictFollow = target;
+                drawer->draw(Circle2D(target , 0.2) , "green");
             }
             else{
                 AHZDegThreshOld = 1;
                 target = lastTargetForStrictFollow;
-                drawer->draw(Circle2D(target , 0.2) , "yellow");
+                drawer->draw(Circle2D(target , 0.2) , "blue");
             }
         }
-        if(!wm->field->isInField(target) /*|| target.x < -5.9*/){
+        if(!wm->field->isInField(target)){
             //target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
             //target = know->getPointInDirection(wm->field->ourGoal() , wm->ball->pos , 0.35);//LhumChangeSomething
-            target = Line2D(wm->field->ourGoalL() + Vector2D(0.1 , 0) , wm->field->ourGoalR() + Vector2D(0.1 , 0)).intersection(Line2D(wm->field->ourGoal() , _ballPos));
-            drawer->draw(Circle2D(target , 0.2) , "cyan");
+            target = Line2D(wm->field->ourGoalL() + Vector2D(0.2 , 0) , wm->field->ourGoalR() + Vector2D(0.2 , 0)).intersection(Line2D(wm->field->ourGoal() , _ballPos));
+            drawer->draw(Circle2D(target , 0.3) , "cyan");
+            lastTargetForStrictFollow = target;
         }
     }
-    lastTargetForStrictFollow = target;
     return target;
 }
-
+//lhum todo has many bug in upper function.
 
 bool DefensePlan::defenseCheckBallDangerForOneTouch() {
     //// This function checks that the ball is shot to the our goal, is danger to
