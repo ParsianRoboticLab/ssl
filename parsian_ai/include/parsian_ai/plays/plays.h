@@ -6,7 +6,7 @@
 #include "parsian_ai/plays/theirpenalty.h"
 #include "parsian_ai/plays/theirindirect.h"
 #include "parsian_ai/plays/theirdirect.h"
-#include "parsian_ai/plays/playoff.h"
+#include "parsian_ai/plays/playoff/playoff.h"
 #include "parsian_ai/plays/dynamicattack.h"
 #include "parsian_ai/plays/ourballplacement.h"
 #include "parsian_ai/plays/theirballplacement.h"
