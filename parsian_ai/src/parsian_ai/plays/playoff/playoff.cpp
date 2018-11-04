@@ -1,5 +1,5 @@
 #include <parsian_ai/soccer.h>
-#include "parsian_ai/plays/playoff.h"
+#include "parsian_ai/plays/playoff/playoff.h"
 
 
 CPlayOff::CPlayOff() : CMasterPlay() {
