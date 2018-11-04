@@ -944,12 +944,12 @@ void CCoach::initDynamicPlay(const QList<int> &_ourplayers) {
         }
     }
     if (_ourplayers.size() < 2) {
-        ourPlayOff->dynamicSelect = CHIP;
+        ourPlayOff->dynamicSelect = DynamicSelect::Chip;
     } else if (!gotplan){
         gotplan = true;
-        ourPlayOff->dynamicSelect = KICK;
+        ourPlayOff->dynamicSelect = DynamicSelect::Kick;
     } else {
-        ourPlayOff->dynamicSelect = KHAFAN;
+        ourPlayOff->dynamicSelect = DynamicSelect::Khafan;
     }
 
 
@@ -1283,7 +1283,7 @@ void CCoach::decideOurKickOff(QList<int> &_ourPlayers) {
         ourPlayOff->deleted = false;
     }
     selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, KICKOFF);
+    decidePlayOff(_ourPlayers, POMODE::Kickoff);
     PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
 
 }
@@ -1299,7 +1299,7 @@ void CCoach::decideOurDirect(QList<int> &_ourPlayers) {
         ourPlayOff->deleted = false;
     }
     selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, DIRECT);
+    decidePlayOff(_ourPlayers, POMODE::Direct);
     PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
 
 }
@@ -1314,7 +1314,7 @@ void CCoach::decideOurIndirect(QList<int> &_ourPlayers) {
         ourPlayOff->deleted = false;
     }
     selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, INDIRECT);
+    decidePlayOff(_ourPlayers, POMODE::Indirect);
     PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
 
 }
@@ -1450,13 +1450,13 @@ void CCoach::initStaticPlay(const POMODE _mode, const QList<int>& _ourplayers) {
     ROS_INFO("initStaticPlay: request");
 
     switch (_mode) {
-        case POMODE::INDIRECT:
+        case POMODE::Indirect:
             planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
             break;
-        case POMODE::DIRECT:
+        case POMODE::Direct:
             planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
             break;
-        case POMODE::KICKOFF:
+        case POMODE::Kickoff:
             planRequest.plan_req.gameMode = planRequest.plan_req.KICKOFF;
             break;
     }
@@ -1547,11 +1547,11 @@ NGameOff::SPlan* CCoach::planMsgToSPlan(parsian_msgs::plan_serviceResponse planM
 
     //    plan->execution.AgentPlan
     if (planMsg.the_plan.planMode == "INDIRECT") {
-        plan->common.planMode = POMODE::INDIRECT;
+        plan->common.planMode = POMODE::Indirect;
     } else if (planMsg.the_plan.planMode == "DIRECT") {
-        plan->common.planMode = POMODE::DIRECT;
+        plan->common.planMode = POMODE::Direct;
     } else if (planMsg.the_plan.planMode == "KICKOFF") {
-        plan->common.planMode = POMODE::KICKOFF;
+        plan->common.planMode = POMODE::Kickoff;
     }
 
     plan->common.succesRate = planMsg.the_plan.successRate;
@@ -1606,35 +1606,35 @@ NGameOff::SPlan* CCoach::planMsgToSPlan(parsian_msgs::plan_serviceResponse planM
     return plan;
 }
 
-POffSkills CCoach::strToEnum(const std::string& _str) {
+POFFSKILL CCoach::strToEnum(const std::string& _str) {
     if (_str == "NoSkill") {
-        return NoSkill;
+        return POFFSKILL::None;
     } else if (_str == "Mark") {
-        return Mark;
+        return POFFSKILL::Mark;
     } else if (_str == "Goalie") {
-        return Goalie;
+        return POFFSKILL::Goalie;
     } else if (_str == "Support") {
-        return Support;
+        return POFFSKILL::Support;
     } else if (_str == "Defense") {
-        return Defense;
+        return POFFSKILL::Defense;
     } else if (_str == "Position") {
-        return Position;
+        return POFFSKILL::Position;
     } else if (_str == "MoveSkill") {
-        return MoveSkill;
+        return POFFSKILL::Move;
     } else if (_str == "PassSkill") {
-        return PassSkill;
+        return POFFSKILL::Pass;
     } else if (_str == "OneTouchSkill") {
-        return OneTouchSkill;
+        return POFFSKILL::OneTouch;
     } else if (_str == "ChipToGoalSkill") {
-        return ChipToGoalSkill;
+        return POFFSKILL::ChipToGoal;
     } else if (_str == "ShotToGoalSkill") {
-        return ShotToGoalSkill;
+        return POFFSKILL::ShotToGoal;
     } else if (_str == "ReceivePassSkill") {
-        return ReceivePassSkill;
+        return POFFSKILL::ReceivePass;
     } else if (_str == "ReceivePassIASkill") {
-        return ReceivePassIASkill;
+        return POFFSKILL::ReceivePassIA;
     } else {
-        return NoSkill;
+        return POFFSKILL::None;
     }
 }
 
