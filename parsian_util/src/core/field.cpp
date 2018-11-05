@@ -925,3 +925,11 @@ double CField::ourPAreaPos(double angle) const {
         return _GOAL_WIDTH / 4 + fabs(Vector2D::angleBetween(n, Vector2D(0.0, 0.0)).radian()) * 0.50;
     }
 }
+
+Segment2D CField::ourGoalLine() const {
+    return Segment2D(ourGoalL(), ourGoalR());
+}
+
+Segment2D CField::oppGoalLine() const {
+    return Segment2D(oppGoalL(), oppGoalR());
+}
