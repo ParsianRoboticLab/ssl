@@ -79,7 +79,8 @@ public:
 
     void setPlanClient(const ros::ServiceClient &_plan_client);
 
-    int findGoalie();
+    static int findGoalie();
+    static bool useGoalieInPlayOff();
 
     parsian_msgs::plan_serviceResponse getLastPlan();
 
@@ -87,10 +88,7 @@ public:
     QList<int> workingIDs;
     void replacefaultedrobots();
     CRoleFault *faultRoles[_MAX_NUM_PLAYERS];
-    void resetnonVisibleAgents();
-
-
-
+    void resetNonVisibleAgents();
 
 private:
     /////////////////////transition to force start
@@ -98,13 +96,12 @@ private:
     QList <Vector2D> ballHist;
 
     double findMostPossible(Vector2D agentPos);
-
+    QList<int> remainingAgent();
     States lastState;
     Agent *goalieAgent;
 
     QList<Agent *> defenseAgents;
-    int preferedDefenseCounts;
-    int preferedGoalieID;
+    int preferredDefenseCounts;
     Vector2D defenseTargets[_MAX_NUM_PLAYERS];
     QTime intentionTimePossession;
     QTime playMakeIntention;
@@ -176,7 +173,8 @@ private:
     int playmakeId;
     int lastPlayMake;
 
-    void choosePlaymakeAndSupporter(bool defenseFirst);
+    int choosePlayMake(const QList<int> &_agentsID);
+    void handlePlayMake(const QList<int> &_agentsID);
 
     ///////////////////////////////////////////////
 
