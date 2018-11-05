@@ -68,7 +68,7 @@ protected:
     QList<Vector2D> twoDefenseFormationForCircularPositioning(double downLimit , double upLimit);
     QList<Vector2D> threeDefenseFormationForRecatangularPositioning(double downLimit , double upLimit);
     QList<Vector2D> threeDefenseFormationForCircularPositioning(double downLimit , double upLimit);
-    QList<int> detectOpponentPassOwners(double downEdge , double upEdge);
+    QList<Vector2D> detectOpponentPassOwners(double downEdge , double upEdge);
     Vector2D oneDefenseFormationForRecatngularPositioning(double downLimit , double upLimit);
     Vector2D oneDefenseFormationForCircularPositioning(double downLimit , double upLimit);
     Vector2D getGKPositionInOneDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit);
@@ -177,6 +177,7 @@ public:
     bool ballIsBounced;
     Vector2D ballBouncePos, playOffStartBallPos, playOffPassDir,beforeTransientPassDir;
     ///////////////////////////////////
+    bool DangerOppLessThan(const int &, const int &);
 
 
 private:
@@ -269,7 +270,6 @@ private:
     bool defenseCheckBallDangerForOneTouch();
     bool defClearFlag;
     double overDefThr;
-    int decideNumOfMarksInPlayOff(int _defenseCount);
     bool FlagBesidePoles;
     int f = 0 , counterBallWasBesidePoles = 0;
     bool firstTimeGoalKeeperOneTouch = false;

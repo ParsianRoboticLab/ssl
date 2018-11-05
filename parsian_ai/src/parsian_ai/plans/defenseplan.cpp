@@ -38,7 +38,7 @@ Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D o
     defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
     goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
     /////////////////// Az bi chizi bar sikhaki malideh im :) ///////////////////////////////
-    biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint).length() < Segment2D(secondPoint , originPoint).length() ? Segment2D(firstPoint , originPoint) : Segment2D(secondPoint , originPoint);//Lhum delete something
+    biggestLineOfBallTriangle = Segment2D(firstPoint , originPoint).length() < Segment2D(secondPoint , originPoint).length() ? Segment2D(firstPoint , originPoint) : Segment2D(secondPoint , originPoint);
     double distanceFromYalForFirstPosition = biggestLineOfBallTriangle.dist(goalkeeperPosition);
     if(distanceFromYalForFirstPosition > robotRadius){
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(goalkeeperPosition);
@@ -51,7 +51,7 @@ Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D o
     return goalkeeperPosition;
 }
 
-Vector2D DefensePlan::getGKPositionInTwoDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){//Lhum2
+Vector2D DefensePlan::getGKPositionInTwoDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
     Vector2D goalkeeperPosition;
     Vector2D sol[2];
     int numberOfAgents = 1;
@@ -85,14 +85,13 @@ Vector2D DefensePlan::getGKPositionWithoutDefense(double downLimit , double upLi
     return goalkeeperPosition;
 }
 
-Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){//lhum1
+Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){
     Vector2D goalKeeperPosition;
     double downLimit , upLimit;
 
     switch (numberOfDefenders){
     case 0:{
         downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
         upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
         goalKeeperPosition = getGKPositionWithoutDefense(downLimit , upLimit);
         break;
@@ -464,15 +463,14 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForCircularPositioning(double 
     return defensePosition;
 }
 
-QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
-    QList<int> IDOfOpponentsInPolygon;
+QList<Vector2D> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
+    QList<Vector2D> IDOfOpponentsInPolygon;
     Vector2D solutions[4];
     Vector2D solution;
     Polygon2D ballArea;
     Rect2D temp;
     Vector2D currentBallPosition = wm->ball->pos - 0.5 * wm->ball->vel.norm();
     Vector2D finalBallPosition = wm->ball->getPosInFuture(10) + wm->ball->vel.norm();
-    drawer->draw(Circle2D(finalBallPosition - wm->ball->vel.norm() , 0.3) , "blue");
     Circle2D downEdgeCircle(currentBallPosition , downEdgeLength / 2);
     Circle2D upEdgeCircle(finalBallPosition, upEdgeLength / 2);
     Line2D ballPath(currentBallPosition , finalBallPosition);
@@ -486,7 +484,6 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
             ballArea.addVertex(solutions[i]);
         }
         ballArea.addVertex(solution);
-
     }
     drawer->draw(Segment2D(solutions[0] , solutions[1]) , "cyan");
     drawer->draw(Segment2D(solutions[1] , solutions[2]) , "cyan");
@@ -496,16 +493,19 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
     if(wm->ball->vel.length() > 0.1) {
         for (size_t i = 0; i < wm->opp.activeAgentsCount(); i++) {
             if (ballArea.contains(wm->opp.active(i)->pos)) {
-                drawer->draw(Circle2D(wm->opp.active(i)->pos, i * 0.2), "red");
-                IDOfOpponentsInPolygon.append(wm->opp.activeAgentID(i));
-            } else if (Line2D(wm->opp.active(i)->pos, wm->opp.active(i)->pos + wm->opp.active(i)->vel).intersection(Line2D(currentBallPosition, finalBallPosition)).valid()) {
-                drawer->draw(Circle2D(wm->opp.active(i)->pos, i * 0.2), "red");
-                IDOfOpponentsInPolygon.append(wm->opp.activeAgentID(i));
+                IDOfOpponentsInPolygon.append(wm->opp.active(i)->pos);
+            }
+            else if (Line2D(wm->opp.active(i)->pos, wm->opp.active(i)->pos + wm->opp.active(i)->vel).intersection(Line2D(currentBallPosition, finalBallPosition)).valid()) {
+                IDOfOpponentsInPolygon.append(wm->opp.active(i)->pos);
             }
         }
     }
     ////////// Sort dangerous ///////////////////////////////
-    qSort(IDOfOpponentsInPolygon.begin() , IDOfOpponentsInPolygon.end());
+    qSort(IDOfOpponentsInPolygon.begin() , IDOfOpponentsInPolygon.end() ,
+          [](const Vector2D& v1, const Vector2D& v2)
+          {
+              return v1.dist(wm->ball->pos) < v2.dist(wm->ball->pos);
+          });
     return IDOfOpponentsInPolygon;
 }
 
@@ -3408,53 +3408,46 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
         }
         return predictedBall;
     }*/
-    QList<int> temp;
+    QList<Vector2D> temp;
     if(wm->opp.activeAgentsCount() > 0 && _isGoalie) {
         temp = detectOpponentPassOwners(max(1 , (6 - wm->ball->vel.length()) / 1.5) , max(3 , (6 - wm->ball->vel.length())));
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
         Line2D ballLine = Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
         //ROS_INFO_STREAM("E: " << temp.size());
-        for(int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
-            for(int j = 0 ; j < temp.size() ; j++){
-                Circle2D oppCircle(wm->opp.active(i)->pos, 1);
-                if(wm->opp.activeAgentID(i) == temp[j]){
-                    Circle2D oppCircle(wm->opp.active(i)->pos, 1);
-                    drawer->draw(oppCircle ,  "black");
-                    if(oppCircle.intersection(ballSegment , &solu[0] , &solu[1]) > 0){
-                        if(solu[0].isValid() && solu[1].isValid()){
-                            if(dist2Ball != min(dist2Ball , solu[1].dist(wm->ball->pos))) {
-                                dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
-                                predictedBall = solu[1];
-                            }
-                            if(dist2Ball != min(dist2Ball , solu[0].dist(wm->ball->pos))) {
-                                dist2Ball = min(dist2Ball, solu[0].dist(wm->ball->pos));
-                                predictedBall = solu[0];
-                            }
-                        }
-                        else if(solu[0].isValid()){
-                            if(dist2Ball != min(dist2Ball , solu[0].dist(wm->ball->pos))) {
-                                dist2Ball = min(dist2Ball, solu[0].dist(wm->ball->pos));
-                                predictedBall = solu[0];
-                            }
-                            if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                return wm->ball->pos;
-                            }
-                        }
-                        else if(solu[1].isValid()){
-                            if(dist2Ball != min(dist2Ball , solu[1].dist(wm->ball->pos))) {
-                                dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
-                                predictedBall = solu[1];
-                            }
-                            if(oppCircle.intersection(ballLine , &solu[3] , &solu[4]) > 1) {
-                                return wm->ball->pos;
-                            }
-                        }
-                        return predictedBall;
+        for(int i = 0 ; i < temp.size() ; i++){
+            Circle2D oppCircle(temp[i], 1);
+            drawer->draw(oppCircle, "black");
+            if (oppCircle.intersection(ballSegment, &solu[0], &solu[1]) > 0) {
+                if (solu[0].isValid() && solu[1].isValid()) {
+                    if (dist2Ball != min(dist2Ball, solu[1].dist(wm->ball->pos))) {
+                        dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
+                        predictedBall = solu[1];
                     }
-                    else{
-                        return Line2D(wm->opp.active(i)->pos, wm->field->ourGoal()).intersection(Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm()));
+                    if (dist2Ball != min(dist2Ball, solu[0].dist(wm->ball->pos))) {
+                        dist2Ball = min(dist2Ball, solu[0].dist(wm->ball->pos));
+                        predictedBall = solu[0];
+                    }
+                } else if (solu[0].isValid()) {
+                    if (dist2Ball != min(dist2Ball, solu[0].dist(wm->ball->pos))) {
+                        dist2Ball = min(dist2Ball, solu[0].dist(wm->ball->pos));
+                        predictedBall = solu[0];
+                    }
+                    if (oppCircle.intersection(ballLine, &solu[3], &solu[4]) > 1) {
+                        return wm->ball->pos;
+                    }
+                } else if (solu[1].isValid()) {
+                    if (dist2Ball != min(dist2Ball, solu[1].dist(wm->ball->pos))) {
+                        dist2Ball = min(dist2Ball, solu[1].dist(wm->ball->pos));
+                        predictedBall = solu[1];
+                    }
+                    if (oppCircle.intersection(ballLine, &solu[3], &solu[4]) > 1) {
+                        return wm->ball->pos;
                     }
                 }
+                return predictedBall;
+            } else {
+                return Line2D(temp[i], wm->field->ourGoal()).intersection(
+                        Line2D(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm()));
             }
         }
         return wm->ball->pos;
@@ -3878,7 +3871,7 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
         goal2Ball.assign(wm->field->ourGoal(), _ballPos);
         thr = 0.1;
         target = getGKPositionAccordingToTheDefense(findNeededDefense(), openAngGoalIntersectionTop , _ballPos , openAngGoalIntersectionBottom);
-        if(AZBigestOpenAngle > GKcoveredAngle + AHZDegThreshOld || AZBisecOpenSeg.dist(goalKeeperAgent->pos()) < 0.1){//lhum2
+        if(AZBigestOpenAngle > GKcoveredAngle + AHZDegThreshOld || AZBisecOpenSeg.dist(goalKeeperAgent->pos()) < 0.1){
             if (goalKeeperAgent->pos().dist(AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos())) > 0.2 + thr) {
                 target = AZBisecOpenSeg.nearestPoint(goalKeeperAgent->pos());
                 thr = 0;
@@ -4037,28 +4030,22 @@ QList<QPair<Vector2D, double> > DefensePlan::sortdangerpassplayoff(QList<Vector2
         // DBUG(QString("angleP: %1, rangeofangleP: %2, distansetoballProjectionP:%3, RangeofDistancetoBallProjectionP:%4,distancetointersect:%5,rangeofdistansetointesrsect:%6").arg(AngleP).arg(RangeofAngleP).arg(distanceToBallProjectionP).arg(RangeofdistanceToBallProjectionP).arg(distanceToIntersectP).arg(RangeofdistanceToIntersectP),D_HAMED);
         if (wm->ball->vel.length() < .1) {
             danger = danger1;
-        } else {
+        }
+        else {
             danger = 100.0 * Polycontain + fabs(danger2) + fabs(danger1);
         }
-
         temp.second = danger;
         output.append(temp);
         //        drawer->draw(QString("HMD danger=%1").arg(danger), oppposdanger[i] + Vector2D(0, 0.3), QColor(Qt::red));
         //drawer->draw(_poly, QColor(Qt::blue));
 
-
-
         //        drawer->draw(QString("mindistance%1").arg(mintempdis), oppposdanger[i] + Vector2D(0,0.5), QColor(Qt::blue));
     }
     ///sorting the Qlist
-    for (int i = 0; i < output.count(); i++) {
-        for (int j = 0; j < output.count() - 1; j++) {
-            if (output[j].second < output[j + 1].second) {
-                output.swap(j, j + 1);
-            }
-        }
-    }
-
+    qSort(output.begin() , output.end() , [](const QPair<Vector2D, double>& v1, const QPair<Vector2D, double>& v2)
+    {
+        return v1.second > v2.second;
+    });
     return output;
 }
 
@@ -4115,31 +4102,13 @@ QList<QPair<Vector2D, double> > DefensePlan::sortdangerpassplayon(QList<Vector2D
             if (tempsegment.dist(wm->our.active(j)->pos) < mintempdis) {
                 mintempdis = tempsegment.dist(wm->our.active(j)->pos);
             }
-
         }
-
-
-        //        drawer->draw(QString("mindistance%1").arg(mintempdis), oppposdanger[i] + Vector2D(0,0.5), QColor(Qt::blue));
-
-
-
-
     }
-
     ///sorting the Qlist
-    for (int i = 0; i < output.count(); i++) {
-        for (int j = 0; j < output.count() - 1; j++) {
-            if (output[j].second < output[j + 1].second) {
-                output.swap(j, j + 1);
-            }
-        }
-    }
-
-    //for(int i=0; i<output.count(); i++)
-    //{
-    //drawer->draw(QString("HMD Danger New%1" ).arg(output[i].second),output[i].first + Vector2D(0,.2),QColor(Qt::red));
-    //}
-
+    qSort(output.begin() , output.end() , [](const QPair<Vector2D, double>& v1, const QPair<Vector2D, double>& v2)
+    {
+        return v1.second > v2.second;
+    });
     return output;
 }
 
