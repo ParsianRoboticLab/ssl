@@ -151,7 +151,7 @@ struct SPositioningAgent {
 
             DBUG(QString("getArgs : wrong arg %1 < %2").arg(positionArg.size()).arg(_state + stateNumber), D_ERROR);
             qWarning() << QString("getArgs : wrong arg %1 < %2").arg(positionArg.size()).arg(_state + stateNumber);
-            SPositioningArg null;
+            SPositioningArg null{};
             return null;
 
         }
@@ -164,7 +164,7 @@ struct SPositioningAgent {
         } else {
 
             DBUG(QString("getArgs : wrong absarg %1 < %2").arg(positionArg.size()).arg(_state), D_ERROR);
-            SPositioningArg null;
+            SPositioningArg null{};
             return null;
 
         }
