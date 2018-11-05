@@ -273,6 +273,7 @@ private:
     EMode masterMode;
 
     void globalExecute();
+    QList<AgentPair> findThePasserandReciver(const NGameOff::SExecution & _plan);
 
     bool isPathClear(Vector2D _pos1, Vector2D _pos2, double _radius, double threshold);
     Polygon2D getPathPolygon(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold);
@@ -364,7 +365,6 @@ private:
     void assignKick(CRolePlayOff*, const SPositioningAgent&, bool _chip);
     void assignReceive(CRolePlayOff*, const SPositioningAgent&, bool _ignoreAngle);
     QPair<int, int> findTheLastShoot(const SExecution& _plan);
-    QList<AgentPair> findThePasserandReciver(const SExecution&);
     int findReceiver(int _passer, int _state);
     QList<SBallOwner> ownerList;
     bool havePassInPlan;
