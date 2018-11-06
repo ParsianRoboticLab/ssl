@@ -11,7 +11,7 @@ void WMNodelet::onInit() {
     wm.reset(new WorldModel);
     drawer = new Drawer;
 //    timer = nh.createTimer(ros::Duration(.062), boost::bind(&WMNodelet::timerCb, this, _1));
-    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 3);
+    wm_pub = nh.advertise<parsian_msgs::parsian_world_model>("/world_model", 5);
     team_config_sub = nh.subscribe("/team_config", 1000, & WMNodelet::teamConfigCb, this);
     vision_detection_sub = nh.subscribe("vision_detection", 8, &WMNodelet::detectionCb, this);
     QString robotCommandSubName;

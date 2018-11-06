@@ -428,25 +428,18 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangershoot(double _radius, doubl
 
 
     ///////---------sorting------------//////
-    for (int i = 0; i < output.count(); i++) {
-
-        for (int j = 0; j < output.count() - 1; j++) {
-            if (output[j].second < output[j + 1].second) {
-                output.swap(j, j + 1);
-            }
-        }
-
-    }
+    qSort(output.begin() , output.end() , [](const QPair<Vector2D, double>& v1, const QPair<Vector2D, double>& v2)
+    {
+        return v1.second > v2.second;
+    });
     // this is for test
     output.clear();
-
     return output;
 }
 
 QList<CRobot*> CMarkPlan::sortdanger(const QList<CRobot*> oppagent) {
     const QList<CRobot*> &sorted = oppagent;
     for (int i = 0; i < sorted.count(); i++) {
-
         for (int k = 0; k < sorted.count() - 1; k++) {
 
             //                if(sorted[k]->danger < sorted[k+1]->danger) //todo : crobot
@@ -455,10 +448,8 @@ QList<CRobot*> CMarkPlan::sortdanger(const QList<CRobot*> oppagent) {
             //                }
 
         }
-
     }
     return sorted;
-
 }
 
 QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayoff(QList<Vector2D> oppposdanger) {
@@ -509,14 +500,10 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayoff(QList<Vector2D>
     }
 
     ///sorting the Qlist
-    for (int i = 0; i < output.count(); i++) {
-        for (int j = 0; j < output.count() - 1; j++) {
-            if (output[j].second < output[j + 1].second) {
-                output.swap(j, j + 1);
-            }
-        }
-    }
-
+    qSort(output.begin() , output.end() , [](const QPair<Vector2D, double>& v1, const QPair<Vector2D, double>& v2)
+    {
+        return v1.second > v2.second;
+    });
     return output;
 }
 
@@ -588,13 +575,10 @@ QList<QPair<Vector2D, double> > CMarkPlan::sortdangerpassplayon(QList<Vector2D> 
     }
 
     ///sorting the Qlist
-    for (int i = 0; i < output.count(); i++) {
-        for (int j = 0; j < output.count() - 1; j++) {
-            if (output[j].second < output[j + 1].second) {
-                output.swap(j, j + 1);
-            }
-        }
-    }
+    qSort(output.begin() , output.end() , [](const QPair<Vector2D, double>& v1, const QPair<Vector2D, double>& v2)
+    {
+        return v1.second > v2.second;
+    });
     return output;
 }
 
