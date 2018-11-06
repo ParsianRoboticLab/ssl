@@ -463,8 +463,8 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForCircularPositioning(double 
     return defensePosition;
 }
 
-QList<Vector2D> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
-    QList<Vector2D> IDOfOpponentsInPolygon;
+QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double upEdgeLength){
+    QList<int> IDOfOpponentsInPolygon;
     Vector2D solutions[4];
     Vector2D solution;
     Polygon2D ballArea;
@@ -493,18 +493,18 @@ QList<Vector2D> DefensePlan::detectOpponentPassOwners(double downEdgeLength , do
     if(wm->ball->vel.length() > 0.1) {
         for (size_t i = 0; i < wm->opp.activeAgentsCount(); i++) {
             if (ballArea.contains(wm->opp.active(i)->pos)) {
-                IDOfOpponentsInPolygon.append(wm->opp.active(i)->pos);
+                IDOfOpponentsInPolygon.append(i);
             }
             else if (Line2D(wm->opp.active(i)->pos, wm->opp.active(i)->pos + wm->opp.active(i)->vel).intersection(Line2D(currentBallPosition, finalBallPosition)).valid()) {
-                IDOfOpponentsInPolygon.append(wm->opp.active(i)->pos);
+                IDOfOpponentsInPolygon.append(i);
             }
         }
     }
     ////////// Sort dangerous ///////////////////////////////
     qSort(IDOfOpponentsInPolygon.begin() , IDOfOpponentsInPolygon.end() ,
-          [](const Vector2D& v1, const Vector2D& v2)
+          [](const int& v1, const int& v2)
           {
-              return v1.dist(wm->ball->pos) < v2.dist(wm->ball->pos);
+              return wm->opp.active(v1)->pos.dist(wm->ball->pos) < wm->opp.active(v2)->pos.dist(wm->ball->pos);
           });
     return IDOfOpponentsInPolygon;
 }
@@ -3408,14 +3408,14 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
         }
         return predictedBall;
     }*/
-    QList<Vector2D> temp;
+    QList<int> temp;
     if(wm->opp.activeAgentsCount() > 0 && _isGoalie) {
         temp = detectOpponentPassOwners(max(1 , (6 - wm->ball->vel.length()) / 1.5) , max(3 , (6 - wm->ball->vel.length())));
         Segment2D ballSegment = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100);
         Line2D ballLine = Line2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
         //ROS_INFO_STREAM("E: " << temp.size());
         for(int i = 0 ; i < temp.size() ; i++){
-            Circle2D oppCircle(temp[i], 1);
+            Circle2D oppCircle(wm->opp.active(temp[i])->pos, 1);
             drawer->draw(oppCircle, "black");
             if (oppCircle.intersection(ballSegment, &solu[0], &solu[1]) > 0) {
                 if (solu[0].isValid() && solu[1].isValid()) {
@@ -3446,7 +3446,7 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
                 }
                 return predictedBall;
             } else {
-                return Line2D(temp[i], wm->field->ourGoal()).intersection(
+                return Line2D(wm->opp.active(temp[i])->pos, wm->field->ourGoal()).intersection(
                         Line2D(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm()));
             }
         }
