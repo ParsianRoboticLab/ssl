@@ -5,6 +5,7 @@ from time import time
 from math import exp
 from pprint import pprint
 from math import asin
+
 robot_radius = .1
 
 
@@ -154,8 +155,10 @@ class PassTest:
 
     def update_knowlege(self):
         self.knowlege["rec_dist_to_target"] = self.recieive_point.distance(self.wm.our[self.ids["receiver"]].pos)
-        self.knowlege["rec_dist_to_ball"] = Point().init(self.wm.ball.pos).distance(self.wm.our[self.ids["receiver"]].pos)
-        self.knowlege["passer_dist_to_ball"] = Point().init(self.wm.ball.pos).distance(self.wm.our[self.ids["passer"]].pos)
+        self.knowlege["rec_dist_to_ball"] = Point().init(self.wm.ball.pos).distance(
+            self.wm.our[self.ids["receiver"]].pos)
+        self.knowlege["passer_dist_to_ball"] = Point().init(self.wm.ball.pos).distance(
+            self.wm.our[self.ids["passer"]].pos)
         self.knowlege["ball_dist_to_target"] = self.recieive_point.distance(self.wm.ball.pos)
 
         self.ball_vel_queue.append(Point().init(self.wm.ball.vel).norm())
@@ -184,7 +187,7 @@ class PassTest:
 
     def save_pass_state(self):
         self.current_pass_key = self.map_distance(self.knowlege["ball_dist_to_target"])
-        if self.current_pass_key not in self.pass_informations :
+        if self.current_pass_key not in self.pass_informations:
             self.pass_informations[self.current_pass_key] = []
 
         cur_step = len(self.pass_informations[self.current_pass_key])
@@ -198,8 +201,9 @@ class PassTest:
 
     def kick_done(self):
         if sum(self.ball_vel_queue) / len(self.ball_vel_queue) > .05:
-            deviation = self.recieive_point.distance_to_line(Point().init(self.wm.ball.pos), Point().init(self.wm.ball.vel))
-            deviation_eval = abs(asin(deviation/self.knowlege["ball_dist_to_target"])) / 3.1415 * 180
+            deviation = self.recieive_point.distance_to_line(Point().init(self.wm.ball.pos),
+                                                             Point().init(self.wm.ball.vel))
+            deviation_eval = abs(asin(deviation / self.knowlege["ball_dist_to_target"])) / 3.1415 * 180
             self.pass_informations[self.current_pass_key][-1].update(
                 {
                     "deviation": deviation_eval
@@ -216,12 +220,12 @@ class PassTest:
             cur_step = len(self.pass_informations[self.current_pass_key])
         else:
             cur_step = 0
-        task.kickTask.kickSpeed = 10 * (cur_step+1) / self.speed_step
+        task.kickTask.kickSpeed = 10 * (cur_step + 1) / self.speed_step
         task.kickTask.kickchargetime = True
         task.kickTask.target.x = self.recieive_point.x
         task.kickTask.target.y = self.recieive_point.y
 
-        self.tasks[0]= {
+        self.tasks[0] = {
             "id": self.ids["passer"],
             "msg": task
         }
@@ -249,5 +253,4 @@ class PassTest:
         if ave_bal_vel < .1:
             print("receive done")
             return True
-        else:
-            return False
+        return False
