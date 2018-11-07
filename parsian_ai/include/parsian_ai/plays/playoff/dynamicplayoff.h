@@ -5,8 +5,11 @@
 #ifndef PARSIAN_AI_DYNAMICPLAYOFF_H
 #define PARSIAN_AI_DYNAMICPLAYOFF_H
 
-#include <parsian_ai/plays/playoff.h>
-
+#include "parsian_ai/roles/roles.h"
+#include "parsian_ai/plans/plans.h"
+#include <parsian_ai/gamestate.h>
+#include <parsian_ai/config.h>
+#include <QString>
 
 enum class DynamicSelect {
     NoSelect = 0,
@@ -17,10 +20,10 @@ enum class DynamicSelect {
 };
 
 
-class CDynamicPlayoff {
+class CDynamicPlayOff {
 public:
-    CDynamicPlayoff();
-    ~CDynamicPlayoff();
+    CDynamicPlayOff();
+    ~CDynamicPlayOff();
     void reset();
     void execute();
     void init(const QList<Agent*>& _agents);
@@ -29,7 +32,7 @@ public:
 
 private:
     bool initial;
-
+    QList<Agent*> agents;
     Vector2D lastBallPos;
     unsigned int lastTime;
 

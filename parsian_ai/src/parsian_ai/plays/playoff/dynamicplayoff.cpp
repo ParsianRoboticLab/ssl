@@ -6,7 +6,7 @@
 
 #include "parsian_ai/plays/playoff/dynamicplayoff.h"
 
-CDynamicPlayoff::CDynamicPlayoff() : CMasterPlay() {
+CDynamicPlayOff::CDynamicPlayOff() {
     //Dynamic
     ready = pass = shot = false;
     dynamicStartTime = 0;
@@ -16,16 +16,16 @@ CDynamicPlayoff::CDynamicPlayoff() : CMasterPlay() {
 
 }
 
-CDynamicPlayoff::~CDynamicPlayoff(){
+CDynamicPlayOff::~CDynamicPlayOff(){
     for (auto &roleAgent : roleAgents) delete roleAgent;
 
 }
 
-void CDynamicPlayoff::execute_x() {
+void CDynamicPlayOff::execute() {
     dynamicExecute();
 }
 
-void CDynamicPlayoff::reset() {
+void CDynamicPlayOff::reset() {
 
     //Dynamic
     ready = pass = shot = false;
@@ -36,7 +36,7 @@ void CDynamicPlayoff::reset() {
 
 
 
-void CDynamicPlayoff::dynamicExecute() {
+void CDynamicPlayOff::dynamicExecute() {
 
     switch (dynamicSelect) {
         case DynamicSelect::NoSelect:
@@ -65,7 +65,7 @@ void CDynamicPlayoff::dynamicExecute() {
 }
 
 
-void CDynamicPlayoff::dynamicAssignID() {
+void CDynamicPlayOff::dynamicAssignID() {
     lastTime = ros::Time::now().sec;
     lastBallPos = wm->ball->pos;
     initial = false;
@@ -82,7 +82,7 @@ void CDynamicPlayoff::dynamicAssignID() {
     }
 }
 
-void CDynamicPlayoff::dynamicPlayChipToGoal(bool isChip) {
+void CDynamicPlayOff::dynamicPlayChipToGoal(bool isChip) {
     if (initial) {
         dynamicAssignID();
         ready = true;
@@ -119,7 +119,7 @@ void CDynamicPlayoff::dynamicPlayChipToGoal(bool isChip) {
     }
 }
 
-void CDynamicPlayoff::dynamicPlayBlocker() {
+void CDynamicPlayOff::dynamicPlayBlocker() {
     if (initial) {
         dynamicAssignID();
         ready = true;
@@ -161,7 +161,7 @@ void CDynamicPlayoff::dynamicPlayBlocker() {
 
 }
 
-void CDynamicPlayoff::dynamicPlayKhafan() {
+void CDynamicPlayOff::dynamicPlayKhafan() {
     if (initial) {
         dynamicAssignID();
         ready = true;
@@ -224,7 +224,7 @@ void CDynamicPlayoff::dynamicPlayKhafan() {
 }
 
 
-void CDynamicPlayoff::checkEndKhafan() {
+void CDynamicPlayOff::checkEndKhafan() {
     ROS_INFO_STREAM("TIMENS: "<< ros::Time::now().sec << " TIMES: "<< ros::Time::now().sec);
     if (ready) {
         dynamicState = 2;
@@ -286,7 +286,7 @@ void CDynamicPlayoff::checkEndKhafan() {
 
 }
 
-void CDynamicPlayoff::checkEndBlocker() {
+void CDynamicPlayOff::checkEndBlocker() {
     if (ready) {
         dynamicState = 2;
     } else if (shot) {
@@ -323,7 +323,7 @@ void CDynamicPlayoff::checkEndBlocker() {
     }
 }
 
-void CDynamicPlayoff::checkEndChipToGoal() {
+void CDynamicPlayOff::checkEndChipToGoal() {
     if (ready) {
         dynamicState = 2;
     } else if (shot) {
@@ -355,7 +355,7 @@ void CDynamicPlayoff::checkEndChipToGoal() {
     }
 }
 
-Vector2D CDynamicPlayoff::getDynamicTarget(int i) {
+Vector2D CDynamicPlayOff::getDynamicTarget(int i) {
     Vector2D first = wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 3;
     first.y += 0.3;
 
@@ -375,11 +375,7 @@ Vector2D CDynamicPlayoff::getDynamicTarget(int i) {
     }
 }
 
-void CDynamicPlayoff::execute() {
-
-}
-
-void CDynamicPlayoff::initDynamicPlay(const QList<Agent*> &_ourplayers) {
+void CDynamicPlayOff::initDynamicPlay(const QList<Agent*> &_ourplayers) {
 
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         if (i >= _ourplayers.size()) {
@@ -412,4 +408,8 @@ void CDynamicPlayoff::initDynamicPlay(const QList<Agent*> &_ourplayers) {
     dynamicMatch[swapID] = tempID;
     initial = true;
 
+}
+
+void CDynamicPlayOff::init(const QList<Agent *> &_agents) {
+    agents = _agents;
 }
