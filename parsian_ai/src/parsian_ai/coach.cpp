@@ -54,7 +54,6 @@ CCoach::CCoach(Agent**_agents)
     //    m_planLoader = new CLoadPlayOffJson(QDir::currentPath() + QString("/playoff"));
     goalieAgent = nullptr;
     firstPlay = true;
-    firstIsFinished = false;
     preferredDefenseCounts = 2;
     selectedPlay = stopPlay;
     for (int &i : faultDetectionCounter) {
@@ -499,25 +498,16 @@ void CCoach::decideAttack() {
             return;
             break;
         case States::OurKickOff:
-            decideOurKickOff(ourPlayersID);
+        case States::OurDirectKick:
+        case States::OurIndirectKick:
+            decideOurFreeKick(ourPlayersID);
             break;
-
         case States::TheirKickOff:
             decideTheirKickOff(ourPlayersID);
             break;
-
-        case States::OurDirectKick:
-            decideOurDirect(ourPlayersID);
-            break;
-
         case States::TheirDirectKick:
             decideTheirDirect(ourPlayersID);
             break;
-
-        case States::OurIndirectKick:
-            decideOurIndirect(ourPlayersID);
-            break;
-
         case States::TheirIndirectKick:
             decideTheirIndirect(ourPlayersID);
             break;
@@ -567,45 +557,6 @@ void CCoach::decideAttack() {
     lastPlayers.append(ourPlayersID);
 }
 
-void CCoach::decidePlayOff(const QList<int>& _ourPlayers, POMODE _mode) {
-
-    //Decide Plan
-    ROS_INFO_STREAM("playoff: " << firstTime);
-    firstIsFinished = ourPlayOff->isFirstFinished();
-
-    if (firstTime) {
-        NGameOff::EMode tempMode;
-        selectPlayOffMode(_ourPlayers.size(), tempMode);
-        initPlayOffMode(tempMode, _mode, _ourPlayers);
-        if(!gotplan){
-            return;
-        }
-        ourPlayOff->setMasterMode(tempMode);
-        if (tempMode == NGameOff::FirstPlay) {
-            if (firstPlay && !firstIsFinished) {
-                firstTime = true;
-
-            } else if (firstPlay && firstIsFinished) {
-                firstTime = true;
-                firstPlay = false;
-
-            } else if (!firstPlay && firstIsFinished) {
-                firstTime = false;
-                firstPlay = true;
-                firstIsFinished = false;
-                ourPlayOff->resetFirstPlayFinishedFlag();
-            }
-
-        } else {
-            firstTime = false;
-
-        }
-
-    } else {
-
-        setPlayOff(ourPlayOff->getMasterMode());
-    }
-}
 void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
     ballPState = isBallOurs();
     updateAttackState(); //// Too Bad Conditions will be Handle here
@@ -678,172 +629,6 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
 
     lastBallPossesionState = ballPState;
 }
-
-void CCoach::selectPlayOffMode(int agentSize, NGameOff::EMode &_mode) {
-    ROS_INFO_STREAM("HSHM: agentSize: " << agentSize);
-    if (agentSize < 2) {
-        _mode = NGameOff::DynamicPlay;
-    } else if (gameState->ourKickoff() && !gameState->canKickBall()) {
-        _mode = NGameOff::FirstPlay;
-
-    } else if ((wm->ball->pos.x < 1 && !gameState->ourKickoff())|| !gotplan) {
-        _mode = NGameOff::DynamicPlay;
-
-    } else if (!firstIsFinished && conf.UseFirstPlay) {
-        _mode = NGameOff::FirstPlay;
-
-    } else if (wm->ball->pos.x > -1) {
-        _mode = NGameOff::StaticPlay;
-
-    } else {
-        _mode = NGameOff::DynamicPlay;
-
-    }
-}
-
-void CCoach::initPlayOffMode(const NGameOff::EMode _mode,
-                             const POMODE _gameMode,
-                             const QList<int>& _ourplayers) {
-    switch (_mode) {
-
-        case NGameOff::StaticPlay:
-            initStaticPlay(_gameMode, _ourplayers);
-            ROS_INFO("initPlayOffMode: StaticPlay");
-            break;
-        case NGameOff::DynamicPlay:
-            ROS_INFO("initPlayOffMode: DynamicPlay");
-            initDynamicPlay(_ourplayers);
-            break;
-        case NGameOff::FastPlay:
-            ROS_INFO("initPlayOffMode: initFastPlay");
-            initFastPlay(_ourplayers);
-            break;
-        case NGameOff::FirstPlay:
-            ROS_INFO("initPlayOffMode: initFirstPlay");
-            initFirstPlay(_ourplayers);
-            break;
-        default:
-            ROS_INFO("initPlayOffMode: initStaticPlay");
-            initStaticPlay(_gameMode, _ourplayers);
-    }
-}
-
-void CCoach::setPlayOff(NGameOff::EMode _mode) {
-    switch (_mode) {
-        case NGameOff::StaticPlay:
-            setStaticPlay();
-            break;
-        case NGameOff::DynamicPlay:
-            setDynamicPlay();
-            break;
-        case NGameOff::FastPlay:
-            setFastPlay();
-            break;
-        case NGameOff::FirstPlay:
-            setFirstPlay();
-            break;
-        default:
-            setStaticPlay();
-    }
-}
-
-void CCoach::initDynamicPlay(const QList<int> &_ourplayers) {
-
-    for (int i = 0; i < _NUM_PLAYERS; i++) {
-        if (i >= _ourplayers.size()) {
-            ourPlayOff->dynamicMatch[i] = -1;
-        } else {
-            ourPlayOff->dynamicMatch[i] = i;
-        }
-    }
-    if (_ourplayers.size() < 2) {
-        ourPlayOff->dynamicSelect = DynamicSelect::Chip;
-    } else if (!gotplan){
-        gotplan = true;
-        ourPlayOff->dynamicSelect = DynamicSelect::Kick;
-    } else {
-        ourPlayOff->dynamicSelect = DynamicSelect::Khafan;
-    }
-
-
-    double dis = 1000000;
-    int id = 0;
-    int swapID = 0;
-    for (int i = 0; i < _ourplayers.size(); i++) {
-        double tempDis = agents[_ourplayers.at(i)]->pos().dist(wm->ball->pos) ;
-        if (tempDis < dis) {
-            dis = tempDis;
-            id = _ourplayers.at(i);
-            swapID = i;
-        }
-    }
-
-    int tempID = ourPlayOff->dynamicMatch[0];
-    ourPlayOff->dynamicMatch[0] = id;
-    ourPlayOff->dynamicMatch[swapID] = tempID;
-
-
-    ourPlayOff->setInitial(true);
-    ourPlayOff->lockAgents = true;
-
-}
-
-void CCoach::initFastPlay(const QList<int> &_ourplayers) {
-    // TODO : Initial Fast Play
-}
-
-void CCoach::initFirstPlay(const QList<int> &_ourplayers) {
-
-    if(gameState->ourKickoff()){
-        ourPlayOff->kickoffPositioning(_ourplayers.size());
-    }
-
-    double minDist = wm->field->_MAX_DIST;
-    int minID = -1;
-    int minOwner = 0;
-    for (int i = 0; i < _ourplayers.size(); i++) {
-
-        int tempID = _ourplayers.at(i);
-        double tempDist = agents[tempID]->pos().dist(wm->ball->pos);
-        if (tempDist < minDist) {
-            minDist = tempDist;
-            minID = tempID;
-            minOwner = i;
-        }
-
-        if (i >= _ourplayers.size()) {
-            ourPlayOff->dynamicMatch[i] = -1;
-        } else {
-            ourPlayOff->dynamicMatch[i] = i;
-        }
-    }
-    // fix passer :)
-    int tempID = ourPlayOff -> dynamicMatch[0];
-    ourPlayOff -> dynamicMatch[0] = minID;
-    ourPlayOff -> dynamicMatch[minOwner] = tempID;
-
-    ourPlayOff -> setInitial(true);
-    ourPlayOff -> lockAgents = true;
-
-    // TODO : Initial First Play
-}
-
-void CCoach::setStaticPlay() {
-    // TODO : Complete staticPlay checker
-    ourPlayOff->setInitial(false);
-}
-
-void CCoach::setDynamicPlay() {
-    // TODO : Write Dynamic Play checker
-    ourPlayOff->setInitial(false);
-}
-
-void CCoach::setFirstPlay() {
-    // TODO : Write First Play checker
-    ourPlayOff->setInitial(false);
-    firstIsFinished = false;
-}
-
 
 void CCoach::checkTransitionToForceStart() {
     Vector2D lastPos;
@@ -1045,14 +830,17 @@ void CCoach::decideStop(const QList<int> & _ourPlayers) {
 //    _ourPlayers.clear(); TODO: CHECK THIS
 }
 
-void CCoach::decideOurKickOff(const QList<int> &_ourPlayers) {
-    if (ourPlayOff->deleted) {
-        ourPlayOff->deleted = false;
-    }
+void CCoach::decideOurFreeKick(const QList<int> &_ourPlayers) {
+    if (ourPlayOff->deleted) ourPlayOff->deleted = false;
     selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, POMODE::Kickoff);
-    PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
-
+    unsigned char mode = (gameState->getState() == States::OurKickOff) ? parsian_ai_plan_request::KICKOFF
+                                                                       : parsian_ai_plan_request::INDIRECT;
+    POMode p_mode = ourPlayOff->decideMode(_ourPlayers.size(), mode);
+    if (p_mode == POMode::Static) {
+        parsian_msgs::plan_service srv{};
+        srv.request.plan_req = ourPlayOff->getRequest(_ourPlayers.size(), mode);
+        if (plan_client.call(srv)) ourPlayOff->setResponse(srv.response.the_plan);
+    }
 }
 
 void CCoach::decideTheirKickOff(const QList<int> &_ourPlayers) {
@@ -1060,30 +848,9 @@ void CCoach::decideTheirKickOff(const QList<int> &_ourPlayers) {
     firstTime = true;
 }
 
-void CCoach::decideOurDirect(const QList<int> &_ourPlayers) {
-    ROS_INFO_STREAM("inja kharab shod!");
-    if (ourPlayOff->deleted) {
-        ourPlayOff->deleted = false;
-    }
-    selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, POMODE::Direct);
-    PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
-
-}
-
 void CCoach::decideTheirDirect(const QList<int> &_ourPlayers) {
     selectedPlay = theirDirect;
     firstTime = true;
-}
-
-void CCoach::decideOurIndirect(const QList<int> &_ourPlayers) {
-    if (ourPlayOff->deleted) {
-        ourPlayOff->deleted = false;
-    }
-    selectedPlay = ourPlayOff;
-    decidePlayOff(_ourPlayers, POMODE::Indirect);
-    PDEBUG("ourplayers", _ourPlayers.size(), D_MAHI);
-
 }
 
 void CCoach::decideTheirIndirect(const QList<int> &_ourPlayers) {
@@ -1178,222 +945,8 @@ void CCoach::decideNull(const QList<int> &_ourPlayers) {
     }
 }
 
-void CCoach::initStaticPlay(const POMODE _mode, const QList<int>& _ourplayers) {
-
-    ROS_INFO("initStaticPlay: request");
-
-    switch (_mode) {
-        case POMODE::Indirect:
-            planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
-            break;
-        case POMODE::Direct:
-            planRequest.plan_req.gameMode = planRequest.plan_req.INDIRECT;
-            break;
-        case POMODE::Kickoff:
-            planRequest.plan_req.gameMode = planRequest.plan_req.KICKOFF;
-            break;
-        case POMODE::None:break;
-    }
-
-    planRequest.plan_req.ballPos.x = wm->ball->pos.x;
-    planRequest.plan_req.ballPos.y = wm->ball->pos.y;
-
-    planRequest.plan_req.playersNum = static_cast<unsigned char>(_ourplayers.size());
-
-    parsian_msgs::plan_service req{};
-    req.request = planRequest;
-
-    ROS_INFO_STREAM("--------------------------COACH: calling request");
-    if (plan_client.call(req)) {
-        std::string str = req.response.the_plan.planFile;
-        receivedPlan = req.response;
-
-        NGameOff::SPlan *thePlan = planMsgToSPlan(receivedPlan, _ourplayers.size());
-
-
-        ourPlayOff->setMasterPlan(thePlan);
-        ourPlayOff->analyseShoot(); // should call after setmasterplan
-        ourPlayOff->analysePass();  // should call after setmasterplan
-
-        matchPlan(thePlan, _ourplayers); //Match The Plan
-        checkGUItoRefineMatch(thePlan, _ourplayers);
-
-        ourPlayOff->setInitial(true);
-        ourPlayOff->lockAgents = true;
-        gotplan = true;
-
-        ROS_INFO_STREAM("initStaticPlay: Done :) response: %s" << str);
-        return;
-
-    }
-
-    gotplan = false;
-
-}
-
-void CCoach::checkGUItoRefineMatch(SPlan *_plan, const QList<int>& _ourplayers) {
-    if (conf.IDBasePasser && _ourplayers.contains(conf.PasserID)) {
-        int temp = _plan->matching.common->matchedID.value(0);
-        _plan->matching.common->matchedID[0] = _ourplayers.indexOf(conf.PasserID);
-        for (int i = 1; i < _plan->matching.common->matchedID.size(); i++) {
-            if (_plan->matching.common->matchedID[i] == _ourplayers.indexOf(conf.PasserID)) {
-                _plan->matching.common->matchedID[i] = temp;
-                break;
-            }
-        }
-    }
-
-    if (conf.IDBaseOneToucher
-        && _ourplayers.contains(conf.OneToucherID)) {
-        int temp = _plan -> matching.common -> matchedID.value(1);
-        _plan -> matching.common -> matchedID[1] = _ourplayers.indexOf(conf.OneToucherID);
-        for (int i = 2; i < _plan->matching.common->matchedID.size(); i++) {
-            if (_plan->matching.common->matchedID[i] == _ourplayers.indexOf(conf.OneToucherID)) {
-                _plan->matching.common->matchedID[i] = temp;
-                break;
-            }
-        }
-    }
-
-    qDebug() << "[coach] final Match : " << _plan->matching.common->matchedID;
-}
-
-
-NGameOff::SPlan* CCoach::planMsgToSPlan(parsian_msgs::plan_serviceResponse planMsg, int _currSize) {
-    auto *plan = new NGameOff::SPlan();
-
-    plan->common.currentSize = _currSize;
-    plan->execution.symmetry = (planMsg.the_plan.symmetry) ? -1 : 1;
-
-    plan->common.lastDist   = planMsg.the_plan.lastDist;
-
-    plan->matching.initPos.ball.x = planMsg.the_plan.ballInitPos.x;
-    plan->matching.initPos.ball.y = planMsg.the_plan.ballInitPos.y;
-
-    for (int j = 0; j < planMsg.the_plan.agentSize; j++) {
-        plan->matching.initPos.agents.push_back(planMsg.the_plan.agentInitPos[j]);
-    }
-
-    QList< QList<playOffRobot> > agpln;
-    for (unsigned int i = 0; i < planMsg.the_plan.agentSize; i++) {
-        ROS_INFO_STREAM("agent " << i << " pos " << planMsg.the_plan.agents.at(i).posSize);
-        QList<playOffRobot>  ag;
-        ag.clear();
-        for (unsigned int j = 0; j < planMsg.the_plan.agents.at(i).posSize; j++) {
-
-            ROS_INFO_STREAM("agent " << i << " pos " << planMsg.the_plan.agents.at(i).posSize << "-> " << j);
-            auto* po = new playOffRobot();
-
-            po->pos.x = planMsg.the_plan.agents.at(i).positions.at(j).pos.x;
-            po->pos.y = planMsg.the_plan.agents.at(i).positions.at(j).pos.y;
-            po->angle = (AngleDeg)planMsg.the_plan.agents.at(i).positions.at(j).angel;
-            po->tolerance = planMsg.the_plan.agents.at(i).positions.at(j).tolerance;
-
-
-
-            QList<playOffSkill> sk;
-            sk.clear();
-            for (unsigned int k = 0; k < planMsg.the_plan.agents.at(i).positions.at(j).skillSize; k++) {
-                auto *p = new playOffSkill();
-                p->data[0] = static_cast<int>(planMsg.the_plan.agents.at(i).positions.at(j).skills.at(k).primary);
-                p->data[1] = static_cast<int>(planMsg.the_plan.agents.at(i).positions.at(j).skills.at(k).secondry);
-                p->targetAgent = static_cast<int>(planMsg.the_plan.agents.at(i).positions.at(j).skills.at(k).agent);
-                p->targetIndex = static_cast<int>(planMsg.the_plan.agents.at(i).positions.at(j).skills.at(k).index);
-                p->name = strToEnum(planMsg.the_plan.agents.at(i).positions.at(j).skills.at(k).name);
-                sk.append(*p);
-            }
-            po->skill = sk;
-            ag.append(*po);
-        }
-        ROS_INFO_STREAM("msg: plan agent" << i << " : " << ag.size());
-        agpln.append(ag);
-
-    }
-    plan->execution.AgentPlan = agpln;
-
-    return plan;
-}
-
-POFFSKILL CCoach::strToEnum(const std::string& _str) {
-    if (_str == "NoSkill") {
-        return POFFSKILL::None;
-    } else if (_str == "Mark") {
-        return POFFSKILL::Mark;
-    } else if (_str == "Goalie") {
-        return POFFSKILL::Goalie;
-    } else if (_str == "Support") {
-        return POFFSKILL::Support;
-    } else if (_str == "Defense") {
-        return POFFSKILL::Defense;
-    } else if (_str == "Position") {
-        return POFFSKILL::Position;
-    } else if (_str == "MoveSkill") {
-        return POFFSKILL::Move;
-    } else if (_str == "PassSkill") {
-        return POFFSKILL::Pass;
-    } else if (_str == "OneTouchSkill") {
-        return POFFSKILL::OneTouch;
-    } else if (_str == "ChipToGoalSkill") {
-        return POFFSKILL::ChipToGoal;
-    } else if (_str == "ShotToGoalSkill") {
-        return POFFSKILL::ShotToGoal;
-    } else if (_str == "ReceivePassSkill") {
-        return POFFSKILL::ReceivePass;
-    } else if (_str == "ReceivePassIASkill") {
-        return POFFSKILL::ReceivePassIA;
-    } else {
-        return POFFSKILL::None;
-    }
-}
-
-void CCoach::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplayers) {
-
-    MWBM matcher;
-    matcher.create(_plan->common.currentSize - 1, _ourplayers.size() - 1);
-
-    int matchedIndex = 0;
-    double weight = 0;
-    double minweight = 10000000;
-
-    for (int j = 0; j < _ourplayers.size(); j++) {
-        weight = agents[_ourplayers.at(j)]->pos().dist(wm->ball->pos);
-        if (weight < minweight) {
-            minweight = weight;
-            matchedIndex = j;
-        }
-    }
-    _plan->common.matchedID.insert(0, matchedIndex);
-
-    QList<int> othersmatch;
-    for (int i = 1; i < _plan->common.currentSize; i++) {
-        int k = 0;
-        for (int j = 0; j < _ourplayers.size(); j++) {
-            if (j != matchedIndex) {
-                weight = _plan->matching.initPos.agents.at(i).dist(agents[_ourplayers.at(j)]->pos());
-                matcher.setWeight(i - 1, k, -(weight));
-                othersmatch.append(j);
-                k++;
-            }
-        }
-    }
-
-    int nmatchedID;
-    qDebug() << "[Coach] matched plan with : " << matcher.findMatching();
-    for (int i = 1; i < _plan->common.currentSize; i++) {
-        nmatchedID = matcher.getMatch(i - 1);
-        nmatchedID = othersmatch.at(nmatchedID);
-        _plan->common.matchedID.insert(i, nmatchedID);
-
-    }
-    qDebug() << "[Coach] matched by" << _plan->common.matchedID;
-}
-
 void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
     plan_client = _plan_client;
-}
-
-parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
-    return receivedPlan;
 }
 
 int CCoach::findGoalie() {
