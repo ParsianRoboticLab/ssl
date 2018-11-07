@@ -17,7 +17,7 @@ void COurPenaltyShootout::reset()
 
 void COurPenaltyShootout::init(const QList<Agent*>& _agents)
 {
-    setAgentsID(_agents);
+    setAgents(_agents);
 }
 
 void COurPenaltyShootout::setPlaymake(Agent* _playmakeAgent)

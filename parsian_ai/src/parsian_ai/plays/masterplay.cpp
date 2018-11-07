@@ -20,13 +20,9 @@ void CMasterPlay::initMaster() {
     blockAgent = nullptr;
     playMakeAgent = nullptr;
     positionAgents.clear();
-//    if (gameState->isStart()) {
-//        markAgents.clear();
-//    }
     stopAgents.clear();
     masterStaticPoints.clear();
     staticInited = false;
-    //defenseN = 2;
     formationName = "";
 
 
@@ -43,7 +39,7 @@ bool CMasterPlay::canScore() {
 }
 
 
-void CMasterPlay::setAgentsID(const QList<Agent*>& _agentsID) {
+void CMasterPlay::setAgents(const QList<Agent *> &_agentsID) {
     agents.clear();
     agents.append(_agentsID);
 }

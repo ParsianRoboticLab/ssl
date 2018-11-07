@@ -13,7 +13,7 @@ void CHalftimeLineup::reset(){
 
 
 void CHalftimeLineup::init(const QList<Agent *> &_agents) {
-    setAgentsID(_agents);
+    setAgents(_agents);
     initMaster();
 
 }
