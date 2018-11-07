@@ -1,2 +1,3 @@
+uint32 command_number
 ssl_refree_command command
 vector2D ballPlacementPos
