@@ -23,7 +23,7 @@
 #define __GVECTOR_H__
 
 #include <math.h>
-#include "util.h"
+#include <parsian_util/core/util.h>
 
 #define V3COMP(p) p.x,p.y,p.z
 #define V2COMP(p) p.x,p.y
@@ -33,7 +33,7 @@ namespace GVector {
 //  Vector3D Class
 //=====================================================================//
 
-#define EPSILON (1.0E-10)
+#define GEPSILON (1.0E-10)
 
 template <class num>
 class vector3d{
