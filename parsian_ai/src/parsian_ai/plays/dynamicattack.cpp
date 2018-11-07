@@ -1712,17 +1712,14 @@ Vector2D CDynamicAttack::getBestPosToShootToGoal(Vector2D from, double &regionWi
     double BeginPos = 0, EndPos = 0;
     Vector2D MaxRegionCenter(Vector2D::ERROR_VALUE, Vector2D::ERROR_VALUE), RegionCenterTemp;
     bool WasLastPosClear = false;
-
-    for (double y = goalR.y; y <= goalL.y; y += StepOnGoal) {
+    auto totalSteps = static_cast<size_t>((goalL.y - goalR.y) / StepOnGoal);
+    for (size_t step{0}; step < totalSteps; step++) {
+        const double y = goalR.y + step * StepOnGoal;
         Vector2D pos(goal.x, y);
-        if (WasLastPosClear == false)
+        if (!WasLastPosClear)
             BeginPos = y;
 
-        if (this->isPathClear(pos, from, (ROBOT_RADIUS + 2 * CBall::radius), true)) {
-            WasLastPosClear = true;
-            //            draw(Segment2D(from,pos) , "white");
-        } else
-            WasLastPosClear = false;
+        WasLastPosClear = this->isPathClear(pos, from, (ROBOT_RADIUS + 2 * CBall::radius), true);
         EndPos = y;
         if (WasLastPosClear) {
             RegionCenterTemp = Segment2D(goalL, goalR).intersection(Line2D(from, (from + Vector2D(
@@ -1964,8 +1961,11 @@ Vector2D CDynamicAttack::getEmptyTarget(const Vector2D &_position, const double 
     }
     if (!opp)
         finalTargets.append(tempTarget);
-    for (double dist = 0.2; dist <= _radius; dist += 0.2) {
-        for (double ang = -180.0; ang <= 180.0; ang += 18.0 / dist) {
+    for (int dist_step = 1; dist_step < (_radius/0.2) ; dist_step++) {
+        auto dist = dist_step * 0.2;
+
+        for (size_t ang_step = 0; ang_step <= 20*dist; ang_step ++) {
+            auto ang = -180 + 18.0 *ang_step / dist;
             opp = false;
             tempTarget = _position + Vector2D::polar2vector(dist, ang);
             for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
