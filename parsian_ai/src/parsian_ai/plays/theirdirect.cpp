@@ -12,8 +12,7 @@ void CTheirDirect::reset() {
 
 }
 
-void CTheirDirect::init(const QList<Agent*>& _agents) {
-    setAgents(_agents);
+void CTheirDirect::init() {
     initMaster();
 
 //  if( knowledge->getLastPlayExecuted() != TheirDirectPlay ){

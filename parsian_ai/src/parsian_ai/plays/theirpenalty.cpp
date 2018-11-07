@@ -16,8 +16,7 @@ void CTheirPenalty::reset() {
     executedCycles = 0;
 }
 
-void CTheirPenalty::init(const QList<Agent*>& _agents) {
-    setAgents(_agents);
+void CTheirPenalty::init() {
 }
 
 void CTheirPenalty::execute_x() {

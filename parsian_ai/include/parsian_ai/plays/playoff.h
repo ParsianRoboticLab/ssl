@@ -20,7 +20,7 @@ public:
     CPlayOff();
     ~CPlayOff() override;
     void execute_x() override;
-    void init(const QList <Agent*>& _agents) override;
+    void init() override;
 
     QString whoami() override { return "PlayOff"; }
     bool deleted;
@@ -28,9 +28,11 @@ public:
 
     parsian_ai_plan_request getRequest(const int& _agentSize, const unsigned char& mode);
     void setResponse(const parsian_plan& _plan);
-    POMode decideMode(const int& _agentSize, const unsigned char& _mode);
+    void decideMode(const int& _agentSize, const unsigned char& _mode);
+    POMode getMode();
+    void setPlanClient(ros::ServiceClientPtr _client);
 private:
-
+    ros::ServiceClientPtr client;
     CStaticPlayOff *staticPlayOff;
     CDynamicPlayoff *dynamicPlayoff;
 

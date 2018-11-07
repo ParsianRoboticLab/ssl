@@ -15,9 +15,7 @@ void COurPenalty::reset() {
     executedCycles = 0;
 }
 
-void COurPenalty::init(const QList<Agent*>& _agents) {
-    setAgents(_agents);
-    ROS_INFO_STREAM("penalty: init our agents");
+void COurPenalty::init() {
 }
 
 void COurPenalty::setPlaymake(Agent* _playmakeAgent)

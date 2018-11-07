@@ -10,8 +10,7 @@ void CTheirKickOff::reset() {
     executedCycles = 0;
 }
 
-void CTheirKickOff::init(const QList<Agent*>& _agents) {
-    setAgents(_agents);
+void CTheirKickOff::init() {
     initMaster();
 
 //  if( knowledge->getLastPlayExecuted() != TheirKickOffPlay ){
