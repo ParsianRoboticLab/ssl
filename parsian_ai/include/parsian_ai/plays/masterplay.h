@@ -57,7 +57,7 @@ protected:
     /*static*/ CRoleBlock blockRole;
 
     void initMaster();
-    void setAgentsID(const QList <Agent*>& _agentsID);
+    void setAgents(const QList<Agent *> &_agentsID);
     void setFormation(QString _formationName);
     void setStaticPoints(QList< holdingPoints > _staticPoints);
     void resetPositioning();
