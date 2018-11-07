@@ -190,6 +190,9 @@ void CCoach::decidePreferredDefenseAgentsCount() {
             preferedDefenseCounts = conf.Defense;
         }
     } else if (gameState->isStart()) {
+        //todo remove this
+        preferedDefenseCounts = 1;
+        return;
         if (know->variables["transientFlag"].toBool())
         {
             //// Add Playmake after time
@@ -807,7 +810,7 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
 
         if (pushingPenalty.contains(wm->ball->pos)) {
             dynamicAttack->setDirectShot(true);
-        } else if (mostPossible > shotToGoalthr) {
+        } else if (mostPossible > shotToGoalthr and false) {
             dynamicAttack->setDirectShot(true);
             shotToGoalthr = conf.DirectTrsh * .6;
         } else {

@@ -1,7 +1,11 @@
 #include <parsian_ai/plays/dynamicattack.h>
+#include <parsian_ai/plays/plays.h>
 
-CDynamicAttack::CDynamicAttack() {
+const int CDynamicAttack::REGION_NUM = 7;
+
+CDynamicAttack::CDynamicAttack(){
     // NEW PASS
+
     createRegions();
     clearRobotsRegionsWeights();
     PMfromCoach = true;
@@ -102,6 +106,7 @@ void CDynamicAttack::reset() {
 
 void CDynamicAttack::execute_x() {
     ROS_INFO_STREAM("Dynamic Attack : " << agents.size());
+    ROS_INFO_STREAM("aliiiiiiiiiiiiii" <<wm->field->oppGoalL().x<<"   "<<wm->field->oppGoalL().y);
     globalExecute(agents.size());
     for (auto &p : semiDynamicPosition) {
         drawer->draw(Circle2D(p, .1), QColor(Qt::red), true);
@@ -349,7 +354,8 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
     for (size_t i = 0; i < 8; i++) {
         mahiAgentsID[i] = -1;
     }
-
+    for (int i=0;i<REGION_NUM;i++ )
+        drawer->draw(regions[i].rectangle);
     makePlan(agentSize);
 
 //    if (agentSize > 0 && (lastAgentCount != agentSize || isPlayMakeChanged())) {
@@ -922,9 +928,8 @@ double fRand(double fMin, double fMax) {
 void CDynamicAttack::chooseReceiverAndBestPosForPass() {
     if (currentPlan.playmake.skill == PlayMakeSkill::Pass) {
         int rand_num = 0;
-
-            rand_num = rand() % std::min(agents.length(),RIGION_NUM);
-            currentPlan.passPos = regions[regionPriority[rand_num]].rectangle.center();
+        rand_num = std::rand() % std::min(agents.length(),REGION_NUM);
+        currentPlan.passPos = regions[regionPriority[rand_num]].rectangle.center();
     }
 
 //    optimalPositionsForRecivers.clear();
@@ -1536,27 +1541,28 @@ bool CDynamicAttack::isPlanDone() {
 }
 
 void CDynamicAttack::createRegions() {
+    regions = new FieldRegion[REGION_NUM];
     // <make rectangles>
     QList<Rect2D> rectangles;
     Size2D rectSize1(wm->field->_FIELD_WIDTH / 6, (wm->field->_FIELD_HEIGHT - wm->field->_PENALTY_WIDTH) / 2);
     Size2D rectSize2((wm->field->_FIELD_WIDTH / 3 - wm->field->_PENALTY_DEPTH) / 2, wm->field->_PENALTY_WIDTH);
     Size2D rectSize3(wm->field->_FIELD_WIDTH / 6, wm->field->_FIELD_HEIGHT);
-    // region 1,2,3,4
-    rectangles.append(Rect2D(wm->field->oppGoalL() - Vector2D(rectSize1.length(), 0), rectSize1));
-    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(rectSize1.length(), 0), rectSize1));
-    rectangles.append(Rect2D(wm->field->oppGoalL() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
-    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
-    // region 5,6
-    rectangles.append(Rect2D(wm->field->oppGoalR() - Vector2D(rectSize2.length(), 0), rectSize2));
-    rectangles.append(Rect2D(wm->field->oppGoalR() - Vector2D(2 * rectSize2.length(), 0), rectSize2));
-    // region 7
-    rectangles.append(Rect2D(wm->field->center() - Vector2D(0, rectSize3.width() / 2), rectSize3));
+    // region 0,1,2,3
+    rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(rectSize1.length(), 0), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(rectSize1.length(), -rectSize1.width()), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(2 * rectSize1.length(), -rectSize1.width()), rectSize1));
+    // region 4,5
+    rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(rectSize2.length() + wm->field->_PENALTY_DEPTH, rectSize1.width()), rectSize2));
+    rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(2 * rectSize2.length() + wm->field->_PENALTY_DEPTH, rectSize1.width()), rectSize2));
+    // region 6
+    rectangles.append(Rect2D(wm->field->center() + Vector2D(0, rectSize3.width() / 2), rectSize3));
 
 
     // </make rectangles>
 
     // <make eval points>
-    QList<Vector2D> points[RIGION_NUM];
+    QList<Vector2D> points[REGION_NUM];
     for (int i{0}; i < rectangles.length(); i++) {
         if (rectangles[i].size().width() > 1 && rectangles[i].size().length() > 1) {
 
@@ -1579,7 +1585,7 @@ void CDynamicAttack::createRegions() {
 
     // <fill the regions>
     int _id = 0;
-    for (int i{0}; i < RIGION_NUM; i++) {
+    for (int i{0}; i < REGION_NUM; i++) {
         regions[i] = FieldRegion(rectangles[i], points[i]);
         regions[i].id = _id++;
     }
@@ -1590,7 +1596,7 @@ void CDynamicAttack::chooseBestPositons_new() {
 
     // get the search regions
     QList<Rect2D> searchRegions;
-    for (int i{0}; i < RIGION_NUM; i++) {
+    for (int i{0}; i < REGION_NUM; i++) {
         searchRegions.append(regions[i].rectangle);
     }
     QList<Rect2D> avoidRects;
@@ -1599,7 +1605,7 @@ void CDynamicAttack::chooseBestPositons_new() {
 
     int ballR = -1;
     regionPriority.clear();
-    for (int i{0}; i < RIGION_NUM; i++)
+    for (int i{0}; i < REGION_NUM; i++)
         if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
     switch (ballR) {
         case 0:
@@ -1631,7 +1637,7 @@ void CDynamicAttack::chooseBestPositons_new() {
 }
 
 int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos) {
-    for (int i{0}; i < RIGION_NUM; i++) {
+    for (int i{0}; i < REGION_NUM; i++) {
         if (regions[i].rectangle.contains(agentPos))
             return regions[i].id;
     }
@@ -1640,10 +1646,6 @@ int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos) {
 
 void CDynamicAttack::assignId_new() {
     if (regionPriority.isEmpty() || playmake == nullptr) return;
-    QList<Rect2D> searchRegions;
-    for (int i{0}; i < RIGION_NUM; i++) {
-        searchRegions.append(regions[i].rectangle);
-    }
     QList<int> robotIDs;
     MWBM matcher;
     for (const auto &a : agents) {
@@ -1654,21 +1656,21 @@ void CDynamicAttack::assignId_new() {
     for (int i{0}; i < robotIDs.count(); i++) {
         for (int j{0}; j < robotIDs.count(); j++) {
             auto agentPos = wm->our[robotIDs[i]]->pos;
-            matcher.setWeight(i, j, -1 * agentPos.dist(searchRegions[regionPriority[i]].center()));
+            matcher.setWeight(i, j, agentPos.dist(regions[regionPriority[i]].rectangle.center()));
         }
     }
-    matcher.findMatching();
+    matcher.findMaxMinMatching();
     mahiPositionAgents.clear();
     matchingIDs.clear();
     matchingRegions.clear();
     semiDynamicPosition.clear();
     for (int i{0}; i < 8; i++) { mahiAgentsID[i] = -1; }
     for (int v = 0; v < robotIDs.count(); v++) {
-        mahiAgentsID[v] = /*matcher.getMatch(v);*/robotIDs[v];
+        mahiAgentsID[v] = matcher.getMatch(v);
         matchingIDs.append(robotIDs.at(v));
         matchingRegions.append(matcher.getMatch(v));
         // todo : find best pos in region from searchRegions.points
-        semiDynamicPosition.append(searchRegions[regionPriority[matcher.getMatch(v)]].center());
+        semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
         for (auto &agent : agents) {
             if (agent->id() == robotIDs.at(v)) {
                 mahiPositionAgents.append(agent);
