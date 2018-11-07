@@ -1,3 +1,5 @@
+#include <utility>
+
 ////
 //// Created by parsian-ai on 9/22/17.
 ////
@@ -36,6 +38,9 @@ CCoach::CCoach(Agent**_agents)
     //Stop
     stopPlay            = new CStopPlay();
 
+
+    ourPlayOff->setPlanClient(plan_client);
+
     for (auto &stopRole : stopRoles) {
         stopRole = new CRoleStop(nullptr);
     }
@@ -53,7 +58,6 @@ CCoach::CCoach(Agent**_agents)
 
     //    m_planLoader = new CLoadPlayOffJson(QDir::currentPath() + QString("/playoff"));
     goalieAgent = nullptr;
-    firstPlay = true;
     preferredDefenseCounts = 2;
     selectedPlay = stopPlay;
     for (int &i : faultDetectionCounter) {
@@ -63,7 +67,6 @@ CCoach::CCoach(Agent**_agents)
 
     haltAction = new NoAction;
 
-    gotplan = true;
 }
 
 CCoach::~CCoach() {
@@ -491,12 +494,10 @@ void CCoach::decideAttack() {
         case States::Halt:
             decideHalt(ourPlayersID);
             return;
-            break;
         case States::Stop:
             ourBallPlacement->first = true;
             decideStop(ourPlayersID);
             return;
-            break;
         case States::OurKickOff:
         case States::OurDirectKick:
         case States::OurIndirectKick:
@@ -549,9 +550,11 @@ void CCoach::decideAttack() {
     for (auto& ourPlayer : ourPlayersID) {
         ourAgents.append(agents[ourPlayer]);
     }
-
-    selectedPlay->init(ourAgents);
-    selectedPlay->execute();
+    if (firstTime) {
+        selectedPlay->init();
+        firstTime = false;
+    }
+    selectedPlay->execute(ourAgents);
 
     lastPlayers.clear();
     lastPlayers.append(ourPlayersID);
@@ -788,11 +791,6 @@ void CCoach::execute()
 
 }
 
-void CCoach::setFastPlay() {
-    // TODO : Write Fast Play checker
-
-}
-
 DefensePlan& CCoach::getDefense() {
     return selectedPlay->defensePlan;
 }
@@ -814,8 +812,10 @@ void CCoach::decideHalt(QList<int>& _ourPlayers) {
 }
 
 void CCoach::decideStop(const QList<int> & _ourPlayers) {
-    firstTime = true;
-    firstPlay = true;
+    if (!firstTime) { // TODO: Reset Other plays here
+        ourPlayOff->reset();
+        firstTime = true;
+    }
     cyclesWaitAfterballMoved = 0;
     lastPlayMake = -1;
     if (!ourPlayOff->deleted) {
@@ -833,29 +833,18 @@ void CCoach::decideStop(const QList<int> & _ourPlayers) {
 void CCoach::decideOurFreeKick(const QList<int> &_ourPlayers) {
     if (ourPlayOff->deleted) ourPlayOff->deleted = false;
     selectedPlay = ourPlayOff;
-    unsigned char mode = (gameState->getState() == States::OurKickOff) ? parsian_ai_plan_request::KICKOFF
-                                                                       : parsian_ai_plan_request::INDIRECT;
-    POMode p_mode = ourPlayOff->decideMode(_ourPlayers.size(), mode);
-    if (p_mode == POMode::Static) {
-        parsian_msgs::plan_service srv{};
-        srv.request.plan_req = ourPlayOff->getRequest(_ourPlayers.size(), mode);
-        if (plan_client.call(srv)) ourPlayOff->setResponse(srv.response.the_plan);
-    }
 }
 
 void CCoach::decideTheirKickOff(const QList<int> &_ourPlayers) {
     selectedPlay = theirKickOff;
-    firstTime = true;
 }
 
 void CCoach::decideTheirDirect(const QList<int> &_ourPlayers) {
     selectedPlay = theirDirect;
-    firstTime = true;
 }
 
 void CCoach::decideTheirIndirect(const QList<int> &_ourPlayers) {
     selectedPlay = theirIndirect;
-    firstTime = true;
 }
 
 void CCoach::decideOurPenalty(QList<int> &_ourPlayers) {
@@ -874,17 +863,14 @@ void CCoach::decideOurPenalty(QList<int> &_ourPlayers) {
         ourPenalty->setState(PenaltyState::Kicking);
     }
     DBUG("penalty", D_MHMMD);
-    firstTime = true;
 }
 
 void CCoach::decideTheirPenalty(const QList<int> &_ourPlayers) {
     ROS_INFO_STREAM("penalty: decideourpenalty");
     selectedPlay = theirPenalty;
-    firstTime = true;
 }
 
-void CCoach::decideOurPenaltyshootout(QList<int>& _ourPlayers)
-{
+void CCoach::decideOurPenaltyshootout(QList<int>& _ourPlayers) {
     ROS_INFO_STREAM("shootout: decideourpenalty");
     selectedPlay = ourPenaltyShootout;
     if (0 <= playmakeId && playmakeId <= 11) {
@@ -901,14 +887,11 @@ void CCoach::decideOurPenaltyshootout(QList<int>& _ourPlayers)
         ourPenaltyShootout->setState(PenaltyShootoutState::Goaling);
     }
     DBUG("penalty", D_MHMMD);
-    firstTime = true;
 }
 
-void CCoach::decideTheirPenaltyshootout(const QList<int> &)
-{
+void CCoach::decideTheirPenaltyshootout(const QList<int> &) {
     ROS_INFO_STREAM("penalty: decideourpenalty");
     selectedPlay = theirPenalty;
-    firstTime = true;
 }
 
 void CCoach::decideStart(QList<int> &_ourPlayers) {
@@ -938,15 +921,14 @@ void CCoach::decideHalfTimeLineUp(const QList<int> &_ourPlayers) {
 
 void CCoach::decideNull(const QList<int> &_ourPlayers) {
     selectedPlay->markAgents.clear();
-    firstTime = true;
     if (!ourPlayOff->deleted) {
         ourPlayOff->reset();
         ourPlayOff->deleted = true;
     }
 }
 
-void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
-    plan_client = _plan_client;
+void CCoach::setPlanClient(ros::ServiceClientPtr _plan_client) {
+    plan_client = std::move(_plan_client);
 }
 
 int CCoach::findGoalie() {
@@ -961,12 +943,6 @@ int CCoach::findGoalie() {
     }
     ROS_INFO_STREAM("Goalie ID: " << preferredGoalieID);
     return preferredGoalieID;
-}
-
-bool CCoach::isFastPlay() {
-    if (conf.UseFastPlay) {
-        return true; // TODO : fix this by considering that opp agents
-    }
 }
 
 bool CCoach::useGoalieInPlayOff() {
