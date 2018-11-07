@@ -33,7 +33,6 @@ private:
     void doNotKick();
     void validateKickerState();
     bool isOppPenaltyMode();
-    bool isJTurnMode();
 
 
     CSkillGotoPointAvoid *gpa;
