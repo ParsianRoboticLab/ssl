@@ -17,7 +17,7 @@ void AI::execute() {
 }
 
 parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
-    if (wm->our.data->activeAgents.contains(robotID) != nullptr) {
+    if (wm->our.data->activeAgents.contains(robotID) != false) {
         if (soccer->agents[robotID]->action != nullptr) {
             if (soccer->agents[robotID]->action->getActionName() == KickAction::SActionName()) {
                 parsian_msgs::parsian_skill_kick *task;
@@ -74,26 +74,24 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 void AI::updateRobotFaults(const parsian_msgs::parsian_robot_fault & _rs)
 {
     if(_rs.select == 0)
-        {
-            soccer->agents[_rs.robot_id]->fault = false;
-            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
-        }
-        if(_rs.select == 1)
-        {
-            ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
-        }
-        if(_rs.select == 2)
-        {
-            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " damaged");
-            soccer->agents[_rs.robot_id]->fault = true;
-            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
-        }
-        if(_rs.select == 3)
-        {
-            //ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " destroyed");
-            soccer->agents[_rs.robot_id]->fault = true;
-            soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
-        }
+    {
+        soccer->agents[_rs.robot_id]->fault = false;
+        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
+    }
+    if(_rs.select == 1)
+    {
+        ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
+    }
+    if(_rs.select == 2)
+    {
+        soccer->agents[_rs.robot_id]->fault = true;
+        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
+    }
+    if(_rs.select == 3)
+    {
+        soccer->agents[_rs.robot_id]->fault = true;
+        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
+    }
 }
 
 void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {
@@ -109,7 +107,7 @@ void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
 }
 
 void AI::forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command){
-    gameState->updateCommand(_command->command);
+    gameState->setForceRefree(_command);
     wm->setBallplacementPoin(_command->ballPlacementPos);
 }
 
