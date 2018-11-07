@@ -42,11 +42,9 @@ private:
 
     QList<Agent *> agents;
     int dynamicMatch[_NUM_PLAYERS];
-    CRolePlayOff *newRoleAgent[_NUM_PLAYERS];
+    CRolePlayOff *roleAgents[_NUM_PLAYERS];
 
     void kickoffPositioning(int playersNum);
-
-    void firstExecute();
 
     void firstPlayForOppCorner(int _agentSize);
 
@@ -66,6 +64,12 @@ private:
     void movePositioning();
 
     void donePositioning();
+
+    int shotBlockers();
+
+    int passBlockers();
+
+    double distAverageOppMark();
 };
 
 
