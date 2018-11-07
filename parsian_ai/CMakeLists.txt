@@ -119,7 +119,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/fault.cpp
 		src/${PROJECT_NAME}/roles/dynamicrole.cpp
 		src/${PROJECT_NAME}/roles/playmake.cpp
-        )
+		src/parsian_ai/plays/playoff/CDynamicPlayOff.cpp include/parsian_ai/plays/playoff/CDynamicPlayOff.h)
 
 add_library(${PROJECT_NAME}_util
 		src/parsian_ai/util/defpos.cpp
