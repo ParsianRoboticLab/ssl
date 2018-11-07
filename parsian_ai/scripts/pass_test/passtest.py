@@ -207,8 +207,7 @@ class PassTest:
             )
             print("kick Done")
             return True
-        else:
-            return False
+        return False
 
     def do_pass(self):
         task = parsian_robot_task()

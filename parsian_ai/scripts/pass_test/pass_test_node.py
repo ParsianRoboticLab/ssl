@@ -1,15 +1,14 @@
 #!/usr/bin/python
 import rospy
-from parsian_msgs.msg import parsian_robot_command
 from parsian_msgs.msg import parsian_robot_task
 from parsian_msgs.msg import parsian_world_model
-from passtest import *
+from passtest import PassTest
 
 pt = PassTest()
 task_pub = []
 
+
 def wmCallback(wm):
-    global pt
     pt.update_wm(wm)
     tasks = pt.get_tasks()
     for task in tasks:
