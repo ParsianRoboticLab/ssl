@@ -1,8 +1,4 @@
-
 #include <parsian_ai/plays/playoff/playoff.h>
-
-#include "parsian_ai/plays/playoff/playoff.h"
-
 
 CPlayOff::CPlayOff() : CMasterPlay() {
     blockerState = 0;
@@ -919,7 +915,7 @@ bool CPlayOff::isFinalShotDone() {
         return false;
     }
 
-    Agent* tAgent = getAgent(tLastAgent); // TODO: FIX IT NOW
+    Agent* tAgent = getAgent(tLastAgent);
 
     Circle2D cir(tAgent->pos() + tAgent->dir().norm() * 0.08, 0.16);
     Circle2D cir2(tAgent->pos() + tAgent->dir().norm() * 0.20, 0.40);
@@ -1084,7 +1080,7 @@ void CPlayOff::fillRoleProperties() {
         if (masterPlan->common.matchedID.contains(i) && !roleAgent[i]->isRoleUpdated()) {
 
             roleAgent[i]->setFirstMove(positionAgent[i].stateNumber == 0);
-            roleAgent[i]->setAgent(agents[i]);
+            roleAgent[i]->setAgent(getAgent(i));
 
             //// Handle OneTouch Faster
             if (positionAgent[i].stateNumber + 1 < positionAgent[i].positionArg.size()) {
