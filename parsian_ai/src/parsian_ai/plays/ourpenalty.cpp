@@ -16,7 +16,7 @@ void COurPenalty::reset() {
 }
 
 void COurPenalty::init(const QList<Agent*>& _agents) {
-    setAgentsID(_agents);
+    setAgents(_agents);
     ROS_INFO_STREAM("penalty: init our agents");
 }
 
