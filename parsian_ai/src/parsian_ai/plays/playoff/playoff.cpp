@@ -36,6 +36,7 @@ void CPlayOff::init() {
         case POMode::None:
             break;
         case POMode::First:
+            firstPlayoff->init(agents);
             break;
         case POMode::Dynamic:
             dynamicPlayoff->init(agents);
@@ -55,6 +56,7 @@ void CPlayOff::execute_x() {
         case POMode::None:
             break;
         case POMode::First:
+            firstPlayoff->execute();
             break;
         case POMode::Dynamic:
             dynamicPlayoff->execute();
