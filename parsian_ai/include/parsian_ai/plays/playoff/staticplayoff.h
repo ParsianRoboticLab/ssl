@@ -24,22 +24,11 @@ enum class POFFSKILL {
     Move = 6,
     ReceivePassIA = 7,
     //////////// Afterlife Roles
-            Defense = 8,
+    Defense = 8,
     Support = 9,
     Position = 10,
     Goalie = 11,
     Mark = 12
-};
-
-enum SHOT_SPOT {
-    EveryWhere  = 0b11111111,
-    KillSpot    = 0b00000001,
-    CloseNear   = 0b00000010,
-    CloseCenter = 0b00000100,
-    CloseFar    = 0b00001000,
-    FarNear     = 0b00010000,
-    FarCenter   = 0b00100000,
-    FarFar      = 0b01000000
 };
 
 struct playOffSkill {
@@ -111,78 +100,49 @@ struct SBallOwner {
 };
 
 ////Play Off Plans
-namespace NGameOff {
-    enum EMode {
-        FirstPlay   = 0,
-        FastPlay    = 1,
-        StaticPlay  = 2,
-        DynamicPlay = 3
+
+struct AgentPoint {
+
+    AgentPoint() {
+        id    = -1;
+        state = -1;
+    }
+
+    AgentPoint(int id, int state) {
+        this->id    = id;
+        this->state = state;
+    }
+
+    int id;
+    int state;
+};
+
+struct SExecution {
+
+    QList< QList<playOffRobot> > AgentPlan;
+    int symmetry     =  1;
+    int theLastAgent = -1;
+    int theLastState = -1;
+    int passCount = -1;
+    QList<AgentPoint> passer;
+    QList<AgentPoint> receiver;
+};
+
+
+struct SPlan {
+    struct SInitPos {
+        Vector2D ball;
+        QList<Vector2D> agents;
     };
+    SInitPos initPos;
+    int currentSize;
+    double lastDist;
+    QMap<int, int> matchedID;
+    SExecution execution;
 
-    struct SCommon {
-        int currentSize;
-        double lastDist;
-        QMap<int, int> matchedID;
+};
 
-    };
-
-    struct SMatching {
-        struct SInitPos {
-            Vector2D ball;
-            QList<Vector2D> agents;
-        };
-        SInitPos initPos;
-        SCommon *common;
-    };
-
-    struct AgentPoint {
-
-        AgentPoint() {
-            id    = -1;
-            state = -1;
-        }
-
-        AgentPoint(int id, int state) {
-            this->id    = id;
-            this->state = state;
-        }
-
-        int id;
-        int state;
-    };
-
-    struct SExecution {
-
-        QList< QList<playOffRobot> > AgentPlan;
-        int symmetry     =  1;
-        int theLastAgent = -1;
-        int theLastState = -1;
-        int passCount = -1;
-        QList<AgentPoint> passer;
-        QList<AgentPoint> receiver;
-    };
-
-
-    struct SPlan {
-
-        SPlan() {
-            matching.common  = &common;
-        }
-
-        SCommon    common;
-        SMatching  matching;
-        SExecution execution;
-
-    };
-
-}
-
-typedef QPair<NGameOff::AgentPoint, NGameOff::AgentPoint> AgentPair;
-
-using namespace NGameOff;
-
-enum FirstStep {Stay, Move, Done};
-
+typedef QPair<AgentPoint, AgentPoint> AgentPair;
 
 class CStaticPlayOff {
 public:
@@ -190,79 +150,68 @@ public:
 
     ~CStaticPlayOff();
 
-    void execute_x();
-    void init(const QList <Agent*>& _agents);
+    void init(const QList<Agent *> &_agents);
 
-    void setMasterPlan(SPlan* _thePlan);
     void analyseShoot();
+
     void analysePass();
 
-    void setMasterMode(EMode _mode);
-    EMode getMasterMode();
     void reset();
-    void setInitial(bool _init);
 
-    void kickoffPositioning(int playersNum);
-    void parsePlan(const parsian_msgs::parsian_plan& _plan);
+    void parsePlan(const parsian_msgs::parsian_plan &_plan);
+
+    void execute();
 
 private:
 
-    QList<Agent*> agents;
+    QList<Agent *> agents;
+
     // Critical Play
     void criticalPlay();
-    KickAction* criticalKick;
+
+    KickAction *criticalKick;
     bool criticalInit;
-
-    bool initial;
-
     bool firstPass;
 
-    SPlan* masterPlan;
-    EMode masterMode;
+    SPlan *masterPlan;
 
-    void globalExecute();
-    QList<AgentPair> findThePasserandReciver(const NGameOff::SExecution & _plan);
+    QList<AgentPair> findThePasserandReciver(const SExecution &_plan);
 
     bool isPathClear(Vector2D _pos1, Vector2D _pos2, double _radius, double threshold);
+
     Polygon2D getPathPolygon(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold);
 
     SPositioningAgent positionAgent[_NUM_PLAYERS];
 
-    Vector2D getEmptyTarget(const Vector2D& _position, const double& _radius);
+    Vector2D getEmptyTarget(const Vector2D &_position, const double &_radius);
 
     /////////////////////////////////////////////////////////////////////
     /////////////////////////MAHI PLANNER////////////////////////////////
     /////////////////////////////////////////////////////////////////////
-    void mainExecute();
     void staticExecute();
-    void fastExecute();
-    void firstExecute();
-    void kickOffStopModePlay(int tagentSize);
-    void firstPlayForOppCorner(int _agentSize);
-
-
     ////////////////////////////Blocker//////////////////////////////////
 
-    bool chipOrNot(const SPositioningArg& _posArg);
-    Vector2D getGoalTarget(long _posArg);
-    double getMaxVel(const CRolePlayOff* _roleAgent, const SPositioningArg& _posArg);
-    Vector2D getMoveTarget(const SPositioningArg& _posArg);
+    bool chipOrNot(const SPositioningArg &_posArg);
 
-    bool isTaskDone(CRolePlayOff*);
+    Vector2D getGoalTarget(long _posArg);
+
+    double getMaxVel(const CRolePlayOff *_roleAgent, const SPositioningArg &_posArg);
+
+    Vector2D getMoveTarget(const SPositioningArg &_posArg);
+
+    bool isTaskDone(CRolePlayOff *);
+
     void passManager();
 
     bool isFinalShotDone();
-    int dynamicMatch[_NUM_PLAYERS];
 
     Vector2D lastBallPos;
     unsigned int lastTime;
 
-    QList<Agent*> activeAgents;
+    QList<Agent *> activeAgents;
     CRolePlayOff *roleAgent[_NUM_PLAYERS];
     CRolePlayOff *tempAgent;
-    CRolePlayOff *newRoleAgent[_NUM_PLAYERS];
 
-    Vector2D kickOffPos[_NUM_PLAYERS];
 
     bool isBallIn;
 
@@ -270,60 +219,79 @@ private:
 
     //////////////End  Plan
     bool isTimeOver();
+
     bool isBallDirChanged();
+
     bool isPlanDone();
+
     bool isPlanFailed();
+
     bool setTimer;
     unsigned int startTime;
     ////////////////////////////
 
-    bool isKickDone(CRolePlayOff*);
+    bool isKickDone(CRolePlayOff *);
+
     bool firstKickFailed();
-    bool isOneTouchDone(CRolePlayOff*);
-    bool isMoveDone(const CRolePlayOff*);
-    bool isReceiveDone(const CRolePlayOff*);
-    void assignTasks(const SPlan* _plan);
+
+    bool isOneTouchDone(CRolePlayOff *);
+
+    bool isMoveDone(const CRolePlayOff *);
+
+    bool isReceiveDone(const CRolePlayOff *);
+
+    void assignTasks(const SPlan *_plan);
+
     void fillRoleProperties();
+
     void posExecute();
+
     void checkEndState();
+
     bool isPlanEnd();
-    void assignTask(CRolePlayOff*, const SPositioningAgent&);
-    void assignPass(CRolePlayOff*, const SPositioningAgent&);
-    void assignMove(CRolePlayOff*, const SPositioningAgent&);
-    void assignOneTouch(CRolePlayOff*, const SPositioningAgent&);
-    void assignGoalie(CRolePlayOff*, const SPositioningAgent&);
-    void assignDefense(CRolePlayOff*, const SPositioningAgent&);
-    void assignMark(CRolePlayOff*, const SPositioningAgent&);
-    void assignPosition(CRolePlayOff*, const SPositioningAgent&);
-    void assignSupport(CRolePlayOff*, const SPositioningAgent&);
+
+    void assignTask(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignPass(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignMove(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignOneTouch(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignGoalie(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignDefense(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignMark(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignPosition(CRolePlayOff *, const SPositioningAgent &);
+
+    void assignSupport(CRolePlayOff *, const SPositioningAgent &);
 
     int getIndex(int _planID);
-    Agent* getAgent(int _planID);
 
-    void assignKick(CRolePlayOff*, const SPositioningAgent&, bool _chip);
-    void assignReceive(CRolePlayOff*, const SPositioningAgent&, bool _ignoreAngle);
-    QPair<int, int> findTheLastShoot(const SExecution& _plan);
+    Agent *getAgent(int _planID);
+
+    void assignKick(CRolePlayOff *, const SPositioningAgent &, bool _chip);
+
+    void assignReceive(CRolePlayOff *, const SPositioningAgent &, bool _ignoreAngle);
+
+    QPair<int, int> findTheLastShoot(const SExecution &_plan);
+
     int findReceiver(int _passer, int _state);
+
     QList<SBallOwner> ownerList;
     bool havePassInPlan;
-    static void matchPlan(SPlan *_plan, const QList<Agent*> &_ourplayers);
-    static POFFSKILL strToEnum(const std::string& _str);
-    static void checkGUItoRefineMatch(SPlan *_plan, const QList<Agent*>& _ourplayers);
-    static SPlan *planMsgToSPlan(const parsian_msgs::parsian_plan& _plan, int _currSize);
 
+    static void matchPlan(SPlan *_plan, const QList<Agent *> &_ourplayers);
 
-////////////First
-public:
-    bool isFirstFinished();
-    void resetFirstPlayFinishedFlag();
-    int getShotSpot();
-protected:
-private:
-    FirstStep firstStepEnums;
-    int shotSpot;
-    void stayPoisitioning();
-    void movePositioning();
-    void donePositioning();
+    static POFFSKILL strToEnum(const std::string &_str);
+
+    static void checkGUItoRefineMatch(SPlan *_plan, const QList<Agent *> &_ourplayers);
+
+    static SPlan *planMsgToSPlan(const parsian_msgs::parsian_plan &_plan, int _currSize);
+
+    bool playOnFlag;
 };
 
 

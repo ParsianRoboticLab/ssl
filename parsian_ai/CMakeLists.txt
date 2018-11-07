@@ -121,7 +121,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/playmake.cpp
 		src/${PROJECT_NAME}/plays/playoff/dynamicplayoff.cpp
         src/${PROJECT_NAME}/plays/playoff/staticplayoff.cpp
-        )
+        src/parsian_ai/plays/playoff/firstplayoff.cpp include/parsian_ai/plays/playoff/firstplayoff.h)
 
 add_library(${PROJECT_NAME}_util
 		src/${PROJECT_NAME}/util/defpos.cpp
