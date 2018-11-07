@@ -9,24 +9,6 @@
 #include <queue>
 #include <regex>
 
-enum PlaysEnum {
-    OurKickOffPlay,
-    OurIndirectPlay,
-    OurDirectPlay,
-    OurPenaltyPlay,
-    OurBallPlacement,//added
-
-    TheirKickOffPlay,
-    TheirIndirectPlay,
-    TheirDirectPlay,
-    TheirPenaltyPlay,
-    TheirBallPlacement,//added
-    StartPlay,
-    StopPlay,
-    HaltPlay,
-    HalfTimeLineUp
-};
-
 class CMasterPlay {
 
 public:
@@ -46,7 +28,6 @@ public:
     bool canScore();
     QList <Agent *> markAgents;
     //////////////////////////////////////
-    bool noPlanException;
 
     /* static */ PositioningPlan positioningPlan;
     /* static */ CMarkPlan markPlan;
@@ -63,7 +44,6 @@ protected:
     QList <Agent*> agents;
 
     int executedCycles;
-    int defenseN ;
     bool f;
 
     QList <Agent *> positionAgents;
