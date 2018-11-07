@@ -1555,13 +1555,20 @@ double fm1(double a, double b) {
 void CDynamicAttack::createRegions() {
     // <make rectangles>
     QList<Rect2D> rectangles;
+    Size2D rectSize1(wm->field->_FIELD_WIDTH/6,(wm->field->_FIELD_HEIGHT - wm->field->_PENALTY_WIDTH)/2);
+    Size2D rectSize2((wm->field->_FIELD_WIDTH/3 - wm->field->_PENALTY_DEPTH)/2,wm->field->_PENALTY_WIDTH);
+    Size2D rectSize3(wm->field->_FIELD_WIDTH/6,wm->field->_FIELD_HEIGHT);
+    // region 1,2,3,4
+    rectangles.append(Rect2D(wm->field->oppGoalL()-Vector2D(rectSize1.length(),0),rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR()-Vector2D(rectSize1.length(),0),rectSize1));
+    rectangles.append(Rect2D(wm->field->oppGoalL()-Vector2D(2*rectSize1.length(),0),rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR()-Vector2D(2*rectSize1.length(),0),rectSize1));
+    // region 5,6
+    rectangles.append(Rect2D(wm->field->oppGoalR()-Vector2D(rectSize2.length(),0),rectSize2));
+    rectangles.append(Rect2D(wm->field->oppGoalR()-Vector2D(2*rectSize2.length(),0),rectSize2));
+    // region 7
+    rectangles.append(Rect2D(wm->field->center()-Vector2D(0,rectSize3.width()/2),rectSize3));
 
-    rectangles.append(Rect2D());
-    rectangles.append(Rect2D());
-    rectangles.append(Rect2D());
-    rectangles.append(Rect2D());
-    rectangles.append(Rect2D());
-    rectangles.append(Rect2D());
 
     // </make rectangles>
 
@@ -1613,29 +1620,29 @@ void CDynamicAttack::chooseBestPositons_new() {
         if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
     switch (ballR) {
         case 0:
-            regionPriority << 6 << 3 << 2 << 7 << 8 << 1 << 5 << 4 << 0;
+            regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
             break;
         case 1:
-            regionPriority << 0 << 3 << 7 << 8 << 2 << 6 << 4 << 5 << 1;
+            regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
             break;
         case 2:
-            regionPriority << 5 << 1 << 8 << 4 << 7 << 0 << 3 << 6 << 2;
+            regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
             break;
         case 3:
-            regionPriority << 7 << 2 << 8 << 1 << 6 << 0 << 4 << 5 << 3;
+            regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
             break;
         case 4:
-            regionPriority << 3 << 2 << 8 << 7 << 1 << 0 << 6 << 4 << 5;
+            regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
             break;
         case 5:
-            regionPriority << 4 << 7 << 2 << 1 << 8 << 3 << 0 << 6 << 5;
+            regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
             break;
         case 6:
-            regionPriority << 0 << 3 << 8 << 1 << 2 << 7 << 5 << 4 << 6;
+            regionPriority << 0 << 1 << 2 << 3 << 4 << 5 ;
             break;
-
         default:
-            regionPriority << 7 << 2 << 8 << 1 << 6 << 0 << 4 << 5 << 3;
+            regionPriority << 0 << 1 << 2 << 3 << 4 << 5 ;
+
             break;
     }
 }

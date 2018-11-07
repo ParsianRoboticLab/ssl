@@ -146,7 +146,7 @@ public:
 
 private:
     // NEW PASS ZONE
-    static const int RIGION_NUM = 6;
+    static const int RIGION_NUM = 7;
     FieldRegion regions[RIGION_NUM];
     QList<int> ourRelaxedIDs, oppRelaxedIDs;
     QList<int> regionPriority;
