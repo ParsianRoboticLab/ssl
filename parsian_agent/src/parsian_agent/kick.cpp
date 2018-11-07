@@ -26,7 +26,7 @@ KMode CSkillKick::decideMode() {
     Circle2D kickerArea(agent->pos() + agent->dir().norm() * 0.09 , 0.15);
     AngleDeg kickFinalDir = (target - wm->ball->pos).th();
     if (dontKick) mode = KMode::DONTKICK;
-    else if ((playMakeMode && wm->field->isInOurPenaltyArea(wm->ball->pos)) || avoidPenaltyArea) mode = KMode::AvoidOurPenalty;
+    else if ((playMakeMode || avoidPenaltyArea) && wm->field->isInOurPenaltyArea(wm->ball->pos)) mode = KMode::AvoidOurPenalty;
     else if (isOppPenaltyMode()) mode = KMode::AvoidOppPenalty;
     else if (wm->ball->vel.length() < 0.5 && kickerArea.contains(wm->ball->pos) && std::fabs((kickFinalDir - agent->dir().th()).degree()) > 30) mode = KMode::TurnForKick;
     else {
