@@ -225,7 +225,6 @@ bool CDynamicAttack::evalmovefwd() {
 
 }
 
-
 void CDynamicAttack::swap(Segment2D *xp, Segment2D *yp) {
     Segment2D temp = *xp;
     *xp = *yp;
@@ -239,7 +238,6 @@ void CDynamicAttack::sortobstacles(QList<Segment2D> &obstacles) {
             if (angleOfTwoSegment(obstacles[j], left) > angleOfTwoSegment(obstacles[j + 1], left))
                 swap(&obstacles[j], &obstacles[j + 1]);
 }
-
 
 double CDynamicAttack::angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp) {
     double theta1 = std::atan2(xp.a().y - xp.b().y, xp.a().x - xp.b().x);
@@ -296,7 +294,7 @@ void CDynamicAttack::makePlan(int agentSize) {
         }
     } else {
         ROS_INFO_STREAM("ali: pass mode");
-        currentPlan.mode = DynamicMode::NoMode;
+        currentPlan.mode = DynamicMode::Pass;
         currentPlan.playmake.init(PlayMakeSkill::Pass, DynamicRegion::Best);
         for (size_t i = 0; i < agentSize; i++) {
             currentPlan.positionAgents[i].region = DynamicRegion::Best;
@@ -359,7 +357,7 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
 
     assignId_new();
 
-//        chooseReceiverAndBestPosForPass();
+    chooseReceiverAndBestPosForPass();
 //
 //    }
 
@@ -407,9 +405,9 @@ void CDynamicAttack::playMake() {
             roleAgentPM->setSelectedPlayMakeSkill(PlayMakeSkill::Dribble); // skill Dribble
             break;
         case PlayMakeSkill::Pass:
-            ROS_INFO_STREAM("kian: pass");
-            ROS_INFO_STREAM("kian: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y
-                                              << "//////////////////");
+            ROS_INFO_STREAM("ali: pass");
+            ROS_INFO_STREAM("ali: passpos: " << currentPlan.passPos.x << ", " << currentPlan.passPos.y
+                                             << "//////////////////");
             roleAgentPM->setChip(chipOrNot(currentPlan.passPos, 0.5, 0.1));
             roleAgentPM->setTarget(currentPlan.passPos);
             roleAgentPM->setEmptySpot(false);
@@ -922,63 +920,69 @@ double fRand(double fMin, double fMax) {
 }
 
 void CDynamicAttack::chooseReceiverAndBestPosForPass() {
+    if (currentPlan.playmake.skill == PlayMakeSkill::Pass) {
+        int rand_num = 0;
 
-    optimalPositionsForRecivers.clear();
-    QList<double> probs;
-    QList<Vector2D> points;
-    Vector2D *bestPosition = new Vector2D[matchingIDs.size()];
-    for (auto &robotID : matchingIDs) {
-
-        if (!wm->field->isInField(wm->our[robotID]->pos)) continue;
-        Circle2D c{wm->our[robotID]->pos, 4};
-        Line2D path{playmake->pos(), wm->our[robotID]->pos};
-        Vector2D sol1, sol2;
-        sol1.invalidate();
-        sol2.invalidate();
-        c.intersection(path.perpendicular(wm->our[robotID]->pos), &sol1, &sol2);
-        double oppRed{1};
-        Segment2D recieveSegment{sol1, sol2};
-        QList<Circle2D> obstacles;
-        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
-            obstacles.append(Circle2D(wm->opp.active(i)->pos, oppRed));
-        }
-
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id == playmake->id() || wm->our.active(i)->id == robotID) continue;
-            obstacles.append(Circle2D(wm->our.active(i)->pos + wm->our.active(i)->vel, 0.1));
-
-        }
-
-        validateSegment(recieveSegment);
-        double angle = 0, biggestAngle = 0, prob = 0;
-        CKnowledge::getEmptyAngle(*wm->field, playmake->pos(), recieveSegment.a(), recieveSegment.b(), obstacles, prob,
-                                  angle, biggestAngle);
-        points.append(recieveSegment.intersection(Line2D(playmake->pos(), angle)));
-        probs.append(prob);
-
+            rand_num = rand() % std::min(agents.length(),RIGION_NUM);
+            currentPlan.passPos = regions[regionPriority[rand_num]].rectangle.center();
     }
 
-    for (int i = 0; i < points.size(); i++) {
-        drawer->draw(Circle2D(points[i], probs[i]), QColor(Qt::darkMagenta), true);
-    }
-
-    if (points.isEmpty()) {
-        currentPlan.passPos = wm->field->oppGoal();
-        currentPlan.passID = -1;
-        return;
-    }
-    for (int i = 0; i < points.count(); i++) {
-        if (probs[i] < 0.5) continue;
-        double bestOneTouchFactor = -100;
-        int bestReceiver = -1;
-        for (int j{0}; j < matchingIDs.count(); j++) {
-            double tempOverall = calcOneTouchAngleFactor(points[i]);
-            if (tempOverall > bestOneTouchFactor) {
-                bestReceiver = matchingIDs[i];
-                bestOneTouchFactor = tempOverall;
-            }
-        }
-    }
+//    optimalPositionsForRecivers.clear();
+//    QList<double> probs;
+//    QList<Vector2D> points;
+//    Vector2D *bestPosition = new Vector2D[matchingIDs.size()];
+//    for (auto &robotID : matchingIDs) {
+//
+//        if (!wm->field->isInField(wm->our[robotID]->pos)) continue;
+//        Circle2D c{wm->our[robotID]->pos, 4};
+//        Line2D path{playmake->pos(), wm->our[robotID]->pos};
+//        Vector2D sol1, sol2;
+//        sol1.invalidate();
+//        sol2.invalidate();
+//        c.intersection(path.perpendicular(wm->our[robotID]->pos), &sol1, &sol2);
+//        double oppRed{1};
+//        Segment2D recieveSegment{sol1, sol2};
+//        QList<Circle2D> obstacles;
+//        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+//            obstacles.append(Circle2D(wm->opp.active(i)->pos, oppRed));
+//        }
+//
+//        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+//            if (wm->our.active(i)->id == playmake->id() || wm->our.active(i)->id == robotID) continue;
+//            obstacles.append(Circle2D(wm->our.active(i)->pos + wm->our.active(i)->vel, 0.1));
+//
+//        }
+//
+//        validateSegment(recieveSegment);
+//        double angle = 0, biggestAngle = 0, prob = 0;
+//        CKnowledge::getEmptyAngle(*wm->field, playmake->pos(), recieveSegment.a(), recieveSegment.b(), obstacles, prob,
+//                                  angle, biggestAngle);
+//        points.append(recieveSegment.intersection(Line2D(playmake->pos(), angle)));
+//        probs.append(prob);
+//
+//    }
+//
+//    for (int i = 0; i < points.size(); i++) {
+//        drawer->draw(Circle2D(points[i], probs[i]), QColor(Qt::darkMagenta), true);
+//    }
+//
+//    if (points.isEmpty()) {
+//        currentPlan.passPos = wm->field->oppGoal();
+//        currentPlan.passID = -1;
+//        return;
+//    }
+//    for (int i = 0; i < points.count(); i++) {
+//        if (probs[i] < 0.5) continue;
+//        double bestOneTouchFactor = -100;
+//        int bestReceiver = -1;
+//        for (int j{0}; j < matchingIDs.count(); j++) {
+//            double tempOverall = calcOneTouchAngleFactor(points[i]);
+//            if (tempOverall > bestOneTouchFactor) {
+//                bestReceiver = matchingIDs[i];
+//                bestOneTouchFactor = tempOverall;
+//            }
+//        }
+//    }
 
 }
 
@@ -1495,7 +1499,7 @@ bool CDynamicAttack::isPlanFailed() {
             break;
         case DynamicMode::NoPositionAgent:
             break;
-        case DynamicMode::BallInOppJaw:
+        case DynamicMode::Pass:
             break;
     }
     return false;
@@ -1525,49 +1529,28 @@ bool CDynamicAttack::isPlanDone() {
             break;
         case DynamicMode::NoPositionAgent:
             break;
-        case DynamicMode::BallInOppJaw:
+        case DynamicMode::Pass:
             break;
     }
-}
-
-
-// NEW PASS
-double f1(double &tot, double a, double b) {
-    tot += b;
-    if (a > 1.0) a = 1.0;
-    if (a < 0.0) a = 0.0;
-    return a * b;
-}
-
-double f1(double a, double b) {
-    if (a > 1.0) a = 1.0;
-    if (a < 0.0) a = 0.0;
-    return a * b;
-}
-
-double fm1(double a, double b) {
-    double r = a / b;
-    if (r > 1.0) r = 1.0;
-    if (r < 0.0) r = 0.0;
-    return r;
+    return true;
 }
 
 void CDynamicAttack::createRegions() {
     // <make rectangles>
     QList<Rect2D> rectangles;
-    Size2D rectSize1(wm->field->_FIELD_WIDTH/6,(wm->field->_FIELD_HEIGHT - wm->field->_PENALTY_WIDTH)/2);
-    Size2D rectSize2((wm->field->_FIELD_WIDTH/3 - wm->field->_PENALTY_DEPTH)/2,wm->field->_PENALTY_WIDTH);
-    Size2D rectSize3(wm->field->_FIELD_WIDTH/6,wm->field->_FIELD_HEIGHT);
+    Size2D rectSize1(wm->field->_FIELD_WIDTH / 6, (wm->field->_FIELD_HEIGHT - wm->field->_PENALTY_WIDTH) / 2);
+    Size2D rectSize2((wm->field->_FIELD_WIDTH / 3 - wm->field->_PENALTY_DEPTH) / 2, wm->field->_PENALTY_WIDTH);
+    Size2D rectSize3(wm->field->_FIELD_WIDTH / 6, wm->field->_FIELD_HEIGHT);
     // region 1,2,3,4
-    rectangles.append(Rect2D(wm->field->oppGoalL()-Vector2D(rectSize1.length(),0),rectSize1));
-    rectangles.append(Rect2D(wm->field->oppCornerR()-Vector2D(rectSize1.length(),0),rectSize1));
-    rectangles.append(Rect2D(wm->field->oppGoalL()-Vector2D(2*rectSize1.length(),0),rectSize1));
-    rectangles.append(Rect2D(wm->field->oppCornerR()-Vector2D(2*rectSize1.length(),0),rectSize1));
+    rectangles.append(Rect2D(wm->field->oppGoalL() - Vector2D(rectSize1.length(), 0), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(rectSize1.length(), 0), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppGoalL() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
+    rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
     // region 5,6
-    rectangles.append(Rect2D(wm->field->oppGoalR()-Vector2D(rectSize2.length(),0),rectSize2));
-    rectangles.append(Rect2D(wm->field->oppGoalR()-Vector2D(2*rectSize2.length(),0),rectSize2));
+    rectangles.append(Rect2D(wm->field->oppGoalR() - Vector2D(rectSize2.length(), 0), rectSize2));
+    rectangles.append(Rect2D(wm->field->oppGoalR() - Vector2D(2 * rectSize2.length(), 0), rectSize2));
     // region 7
-    rectangles.append(Rect2D(wm->field->center()-Vector2D(0,rectSize3.width()/2),rectSize3));
+    rectangles.append(Rect2D(wm->field->center() - Vector2D(0, rectSize3.width() / 2), rectSize3));
 
 
     // </make rectangles>
@@ -1638,10 +1621,10 @@ void CDynamicAttack::chooseBestPositons_new() {
             regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
             break;
         case 6:
-            regionPriority << 0 << 1 << 2 << 3 << 4 << 5 ;
+            regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
             break;
         default:
-            regionPriority << 0 << 1 << 2 << 3 << 4 << 5 ;
+            regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
 
             break;
     }
@@ -1684,6 +1667,7 @@ void CDynamicAttack::assignId_new() {
         mahiAgentsID[v] = /*matcher.getMatch(v);*/robotIDs[v];
         matchingIDs.append(robotIDs.at(v));
         matchingRegions.append(matcher.getMatch(v));
+        // todo : find best pos in region from searchRegions.points
         semiDynamicPosition.append(searchRegions[regionPriority[matcher.getMatch(v)]].center());
         for (auto &agent : agents) {
             if (agent->id() == robotIDs.at(v)) {
@@ -1917,40 +1901,6 @@ double CDynamicAttack::calcWidenessFactor(Vector2D passSenderPos, Vector2D point
     return widenessAngle / 180.0;
 }
 
-void CDynamicAttack::hamidDebug() {
-    for (int i{0}; i < 11; i++) {
-        ROS_INFO_STREAM("hamid weights of row " << i << " : " << robotRegionsWeights[i][0]
-                                                << " " << robotRegionsWeights[i][1] << " " << robotRegionsWeights[i][2]
-                                                << " "
-                                                << robotRegionsWeights[i][3] << " " << robotRegionsWeights[i][4] << " "
-                                                << robotRegionsWeights[i][5] << " " << robotRegionsWeights[i][6] << " "
-                                                << robotRegionsWeights[i][7] << " " << robotRegionsWeights[i][8]);
-    }
-
-    for (int i{0}; i < 11; i++) {
-        ROS_INFO_STREAM("hamid points of row " << i << " : " << bestPointForRobotsInRegions[i][0]
-                                               << " " << bestPointForRobotsInRegions[i][1] << " "
-                                               << bestPointForRobotsInRegions[i][2] << " "
-                                               << bestPointForRobotsInRegions[i][3] << " "
-                                               << bestPointForRobotsInRegions[i][4] << " "
-                                               << bestPointForRobotsInRegions[i][5] << " "
-                                               << bestPointForRobotsInRegions[i][6] << " "
-                                               << bestPointForRobotsInRegions[i][7] << " "
-                                               << bestPointForRobotsInRegions[i][8]);
-    }
-
-    for (int i{0}; i < semiDynamicPosition.count(); i++) {
-        drawer->draw(Circle2D(semiDynamicPosition[i], 0.1), QColor("cyan"), true);
-    }
-    for (int i{0}; i < RIGION_NUM; i++) {
-        drawer->draw(regions[i].rectangle, QColor("red"));
-        for (int k{0}; k < regions[i].points.count(); k++) {
-            drawer->draw(Circle2D(regions[i].points[k], 0.1), QColor("red"));
-        }
-    }
-
-}
-
 Vector2D CDynamicAttack::getEmptyTarget(const Vector2D &_position, const double &_radius) {
     Vector2D tempTarget;
     QList<Vector2D> finalTargets;
@@ -1968,11 +1918,11 @@ Vector2D CDynamicAttack::getEmptyTarget(const Vector2D &_position, const double 
     }
     if (!opp)
         finalTargets.append(tempTarget);
-    for (int dist_step = 1; dist_step < (_radius/0.2) ; dist_step++) {
+    for (int dist_step = 1; dist_step < (_radius / 0.2); dist_step++) {
         auto dist = dist_step * 0.2;
 
-        for (size_t ang_step = 0; ang_step <= 20*dist; ang_step ++) {
-            auto ang = -180 + 18.0 *ang_step / dist;
+        for (size_t ang_step = 0; ang_step <= 20 * dist; ang_step++) {
+            auto ang = -180 + 18.0 * ang_step / dist;
             opp = false;
             tempTarget = _position + Vector2D::polar2vector(dist, ang);
             for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {

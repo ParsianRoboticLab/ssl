@@ -226,8 +226,7 @@ void CRoleDynamic::execute() {
         case PositionSkill::NoSkill:;
             break;
         }
-    }
-    if(isplaymake)
+    } else
     {
         switch (playMakeSkill) {
         case PlayMakeSkill ::Shot:
