@@ -236,10 +236,11 @@ install(FILES
 		)
 
 catkin_install_python(PROGRAMS
-scripts/plan_server/planserver_node.py
-scripts/auto_defense_test/def_test_node.py
-		scripts/state_machine/state_machine_node.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+	scripts/plan_server/planserver_node.py
+	scripts/auto_defense_test/def_test_node.py
+	scripts/state_machine/state_machine_node.py
+	scripts/pass_test/pass_test_node.py
+	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
 ## Testing ##
