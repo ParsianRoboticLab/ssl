@@ -27,9 +27,6 @@ including MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 ////
 
 
-#define KALMAN_DEBUG 0
-
-#include <cmath>
 #include <parsian_world_model/util/kalman.h>
 
 Kalman::Kalman(int _state_n, int _obs_n, double _stepsize) {
