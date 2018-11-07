@@ -70,8 +70,6 @@ public:
     BallPossesion ballPState;
 
     ////////////////////////////////////////////////////// PLAYOFF PLAN
-    parsian_msgs::plan_serviceRequest planRequest;
-    parsian_msgs::plan_serviceResponse receivedPlan;
 
     ros::ServiceClient plan_client;
 
@@ -140,10 +138,6 @@ private:
     int cyclesWaitAfterballMoved;
     QList<Agent *> lastDefenseAgents;
 
-    void matchPlan(NGameOff::SPlan *_plan, const QList<int> &_ourplayers);
-
-    NGameOff::SPlan *planMsgToSPlan(parsian_msgs::plan_serviceResponse planMsg, int _currSize);
-
     void assignGoalieAgent(int goalieID);
 
     void assignDefenseAgents(int defenseCount);
@@ -154,7 +148,7 @@ private:
 
     void decideDefense();
 
-    void decidePlayOff(const QList<int> &_ourPlayers, POMODE _mode = POMODE::Indirect);
+    void decidePlayOff(const QList<int> &_ourPlayers, const unsigned char& _mode);
 
     void decidePlayOn(QList<int> &ourPlayers, QList<int> &lastPlayers);
 
@@ -191,13 +185,9 @@ private:
     ///////////////////////New Play Off
     void selectPlayOffMode(int agentSize, NGameOff::EMode &_mode);
 
-    void initPlayOffMode(NGameOff::EMode _mode,
-                         POMODE _gameMode,
-                         const QList<int> &_agentSize);
+    void initPlayOffMode(NGameOff::EMode _mode, const unsigned char& _gameMode, const QList<int> &_agentSize);
 
     void setPlayOff(NGameOff::EMode _mode);
-
-    void initStaticPlay(POMODE _mode, const QList<int> &_agentSize);
 
     void initDynamicPlay(const QList<int> &_ourplayers);
 
@@ -213,9 +203,7 @@ private:
 
     void setFastPlay();
 
-    bool firstTime, firstPlay, firstIsFinished;
-
-    void checkGUItoRefineMatch(SPlan *_plan, const QList<int> &_ourplayers);
+    bool firstTime, firstPlay;
 
     QList<int> lastPlayers;
 
@@ -232,15 +220,11 @@ private:
 
     void decideStop(const QList<int> &);
 
-    void decideOurKickOff(const QList<int> &);
+    void decideOurFreeKick(const QList<int> &);
 
     void decideTheirKickOff(const QList<int> &);
 
-    void decideOurIndirect(const QList<int> &);
-
     void decideTheirIndirect(const QList<int> &);
-
-    void decideOurDirect(const QList<int> &);
 
     void decideTheirDirect(const QList<int> &);
 
@@ -273,8 +257,6 @@ private:
     double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
     // MAHI ADD IN ROS
     QList<CRobot *> toBeMopps;
-
-    POFFSKILL strToEnum(const std::string &_str);
 
     NoAction* haltAction;
 
