@@ -12,6 +12,7 @@ CDynamicPlayoff::CDynamicPlayoff() : CMasterPlay() {
     dynamicStartTime = 0;
     for (auto &roleAgent : roleAgents) roleAgent = new CRolePlayOff();
     initial = true;
+    playOnFlag = false;
 
 }
 
@@ -22,11 +23,6 @@ CDynamicPlayoff::~CDynamicPlayoff(){
 
 void CDynamicPlayoff::execute_x() {
     dynamicExecute();
-}
-
-void CDynamicPlayoff::init(const QList<Agent *>& _agents) {
-    setAgents(_agents);
-    initMaster();
 }
 
 void CDynamicPlayoff::reset() {
@@ -379,7 +375,11 @@ Vector2D CDynamicPlayoff::getDynamicTarget(int i) {
     }
 }
 
-void CDynamicPlayoff::initDynamicPlay(const QList<int> &_ourplayers) {
+void CDynamicPlayoff::execute() {
+
+}
+
+void CDynamicPlayoff::initDynamicPlay(const QList<Agent*> &_ourplayers) {
 
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         if (i >= _ourplayers.size()) {
@@ -396,23 +396,20 @@ void CDynamicPlayoff::initDynamicPlay(const QList<int> &_ourplayers) {
 
 
     double dis = 1000000;
-    int id = 0;
+    int index = 0;
     int swapID = 0;
     for (int i = 0; i < _ourplayers.size(); i++) {
-        double tempDis = agents[_ourplayers.at(i)]->pos().dist(wm->ball->pos) ;
+        double tempDis = _ourplayers.at(i)->pos().dist(wm->ball->pos) ;
         if (tempDis < dis) {
             dis = tempDis;
-            id = _ourplayers.at(i);
+            index = i;
             swapID = i;
         }
     }
 
     int tempID = dynamicMatch[0];
-    dynamicMatch[0] = id;
+    dynamicMatch[0] = index;
     dynamicMatch[swapID] = tempID;
-
-
     initial = true;
-//    lockAgents = true;
 
 }

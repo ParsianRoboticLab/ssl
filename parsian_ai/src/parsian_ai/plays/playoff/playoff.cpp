@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <parsian_ai/plays/playoff.h>
 
 CPlayOff::CPlayOff() : CMasterPlay() {
@@ -19,13 +21,31 @@ void CPlayOff::reset() {
     executedCycles = 0;
 }
 
-void CPlayOff::init(const QList<Agent*>& _agents) {
-    setAgents(_agents);
+void CPlayOff::init() {
     initMaster();
+    unsigned char p_mode = (gameState->getState() == States::OurKickOff) ? parsian_ai_plan_request::KICKOFF
+                                                                         : parsian_ai_plan_request::INDIRECT;
+    decideMode(agents.size(), p_mode);
+
+    switch (mode) {
+        case POMode::None:
+            break;
+        case POMode::First:
+            break;
+        case POMode::Dynamic:
+            dynamicPlayoff->initDynamicPlay(agents);
+            break;
+        case POMode::Static:
+            parsian_msgs::plan_service srv{};
+            srv.request.plan_req = getRequest(agents.size(), p_mode);
+            if (client->call(srv)) setResponse(srv.response.the_plan);
+            break;
+    }
 
 }
 
 void CPlayOff::execute_x() {
+
 }
 
 parsian_ai_plan_request CPlayOff::getRequest(const int &_agentSize, const unsigned char &mode) {
@@ -42,7 +62,18 @@ void CPlayOff::setResponse(const parsian_plan &_plan) {
     lockAgents = true;
 }
 
-POMode CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
+void CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
+
+    switch (mode) {
+
+        case POMode::None:break;
+        case POMode::First:break;
+        case POMode::Static:break;
+        case POMode::Dynamic:break;
+
+    }
+
+
     if (_agentSize < 2) {
         mode = POMode::Dynamic;
     } else if (gameState->ourKickoff() && !gameState->canKickBall()) {
@@ -60,5 +91,12 @@ POMode CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
     } else {
         mode = POMode::Dynamic;
     }
+}
+
+POMode CPlayOff::getMode() {
     return mode;
+}
+
+void CPlayOff::setPlanClient(ros::ServiceClientPtr _client) {
+    client = std::move(_client);
 }
