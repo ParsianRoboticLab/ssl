@@ -242,6 +242,7 @@ int CFirstPlayOff::shotBlockers() {
 
 int CFirstPlayOff::passBlockers() {
     int passBlocked = 0;
+    Vector2D sol1, sol2;
 
     for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
         if (wm->opp.active(i)->id == wm->opp.data->goalieID) {
