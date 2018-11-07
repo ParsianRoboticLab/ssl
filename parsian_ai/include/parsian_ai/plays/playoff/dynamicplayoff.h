@@ -25,6 +25,7 @@ public:
     void execute();
     void init(const QList<Agent*>& _agents);
     CRolePlayOff *roleAgents[_NUM_PLAYERS];
+    void initDynamicPlay(const QList<Agent*> &_ourplayers);
 
 private:
     bool initial;
@@ -32,7 +33,7 @@ private:
     Vector2D lastBallPos;
     unsigned int lastTime;
 
-
+    bool playOnFlag;
     void dynamicExecute();
     int dynamicMatch[_NUM_PLAYERS];
     DynamicSelect dynamicSelect;
@@ -51,7 +52,6 @@ private:
     int dynamicState;
     unsigned int dynamicStartTime;
 
-    void initDynamicPlay(const QList<int> &_ourplayers);
 
 };
 
