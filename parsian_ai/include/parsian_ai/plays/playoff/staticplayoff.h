@@ -1,13 +1,16 @@
-#ifndef PLAYOFF_H
-#define PLAYOFF_H
+//
+// Created by parsian-ai on 11/7/18.
+//
 
-#include "parsian_ai/plays/masterplay.h"
+#ifndef PARSIAN_AI_STATICPLAYOFF_H
+#define PARSIAN_AI_STATICPLAYOFF_H
 
-#include <QtSql/QtSql>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlQuery>
-
-#include <QMessageBox>
+#include <parsian_msgs/plan_service.h>
+#include "parsian_ai/roles/roles.h"
+#include "parsian_ai/plans/plans.h"
+#include <parsian_ai/gamestate.h>
+#include <parsian_ai/config.h>
+#include <QString>
 
 #define BEHIND_BALL_POS Vector2D(1234, 5678)
 
@@ -21,7 +24,7 @@ enum class POFFSKILL {
     Move = 6,
     ReceivePassIA = 7,
     //////////// Afterlife Roles
-    Defense = 8,
+            Defense = 8,
     Support = 9,
     Position = 10,
     Goalie = 11,
@@ -51,60 +54,6 @@ struct playOffRobot {
     AngleDeg angle;
     double tolerance;
     QList<playOffSkill> skill;
-};
-
-struct POInitPos {
-    Vector2D ball;
-    Vector2D Agent[_NUM_PLAYERS];
-};
-
-enum class POMODE {
-    None     = 0,
-    Direct   = 1,
-    Indirect = 2,
-    Kickoff  = 3
-};
-
-enum class DynamicSelect {
-    NoSelect = 0,
-    Khafan = 1,
-    Chip = 2,
-    Kick = 3,
-    Blocker = 4
-};
-
-struct SPlayOffPlan {
-
-    SPlayOffPlan() = default;
-
-    SPlayOffPlan(const SPlayOffPlan &_toCopy) {
-        this->planMode  = _toCopy.planMode ;
-        this->agentSize = _toCopy.agentSize;
-        this->initPos   = _toCopy.initPos  ;
-        for (int i = 0; i < _NUM_PLAYERS; i++) {
-            this->AgentPlan[i].clear();
-            for (int j = 0; j < _toCopy.AgentPlan[i].size(); j++) {
-                this->AgentPlan[i].append(_toCopy.AgentPlan[i].at(j));
-            }
-        }
-    }
-
-    SPlayOffPlan& operator =(const SPlayOffPlan &_insert) {
-        this->planMode  = _insert.planMode ;
-        this->agentSize = _insert.agentSize;
-        this->initPos   = _insert.initPos  ;
-        for (int i = 0; i < _NUM_PLAYERS; i++) {
-            this->AgentPlan[i].clear();
-            for (int j = 0; j < _insert.AgentPlan[i].size(); j++) {
-                this->AgentPlan[i].append(_insert.AgentPlan[i].at(j));
-            }
-        }
-    }
-
-    QList<playOffRobot> AgentPlan[_NUM_PLAYERS];
-    POMODE planMode;
-    int agentSize{};
-    POInitPos initPos;
 };
 
 struct SPositioningArg {
@@ -233,20 +182,16 @@ typedef QPair<NGameOff::AgentPoint, NGameOff::AgentPoint> AgentPair;
 using namespace NGameOff;
 
 enum FirstStep {Stay, Move, Done};
-enum BlockerSteps {S0, S1, S2, S3};
 
-class CPlayOff : public CMasterPlay {
 
+class CStaticPlayOff {
 public:
-    CPlayOff();
+    CStaticPlayOff();
 
-    ~CPlayOff() override;
+    ~CStaticPlayOff();
 
-    void execute_x() override;
-    void init(const QList <Agent*>& _agents) override;
-
-    QString whoami() override { return "PlayOff"; }
-    bool deleted;
+    void execute_x();
+    void init(const QList <Agent*>& _agents);
 
     void setMasterPlan(SPlan* _thePlan);
     void analyseShoot();
@@ -254,12 +199,15 @@ public:
 
     void setMasterMode(EMode _mode);
     EMode getMasterMode();
-    void reset() override;
+    void reset();
     void setInitial(bool _init);
 
     void kickoffPositioning(int playersNum);
+    void parsePlan(const parsian_msgs::parsian_plan& _plan);
 
 private:
+
+    QList<Agent*> agents;
     // Critical Play
     void criticalPlay();
     KickAction* criticalKick;
@@ -287,7 +235,6 @@ private:
     /////////////////////////////////////////////////////////////////////
     void mainExecute();
     void staticExecute();
-    void dynamicExecute();
     void fastExecute();
     void firstExecute();
     void kickOffStopModePlay(int tagentSize);
@@ -305,6 +252,7 @@ private:
     void passManager();
 
     bool isFinalShotDone();
+    int dynamicMatch[_NUM_PLAYERS];
 
     Vector2D lastBallPos;
     unsigned int lastTime;
@@ -313,17 +261,7 @@ private:
     CRolePlayOff *roleAgent[_NUM_PLAYERS];
     CRolePlayOff *tempAgent;
     CRolePlayOff *newRoleAgent[_NUM_PLAYERS];
-    enum BlockerDetector {
-        penaltyAreaBlock   = 0b001,
-        centralRegionBlock = 0b010,
-        RoundRegionBlock   = 0b100
-    };
 
-    int blockerState;
-    int blockerID;
-    QList<int> blockersPenaltyArea;
-    QList<int> blockersCentralRegion;
-    QList<int> blockersRoundRegion;
     Vector2D kickOffPos[_NUM_PLAYERS];
 
     bool isBallIn;
@@ -368,25 +306,10 @@ private:
     int findReceiver(int _passer, int _state);
     QList<SBallOwner> ownerList;
     bool havePassInPlan;
-    ////Dynamic
-public:
-    int dynamicMatch[_NUM_PLAYERS];
-    DynamicSelect dynamicSelect;
-private:
-    void dynamicAssignID();
-    void dynamicPlayKhafan();
-    void dynamicPlayBlocker();
-    void dynamicPlayChipToGoal(bool isChip);
-
-    void checkEndKhafan();
-    void checkEndBlocker();
-    void checkEndChipToGoal();
-    Vector2D getDynamicTarget(int i);
-
-    int dynamicAgentSize;
-    bool ready, pass, shot;
-    int dynamicState;
-    unsigned int dynamicStartTime;
+    static void matchPlan(SPlan *_plan, const QList<Agent*> &_ourplayers);
+    static POFFSKILL strToEnum(const std::string& _str);
+    static void checkGUItoRefineMatch(SPlan *_plan, const QList<Agent*>& _ourplayers);
+    static SPlan *planMsgToSPlan(const parsian_msgs::parsian_plan& _plan, int _currSize);
 
 
 ////////////First
@@ -397,21 +320,11 @@ public:
 protected:
 private:
     FirstStep firstStepEnums;
-    BlockerSteps blockerStep;
     int shotSpot;
-    void stayPoistioning();
+    void stayPoisitioning();
     void movePositioning();
     void donePositioning();
-
-    void firstDegree();
-    void secondDegree();
-    void thirdDegree();
-    void doneDegree();
-
-
-
 };
-///////////OverLoading Operators
-QDebug operator<< (QDebug d, const NGameOff::SPlan& _plan);
 
-#endif // CPLAYOFF_H
+
+#endif //PARSIAN_AI_STATICPLAYOFF_H
