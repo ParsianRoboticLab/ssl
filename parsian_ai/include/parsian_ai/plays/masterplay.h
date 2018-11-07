@@ -19,12 +19,10 @@ public:
     virtual ~CMasterPlay();
     virtual void reset() = 0;
     virtual void execute_x() = 0;
-    virtual void init(const QList <Agent*>& _agents) = 0;
+    virtual void init() = 0;
 
-    void execute();
-    virtual QString whoami() {
-        return "MasterPlay";
-    }
+    void execute(const QList<Agent*>& _agents);
+    virtual QString whoami() { return "MasterPlay"; }
     bool canScore();
     QList <Agent *> markAgents;
     //////////////////////////////////////

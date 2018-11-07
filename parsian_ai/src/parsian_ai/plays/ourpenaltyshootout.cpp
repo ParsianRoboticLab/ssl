@@ -15,9 +15,8 @@ void COurPenaltyShootout::reset()
     executedCycles = 0;
 }
 
-void COurPenaltyShootout::init(const QList<Agent*>& _agents)
+void COurPenaltyShootout::init()
 {
-    setAgents(_agents);
 }
 
 void COurPenaltyShootout::setPlaymake(Agent* _playmakeAgent)

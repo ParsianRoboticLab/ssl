@@ -10,7 +10,7 @@ public:
     CHalftimeLineup();
     ~CHalftimeLineup();
     void execute_x();
-    void init(const QList <Agent*>& _agents);
+    void init();
     void reset();
     void fillPoints();
     void fillGPA();
