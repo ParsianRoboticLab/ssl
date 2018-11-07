@@ -109,6 +109,8 @@ protected:
     bool dangerModeThresholdForDanger;
     bool manToManMarkBlockPassFlag;
     bool goalKeeperPredictionModeInPlayOff;
+    bool GKReciveBallInTS;
+    bool ballIntersectOurPenaltyArea;
     QList <QString> markRoles;
     QList <QString> lastMarkRoles;
     Vector2D opponentPasserDirection;
