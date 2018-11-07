@@ -7,6 +7,7 @@ GameState::GameState() {
     ourScore = 0;
     theirScore = 0;
     command_ctr = 0;
+    force_command_ctr = 0;
 }
 
 int GameState::getOurScore() {
@@ -262,4 +263,12 @@ void GameState::updateCommand(ssl_refree_command referee) {
             break;
         default:break;
     }
+}
+
+void GameState::setForceRefree(ssl_force_refereeConstPtr com) {
+    if (com->command_number > force_command_ctr) {
+        force_command_ctr = com->command_number;
+        updateCommand(com->command);
+    }
+
 }
