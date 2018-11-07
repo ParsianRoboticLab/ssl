@@ -4,7 +4,7 @@ from math import sqrt
 from time import time
 from math import exp
 
-robot_radius = .2
+robot_radius = .1
 
 
 class Point:
@@ -57,7 +57,7 @@ class PassTest:
         self.vel_queue_size = 5
         self.ball_vel_queue = []
 
-    def update_wm(self, wm):  # type: (parsian_world_model)
+    def update_wm(self, wm):  # type: (parsian_world_model) -> None
         self.wm = wm
 
         self.exe()
@@ -199,7 +199,7 @@ class PassTest:
             deviation_eval = exp(-1 * deviation)
             self.pass_informations[self.current_pass_key][-1].update(
                 {
-                    "deviation":    deviation_eval
+                    "deviation": deviation_eval
                 }
             )
             print("kick Done")
@@ -222,17 +222,18 @@ class PassTest:
         }
 
     def check_pass_info(self):
-        if self.knowlege["rec_dist_to_ball"] < robot_radius + .05:
+        if self.knowlege["rec_dist_to_ball"] < robot_radius + .03:
             rec_pos = Point(self.wm.our[self.ids["receiver"]].pos)
             rec_dir = Point(self.wm.our[self.ids["receiver"]].dir)
-            fak = Point(self.wm.ball.pos).distance_to_line(
+            dist_to_fak = Point(self.wm.ball.pos).distance_to_line(
                 rec_pos, rec_pos + rec_dir
             )
             self.pass_informations[self.current_pass_key][-1].update(
                 {
-                    "fak": fak
+                    "dist_to_fak_eval": exp(-1 * dist_to_fak)
                 }
             )
+            print("received.. dist: ", self.knowlege["rec_dist_to_ball"])
 
     def show_result(self):
         print(self.pass_informations)
