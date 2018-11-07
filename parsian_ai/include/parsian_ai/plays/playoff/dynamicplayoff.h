@@ -20,11 +20,10 @@ enum class DynamicSelect {
 class CDynamicPlayoff {
 public:
     CDynamicPlayoff();
-    ~CDynamicPlayoff() override;
-    void reset() override;
-    void execute_x() override;
-    void init(const QList<Agent*>& _agents) override;
-    QString whoami() override { return "Dynamic Playoff"; }
+    ~CDynamicPlayoff();
+    void reset();
+    void execute();
+    void init(const QList<Agent*>& _agents);
     CRolePlayOff *roleAgents[_NUM_PLAYERS];
 
 private:

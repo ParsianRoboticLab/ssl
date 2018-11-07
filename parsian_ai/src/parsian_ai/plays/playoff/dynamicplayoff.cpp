@@ -383,18 +383,15 @@ void CDynamicPlayoff::initDynamicPlay(const QList<int> &_ourplayers) {
 
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         if (i >= _ourplayers.size()) {
-            ourPlayOff->dynamicMatch[i] = -1;
+            dynamicMatch[i] = -1;
         } else {
-            ourPlayOff->dynamicMatch[i] = i;
+            dynamicMatch[i] = i;
         }
     }
     if (_ourplayers.size() < 2) {
-        ourPlayOff->dynamicSelect = DynamicSelect::Chip;
-    } else if (!gotplan){
-        gotplan = true;
-        ourPlayOff->dynamicSelect = DynamicSelect::Kick;
+        dynamicSelect = DynamicSelect::Chip;
     } else {
-        ourPlayOff->dynamicSelect = DynamicSelect::Khafan;
+        dynamicSelect = DynamicSelect::Khafan;
     }
 
 
@@ -410,12 +407,12 @@ void CDynamicPlayoff::initDynamicPlay(const QList<int> &_ourplayers) {
         }
     }
 
-    int tempID = ourPlayOff->dynamicMatch[0];
-    ourPlayOff->dynamicMatch[0] = id;
-    ourPlayOff->dynamicMatch[swapID] = tempID;
+    int tempID = dynamicMatch[0];
+    dynamicMatch[0] = id;
+    dynamicMatch[swapID] = tempID;
 
 
-    ourPlayOff->setInitial(true);
-    ourPlayOff->lockAgents = true;
+    initial = true;
+//    lockAgents = true;
 
 }
