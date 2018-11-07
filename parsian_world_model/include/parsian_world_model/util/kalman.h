@@ -15,10 +15,11 @@
 #ifndef __KALMAN_H__
 #define __KALMAN_H__
 
+#define KALMAN_DEBUG 0
+#include <cmath>
 #include <deque>
-//using namespace std;
 
-#include <parsian_world_model/util/matrix.h>
+#include <parsian_util/matrix.h>
 
 typedef unsigned int uint;
 
@@ -58,7 +59,7 @@ protected:
 
 public:
     Kalman(int state_n, int obs_n, double _stepsize);
-    virtual ~Kalman() {}
+    virtual ~Kalman() = default;
 
     void initial(double t, Matrix &x, Matrix &P);
 
