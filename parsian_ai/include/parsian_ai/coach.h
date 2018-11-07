@@ -71,16 +71,12 @@ public:
 
     ////////////////////////////////////////////////////// PLAYOFF PLAN
 
-    ros::ServiceClient plan_client;
+    ros::ServiceClientPtr plan_client;
 
-    bool gotplan;
-
-    void setPlanClient(const ros::ServiceClient &_plan_client);
+    void setPlanClient(ros::ServiceClientPtr _plan_client);
 
     static int findGoalie();
     static bool useGoalieInPlayOff();
-
-    parsian_msgs::plan_serviceResponse getLastPlan();
 
     void generateWorkingRobotIds();
     QList<int> workingIDs;
@@ -148,8 +144,6 @@ private:
 
     void decideDefense();
 
-    void decidePlayOff(const QList<int> &_ourPlayers, const unsigned char& _mode);
-
     void decidePlayOn(QList<int> &ourPlayers, QList<int> &lastPlayers);
 
 
@@ -181,29 +175,7 @@ private:
 
     void updateAttackState();
 
-
-    ///////////////////////New Play Off
-    void selectPlayOffMode(int agentSize, NGameOff::EMode &_mode);
-
-    void initPlayOffMode(NGameOff::EMode _mode, const unsigned char& _gameMode, const QList<int> &_agentSize);
-
-    void setPlayOff(NGameOff::EMode _mode);
-
-    void initDynamicPlay(const QList<int> &_ourplayers);
-
-    void initFastPlay(const QList<int> &_ourplayers);
-
-    void initFirstPlay(const QList<int> &_ourplayers);
-
-    void setStaticPlay();
-
-    void setDynamicPlay();
-
-    void setFirstPlay();
-
-    void setFastPlay();
-
-    bool firstTime, firstPlay;
+    bool firstTime;
 
     QList<int> lastPlayers;
 
@@ -249,14 +221,10 @@ private:
     /////////////////////////////////////
     QTextStream out;
 
-    bool isFastPlay();
-
     int faultDetectionCounter[_MAX_NUM_PLAYERS];
 
     double kickTimeEstimation(Agent * _agent, const Vector2D& target);
     double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
-    // MAHI ADD IN ROS
-    QList<CRobot *> toBeMopps;
 
     NoAction* haltAction;
 
