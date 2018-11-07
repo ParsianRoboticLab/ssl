@@ -29,7 +29,6 @@ KMode CSkillKick::decideMode() {
     else if ((playMakeMode && wm->field->isInOurPenaltyArea(wm->ball->pos)) || avoidPenaltyArea) mode = KMode::AvoidOurPenalty;
     else if (isOppPenaltyMode()) mode = KMode::AvoidOppPenalty;
     else if (wm->ball->vel.length() < 0.5 && kickerArea.contains(wm->ball->pos) && std::fabs((kickFinalDir - agent->dir().th()).degree()) > 30) mode = KMode::TurnForKick;
-    else if (isJTurnMode()) mode = KMode::JTurn;
     else {
         Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);
         if (wm->ball->vel.length() > 0.5 - distThr) {
