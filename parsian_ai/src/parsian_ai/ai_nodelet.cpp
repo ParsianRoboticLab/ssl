@@ -26,9 +26,11 @@ void AINodelet::onInit() {
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
     drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
-    plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
 
+    plan_client.reset(new ros::ServiceClient);
+    *plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
     ai->getSoccer()->getCoach()->setPlanClient(plan_client);
+
     //config server settings
     server.reset(new dynamic_reconfigure::Server<ai_config::aiConfig>(private_nh));
     dynamic_reconfigure::Server<ai_config::aiConfig>::CallbackType f;
@@ -45,15 +47,11 @@ void AINodelet::teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _con
 
 void AINodelet::worldModelCallBack(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     ai->updateWM(_wm);
-    ROS_INFO("wm");
     ai->execute();
-//
+
     for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
         robTask[wm->our.activeAgentID(i)].publish(ai->getTask(wm->our.activeAgentID(i)));
     }
-
-    parsian_msgs::plan_serviceResponse lastPlan = ai->getSoccer()->getCoach()->getLastPlan();
-    ROS_INFO_STREAM("HSHM: last plan name: " << lastPlan.the_plan.planFile);
 
     if (drawer != nullptr)  {
         drawPub.publish(drawer->getDraws());
@@ -79,6 +77,5 @@ void AINodelet::robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & 
 }
 
 void AINodelet::ConfigServerCallBack(const ai_config::aiConfig &config, uint32_t level) {
-    ROS_INFO("MAHICALLING BACK");
     conf = config;
 }
