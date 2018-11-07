@@ -1,9 +1,7 @@
 ////
 //// Created by parsian-ai on 9/22/17.
 ////
-
 #include <parsian_ai/coach.h>
-#include <parsian_util/geom/vector_2d.h>
 
 CCoach::CCoach(Agent**_agents)
 {
@@ -671,7 +669,7 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
         // TODO : matching is based on ID, It should be Goal-Oriented -- optimal -- base of position
         qSort(ourPlayers.begin(), ourPlayers.end());
         for (int i = 0; i < MarkNum; i++) {
-            PDEBUG("marknum =" , MarkNum , D_AHZ);
+            PDEBUG("mark num =" , MarkNum , D_AHZ);
             selectedPlay->markAgents.append(agents[ourPlayers.front()]);
             ourPlayers.removeFirst();
         }
@@ -685,10 +683,6 @@ void CCoach::selectPlayOffMode(int agentSize, NGameOff::EMode &_mode) {
     ROS_INFO_STREAM("HSHM: agentSize: " << agentSize);
     if (agentSize < 2) {
         _mode = NGameOff::DynamicPlay;
-
-    } else if (isFastPlay() && false) { // TODO : fastPlay should be completed!
-        _mode = NGameOff::FastPlay;
-
     } else if (gameState->ourKickoff() && !gameState->canKickBall()) {
         _mode = NGameOff::FirstPlay;
 
@@ -711,7 +705,6 @@ void CCoach::initPlayOffMode(const NGameOff::EMode _mode,
                              const POMODE _gameMode,
                              const QList<int>& _ourplayers) {
     switch (_mode) {
-
 
         case NGameOff::StaticPlay:
             initStaticPlay(_gameMode, _ourplayers);
@@ -1221,14 +1214,12 @@ void CCoach::initStaticPlay(const POMODE _mode, const QList<int>& _ourplayers) {
         ourPlayOff->setMasterPlan(thePlan);
         ourPlayOff->analyseShoot(); // should call after setmasterplan
         ourPlayOff->analysePass();  // should call after setmasterplan
-        checkGUItoRefineMatch(thePlan, _ourplayers);
 
         matchPlan(thePlan, _ourplayers); //Match The Plan
+        checkGUItoRefineMatch(thePlan, _ourplayers);
+
         ourPlayOff->setInitial(true);
         ourPlayOff->lockAgents = true;
-        //        lastPlan = thePlan;
-        //        debug(QString("chosen plan is %1").arg(lastPlan->gui.index[3]), D_MAHI);
-
         gotplan = true;
 
         ROS_INFO_STREAM("initStaticPlay: Done :) response: %s" << str);
@@ -1243,9 +1234,9 @@ void CCoach::initStaticPlay(const POMODE _mode, const QList<int>& _ourplayers) {
 void CCoach::checkGUItoRefineMatch(SPlan *_plan, const QList<int>& _ourplayers) {
     if (conf.IDBasePasser && _ourplayers.contains(conf.PasserID)) {
         int temp = _plan->matching.common->matchedID.value(0);
-        _plan->matching.common->matchedID[0] = conf.PasserID;
+        _plan->matching.common->matchedID[0] = _ourplayers.indexOf(conf.PasserID);
         for (int i = 1; i < _plan->matching.common->matchedID.size(); i++) {
-            if (_plan->matching.common->matchedID[i] == conf.PasserID) {
+            if (_plan->matching.common->matchedID[i] == _ourplayers.indexOf(conf.PasserID)) {
                 _plan->matching.common->matchedID[i] = temp;
                 break;
             }
@@ -1255,9 +1246,9 @@ void CCoach::checkGUItoRefineMatch(SPlan *_plan, const QList<int>& _ourplayers) 
     if (conf.IDBaseOneToucher
         && _ourplayers.contains(conf.OneToucherID)) {
         int temp = _plan -> matching.common -> matchedID.value(1);
-        _plan -> matching.common -> matchedID[1] = conf.OneToucherID;
+        _plan -> matching.common -> matchedID[1] = _ourplayers.indexOf(conf.OneToucherID);
         for (int i = 2; i < _plan->matching.common->matchedID.size(); i++) {
-            if (_plan->matching.common->matchedID[i] == conf.OneToucherID) {
+            if (_plan->matching.common->matchedID[i] == _ourplayers.indexOf(conf.OneToucherID)) {
                 _plan->matching.common->matchedID[i] = temp;
                 break;
             }
@@ -1360,27 +1351,24 @@ void CCoach::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplayers) {
     MWBM matcher;
     matcher.create(_plan->common.currentSize - 1, _ourplayers.size() - 1);
 
-    int matchedID = -1;
+    int matchedIndex = 0;
     double weight = 0;
-    double minweight = 10000;
+    double minweight = 10000000;
 
     for (int j = 0; j < _ourplayers.size(); j++) {
         weight = agents[_ourplayers.at(j)]->pos().dist(wm->ball->pos);
         if (weight < minweight) {
             minweight = weight;
-            matchedID = j;
+            matchedIndex = j;
         }
     }
-
-    if (matchedID != -1) {
-        _plan->common.matchedID.insert(0, _ourplayers.at(matchedID));
-    }
+    _plan->common.matchedID.insert(0, matchedIndex);
 
     QList<int> othersmatch;
     for (int i = 1; i < _plan->common.currentSize; i++) {
         int k = 0;
         for (int j = 0; j < _ourplayers.size(); j++) {
-            if (j != matchedID) {
+            if (j != matchedIndex) {
                 weight = _plan->matching.initPos.agents.at(i).dist(agents[_ourplayers.at(j)]->pos());
                 matcher.setWeight(i - 1, k, -(weight));
                 othersmatch.append(j);
@@ -1389,7 +1377,7 @@ void CCoach::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplayers) {
         }
     }
 
-    int nmatchedID = -1;
+    int nmatchedID;
     qDebug() << "[Coach] matched plan with : " << matcher.findMatching();
     for (int i = 1; i < _plan->common.currentSize; i++) {
         nmatchedID = matcher.getMatch(i - 1);
@@ -1398,14 +1386,11 @@ void CCoach::matchPlan(NGameOff::SPlan *_plan, const QList<int>& _ourplayers) {
 
     }
     qDebug() << "[Coach] matched by" << _plan->common.matchedID;
-
 }
-
 
 void CCoach::setPlanClient(const ros::ServiceClient& _plan_client) {
     plan_client = _plan_client;
 }
-
 
 parsian_msgs::plan_serviceResponse CCoach::getLastPlan() {
     return receivedPlan;
@@ -1467,4 +1452,3 @@ void CCoach::handlePlayMake(const QList<int> &_agentsID) {
     }
     lastPlayMake = playmakeId;
 }
-
