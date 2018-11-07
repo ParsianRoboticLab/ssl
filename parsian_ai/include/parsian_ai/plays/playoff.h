@@ -6,6 +6,7 @@
 #include <parsian_msgs/parsian_plan.h>
 #include <parsian_ai/plays/playoff/staticplayoff.h>
 #include <parsian_ai/plays/playoff/dynamicplayoff.h>
+#include <parsian_ai/plays/playoff/firstplayoff.h>
 
 enum class POMode {
     None    = 0,
@@ -34,11 +35,13 @@ public:
 private:
     ros::ServiceClientPtr client;
     CStaticPlayOff *staticPlayOff;
-    CDynamicPlayoff *dynamicPlayoff;
+    CDynamicPlayOff *dynamicPlayoff;
+    CFirstPlayOff *firstPlayoff;
 
     bool firstIsFinished;
     bool gotPlan;
     POMode mode;
+
 
 };
 
