@@ -4,7 +4,7 @@ using namespace parsian_msgs;
 
 namespace rqt_parsian_gui
 {
-    RefereeWidget::RefereeWidget(ros::NodeHandle & n) : QWidget() {
+    RefereeWidget::RefereeWidget(ros::NodeHandle & n) : QWidget(), command_counter(0) {
         refereePub = n.advertise<parsian_msgs::ssl_force_referee>("/force_referee", 100);
         mainLayout = new QHBoxLayout;
 
@@ -59,6 +59,7 @@ namespace rqt_parsian_gui
 
     void RefereeWidget::SetManualGS( int id ){
         this->id = id;
+	command_counter++;
     }
 
     void RefereeWidget::SetEnable(int enable){
@@ -156,6 +157,7 @@ namespace rqt_parsian_gui
             }
             refree_command->ballPlacementPos.x = posX->text().toDouble();
             refree_command->ballPlacementPos.y = posY->text().toDouble();
+            refree_command->command_number = command_counter; 
             refereePub.publish(refree_command);
         }
     }
