@@ -55,8 +55,7 @@ CCoach::CCoach(Agent**_agents)
 
     //    m_planLoader = new CLoadPlayOffJson(QDir::currentPath() + QString("/playoff"));
     goalieAgent = nullptr;
-    preferedDefenseCounts = 2;
-    overDefThr = 0;
+    preferredDefenseCounts = 2;
     shotToGoalthr = conf.DirectTrsh;
     selectedPlay = stopPlay;
     for (int &i : faultDetectionCounter) {
@@ -126,7 +125,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
         }
     } else if (gameState->isStart()) {
         //todo remove this
-        preferedDefenseCounts = 1;
+        preferredDefenseCounts = 1;
         return;
         if (know->variables["transientFlag"].toBool())
         {
