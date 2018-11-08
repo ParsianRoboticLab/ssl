@@ -17,7 +17,7 @@ void AINodelet::onInit() {
     }
     drawer = new Drawer();
 
-    worldModelSub = nh.subscribe("/world_model", 10, &AINodelet::worldModelCallBack, this);
+    worldModelSub = nh.subscribe("/world_model", 1, &AINodelet::worldModelCallBack, this);
     robotStatusSub = nh.subscribe("/robot_status", 100, &AINodelet::robotStatusCallBack, this);
     refereeSub = nh.subscribe("/referee", 100,  &AINodelet::refereeCallBack, this);
     teamConfSub = nh.subscribe("/team_config", 100, &AINodelet::teamConfCb, this);
