@@ -19,14 +19,11 @@
 #include <ros/package.h>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+
 using namespace std;
 
 #define MAX_KICK_SPEED 1023
 #define new_com_test_robot_id (-1)
-
-struct Fault {
-
-};
 
 
 class CSkill;
@@ -81,7 +78,7 @@ public:
     bool starter;
     bool canRecvPass;
     bool idle;
-    int id();
+    int id() const;
     int commandId();
     bool trajectory(double& vf, double& vn, double& va, double w1, double w2, double w3, double w4, bool &stop);
     void loadProfiles();
@@ -99,10 +96,10 @@ public:
     bool canOneTouch();
 
     //position and velocity
-    Vector2D pos();
-    Vector2D dir();
+    Vector2D pos() const;
+    Vector2D dir() const;
     double dirDegree();
-    Vector2D vel();
+    Vector2D vel() const;
     double angularVel();
     CRobot* self();
     Vector2D distToBall();
@@ -120,21 +117,11 @@ public:
     char getRoller();
     void waitHere();
 
-    double v1L, v2L, v3L, v4L;
-    double vforwardL, vnormalL, vangularL;
-
-    QString localName, prevLocalName;
-
-    bool kickState, chipState, onOffState , inOutState;
     int commandID;
     float getMotorMaxRadPerSec();
-    float getvLimit();
-    float getwLimit();
     double v1, v2, v3, v4;
     int roller;
     double kickSpeed;
-
-    int sumEX, sumEY, lastEX, lastEY;
 
     double shotProfile[32][2];
     double chipProfile[32][2];
@@ -148,27 +135,18 @@ public:
     int kickValueForDistance(double dist, double finalVel);
 
     bool requestBit , chip, forceKick, forceKickCounter, lowSpeedMode;
-    bool beep;
     double vforward, vnormal, vangular;
-    double _ACC, _DEC;
-    Vector2D oneTouchCheck(Vector2D positioningPos, Vector2D* oneTouchDir);
     vector<Vector2D> pathPlannerResult;
-    Vector2D plannerAverageDir;
 
-    void setGyroZero();
     Vector2D agentAngelForGyro;
-    int calibrated;
     void jacobian(double _vx, double _vy, double _w, double &v1, double &v2, double &v3, double &v4);
 
 private:
     void jacobianInverse(double _v1, double _v2, double _v3, double _v4, double &_vx, double &_vy, double &_w);
-    bool calibrateGyro;
-    unsigned int packetNum;
     double lastVf, lastVn;
     short int selfID;
     const double Gravity = 9.8;
     double getVar(const double* data);
-    Matrix ANN_forward( Matrix input );
     //kick profiler usage
     void getkickprofilerdata();
     bool gotkickprofilerdatas;
@@ -188,7 +166,6 @@ public:
                      const double &_ballObstacleRadius);
     void getPathPlannerResult(vector<Vector2D> _result , Vector2D _averageDir);
 
-    const double gain = 1.013;
     void execute();
     parsian_msgs::parsian_robot_commandPtr getCommand();
 };

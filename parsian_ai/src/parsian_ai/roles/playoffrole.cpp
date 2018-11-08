@@ -3,7 +3,6 @@
 
 
 CRolePlayOff::CRolePlayOff() {
-    deleted = false;
     agent = nullptr;
     gotoPointAvoidSkill = new GotopointavoidAction;
     kickSkill = new KickAction;
@@ -15,7 +14,9 @@ CRolePlayOff::CRolePlayOff() {
     timer.start();
     agentID = -1;
     lookForward = true;
-    spin = 0;
+    spin = false;
+    lookAt.invalidate();
+
 }
 
 CRolePlayOff::~CRolePlayOff() {
@@ -28,14 +29,13 @@ CRolePlayOff::~CRolePlayOff() {
 void CRolePlayOff::reset() {
 
     updated = true;
-    deleted = false;
     roleUpdate = false;
     timer.start();
     agentID = -1;
     lookForward = true;
     ballIsNear = false;
     noAvoid = false;
-    spin = 0;
+    spin = false;
 }
 
 void CRolePlayOff::update() {
@@ -43,63 +43,64 @@ void CRolePlayOff::update() {
     double normalSpeed = normalaizeKickSpeed();
     ROS_INFO_STREAM("playofffff: "<< normalSpeed);
     switch (selectedSkill) {
-    case RoleSkill::Gotopoint:
-        break;
-    case RoleSkill::GotopointAvoid:
-        gotoPointAvoidSkill->setTargetpos(target);
-        gotoPointAvoidSkill->setTargetdir(targetDir);
-        gotoPointAvoidSkill->setAvoidpenaltyarea(avoidPenaltyArea);
-        gotoPointAvoidSkill->setMaxvelocity(maxVelocity);
-        gotoPointAvoidSkill->setNoavoid(noAvoid);
-        gotoPointAvoidSkill->setBallobstacleradius(0.18);
+        case RoleSkill::Gotopoint:
+            break;
+        case RoleSkill::GotopointAvoid:
+            gotoPointAvoidSkill->setTargetpos(target);
+            gotoPointAvoidSkill->setTargetdir(targetDir);
+            gotoPointAvoidSkill->setAvoidpenaltyarea(avoidPenaltyArea);
+            gotoPointAvoidSkill->setMaxvelocity(maxVelocity);
+            gotoPointAvoidSkill->setNoavoid(noAvoid);
+            gotoPointAvoidSkill->setBallobstacleradius(0.18);
+            gotoPointAvoidSkill->setLookat(lookAt);
 
-        updated = false;
-        break;
-    case RoleSkill::Kick:
-        kickSkill->setIsplayoff(true);
-        kickSkill->setTarget(target);
-        kickSkill->setAvoidpenaltyarea(avoidPenaltyArea);
-        kickSkill->setInterceptmode(intercept);
-        kickSkill->setChip(chip);
+            updated = false;
+            break;
+        case RoleSkill::Kick:
+            kickSkill->setIsplayoff(true);
+            kickSkill->setTarget(target);
+            kickSkill->setAvoidpenaltyarea(avoidPenaltyArea);
+            kickSkill->setInterceptmode(intercept);
+            kickSkill->setChip(chip);
             if(chip){
-            kickSkill->setChipdist(normalSpeed);
+                kickSkill->setChipdist(normalSpeed);
             } else {
                 kickSkill->setKickspeed(normalSpeed);
             }
-        kickSkill->setDontkick(!doPass);
-        kickSkill->setTolerance(0.5);
-        kickSkill->setPassprofiler(false);
-        kickSkill->setKickwithcenterofdribbler(false);
-        kickSkill->setSpin(spin);
+            kickSkill->setDontkick(!doPass);
+            kickSkill->setTolerance(0.5);
+            kickSkill->setPassprofiler(false);
+            kickSkill->setKickwithcenterofdribbler(false);
+            kickSkill->setSpin(spin);
 
-        if (!doPass && !chip && lookForward) {
-            kickSkill->setTarget(Vector2D(1000, 0));
-        }
-        updated = false;
-        break;
-    case RoleSkill::Mark:
-        break;
-    case RoleSkill::OneTouch:
-        oneTouchSkill->setTarget(target);
-        oneTouchSkill->setWaitpos(waitPos);
-        oneTouchSkill->setChip(false);
-        oneTouchSkill->setShottoemptyspot(false);
-        oneTouchSkill->setKickspeed(normalSpeed);
+            if (!doPass && !chip && lookForward) {
+                kickSkill->setTarget(Vector2D(1000, 0));
+            }
+            updated = false;
+            break;
+        case RoleSkill::Mark:
+            break;
+        case RoleSkill::OneTouch:
+            oneTouchSkill->setTarget(target);
+            oneTouchSkill->setWaitpos(waitPos);
+            oneTouchSkill->setChip(false);
+            oneTouchSkill->setShottoemptyspot(false);
+            oneTouchSkill->setKickspeed(normalSpeed);
 //        oneTouchSkill->setKickdischargetime(kickSpeed);
-        oneTouchSkill->setIskickdischargetime(false); // true bud ba khat bala comment shod
-        updated = false;
-        break;
-    case RoleSkill::ReceivePass:
-        receivePassSkill->setTarget(target);
-        receivePassSkill->setReceiveradius(receiveRadius);
-        if (ignoreAngle) {
-            receivePassSkill->setIatargetdir(targetDir);
-            receivePassSkill->setIgnoreangle(false);
-        }
-        updated = false;
-        break;
-    default:
-        break;
+            oneTouchSkill->setIskickdischargetime(false); // true bud ba khat bala comment shod
+            updated = false;
+            break;
+        case RoleSkill::ReceivePass:
+            receivePassSkill->setTarget(target);
+            receivePassSkill->setReceiveradius(receiveRadius);
+            if (ignoreAngle) {
+                receivePassSkill->setIatargetdir(targetDir);
+                receivePassSkill->setIgnoreangle(false);
+            }
+            updated = false;
+            break;
+        default:
+            break;
     }
 }
 
@@ -110,24 +111,24 @@ void CRolePlayOff::execute() {
     }
 
     switch (selectedSkill) {
-    case RoleSkill::Gotopoint:
-        break;
-    case RoleSkill::GotopointAvoid:
-        agent->action = gotoPointAvoidSkill;
-        break;
-    case RoleSkill::Kick:
-        agent->action = kickSkill;
-        break;
-    case RoleSkill::Mark:
-        break;
-    case RoleSkill::OneTouch:
-        agent->action = oneTouchSkill;
-        break;
-    case RoleSkill::ReceivePass:
-        agent->action = receivePassSkill;
-        break;
-    default:
-        break;
+        case RoleSkill::Gotopoint:
+            break;
+        case RoleSkill::GotopointAvoid:
+            agent->action = gotoPointAvoidSkill;
+            break;
+        case RoleSkill::Kick:
+            agent->action = kickSkill;
+            break;
+        case RoleSkill::Mark:
+            break;
+        case RoleSkill::OneTouch:
+            agent->action = oneTouchSkill;
+            break;
+        case RoleSkill::ReceivePass:
+            agent->action = receivePassSkill;
+            break;
+        default:
+            break;
     }
 
 }

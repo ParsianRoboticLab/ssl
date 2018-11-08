@@ -5,14 +5,13 @@
 #include "parsian_ai/util/worldmodel.h"
 #include <parsian_util/tools/drawer.h>
 
-struct kk2Angles {
-    double angle1;
-    double angle2;
+struct Intersection {
+    double angle[2];
+    double radius[2];
 };
 
-struct kkDefPos {
-    int size;
-    double overDef;
+struct DefPos {
+    int size = -1;
     Vector2D pos[5];
 };
 
@@ -20,29 +19,16 @@ struct kkDefPos {
 class CDefPos {
 public:
     CDefPos();
-    ///////////////////////// AHZ /////////////////////////////////
-    int findNeededDefense(double downLimit , double upLimit);
-    double findBestOffsetForPenaltyArea(Line2D bestLineWithTalles);
-    Line2D getBestLineWithTalles(int defeneseCount);
-    QList<Segment2D> getLinesOfBallTriangle();
-    QList<Vector2D> newDefensePositioning(int numberOfDefenseAgents);
-    //////////////////////////////////////////////////////////////
-    kkDefPos getDefPositions(Vector2D _ballPos, int _size, double _limit1, double _limit2);
-    //HMD
-    Vector2D getIntersectionWithPenaltyAreaDef(double _tempBestRadius , Segment2D _seg);
-    //HMD Finish
-    double nearRadius[2];
-    bool isNearPenaltyArea;
-
-    Vector2D getXYByAngle(double _angle, double _radius);
-    double getRobotAngle(double _radius);
-    kk2Angles getIntersections(Vector2D _ballPos, double _radius);
-    double findBestRadius(int _numOfDefs);
+    DefPos getDefPositions(const Vector2D& _ballPos, int _size, double _limit1, double _limit2);
+    static DefPos getStaticDefPositions(const Vector2D& _ballPos, int _size, double _limit1, double _limit2);
+    static Vector2D getXYByAngle(double _angle, double _radius);
+    static double getRobotAngle(double _radius);
+    static Intersection getIntersections(Vector2D _ballPos, double _radius, bool isNearPenaltyArea);
+    static double findBestRadius(int _numOfDefs);
 private:
-    kkDefPos tempDefPos;
-    double getAngleByXY(Vector2D _point);
+    static double getAngleByXY(Vector2D _point);
     double oneDefThr;
-    double penaltyAreaOffset;
+    static double penaltyAreaOffset;
     double penaltyAreaRadius;
     Circle2D penaltyAreaCircle;
 };

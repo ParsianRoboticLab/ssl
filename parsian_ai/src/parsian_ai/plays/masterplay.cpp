@@ -20,13 +20,9 @@ void CMasterPlay::initMaster() {
     blockAgent = nullptr;
     playMakeAgent = nullptr;
     positionAgents.clear();
-//    if (gameState->isStart()) {
-//        markAgents.clear();
-//    }
     stopAgents.clear();
     masterStaticPoints.clear();
     staticInited = false;
-    //defenseN = 2;
     formationName = "";
 
 
@@ -43,7 +39,7 @@ bool CMasterPlay::canScore() {
 }
 
 
-void CMasterPlay::setAgentsID(const QList<Agent*>& _agentsID) {
+void CMasterPlay::setAgents(const QList<Agent *> &_agentsID) {
     agents.clear();
     agents.append(_agentsID);
 }
@@ -268,15 +264,9 @@ double CMasterPlay::coveredArea(std::priority_queue < QPair< edgeMode , double >
     }
 }
 
-void CMasterPlay::execute() {
-
+void CMasterPlay::execute(const QList<Agent*>& _agents) {
+    setAgents(_agents);
     execute_x();
-    for (int i = 0; i < agents.size(); i++) {
-        if (agents[i]->isVisible() && agents[i]->action != nullptr) {
-            Action *mahi = agents[i]->action;
-            ROS_INFO_STREAM(i << ": " << mahi->getActionName().toStdString().c_str());
-        }
-    }
     execPlay();
     DBUG(QString("MasterPlay size: %1").arg(agents.count()) , D_ERROR);
 }
@@ -300,6 +290,7 @@ void CMasterPlay::execPlay() {
         markPlan.init(markAgents);
         markPlan.execute();
     }
+
 
     if (gameState->isStop()) {
         if (!positionAgents.empty()) {

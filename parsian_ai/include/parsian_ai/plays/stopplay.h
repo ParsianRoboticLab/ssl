@@ -9,7 +9,8 @@ public:
     ~CStopPlay() override;
 
     void execute_x() override;
-    void init(const QList <Agent*>& _agents) override;
+    void init(QList<Agent*>& _agents) override;
+
 private:
     void stopPosition();
     void reset() override;

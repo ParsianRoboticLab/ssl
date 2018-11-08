@@ -9,45 +9,23 @@
 #include <queue>
 #include <regex>
 
-enum PlaysEnum {
-    OurKickOffPlay,
-    OurIndirectPlay,
-    OurDirectPlay,
-    OurPenaltyPlay,
-    OurBallPlacement,//added
-
-    TheirKickOffPlay,
-    TheirIndirectPlay,
-    TheirDirectPlay,
-    TheirPenaltyPlay,
-    TheirBallPlacement,//added
-    StartPlay,
-    StopPlay,
-    HaltPlay,
-    HalfTimeLineUp
-};
-
 class CMasterPlay {
 
 public:
 
     bool playOnFlag;
-    int playoff_badPasserID;
     bool lockAgents;
     CMasterPlay();
     virtual ~CMasterPlay();
     virtual void reset() = 0;
     virtual void execute_x() = 0;
-    virtual void init(const QList <Agent*>& _agents) = 0;
+    virtual void init(QList<Agent*>& _agents) = 0;
 
-    void execute();
-    virtual QString whoami() {
-        return "MasterPlay";
-    }
+    void execute(const QList<Agent*>& _agents);
+    virtual QString whoami() { return "MasterPlay"; }
     bool canScore();
     QList <Agent *> markAgents;
     //////////////////////////////////////
-    bool noPlanException;
 
     /* static */ PositioningPlan positioningPlan;
     /* static */ CMarkPlan markPlan;
@@ -64,7 +42,6 @@ protected:
     QList <Agent*> agents;
 
     int executedCycles;
-    int defenseN ;
     bool f;
 
     QList <Agent *> positionAgents;
@@ -78,7 +55,7 @@ protected:
     /*static*/ CRoleBlock blockRole;
 
     void initMaster();
-    void setAgentsID(const QList <Agent*>& _agentsID);
+    void setAgents(const QList<Agent *> &_agentsID);
     void setFormation(QString _formationName);
     void setStaticPoints(QList< holdingPoints > _staticPoints);
     void resetPositioning();

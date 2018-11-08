@@ -15,14 +15,9 @@ void CStopPlay::reset() {
     executedCycles = 0;
 }
 
-void CStopPlay::init(const QList<Agent*> &_agents) {
-    setAgentsID(_agents);
+void CStopPlay::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
-
-//    if( knowledge->getLastPlayExecuted() != StopPlay ){
-//        reset();
-//    }
-//    knowledge->setLastPlayExecuted(StopPlay);
 }
 
 void CStopPlay::stopPosition() {

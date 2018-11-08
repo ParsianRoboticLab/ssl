@@ -16,7 +16,7 @@ enum class DynamicMode {
     Plan            = 0b0001000000,
     Forward         = 0b0010000000,
     NoPositionAgent = 0b0100000000,
-    BallInOppJaw    = 0b1000000000
+    Pass            = 0b1000000000
 };
 
 enum class PlayMakeSkill {

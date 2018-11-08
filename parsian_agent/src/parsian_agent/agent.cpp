@@ -31,74 +31,6 @@ Matrix tansig(const Matrix &n) {
     return n;
 }
 
-Matrix Agent::ANN_forward(Matrix input) {
-    static Matrix b1(10, 1), b2(4, 1), IW(10, 3), LW(4, 10);
-    static bool run = true;
-    if (run) {
-        fstream file1, file2, file3, file4;
-        file1.open("test/b1.txt", fstream::in);
-        file2.open("test/b2.txt", fstream::in);
-        file3.open("test/IW.txt", fstream::in);
-        file4.open("test/LW.txt", fstream::in);
-        for (int i = 0; i < 10 ; i++) {
-            file1 >> b1.e(i, 0);
-        }
-        for (int i = 0; i < 4 ; i++) {
-            file2 >> b2.e(i, 0);
-        }
-        for (int i = 0; i < 10 ; i++) {
-            for (int j = 0; j < 3 ; j++) {
-                file3 >> IW.e(i, j);
-            }
-        }
-        for (int i = 0; i < 4 ; i++) {
-            for (int j = 0; j < 10 ; j++) {
-                file4 >> LW.e(i, j);
-            }
-        }
-        run = false;
-    }
-
-    Matrix output(4, 1);
-    Matrix xmin(3, 1);
-    xmin.e(0, 0) = -0.561029;
-    xmin.e(1, 0) = -0.533322;
-    xmin.e(2, 0) = -57.9859;
-    Matrix xmax(3, 1);
-    xmax.e(0, 0) = 0.57;
-    xmax.e(1, 0) = 0.5344;
-    xmax.e(2, 0) = 56.928;
-
-    input = input - xmin;
-    for (int i = 0; i < input.nrows() ; i++)
-        for (int j = 0; j < input.ncols() ; j++) {
-            input.e(i, j) *= (2.0) / (xmax.e(i, j) - xmin.e(i, j));
-            input.e(i, j) -= 1.0;
-        }
-
-    output = LW * tansig(IW * input + b1) + b2;
-
-    Matrix Xmin(4, 1);
-    Xmin.e(0, 0) = -27.3596;
-    Xmin.e(1, 0) = -28.2358;
-    Xmin.e(2, 0) = -28.2358;
-    Xmin.e(3, 0) = -27.3596;
-    Matrix Xmax(4, 1);
-    Xmax.e(0, 0) = 27.3596;
-    Xmax.e(1, 0) = 28.2358;
-    Xmax.e(2, 0) = 28.2358;
-    Xmax.e(3, 0) = 27.3596;
-
-    for (int i = 0; i < output.nrows() ; i++)
-        for (int j = 0; j < output.ncols() ; j++) {
-            output.e(i, j) -= -1;
-            output.e(i, j) *= (Xmax.e(i, j) - Xmin.e(i, j)) / (2.0);
-        }
-
-    output = output + Xmin;
-    return output;
-}
-
 Agent::Agent(int _ID)
 {
     selfID = static_cast<short>(_ID);
@@ -121,13 +53,11 @@ Agent::Agent(int _ID)
     getchipprofilerdata();
 
     srand48(time(nullptr));
-    packetNum = 0;
     stopTrain = false;
     wh1 = wh2 = wh3 = wh4 = 0.0;
     startTrain = false;
     skill = nullptr;
     skillName = "";
-    onOffState = true;
     commandID = selfID;
 
     chip = false;
@@ -147,10 +77,6 @@ Agent::Agent(int _ID)
     lastVn = 0;
     lowSpeedMode = false;
     starter = false;
-    beep = false;
-
-    sumEX = sumEY = 0;
-    lastEX = lastEY = 0;
     goalVisibility = -1;
     idle = false;
 
@@ -159,16 +85,12 @@ Agent::Agent(int _ID)
     loadProfiles();
 
     agentAngelForGyro = Vector2D(1, 0);
-    calibrateGyro = false;
-    calibrated = 900;
     this->abilities.canChip = true;
     this->abilities.canKick = true;
     this->abilities.canSpin = true;
     this->abilities.hasGyro = false;
 
     homePos.assign(0 , 0);
-    _ACC = 0;
-    _DEC = 0;
     agentStopTime.start();
 
     changeIsNeeded = false;
@@ -234,7 +156,7 @@ void Agent::loadProfiles() {
     }
 }
 
-int Agent::id() {
+int Agent::id() const{
     return selfID;
 }
 
@@ -492,22 +414,21 @@ void Agent::accelerationLimiter(double vf, bool diveMode) {
 }
 
 void Agent::setOnOffState(bool state) {
-    onOffState = state;
 }
 
 void Agent::setCommandID(int ID) {
     commandID = ID;
 }
 
-Vector2D Agent::pos() {
+Vector2D Agent::pos() const{
     return wm->our[selfID]->pos;
 }
 
-Vector2D Agent::vel() {
+Vector2D Agent::vel() const {
     return wm->our[selfID]->vel;
 }
 
-Vector2D Agent::dir() {
+Vector2D Agent::dir() const{
     return wm->our[selfID]->dir;
 }
 
@@ -582,8 +503,7 @@ void Agent::waitHere() {
     setBeep(false);
     setForceKick(false);
     idle = true;
-    _ACC = 0;
-    _DEC = 0;
+
 }
 
 void Agent::setForceKick(bool force) {
@@ -602,7 +522,6 @@ void Agent::setChip(double _kickSpeed) {
 
 
 void Agent::setBeep(bool _beep) {
-    beep = _beep;
 }
 
 void Agent::setRoller(int state) {
@@ -616,14 +535,6 @@ char Agent::getRoller() {
 float Agent::getMotorMaxRadPerSec() {
 
     return static_cast<float>(1000 * 2 * M_PI / 60.0f);
-}
-
-float Agent::getvLimit() {
-    return static_cast<float>((1.0f / (float)_BIT_RESOLUTION) * getMotorMaxRadPerSec() * self()->wheelRadius());
-}
-
-float Agent::getwLimit() {
-    return static_cast<float>(((1.0f / (float)_BIT_RESOLUTION) * getMotorMaxRadPerSec() * self()->wheelRadius()) / self()->robotRadius());
 }
 
 void Agent::jacobian(double vx, double vy, double w, double &v1, double &v2, double &v3, double &v4) {
@@ -812,43 +723,6 @@ int Agent::kickValueForDistance(double dist, double finalVel) {
     return static_cast<int>(kickSpeedValue(vel, false));
 }
 
-//TODO : get speed from profiler
-Vector2D Agent::oneTouchCheck(Vector2D positioningPos, Vector2D* oneTouchDirection) {
-    Vector2D oneTouchDir = Vector2D::unitVector(CSkillKickOneTouch::oneTouchAngle(pos(), Vector2D(0, 0), (pos() - wm->ball->pos).norm(),
-                           pos() - wm->ball->pos, wm->field->oppGoal(),
-                           conf->Landa,
-                           conf->Gamma,
-                           6.5));
-    Vector2D q;
-    q.invalidate();
-    bool oneTouchKick = false;
-    if (wm->ball->vel.length() > 0.1 && (wm->ball->pos - pos()).length() < 1.0) {
-        oneTouchKick = true;
-    }
-    //todo ballComingSpeed
-    if (1/*self()->ballComingSpeed()*/ > 0.1) {
-        Line2D l(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm());
-        q = l.projection(positioningPos);
-        DBUG("case", D_ERROR);
-        if (q.valid() && (q - positioningPos).length() < 1.0) {
-            DBUG("case2", D_ERROR);
-            if ((wm->ball->pos - pos()).length() < 1.0) {
-                oneTouchKick = true;
-            }
-            q -= (self()->centerFromKicker() + CBall::radius) * oneTouchDir;
-        }
-    }
-    if (oneTouchKick) {
-        if (fabs(Vector2D::angleBetween(self()->dir, wm->field->oppGoal() - self()->pos).degree()) < 45) {
-            DBUG("case3", D_ERROR);
-            setKick(chipDistanceValue(8 , false));
-        }
-        DBUG("case4", D_ERROR);
-    }
-    *oneTouchDirection = oneTouchDir;
-    return q;
-}
-
 //IMPORTANT
 ////CKS
 
@@ -864,20 +738,11 @@ bool Agent::canOneTouch() {
     return false;
 }
 
-void Agent::setGyroZero() {
-    //  if ( calibrated < 999)
-    //    return;
-    calibrated = 0;
-    //    if( id() == 4)
-    agentAngelForGyro = self()->dir;
-    calibrateGyro = true;
-    DEBUG(QString("Calibrated ! ang : %1").arg(agentAngelForGyro.dir().degree()), D_SEPEHR);
-}
 void Agent::initPlanner(const Vector2D &_target, const QList<int> &_ourRelaxList,
                         const QList<int> &_oppRelaxList, const bool &_avoidPenaltyArea, const bool &_avoidCenterCircle,
                         const double &_ballObstacleRadius) {
     parsian_msgs::parsian_get_planPtr plan{new parsian_msgs::parsian_get_plan};
-    plan->robotID = this->id();
+    plan->robotID = static_cast<unsigned char>(this->id());
     plan->goal = _target.toParsianMessage();
     plan->start = this->pos().toParsianMessage();
     Q_FOREACH (const int &id, _ourRelaxList) {
@@ -886,32 +751,22 @@ void Agent::initPlanner(const Vector2D &_target, const QList<int> &_ourRelaxList
     Q_FOREACH (const int&id, _oppRelaxList) {
         plan->oppRelaxList.push_back(id);
     }
-    plan->avoidCenterCircle = _avoidCenterCircle;
-    plan->ballObstacleRadius = _ballObstacleRadius;
-    plan->avoidPenaltyArea = _avoidPenaltyArea;
+    plan->avoidCenterCircle = (unsigned char) _avoidCenterCircle;
+    plan->ballObstacleRadius = (float) _ballObstacleRadius;
+    plan->avoidPenaltyArea = (unsigned char) _avoidPenaltyArea;
     plan->header.stamp = ros::Time::now();
     // TODO : Add Virtual Obstacle to This
     planner_pub.publish(plan);
     ROS_INFO_STREAM("PUBLISHED");
-    // TODO : remove below kindly
-//    planner.initPathPlanner(_target , _ourRelaxList , _oppRelaxList ,  _avoidPenaltyArea, _avoidCenterCircle, _ballObstacleRadius);
-//    getPathPlannerResult(planner.getResultModified(), planner.getAverageDir());
 }
 
 void Agent::getPathPlannerResult(vector<Vector2D> _result , Vector2D _averageDir) {
     pathPlannerResult.clear();
     pathPlannerResult.assign(_result.begin() , _result.end());
-    plannerAverageDir = _averageDir.norm();
-    ROS_INFO_STREAM("SUBS");
 }
 
 void Agent::execute() {
-
     skill->execute();
-
-    //planner.generateObstacleSpace(obst  , ourRelaxList , oppRelaxList , avoidPenaltyArea, avoidCenterArea , ballObstacleRadius,ID,goal);
-    //planner.runPlanner();
-    //emit pathPlannerResult(resultModified ,averageDir); get this variables
 }
 
 parsian_msgs::parsian_robot_commandPtr Agent::getCommand() {

@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <float.h>
 #include "geometry.h"
-#include "util.h"
+#include <parsian_util/core/util.h>
 
 #ifndef GL_TEXT_H
 #define GL_TEXT_H

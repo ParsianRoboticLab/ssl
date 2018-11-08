@@ -96,16 +96,13 @@ add_library(${PROJECT_NAME}
 		src/wm/robot.cpp
 		src/wm/ball.cpp
 		src/config.cpp
-#        src/wm/ballFlyingFilter.cpp src/wm/ballFlyingFilter.h
-)
+		)
 
 add_library(${PROJECT_NAME}_util
 		src/util/robottracker.cpp
 		src/util/kalman.cpp
-                src/util/newkalman.cpp
-                src/util/balltracker.cpp
+		src/util/balltracker.cpp
 		src/util/tracker.cpp
-		src/util/matrix.cpp
 		)
 
 add_library(${PROJECT_NAME}_nodelet

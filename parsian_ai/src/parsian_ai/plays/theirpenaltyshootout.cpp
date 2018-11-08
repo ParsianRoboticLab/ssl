@@ -17,7 +17,7 @@ void CTheirPenaltyShootout::reset()
 
 void CTheirPenaltyShootout::init(const QList<Agent*>& _agents)
 {
-    setAgentsID(_agents);
+    setAgents(_agents);
 }
 
 void CTheirPenaltyShootout::setPlaymake(Agent* _playmakeAgent)
