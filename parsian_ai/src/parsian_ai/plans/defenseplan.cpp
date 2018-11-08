@@ -2832,6 +2832,7 @@ void DefensePlan::executeGoalKeeper() {
 
         }
         else if(know->variables["transientFlag"].toBool()){
+            drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
             DBUG("TS Mode" , D_AHZ);
             know->variables["goalKeeperClearMode"] = false;
             know->variables["goalKeeperOneTouchMode"] = false;
@@ -2844,18 +2845,13 @@ void DefensePlan::executeGoalKeeper() {
             gpa[goalKeeperAgent->id()]->setNoavoid(true);
             gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
             gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-            if (goalKeeperPredictionModeInPlayOff) {
-                ROS_INFO_STREAM("TS:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
-            } else {
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperAgent->pos());
-            }
+            drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "cyan");
             if(GKReciveBallInTS)
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
+                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
             else
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperAgent->pos());
+                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperTarget - wm->field->ourGoal());
         }
-        else if(stopMode){            
+        else if(stopMode){
             DBUG("Stop Mode" , D_AHZ);
             know->variables["goalKeeperClearMode"] = false;
             know->variables["goalKeeperOneTouchMode"] = false;
