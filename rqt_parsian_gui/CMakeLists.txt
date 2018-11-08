@@ -1,0 +1,266 @@
+cmake_minimum_required(VERSION 2.8.3)
+project(rqt_parsian_gui)
+
+## Compile as C++11, supported in ROS Kinetic and newer
+add_compile_options(-std=c++11)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
+find_package(catkin REQUIRED COMPONENTS
+        roslint
+        rqt_gui
+        rqt_gui_cpp
+        std_msgs
+        parsian_util
+        rosbag
+        rospy
+	dynamic_reconfigure
+        )
+
+## System dependencies are found with CMake's conventions
+
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5OpenGL REQUIRED)
+    find_package(Qt5Core REQUIRED)
+
+else()
+    find_package(Qt4 COMPONENTS QtCore QtGui QtOpenGL REQUIRED)
+    include(${QT_USE_FILE})
+endif()
+
+find_package(OpenGL REQUIRED)
+# find_package(Boost REQUIRED COMPONENTS system)
+file(GLOB_RECURSE LibFiles "include/*.h")
+add_custom_target(headers SOURCES ${LibFiles})
+
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+catkin_python_setup()
+
+roslint_cpp()
+roslint_python()
+################################################
+## Declare ROS dynamic reconfigure parameters ##
+################################################
+
+## To declare and build dynamic reconfigure parameters within this
+## package, follow these steps:
+## * In the file package.xml:
+##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
+## * In this file (CMakeLists.txt):
+##   * add "dynamic_reconfigure" to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     and list every .cfg file to be processed
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+generate_dynamic_reconfigure_options(
+        cfg/drawbuffer.cfg
+        cfg/monitor.cfg
+)
+
+###################################
+## catkin specific configuration ##
+###################################
+## The catkin_package macro generates cmake config files for your package
+## Declare things to be passed to dependent projects
+## INCLUDE_DIRS: uncomment this if you package contains header files
+## LIBRARIES: libraries you create in this project that dependent projects also need
+## CATKIN_DEPENDS: catkin_packages dependent projects also need
+## DEPENDS: system dependencies of this project that dependent projects also need
+catkin_package(
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+        CATKIN_DEPENDS rqt_gui_cpp parsian_util
+        #  DEPENDS system_lib
+)
+
+
+set (${PROJECT_NAME}_SRCS
+        src/${PROJECT_NAME}/robotstatus.cpp
+        src/${PROJECT_NAME}/robotstatus_widget.cpp
+        src/${PROJECT_NAME}/mode_chooser.cpp
+        src/${PROJECT_NAME}/modeChooserWidget.cpp
+        src/${PROJECT_NAME}/handycontroller.cpp
+        src/${PROJECT_NAME}/playoffWidget.cpp
+        src/${PROJECT_NAME}/playoff.cpp
+        src/${PROJECT_NAME}/taskRunner.cpp
+        src/${PROJECT_NAME}/taskRunnerWidget.cpp
+        src/${PROJECT_NAME}/referee.cpp
+        src/${PROJECT_NAME}/refereeWidget.cpp
+        )
+
+set(${PROJECT_NAME}_HDRS
+        include/${PROJECT_NAME}/robotstatus.h
+        include/${PROJECT_NAME}/robotstatus_widget.h
+        include/${PROJECT_NAME}/mode_chooser.h
+        include/${PROJECT_NAME}/modeChooserWidget.h
+        include/${PROJECT_NAME}/handycontroller.h
+        include/${PROJECT_NAME}/playoffWidget.h
+        include/${PROJECT_NAME}/playoff.h
+        include/${PROJECT_NAME}/taskRunner.h
+        include/${PROJECT_NAME}/taskRunnerWidget.h
+        include/${PROJECT_NAME}/referee.h
+        include/${PROJECT_NAME}/refereeWidget.h
+
+        )
+
+set(${PROJECT_NAME}_UIS
+        resource/handycontroller.ui
+        )
+
+
+set(${PROJECT_NAME}_graphical_SRCS
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        )
+
+set(${PROJECT_NAME}_graphical_HDRS
+        include/rqt_parsian_gui/graphical/bbox.h
+        include/rqt_parsian_gui/graphical/field.h
+        include/rqt_parsian_gui/graphical/field_default_constants.h
+        include/rqt_parsian_gui/graphical/geomalgo.h
+        include/rqt_parsian_gui/graphical/geometry.h
+        include/rqt_parsian_gui/graphical/gltext.h
+        include/rqt_parsian_gui/graphical/graphical.h
+        include/rqt_parsian_gui/graphical/gvector.h
+        include/rqt_parsian_gui/graphical/pose.h
+        include/rqt_parsian_gui/graphical/quaternion.h
+        include/rqt_parsian_gui/graphical/range.h
+        include/rqt_parsian_gui/graphical/soccerview.h
+        include/rqt_parsian_gui/graphical/timer.h
+        )
+
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+    qt5_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt5_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+else()
+    qt4_wrap_cpp(${PROJECT_NAME}_MOCS ${${PROJECT_NAME}_HDRS})
+    qt4_wrap_ui(${PROJECT_NAME}_UIS_H ${${PROJECT_NAME}_UIS})
+endif()
+
+qt5_wrap_cpp(${PROJECT_NAME}_graphical_MOCS ${${PROJECT_NAME}_graphical_HDRS})
+
+###########
+## Build ##
+###########
+
+## Specify additional locations of header files
+## Your package locations should be listed before other locations
+include_directories(
+        include
+        ${CMAKE_CURRENT_BINARY_DIR}/..
+        ${catkin_INCLUDE_DIRS}
+)
+
+## Declare a cpp library
+add_library(${PROJECT_NAME}
+        ${${PROJECT_NAME}_SRCS}
+        ${${PROJECT_NAME}_MOCS}
+        ${${PROJECT_NAME}_UIS_H}
+        )
+
+add_library(${PROJECT_NAME}_graphical
+        src/rqt_parsian_gui/graphical/graphical.cpp
+        src/rqt_parsian_gui/graphical/field.cpp
+        src/rqt_parsian_gui/graphical/soccerview.cpp
+        src/rqt_parsian_gui/graphical/gltext.cpp
+        src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        src/rqt_parsian_gui/graphical/logger.cpp
+        ${${PROJECT_NAME}_graphical_MOCS}
+        )
+
+add_dependencies(${PROJECT_NAME}_graphical
+        ${${PROJECT_NAME}_EXPORTED_TARGETS}
+        ${catkin_EXPORTED_TARGETS}
+        ${PROJECT_NAME}_gencfg
+        )
+## Declare a C++ executable
+# add_executable(rqt_example_cpp_node src/rqt_example_cpp_node.cpp)
+
+## Add cmake target dependencies of the executable
+## same as for the library above
+# add_dependencies(rqt_example_cpp_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+target_link_libraries(${PROJECT_NAME}_graphical
+        ${catkin_LIBRARIES}
+        Qt5::Widgets
+        Qt5::OpenGL
+        ${OPENGL_gl_LIBRARY}
+        ${OPENGL_glu_LIBRARY}
+        )
+
+if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
+    target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
+else()
+    target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+endif()
+
+#############
+## Install ##
+#############
+
+# all install targets should use catkin DESTINATION variables
+# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
+
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+# install(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+## Mark executables and/or libraries for installation
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_graphical
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+## Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        #   PATTERN ".svn" EXCLUDE
+        )
+
+## Mark other files for installation (e.g. launch and bag files, etc.)
+install(FILES
+        plugin2.xml
+        plugin3.xml
+        playoff_plugin.xml
+        referee_plugin.xml
+        mode_plugin.xml
+        task_runner_plugin.xml
+        graphical.xml
+        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+        )
+
+catkin_install_python(PROGRAMS
+        script/drawbuffer/drawbuffer_node.py
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_rqt_example_cpp.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)

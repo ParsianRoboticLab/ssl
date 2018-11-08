@@ -1,0 +1,961 @@
+#include <parsian_agent/agent.h>
+#include <parsian_agent/skills.h>
+#include <parsian_agent/config.h>
+
+#define errlen 100
+
+
+double Agent::getVar(const double *data) {
+    double mean = 0.0;
+    for (int i = 0 ; i < errlen ; i++) {
+        mean += data[i];
+    }
+    mean /= errlen;
+
+    double var = 0.0;
+    double error;
+    for (int i = 0 ; i < errlen ; i++) {
+        error = data[i] - mean;
+        var += error * error;
+    }
+    var /= errlen;
+    var = sqrt(var);
+    return var;
+}
+
+Matrix tansig(const Matrix &n) {
+    for (int i = 0 ; i < n.nrows() ; i++)
+        for (int j = 0 ; j < n.ncols() ; j++) {
+            n.e(i , j) = 2.0 / (1.0 + exp(-2.0 * n.e(i , j))) - 1.0;
+        }
+    return n;
+}
+
+Agent::Agent(int _ID)
+{
+    selfID = static_cast<short>(_ID);
+    gotkickprofilerdatas = false;
+    for(int i{}; i < 8; i++)
+    {
+        kick_coef_a[i] = 0;
+        kick_coef_b[i] = 0;
+        kick_coef_c[i] = 0;
+    }
+    getkickprofilerdata();
+
+    gotchipprofilerdatas = false;
+    for(int i{}; i < 8; i++)
+    {
+        chip_coef_a[i] = 0;
+        chip_coef_b[i] = 0;
+        chip_coef_c[i] = 0;
+    }
+    getchipprofilerdata();
+
+    srand48(time(nullptr));
+    stopTrain = false;
+    wh1 = wh2 = wh3 = wh4 = 0.0;
+    startTrain = false;
+    skill = nullptr;
+    skillName = "";
+    commandID = selfID;
+
+    chip = false;
+    forceKick = false;
+    canRecvPass = false;
+    roller = 0;
+    kickSpeed = 0;
+
+    v1 = 0;
+    v2 = 0;
+    v3 = 0;
+    v4 = 0;
+    vforward  = 0;
+    vnormal   = 0;
+    vangular  = 0;
+    lastVf = 0;
+    lastVn = 0;
+    lowSpeedMode = false;
+    starter = false;
+    goalVisibility = -1;
+    idle = false;
+
+    //Both codes below do the same work!
+
+    loadProfiles();
+
+    agentAngelForGyro = Vector2D(1, 0);
+    this->abilities.canChip = true;
+    this->abilities.canKick = true;
+    this->abilities.canSpin = true;
+    this->abilities.hasGyro = false;
+
+    homePos.assign(0 , 0);
+    agentStopTime.start();
+
+    changeIsNeeded = false;
+
+}
+
+void Agent::loadProfiles() {
+    //Set shotProfile From File
+    {
+        for (auto &i : shotProfile) {
+            i[0] = i[1] = -1.0;
+        }
+        QFile file(QString("profiles/robot%1.shot").arg(selfID));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            //            qDebug()<<(QString("Parsing profiles/robot%1.shot").arg(selfID));
+
+            while (!file.atEnd()) {
+                QByteArray line = file.readLine();
+
+                QStringList l = QString(line).split(',');
+                int index = l[0].toInt();
+                shotProfile[index][0] = l[1].toDouble();
+                shotProfile[index][1] = l[2].toDouble();
+            }
+
+            //            qDebug()<<"shot profile for robot "<<selfID<<":";
+            for (int i = 0; i < 32; i++) {
+                qDebug() << i << " " << shotProfile[i][0] << " " << shotProfile[i][1];
+            }
+            file.close();
+        } else {
+            //            qDebug()<<(QString("NotFound: profiles/robot%1.shot").arg(selfID))<<file.errorString();
+        }
+    }
+
+    //Set chipProfile From File
+    {
+        for (auto &i : chipProfile) {
+            i[0] = i[1] = -1.0;
+        }
+        QFile file(QString("profiles/robot%1.chip").arg(selfID));
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            //            qDebug()<<(QString("Parsing profiles/robot%1.chip").arg(selfID));
+
+            while (!file.atEnd()) {
+                QByteArray line = file.readLine();
+
+                QStringList l = QString(line).split(',');
+                int index = l[0].toInt();
+                chipProfile[index][0] = l[1].toDouble();
+                chipProfile[index][1] = l[2].toDouble();
+            }
+
+
+            //            qDebug()<<"chip profile for robot "<<selfID<<":";
+            for (int i = 0; i < 32; i++) {
+                qDebug() << i << " " << chipProfile[i][0] << " " << chipProfile[i][1];
+            }
+            file.close();
+        } else {
+            //            qDebug()<<(QString("NotFound: profiles/robot%1.chip").arg(selfID))<<file.errorString();
+        }
+    }
+}
+
+int Agent::id() const{
+    return selfID;
+}
+
+double Agent::getVisibility() {
+    return self()->inSight;
+}
+
+void Agent::setVisibility(const double &inSight) {
+    self()->inSight = inSight;
+}
+
+bool Agent::isVisible() {
+    return self()->inSight > 0;
+}
+
+bool Agent::notVisible() {
+    return self()->inSight <= 0;
+}
+
+int Agent::commandId() {
+    return commandID;
+}
+
+//RPM story
+/// velocity type 1500
+/// default mode  1300
+
+static double decay_x = 0.2;
+static double decay_y = 0.2;
+static double decay_w = 20;
+static double lastVelx[errlen];
+static double lastVely[errlen];
+static double lastOmega[errlen];
+const int decay_accel = 10;
+static int counter = 0;
+//static double bvf=0.0,bvn=0.0,bva=0.0;
+//static Matrix Epsilon(12,1);
+
+bool Agent::trajectory(double& vf, double& vn, double& va, double w1, double w2, double w3, double w4, bool &stop) {
+    static int error_set = true;
+    if (error_set) {
+        error_set = false;
+        for (int i = 0 ; i < errlen ; i++) {
+            lastVelx[i] = lastVely[i] = lastOmega[i] = 0;
+        }
+        counter = 0;
+    }
+
+    double cvx = getVar(lastVelx);
+    double cvy = getVar(lastVely);
+    double cvw = getVar(lastOmega);
+    double thrx = 0.10;//boundTo( 78.0 + 74.0 * Vector2D(vf,vn).length() , 130.0 , 400.0 ) * (errlen/100);
+    double thry = 0.10;
+    double thrw = 10.0;
+
+
+    if (cvx < thrx && cvy < thry && cvw < thrw && counter == errlen + 10) {
+        QFile file1("./test/wheels.txt");
+        QFile file2("./test/observed.txt");
+        QFile file3("./test/input.txt");
+        file1.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+        file2.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+        file3.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+        QTextStream ts1(&file1);
+        QTextStream ts2(&file2);
+        QTextStream ts3(&file3);
+
+        double mVelx = 0;
+        double mVely = 0;
+        double mOmega = 0;
+        for (int i = 0 ; i < errlen ; i++) {
+            mVelx += lastVelx[i];
+            mVely += lastVely[i];
+            mOmega += lastOmega[i];
+        }
+        mVelx /= errlen;
+        mVely /= errlen;
+        mOmega /= errlen;
+        //todo
+        // ts1 << w1 << " " << w2 << " " << w3 << " " << w4 << endl;
+        // ts2 << mVelx << " " << mVely << " " << mOmega << endl;
+        // ts3 << vf << " " << vn << " " << va << endl;
+
+        file1.close();
+        file2.close();
+        file3.close();
+
+
+        for (int i = 0 ; i < errlen ; i++) {
+            lastVelx[i] = lastVely[i] = lastOmega[i] = 0;
+        }
+
+        //    vf = (((double)(qrand()%201))/50.0)-2.0;
+        //    vn = (((double)(qrand()%201))/50.0)-2.0;
+        vf = (((double)(qrand() % 201)) / 100.0) - 1.0;
+        vn = (((double)(qrand() % 201)) / 100.0) - 1.0;
+        double speed = Vector2D(vf, vn).r();
+        if (speed < 0.5) {
+            speed = 0.5;
+        }
+
+        decay_x = fabs(vf) / decay_accel;
+        decay_y = fabs(vn) / decay_accel;
+        decay_w = fabs(va) / decay_accel;
+        stop = true;
+        counter = 0;
+    } else {
+        for (int counter = errlen - 2 ; counter > -1 ; counter--) {
+            lastVelx[counter + 1] = lastVelx[counter];
+            lastVely[counter + 1] = lastVely[counter];
+            lastOmega[counter + 1] = lastOmega[counter];
+        }
+        double angle = wm->our[new_com_test_robot_id]->dir.th().radian();
+        lastVelx[0] = (cos(-angle) * wm->our[new_com_test_robot_id]->vel.x) - (sin(-angle) * wm->our[new_com_test_robot_id]->vel.y);
+        lastVely[0] = (sin(-angle) * wm->our[new_com_test_robot_id]->vel.x) + (cos(-angle) * wm->our[new_com_test_robot_id]->vel.y);
+        lastOmega[0] = wm->our[new_com_test_robot_id]->angularVel;
+        if (counter < errlen + 10) {
+            counter++;
+        }
+    }
+    return false;
+}
+
+void Agent::accelerationLimiter(double vf, bool diveMode) {
+    ////first Stage Accelerate Limit
+    double veltan = (vel().x) * cos(dir().th().radian()) + (vel().y) * sin(dir().th().radian());
+    double velnorm = -1 * (vel().x) * sin(dir().th().radian()) + (vel().y) * cos(dir().th().radian());
+
+
+    //    if(fabs(veltan - lastVf) > 3)
+    //    {
+    //        lastVf = veltan;
+    //    }
+    //    if(fabs(velnorm - lastVn) > 3)
+    //    {
+    //        lastVn = velnorm;
+    //    }
+
+//    if(vel().length() > 0.2)
+//     {
+//         agentStopTime.restart();
+//         timerReset = false;
+//     }
+//     if(agentStopTime.elapsed() > 100 && ! timerReset)
+//     {
+//         lastVn = velnorm;
+//         lastVf = veltan;
+//         agentStopTime.restart();
+//         timerReset = true;
+//     }
+
+    double lastV, commandV;
+    double vCoef = 1;
+    double tempVf = vforward , tempVn = vnormal;
+    double decCoef = 1.5;
+
+    if (vf == 0) {
+        decCoef = 2.5;
+    }
+    ///////////////////////first Stage Acc with true angle
+
+    double accCoef = 1, realAcc = 4;
+    accCoef = atan(fabs(vforward) / fabs(vnormal)) / _PI * 2;
+    if (diveMode) {
+        realAcc = 1.5 * accCoef * conf->AccMaxForward + (1 - accCoef) * conf->AccMaxNormal;
+    } else {
+        realAcc = accCoef * conf->AccMaxForward + (1 - accCoef) * conf->AccMaxNormal;
+
+    }
+
+
+    commandV = sqrt((vforward * vforward) + (vnormal * vnormal));
+    lastV = sqrt((lastVf * lastVf) + (lastVn * lastVn));
+
+    if (commandV > (lastV + realAcc * 0.0166667)) {
+        commandV = lastV + (realAcc * 0.0166667);
+    }
+    vforward = commandV * sin(atan2(tempVf, tempVn));
+    vnormal = commandV * cos(atan2(tempVf, tempVn));
+
+    /////////////////Second order acc limit for trajectory planning
+    if (!diveMode) {
+        if (vforward >= 0) {
+            if (vforward > (lastVf + conf->AccMaxForward * 0.0166667)) {
+                vforward = lastVf + (conf->AccMaxForward * 0.0166667) * sign(vforward);
+            }
+            if (vforward < (lastVf - decCoef * conf->DecMax * 0.0166667)) {
+                vforward = lastVf - (decCoef * conf->DecMax * 0.0166667);
+            }
+        } else {
+            if (vforward < (lastVf - conf->AccMaxForward * 0.0166667)) {
+                vforward = lastVf - (conf->AccMaxForward * 0.0166667);
+            }
+            if (vforward > (lastVf + decCoef * conf->DecMax * 0.0166667)) {
+                vforward = lastVf + (decCoef * conf->DecMax * 0.0166667);
+            }
+        }
+    } else {
+        if (vforward >= 0) {
+            if (vforward > (lastVf + conf->AccMaxForward * 0.0166667 * 2)) {
+                vforward = lastVf + (conf->AccMaxForward * 0.0166667 * 2) * sign(vforward);
+            }
+            if (vforward < (lastVf - decCoef * conf->DecMax * 0.0166667 * 2)) {
+                vforward = lastVf - (decCoef * conf->DecMax * 0.0166667 * 2);
+            }
+        } else {
+            if (vforward < (lastVf - conf->AccMaxForward * 0.0166667 * 2)) {
+                vforward = lastVf - (conf->AccMaxForward * 0.0166667 * 2);
+            }
+            if (vforward > (lastVf + decCoef * conf->DecMax * 0.0166667 * 2)) {
+                vforward = lastVf + (decCoef * conf->DecMax * 0.0166667 * 2);
+            }
+        }
+    }
+////    debug(QString("vn: %1 , lVn :%2").arg(vnormal).arg(lastVn),D_MHMMD);
+    if (vnormal >= 0) {
+        if (diveMode) {
+            if (vnormal > (lastVn + 8 * 0.0166667)) {
+                vnormal = lastVn + (8 * 0.0166667) * sign(vnormal);
+            }
+        } else {
+            if (vnormal > (lastVn + conf->AccMaxNormal * 0.0166667)) {
+                vnormal = lastVn + (conf->AccMaxNormal * 0.0166667) * sign(vnormal);
+            }
+        }
+
+        if (!diveMode && (vnormal < (lastVn - decCoef * conf->DecMax * 0.0166667))) {
+            vnormal = lastVn - (decCoef * conf->DecMax * 0.0166667);
+        }
+    } else {
+        if (diveMode) {
+            if (vnormal < (lastVn - 8 * 0.0166667)) {
+                vnormal = lastVn + (8 * 0.0166667) * sign(vnormal);
+            }
+        } else {
+            if (vnormal < (lastVn - conf->AccMaxNormal * 0.0166667)) {
+                vnormal = lastVn + (conf->AccMaxNormal * 0.0166667) * sign(vnormal);
+            }
+        }
+
+        if (!diveMode && (vnormal > (lastVn + decCoef * conf->DecMax * 0.0166667))) {
+            vnormal = lastVn + (decCoef * conf->DecMax * 0.0166667);
+        }
+    }
+
+
+    if (vforward - lastVf < - 1) {
+        vforward = lastVf - 0.085;
+    }
+
+
+
+    lastVf = vforward;
+    lastVn = vnormal;
+}
+
+void Agent::setOnOffState(bool state) {
+}
+
+void Agent::setCommandID(int ID) {
+    commandID = ID;
+}
+
+Vector2D Agent::pos() const{
+    return wm->our[selfID]->pos;
+}
+
+Vector2D Agent::vel() const {
+    return wm->our[selfID]->vel;
+}
+
+Vector2D Agent::dir() const{
+    return wm->our[selfID]->dir;
+}
+
+bool Agent::shootSensor() {
+    return false; //wm->our[selfID]->shootSensor;
+}
+
+void Agent::setShootSensor(bool b) {
+    //wm->our[selfID]->shootSensor = b;
+}
+
+double Agent::angularVel() {
+    return wm->our[selfID]->angularVel;
+}
+
+double Agent::dirDegree() {
+    return wm->our[selfID]->dir.th().degree();
+}
+
+CRobot* Agent::self() {
+    return wm->our[selfID];
+}
+
+Vector2D Agent::distToBall() {
+    return wm->ball->pos - wm->our[selfID]->pos;
+}
+
+void Agent::setRobotAbsVel(double _vx, double _vy, double _w) {
+    double ang = -dir().th().radian();
+    //ROS_INFO_STREAM("ANG : " <<  ang);
+    setRobotVel((cos(ang) * _vx) - (sin(ang) * _vy), (sin(ang) * _vx) + (cos(ang) * _vy), _w);
+}
+
+void Agent::setRobotVel(double _vtan , double _vnorm , double _w) {
+
+
+    vforward = _vtan ;
+    vnormal  = _vnorm ;
+    vangular = _w * _RAD2DEG ;
+    //ROS_INFO_STREAM("ANG :: " << vangular);
+    double _v1, _v2, _v3, _v4;
+    jacobian(_vtan , _vnorm , _w , _v1 , _v2 , _v3 , _v4);
+    v1 = _v1;
+    v2 = _v2;
+    v3 = _v3;
+    v4 = _v4;
+}
+
+void Agent::addRobotVel(double _vtan, double _vnorm, double _w) {
+
+    double _v1, _v2, _v3, _v4;
+    jacobian(_vtan , _vnorm , _w , _v1 , _v2 , _v3 , _v4);
+
+    v1 += _v1;
+    v2 += _v2;
+    v3 += _v3;
+    v4 += _v4;
+
+    double vx , vy , w;
+    jacobianInverse(v1 , v2 , v3 , v4 , vx , vy , w);
+
+    vforward += _vtan;
+    vnormal  += _vnorm;
+    vangular += w * _RAD2DEG;
+}
+
+void Agent::waitHere() {
+    setRobotVel(0.0, 0.0, 0.0);
+    //  accelerationLimiter();
+    setKick(0);
+    setRoller(0);
+    setBeep(false);
+    setForceKick(false);
+    idle = true;
+
+}
+
+void Agent::setForceKick(bool force) {
+    forceKick = force;
+}
+
+void Agent::setKick(double _kickSpeed) {
+    kickSpeed = _kickSpeed;
+    chip = false;
+}
+
+void Agent::setChip(double _kickSpeed) {
+    kickSpeed = _kickSpeed;
+    chip = true;
+}
+
+
+void Agent::setBeep(bool _beep) {
+}
+
+void Agent::setRoller(int state) {
+    roller = state;
+}
+
+char Agent::getRoller() {
+    return static_cast<char>(roller);
+}
+
+float Agent::getMotorMaxRadPerSec() {
+
+    return static_cast<float>(1000 * 2 * M_PI / 60.0f);
+}
+
+void Agent::jacobian(double vx, double vy, double w, double &v1, double &v2, double &v3, double &v4) {
+    float robotRadius = 0.0795;
+    float wheelRadius = 0.0275;
+
+    // Calculate Motor Speeds
+    double motorAlpha[4] = {60.0 * _DEG2RAD, 135.0 * _DEG2RAD, 225.0 * _DEG2RAD, 300 * _DEG2RAD};
+
+    double dw1 = (1.0 / wheelRadius) * (((robotRadius * w) - (vx * sin(motorAlpha[0])) + (vy * cos(motorAlpha[0]))));
+    double dw2 = (1.0 / wheelRadius) * (((robotRadius * w) - (vx * sin(motorAlpha[1])) + (vy * cos(motorAlpha[1]))));
+    double dw3 = (1.0 / wheelRadius) * (((robotRadius * w) - (vx * sin(motorAlpha[2])) + (vy * cos(motorAlpha[2]))));
+    double dw4 = (1.0 / wheelRadius) * (((robotRadius * w) - (vx * sin(motorAlpha[3])) + (vy * cos(motorAlpha[3]))));
+
+    float motorMaxRadPerSec = getMotorMaxRadPerSec();
+
+    dw1 = (dw1 / (motorMaxRadPerSec)) * _BIT_RESOLUTION;
+    dw2 = (dw2 / (motorMaxRadPerSec)) * _BIT_RESOLUTION;
+    dw3 = (dw3 / (motorMaxRadPerSec)) * _BIT_RESOLUTION;
+    dw4 = (dw4 / (motorMaxRadPerSec)) * _BIT_RESOLUTION;
+    //todo wtp?
+    v1 = (char)(round(dw1));
+    v2 = (char)(round(dw2));
+    v3 = (char)(round(dw3));
+    v4 = (char)(round(dw4));
+}
+
+void Agent::jacobianInverse(double v1, double v2, double v3, double v4, double &vx, double &vy, double &w) {
+    float motorMaxRadPerSec = getMotorMaxRadPerSec();
+    double dw1 = v1 * motorMaxRadPerSec * self()->wheelRadius() / (double)_BIT_RESOLUTION;
+    double dw2 = v2 * motorMaxRadPerSec * self()->wheelRadius() / (double)_BIT_RESOLUTION;
+    double dw3 = v3 * motorMaxRadPerSec * self()->wheelRadius() / (double)_BIT_RESOLUTION;
+    double dw4 = v4 * motorMaxRadPerSec * self()->wheelRadius() / (double)_BIT_RESOLUTION;
+    vx = (-0.3464 * dw1) + (-0.2828 * dw2) + (0.2828 * dw3) + (0.3464 * dw4);
+    vy = (0.4142 * dw1) + (-0.4142 * dw2) + (-0.4142 * dw3) + (0.4142 * dw4);
+    w = (0.2929 * dw1) + (0.2071 * dw2) + (0.2071 * dw3) + (0.2929 * dw4);
+}
+
+#define _99 0.96f
+double F(double d, double bnd) {
+    d = fabs(d);
+    double temp = tanh(d * atanh(_99) / bnd) / _99;
+    return (temp);
+}
+
+Agent::Abilities::Abilities() {
+    hasGyro = canChip = canKick = canSpin = highBattery = true;
+}
+
+Agent::Status::Status() {
+    spin = shotSensor = fault = faild = halt = shotBoard = false;
+    kickFault = chipFault = false;
+    encoderFault[0] = encoderFault[1] = encoderFault[2] = encoderFault[3] = false;
+    motorFault[0] = motorFault[1] = motorFault[2] = motorFault[3] = motorFault[4] = false;
+    beep = false;
+    shotSensorFault = false;
+    boardID = -1;
+
+}
+
+double Agent::kickValueSpeed(double value, bool spinner) { //for onetouch
+    return value; // TODO : fix
+}
+
+double Agent::kickSpeedValue(double speed,int spinner)//for pass speed
+{
+    // TODO : Move Profiler Here
+    ROS_INFO("kian kickspeed value");
+    return convertkickspeedtokickchargetime(speed, spinner);
+
+}
+
+double Agent::chipValueDistance(double value, bool spinner) { //for chip recieve
+    // TODO : Move Profiler Here
+    return sqrt(value * value / Gravity);
+}
+
+double Agent::getKickValue(bool chip, bool spin, double v) {
+    double y, x, x2, x3, x4, x5, x6;
+    int myId = selfID;
+
+
+
+    if (chip) {
+        x = v * 100;
+    } else {
+        x = v;
+    }
+    x2 = x * x;
+    x3 = x2 * x;
+    x4 = x2 * x2;
+    x5 = x2 * x3;
+    x6 = x3 * x3;
+
+    switch (selfID) {
+    case 3:
+        if (chip && spin) {
+            return 0.001 * x2 + 1.8639 * x + 58.865;
+        }
+        if (chip) {
+            return 3E-05 * x2 + 2.8236 * x + 13.833;
+        }
+        return 0.0386 * x4 - 1.262 * x3 + 20.143 * x2 - 6.1246 * x + 37.614;
+    case 4:
+        if (chip && spin) {
+            return 0.0015 * x2 + 2.9201 * x - 45.104;
+        }
+        if (chip) {
+            return y = 0.0009 * x2 + 2.2283 * x + 16.247;
+        }
+        return -0.7326 * x4 + 14.181 * x3 - 83.857 * x2 + 272.69 * x - 205.66;
+    case 5:
+        if (chip && spin) {
+            return -0.0009 * x2 + 3.422 * x + 38.807;
+        }
+        if (chip) {
+            return 0.0015 * x2 + 2.8468 * x - 74.866;
+        }
+        return 0.0474 * x6 - 1.4049 * x5 + 15.668 * x4 - 80.694 * x3 + 198.6 * x2 - 155.04 * x + 75.944;
+    case 2:
+        if (chip && spin) {
+            return 0.0004 * x2 + 2.0255 * x + 4.1774;
+        }
+        if (chip) {
+            return 0.0032 * x2 + 1.1196 * x + 50.543;
+        }
+        return 0.0198 * x6 - 0.5191 * x5 + 4.9436 * x4 - 20.368 * x3 + 39.014 * x2 + 27.566 * x + 21.604;
+    case 9:
+        if (chip && spin) {
+            return -0.0032 * x2 + 3.8923 * x + 6.5453;
+        }
+        if (chip) {
+            return 0.0027 * x2 + 2.1671 * x + 54.724;
+        }
+        return -9E-14 * x6 + 2E-10 * x5 - 1E-07 * x4 + 4E-05 * x3 - 0.007 * x2 + 1.9532 * x - 1.6872;
+    case 7:
+        if (chip) {
+            selfID = 5;
+            y = getKickValue(true, 5, v);
+            selfID = 7;
+            return y;
+        }
+        return -0.0171 * x6 + 0.5062 * x5 - 5.7639 * x4 + 32.104 * x3 - 84.666 * x2 + 159.48 * x - 39.783;
+    case 1:
+        if (chip && spin) {
+            return 0.0036 * x2 + 0.8745 * x + 88.982;
+        }
+        if (chip) {
+            return 0.0031 * x2 + 2.2316 * x - 0.4071;
+        }
+        return 0.3568 * x4 - 6.2606 * x3 + 36.989 * x2 + 29.483 * x + 19.816;
+    case 6:
+        if (chip && spin) {
+            return -0.001 * x2 + 3.8301 * x - 9.4641;
+        }
+        if (chip) {
+            return -0.001 * x2 + 3.8301 * x - 9.4641;
+        }
+        return -0.0321 * x6 + 0.9598 * x5 - 11.038 * x4 + 61.438 * x3 - 163.39 * x2 + 254.1 * x - 71.466;
+    default:
+        myId = selfID;
+        selfID = 1;
+        y = getKickValue(chip, spin, v);
+        selfID = static_cast<short>(myId);
+        return y;
+    }
+}
+
+
+// TODO : Fix it With Profiler
+double Agent::chipDistanceValue(double distance,int spinner) {
+    //return sqrt(distance * Gravity);
+    ROS_INFO("kian chipspeed value");
+    return convertchipdisttochipchargetime(distance, spinner);
+}
+
+int Agent::kickValueForDistance(double dist, double finalVel) {
+    double a = 0.66;//BallFriction()*Gravity;
+    double temp, vel;
+    temp = finalVel * finalVel + 2 * a * dist;
+    if (temp < 0) {
+        temp = 0;
+    }
+    vel = sqrt(temp);
+    //  qDebug() << "vel=" << vel;
+    return static_cast<int>(kickSpeedValue(vel, false));
+}
+
+//IMPORTANT
+////CKS
+
+bool Agent::canOneTouch() {
+    drawer->draw(QString("%1 , %2").arg(1/*self()->ballComingSpeed()*/).arg(fabs(Vector2D::angleBetween(wm->ball->vel.norm(), (pos() - wm->ball->pos).norm()).degree())), Vector2D(0, 1));
+    drawer->draw(Segment2D(Vector2D(0, 0) , (pos() - wm->ball->pos).norm()), "blue");
+    drawer->draw(Segment2D(Vector2D(0, 0) , wm->ball->vel.norm()), "red");
+    if (1/*self()->ballComingSpeed()*/ > 0.9) {
+        if (fabs(Vector2D::angleBetween(wm->ball->vel.norm(), (pos() - wm->ball->pos).norm()).degree()) < 21) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Agent::initPlanner(const Vector2D &_target, const QList<int> &_ourRelaxList,
+                        const QList<int> &_oppRelaxList, const bool &_avoidPenaltyArea, const bool &_avoidCenterCircle,
+                        const double &_ballObstacleRadius) {
+    parsian_msgs::parsian_get_planPtr plan{new parsian_msgs::parsian_get_plan};
+    plan->robotID = static_cast<unsigned char>(this->id());
+    plan->goal = _target.toParsianMessage();
+    plan->start = this->pos().toParsianMessage();
+    Q_FOREACH (const int &id, _ourRelaxList) {
+        plan->ourRelaxList.push_back(id);
+    }
+    Q_FOREACH (const int&id, _oppRelaxList) {
+        plan->oppRelaxList.push_back(id);
+    }
+    plan->avoidCenterCircle = (unsigned char) _avoidCenterCircle;
+    plan->ballObstacleRadius = (float) _ballObstacleRadius;
+    plan->avoidPenaltyArea = (unsigned char) _avoidPenaltyArea;
+    plan->header.stamp = ros::Time::now();
+    // TODO : Add Virtual Obstacle to This
+    planner_pub.publish(plan);
+    ROS_INFO_STREAM("PUBLISHED");
+}
+
+void Agent::getPathPlannerResult(vector<Vector2D> _result , Vector2D _averageDir) {
+    pathPlannerResult.clear();
+    pathPlannerResult.assign(_result.begin() , _result.end());
+}
+
+void Agent::execute() {
+    skill->execute();
+}
+
+parsian_msgs::parsian_robot_commandPtr Agent::getCommand() {
+    //  ROS_INFO("CommunicationCommand_generated");
+    parsian_msgs::parsian_robot_commandPtr command{new parsian_msgs::parsian_robot_command};
+
+
+    command->robot_id = static_cast<unsigned char>(id());
+    command->chip = static_cast<unsigned char>(chip);
+    command->packet_id = static_cast<unsigned char>(1);
+    command->roller_speed = static_cast<unsigned char>(roller);
+//    command.forceKick= static_cast<unsigned char>(forceKick);
+    command->kickSpeed = static_cast<unsigned short>(kickSpeed);
+    command->vel_F = vforward;
+    command->vel_N = vnormal;
+    command->vel_w = vangular;
+    command->release = false;//static_cast<unsigned char>(onOffState);
+    ///////////////////////////////merge with grsim///////////////////////////////////////////
+
+    double w1, w2, w3, w4;
+    jacobian(vforward, vnormal, vangular * _DEG2RAD, w1, w2, w3, w4);
+    command->wheelsspeed = static_cast<unsigned char>(true);
+    command->wheel1 = static_cast<float>(w1);
+    command->wheel2 = static_cast<float>(w2);
+    command->wheel3 = static_cast<float>(w3);
+    command->wheel4 = static_cast<float>(w4);
+
+    if (chip) {
+        command->kickspeedz = static_cast<float>(kickSpeed);
+    } else {
+        command->kickspeedz = 0;
+    }
+    command->spinner = static_cast<unsigned char>(false);
+    command->header.stamp = ros::Time::now();
+    return command;
+}
+
+//kick profiler usage
+void Agent::getkickprofilerdata()
+{
+//    ROS_INFO("kian getpro");
+    for(int i{}; i <= 7; i++)
+    {
+        std::ifstream file(ros::package::getPath("parsian_agent") + "/profiler_data/coefficients/coeffs_kick_"+ to_string(i) +".csv");
+        if (!file.is_open())
+        {
+            if(i == 0)
+            {
+                ROS_INFO_STREAM("kick profiler datas no spin failed to open");
+                return;
+            }
+            else {
+                kick_coef_a[i] = kick_coef_a[i-1];
+                kick_coef_b[i] = kick_coef_b[i-1];
+                kick_coef_c[i] = kick_coef_c[i-1];
+            }
+        }
+        else
+        {
+            std::vector<std::vector<std::string>> dataList;
+            dataList.clear();
+            std::string line = "";
+            // Iterate through each line and split the content using delimeter
+            while (getline(file, line))
+            {
+                std::vector<std::string> vec;
+                boost::algorithm::split(vec, line, boost::is_any_of(","));
+                dataList.push_back(vec);
+            }
+            // Close the File
+            file.close();
+            ROS_INFO_STREAM("readfrom datalistSize" << dataList.size());
+            for(int j{1}; j<dataList.size(); j++)
+            {
+                ROS_INFO_STREAM("readfrom ID compare" << atoi(dataList[j][0].c_str()) << ", " << id());
+                if(atoi(dataList[j][0].c_str()) == id())
+                {
+                    ROS_INFO_STREAM("readfrom datalist" << i << dataList[j][1].c_str());
+                    kick_coef_a[i] = atof(dataList[j][1].c_str());
+                    kick_coef_b[i] = atof(dataList[j][2].c_str());
+                    kick_coef_c[i] = atof(dataList[j][3].c_str());
+                    if(i == 0)
+                        gotkickprofilerdatas = true;
+                }
+            }
+        }
+    }
+}
+float Agent::convertkickspeedtokickchargetime(float kickspeed, int spin)
+{
+//    ROS_INFO("kian convert");
+    if(spin < 0)
+        spin  = 0;
+    if(spin > 7)
+        spin = 7;
+    if (gotkickprofilerdatas)
+    {
+        int discharge = kick_coef_a[spin]*kickspeed*kickspeed + kick_coef_b[spin]*kickspeed + kick_coef_c[spin];
+        if(discharge > 1023)
+            discharge = 1023;
+        return discharge;
+    }
+    else
+    {
+        ROS_INFO_STREAM("there was no result for this robot in kick profiler datas");
+        return 500;
+    }
+
+
+}
+
+void Agent::getchipprofilerdata()
+{
+    //    ROS_INFO("kian getpro");
+        for(int i{}; i <= 7; i++)
+        {
+            std::ifstream file(ros::package::getPath("parsian_agent") + "/profiler_data/coefficients/coeffs_chip_"+ to_string(i) +".csv");
+            if (!file.is_open()) 
+            {
+                if(i == 0)
+                {
+                    chip_coef_a[0] = 25.3;
+                    chip_coef_b[0] = 130.9;
+                    chip_coef_c[0] = 230.9;
+                    gotchipprofilerdatas = true;
+                    ROS_INFO_STREAM("chip profiler datas no spin failed to open");
+                    return;
+                }
+                else {
+                    chip_coef_a[i] = chip_coef_a[i-1];
+                    chip_coef_b[i] = chip_coef_b[i-1];
+                    chip_coef_c[i] = chip_coef_c[i-1];
+                }
+            }
+            else
+            {
+                std::vector<std::vector<std::string>> dataList;
+                dataList.clear();
+                std::string line = "";
+                // Iterate through each line and split the content using delimeter
+                while (getline(file, line))
+                {
+                    std::vector<std::string> vec;
+                    boost::algorithm::split(vec, line, boost::is_any_of(","));
+                    dataList.push_back(vec);
+                }
+                // Close the File
+                file.close();
+                for(int j{1}; j<dataList.size(); j++)
+                    if(atoi(dataList[j][0].c_str()) == id())
+                    {
+                        //ROS_INFO_STREAM("readfrom datalist" << i << atof(dataList[j][1].c_str()));
+                        chip_coef_a[i] = atof(dataList[j][1].c_str());
+                        chip_coef_b[i] = atof(dataList[j][2].c_str());
+                        chip_coef_c[i] = atof(dataList[j][3].c_str());
+                        if(i == 0)
+                            gotchipprofilerdatas = true;
+                    }
+            }
+        }
+}
+
+float Agent::convertchipdisttochipchargetime(float chipdist, int spin)
+{
+    float chipspeed{};
+    //TODO calculate coef for converting dist to chip speed
+    float A{9.25693}, B{0.0027}, H{0.0659}, K{-0.0316};
+    //chipspeed = A*sqrt(B*chipdist - H) + K;
+    chipspeed = chipdist;
+    //    ROS_INFO("kian convert");
+        if(spin < 0)
+            spin  = 0;
+        if(spin > 7)
+            spin = 7;
+        if (gotchipprofilerdatas)
+        {
+            int chipRes = chip_coef_a[spin]*chipspeed*chipspeed + chip_coef_b[spin]*chipspeed + chip_coef_c[spin];
+            if(chipRes <= 1023) {
+                return chipRes;
+            } else {
+                return 1023;
+            }
+        }
+        else
+        {
+            ROS_INFO_STREAM("there was no result for this robot in chip profiler datas");
+            return 500;
+        }
+
+}
+
+

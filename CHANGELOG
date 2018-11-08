@@ -1,0 +1,29 @@
+# 26 Aug 2017
+    Project Started ~ Mohammad Mahdi Rahimi
+
+# 5 Nov 2017 (v0.0)
+Monitor and GUI for draws ~ Nadia Moradi
+World Model and old kalman ~ Mohammad Mahdi Rahimi
+PathPlanner added and Motion is tested ~ Ali Gavahi
+Grsim Comminucation is Working ~ Kian Behzad
+Comminucation with Robots work fine ~ Mohammad Mahdi Shirazi
+AI node is Running ~ Fateme Hashemi
+
+# 24 Nov 2017 (v0.1)
+Add README and install file refine skill messages ~ Mohammad Mahdi Rahimi
+Add Common Config for agents ~ Kian Behzad
+Fix Planner and use configs ~ Ali Gavahi
+Fix drawer ~ Nadia Moradi
+
+# 12 Dec 2017
+Refactor AI and Redesign AI Base ~ Mohammad Mahdi Rahimi
+Fix AI Plans ~ Hamidreza Roodabeh & Kian Behzad
+Motion Profiler ~ Ali Gavahi
+
+# 26 Jan 2017
+Streategy Server Added ~ Fateme Hashemi
+Kick Profiler Added ~ Hamidreza Roodabeh & Kian Behzad
+Nodelet Fixed Mostly + GUI for Streategy Server ~ Ali Gavahi
+AI works as minimum ... no AI works as almost nothing ~ Mohammd Mahdi Rahimi
+Improve Skills and implement new kalman ~ Mohammad Mahdi Shirazi
+

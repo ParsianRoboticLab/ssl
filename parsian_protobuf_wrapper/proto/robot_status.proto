@@ -1,0 +1,64 @@
+syntax = "proto2";
+package robot_status;
+
+message Fault {
+	required bool shootBoard = 1;
+	required bool kickFault  = 2;
+	required bool chipFault  = 3;
+	required bool encoderMotor1 = 4;
+	required bool encoderMotor2 = 5;
+	required bool encoderMotor3 = 6;
+	required bool encoderMotor4 = 7;
+	required bool shootSensor = 8;
+	required bool beep = 9;
+}
+
+message Fail {
+	required bool Motor1 = 1;
+	required bool Motor2 = 2;
+	required bool Motor3 = 3;
+	required bool Motor4 = 4;
+	required bool Motor5 = 5;
+}
+
+message Robot_Packet {
+	// ID of robot
+	required int32 id = 1;
+
+	// the level of battery 
+	required float battery = 2;
+
+	// ball is spining in spinner
+	required bool spin = 3;
+	
+	// ball is in front of shootSensor
+	required bool shootsensor = 4;
+
+	// voltage of capacity of robots
+	required float shootVoltage = 5;
+
+	// ID of robot's PCB
+	required int32 boardID = 6;
+
+	// robot fault can interchange auto
+	required bool fault = 7;
+
+	// robot fully failed
+	required bool failed = 8;
+
+	// robot is halted
+	required bool halt = 9;
+
+	// the amount of data lost
+	required float dataLost = 10;
+
+	// detail of fault
+	optional Fault faultMessage = 11;
+	
+	// detail of failuer
+	optional Fail  failedMessage = 12;
+}
+
+message Status {
+	repeated Robot_Packet robots = 1;
+}

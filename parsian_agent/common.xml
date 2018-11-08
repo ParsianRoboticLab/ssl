@@ -1,0 +1,8 @@
+<library path="lib/libparsian_agent_commonconfig_nodelet">
+    <class name="parsian_agent/CommonConfig" type="CommonConfig" base_class_type="nodelet::Nodelet">
+        <description>
+            nothing!!!!
+        </description>
+    </class>
+</library>
+

@@ -1,0 +1,31 @@
+variables:
+  GLOBAL_C11: "true" # Enable C++11 everywhere by default
+  # If package name is "ros-kinetic-actionlib" it becomes "actionlib" (remove the prefix)
+  ROS_PACKAGES_TO_INSTALL: "dynamic-reconfigure nodelet roslint rqt-gui-cpp rqt-gui"
+  USE_ROSDEP: "true"
+before_script:
+ - git clone https://gitlab.com/VictorLamoine/ros_gitlab_ci.git
+ - source ros_gitlab_ci/gitlab-ci.bash
+ - apt-get install --assume-yes libqt4-dev libqjson-dev protobuf-compiler libprotobuf-dev libeigen3-dev curl > /dev/null
+ - MAHI=`pwd`
+ - cd /builds/ParsianSoftware/parsian_ssl/parsian_communication/
+ - git clone https://github.com/qextserialport/qextserialport.git temp
+ - cd temp
+ - qmake-qt4
+ - echo "Installing ... "
+ - make > /dev/null
+ - make install > /dev/null
+ - echo "Installed"
+ - cd ..
+ - rm -rf ./temp
+ - cd $MAHI
+ 
+cache:
+  paths:
+    - ccache/
+
+kinetic-catkin_build:
+  image: ros:kinetic-ros-core
+  stage: build
+  script:
+    - catkin build --summarize --no-status --force-color

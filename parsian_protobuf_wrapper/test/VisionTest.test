@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="VisionTest" pkg="parsian_protobuf_wrapper" type="VisionTest" />
+</launch>
+

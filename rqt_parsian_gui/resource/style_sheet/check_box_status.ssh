@@ -1,0 +1,16 @@
+QCheckBox::indicator {
+   width: 8px;
+   height: 8px;
+}
+QCheckBox::indicator:unchecked:disabled
+{
+  image:;
+}
+
+QCheckBox::indicator:checked:disabled
+{
+  image: url(resource/images/Checkbox_checked_disabled.png);
+}
+QCheckBox{
+font-size:8pt;
+}

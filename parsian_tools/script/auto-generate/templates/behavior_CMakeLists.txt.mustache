@@ -1,0 +1,51 @@
+add_library({{behavior}}
+    src/behavior/{{behavior}}/{{behavior}}.cpp
+
+)
+
+add_library({{behavior}}_nodelet
+    src/behavior/{{behavior}}/{{behavior}}_nodelet.cpp
+
+)
+
+add_executable({{behavior}}_node
+    src/behavior/{{behavior}}/{{behavior}}_node.cpp
+
+)
+
+target_link_libraries({{behavior}}_node
+    ${catkin_LIBRARIES}
+    {{behavior}}_nodelet
+)
+
+target_link_libraries({{behavior}}_nodelet
+    ${catkin_LIBRARIES}
+    ${QT_LIBRARIES}
+    {{behavior}}
+    ${PROJECT_NAME}_util
+)
+
+target_link_libraries({{behavior}}
+    ${catkin_LIBRARIES}
+    ${QT_LIBRARIES}
+    ${PROJECT_NAME}_util
+
+)
+
+add_dependencies({{behavior}}
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    ${PROJECT_NAME}_gencfg
+)
+
+add_dependencies({{behavior}}_node
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    ${PROJECT_NAME}_gencfg
+)
+
+add_dependencies({{behavior}}_nodelet
+    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+    ${catkin_EXPORTED_TARGETS}
+    ${PROJECT_NAME}_gencfg
+)

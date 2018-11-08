@@ -1,0 +1,7 @@
+<library path="lib/libparsian_communication_packet_nodelet">
+	<class name="parsian_packet/PacketNodelet" type="parsian_packet::PacketNodelet" base_class_type="nodelet::Nodelet">
+		<description>
+			Parsian Packet Nodelet
+		</description>
+	</class>
+</library>

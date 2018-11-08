@@ -1,0 +1,10 @@
+field_width             : 12.0
+field_height            : 9.00
+field_margin_height     : 0.300
+field_margin_width      : 0.300
+field_penalty_point     : 1.200
+goal_width              : 1.200
+goal_depth              : 0.200
+penalty_depth           : 1.200
+penalty_width           : 2.400
+center_circle_rad       : 0.600

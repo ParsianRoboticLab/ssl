@@ -1,0 +1,17 @@
+#compdef parsian
+
+_parsian() {
+	local state
+	_arguments \
+	'1: :->commands'\
+	'2: :->behav'\
+	'*: :->sub'
+
+	case $state in
+		(commands) _arguments '1:command:(help run-grsim run-real rebuild behavior)';;
+		(*) compadd "$@";;
+	esac
+
+}
+
+_parsian "$@"

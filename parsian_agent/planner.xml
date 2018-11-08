@@ -1,0 +1,9 @@
+<library path="lib/libparsian_agent_planner_nodelet">
+    <class name="parsian_agent/PlannerNodelet" type="parsian_agent::PlannerNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            nothing!!!!
+        </description>
+    </class>
+</library>
+
+

@@ -1,0 +1,7 @@
+<library path="lib/libparsian_tools_nodelet">
+    <class name="parsian_tools/Latency" type="parsian_tools::Latency" base_class_type="nodelet::Nodelet">
+        <description>
+            nothing!!!!
+        </description>
+    </class>
+</library>

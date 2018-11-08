@@ -1,0 +1,16 @@
+<library path="lib/librqt_parsian_gui">
+  <class name="rqt_parsian_gui/ModeChooser" type="rqt_parsian_gui::ModeChooser" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      An C++ GUI plugin to change mode, color and sice.
+    </description>
+    <qtgui>
+        <group>
+            <label>Parsian</label>
+            <icon >resource/icons/parsian_logo.jpg</icon>
+        </group>
+        <label>Mode Chooser</label>
+        <icon type="theme">applications-utilities</icon>
+        <statustip>change mode, color or side </statustip>
+    </qtgui>
+  </class>
+</library>

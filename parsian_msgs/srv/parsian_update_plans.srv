@@ -1,0 +1,9 @@
+string[] newPlans
+uint32[] index
+bool isActive
+bool isMaster
+
+---
+
+parsian_plan_GUI[] allPlans
+

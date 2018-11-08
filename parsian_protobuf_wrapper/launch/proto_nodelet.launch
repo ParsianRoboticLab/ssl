@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
+
+    <node pkg="nodelet" type="nodelet" name="vision" args="load parsian_protobuf_wrapper/VisionNodelet standalone_nodelet" output="screen"/>
+    <node pkg="nodelet" type="nodelet" name="refree" args="load parsian_protobuf_wrapper/RefreeNodelet standalone_nodelet" output="screen"/>
+</launch>

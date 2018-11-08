@@ -1,0 +1,7 @@
+<library path="lib/libparsian_protobuf_wrapper_vision_nodelet">
+    <class name="parsian_protobuf_wrapper/VisionNodelet" type="parsian_protobuf_wrapper::VisionNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            Parsian Comunication Nodelet over serial
+        </description>
+    </class>
+</library>

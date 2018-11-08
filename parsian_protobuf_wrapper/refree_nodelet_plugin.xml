@@ -1,0 +1,7 @@
+<library path="lib/libparsian_protobuf_wrapper_refbox_nodelet">
+    <class name="parsian_protobuf_wrapper/RefreeNodelet" type="parsian_protobuf_wrapper::RefreeNodelet" base_class_type="nodelet::Nodelet">
+        <description>
+            Parsian Refree Nodelet over serial
+        </description>
+    </class>
+</library>
