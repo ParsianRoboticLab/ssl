@@ -147,6 +147,8 @@ private:
     // NEW PASS ZONE
     static const int REGION_NUM;
     FieldRegion *regions;
+    DynamicAttackState attackState;
+    PositionSkill positionSkill;
     QList<int> ourRelaxedIDs, oppRelaxedIDs;
     QList<int> regionPriority;
     double robotRegionsWeights[11][9];
@@ -154,6 +156,9 @@ private:
     QList<int> matchingIDs;
     QList<QPair<int, Vector2D>> optimalPositionsForRecivers;
     int bestReceiver;
+
+    int oneTouchFailState;
+    int oneTouchDoneState;
     // END NEW PASS ZONE
 
 
@@ -176,6 +181,11 @@ private:
     void makePlan(int agentSize);
     void assignId();
     void assignTasks();
+    void updateAttackState();
+    bool passDone();
+    bool passFailed();
+    bool isGoodForOneTouch();
+    bool positionTaskDone();
     ///////////////////////30em 2015
 
     bool evalmovefwd();

@@ -581,7 +581,6 @@ double CCoach::findMostPossible(Vector2D agentPos) {
 
 void CCoach::updateAttackState() {
     ourAttackState = SAFE;
-    return;
 }
 
 void CCoach::choosePlaymakeAndSupporter(bool defenseFirst){

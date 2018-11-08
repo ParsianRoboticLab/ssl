@@ -5,11 +5,10 @@ const int CDynamicAttack::REGION_NUM = 7;
 
 CDynamicAttack::CDynamicAttack() {
     // NEW PASS
+    attackState = DynamicAttackState::PlaymakeControl;
     createRegions();
     clearRobotsRegionsWeights();
     PMfromCoach = true;
-
-
     dribbleIntention.start();
     playmakeIntention.start();
     lastPMInitWasDribble = false;
@@ -68,7 +67,7 @@ void CDynamicAttack::reset() {
 
 void CDynamicAttack::execute_x() {
     ROS_INFO_STREAM("Dynamic Attack : " << agents.size());
-    ROS_INFO_STREAM("aliiiiiiiiiiiiii" << wm->field->oppGoalL().x << "   " << wm->field->oppGoalL().y);
+    ROS_INFO_STREAM("ali:state  "<< static_cast<int>(attackState));
     globalExecute(agents.size());
     for (auto &p : semiDynamicPosition) {
         drawer->draw(Circle2D(p, .1), QColor(Qt::red), true);
@@ -242,12 +241,12 @@ void CDynamicAttack::makePlan(int agentSize) {
         }
         for (size_t i = 0; i < agentSize; i++) {
             currentPlan.positionAgents[i].region = DynamicRegion::Near;
-            currentPlan.positionAgents[i].skill = PositionSkill::OneTouch;
+            currentPlan.positionAgents[i].skill = positionSkill;
         }
     }
         //// we have ball and
         //// shot prob is more than 50%
-    else if (directShot) {
+    else if (directShot && attackState == DynamicAttackState::PlaymakeControl) {
         ROS_INFO_STREAM("ali: diret shot");
         currentPlan.mode = DynamicMode::DirectKick;
         currentPlan.playmake.init(PlayMakeSkill::Shot, DynamicRegion::Goal);
@@ -255,10 +254,18 @@ void CDynamicAttack::makePlan(int agentSize) {
             currentPlan.positionAgents[i].region = DynamicRegion::Best;
             currentPlan.positionAgents[i].skill = PositionSkill::Ready;
         }
-    } else {
+    } else if (attackState == DynamicAttackState::PlaymakePass) {
         ROS_INFO_STREAM("ali: pass mode");
         currentPlan.mode = DynamicMode::Pass;
         currentPlan.playmake.init(PlayMakeSkill::Pass, DynamicRegion::Best);
+        for (size_t i = 0; i < agentSize; i++) {
+            currentPlan.positionAgents[i].region = DynamicRegion::Best;
+            currentPlan.positionAgents[i].skill = PositionSkill::OneTouch;
+        }
+    } else {
+        ROS_INFO_STREAM("ali: pass mode");
+        currentPlan.mode = DynamicMode::Pass;
+        currentPlan.playmake.init(PlayMakeSkill::NoSkill, DynamicRegion::Best);
         for (size_t i = 0; i < agentSize; i++) {
             currentPlan.positionAgents[i].region = DynamicRegion::Best;
             currentPlan.positionAgents[i].skill = PositionSkill::OneTouch;
@@ -286,6 +293,7 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
     }
     for (int i = 0; i < REGION_NUM; i++)
         drawer->draw(regions[i].rectangle);
+    updateAttackState();
     makePlan(agentSize);
 
 //    if (agentSize > 0 && (lastAgentCount != agentSize || isPlayMakeChanged())) {
@@ -433,7 +441,7 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
 
                         // TODO : fix the target
                         roleAgents[i]->setTarget(wm->field->oppGoal());
-                        roleAgents[i]->setSelectedPositionSkill(PositionSkill::OneTouch);// Receive Skill
+                        roleAgents[i]->setSelectedPositionSkill(PositionSkill::OneTouch);// OneTouch Skill
 
                         break;
                     case PositionSkill::Move:
@@ -630,7 +638,7 @@ double fRand(double fMin, double fMax) {
 }
 
 void CDynamicAttack::chooseReceiverAndBestPosForPass() {
-    if (currentPlan.playmake.skill == PlayMakeSkill::Pass) {
+    if (attackState == DynamicAttackState::PlaymakePass) {
         currentPlan.passPos = regions[regionPriority[0]].rectangle.center();
         drawer->draw(currentPlan.passPos, QColor(0, 0, 100), .5);
     }
@@ -966,36 +974,37 @@ void CDynamicAttack::chooseBestPositons() {
     avoidRects.append(wm->field->oppPenaltyRect());
 
 
-    int ballR = -1;
-    regionPriority.clear();
-    for (int i{0}; i < REGION_NUM; i++)
-        if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
-    switch (ballR) {
-        case 0:
-            regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
-            break;
-        case 1:
-            regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
-            break;
-        case 2:
-            regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
-            break;
-        case 3:
-            regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
-            break;
-        case 4:
-            regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
-            break;
-        case 5:
-            regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
-            break;
-        case 6:
-            regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
-            break;
-        default:
-            regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
-
-            break;
+    if (attackState == DynamicAttackState::PlaymakeControl) {
+        int ballR = -1;
+        for (int i{0}; i < REGION_NUM; i++)
+            if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
+        regionPriority.clear();
+        switch (ballR) {
+            case 0:
+                regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
+                break;
+            case 1:
+                regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
+                break;
+            case 2:
+                regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
+                break;
+            case 3:
+                regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
+                break;
+            case 4:
+                regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
+                break;
+            case 5:
+                regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
+                break;
+            case 6:
+                regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+                break;
+            default:
+                regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+                break;
+        }
     }
 }
 
@@ -1438,4 +1447,80 @@ bool CDynamicAttack::isPathClearFromOpp(Vector2D _pos1, Vector2D _pos2, double _
     }
 
     return true;
+}
+
+void CDynamicAttack::updateAttackState() {
+    switch (attackState) {
+        case DynamicAttackState::PlaymakeControl:
+            if (!directShot)
+                attackState = DynamicAttackState ::PlaymakePass;
+            break;
+        case DynamicAttackState::PlaymakePass:
+            if (passDone()) {
+                attackState = DynamicAttackState::PositioningControl;
+                if (isGoodForOneTouch()) {
+                positionSkill = PositionSkill::OneTouch;
+                oneTouchFailState = 0;
+                oneTouchDoneState = 0;
+            }
+                else
+                    positionSkill = PositionSkill::Ready;
+            }
+            else if (directShot || passFailed())
+                attackState = DynamicAttackState ::PlaymakeControl;
+            break;
+        case DynamicAttackState::PositioningControl:
+            if (positionTaskDone())
+                attackState = DynamicAttackState ::PlaymakeControl;
+            break;
+        default:
+            break;
+    }
+}
+
+bool CDynamicAttack::passDone() {
+    double ballDistanceToTarget = currentPlan.passPos.dist(wm->ball->pos);
+    double ballDistanceToPlaymake = playmake->pos().dist(wm->ball->pos);
+    if (ballDistanceToTarget < .3)
+        return true;
+    if (ballDistanceToPlaymake > 1.5 * ballDistanceToTarget) {
+        if (ballDistanceToTarget < 1)
+            return true;
+    }
+    return false;
+}
+
+bool CDynamicAttack::isGoodForOneTouch() {
+    //todo
+    return true;
+}
+
+bool CDynamicAttack::positionTaskDone() {
+
+    if (positionSkill == PositionSkill::Ready)
+        if ((wm->ball->vel.length() < .02) || (wm->ball->vel.length() < .1 && wm->ball->pos.dist(currentPlan.passPos) > 2))
+            return true;
+    if (positionSkill == PositionSkill::OneTouch) {
+        double dist = wm->ball->pos.dist(currentPlan.passPos);
+        if (dist > 2)
+            oneTouchFailState ++;
+        if (dist < 1.5)
+            oneTouchDoneState ++;
+
+        if (oneTouchDoneState > 30 && dist > 2)
+            return true;
+
+        if (oneTouchFailState > 100)
+            return true;
+    }
+    return false;
+
+}
+
+bool CDynamicAttack::passFailed() {
+    double ballDistanceToTarget = currentPlan.passPos.dist(wm->ball->pos);
+    double ballDistanceToPlaymake = playmake->pos().dist(wm->ball->pos);
+    if (ballDistanceToTarget > 3 && ballDistanceToPlaymake > 2)
+        return true;
+    return false;
 }
