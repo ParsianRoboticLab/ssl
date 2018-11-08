@@ -25,7 +25,7 @@ void CPlayOff::reset() {
 
     playOnFlag = false;
     executedCycles = 0;
-
+    mode = POMode::None;
     firstPlayoff->reset();
     dynamicPlayoff->reset();
     staticPlayOff->reset();
@@ -35,23 +35,17 @@ void CPlayOff::init(QList<Agent*>& _agents) {
     agents.clear();
     agents.append(_agents);
     initMaster();
-    unsigned char p_mode = (gameState->getState() == States::OurKickOff) ? parsian_ai_plan_request::KICKOFF
-                                                                         : parsian_ai_plan_request::INDIRECT;
-    decideMode(agents.size(), p_mode);
-    selectedPlayoff->init(agents);
-    if(mode == POMode::Static) {
-        parsian_msgs::plan_service srv{};
-        srv.request.plan_req = getRequest(agents.size(), p_mode);
-        gotPlan = true;
-        if (client->call(srv)) setResponse(srv.response.the_plan);
-        else gotPlan = false;
-    }
+    decideMode(agents.size());
+    reInitPlay();
 
 }
 
 void CPlayOff::execute_x() {
+    ROS_INFO_STREAM("MODEL:" << static_cast<int>(mode));
     selectedPlayoff->execute();
     playOnFlag = selectedPlayoff->getPlayonFlag();
+    decideMode(agents.size());
+
 }
 
 parsian_ai_plan_request CPlayOff::getRequest(const int &_agentSize, const unsigned char &mode) {
@@ -68,7 +62,7 @@ void CPlayOff::setResponse(const parsian_plan &_plan) {
     lockAgents = true;
 }
 
-void CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
+void CPlayOff::decideMode(const int& _agentSize) {
 
     switch (mode) {
         case POMode::None:
@@ -77,16 +71,27 @@ void CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
             else mode = POMode::Static;
             break;
         case POMode::First:
-            if (firstPlayoff->isFirstFinished()) mode = POMode::Static;
+            if (firstPlayoff->isFirstFinished()) {
+                mode = POMode::Static;
+                selectedPlayoff = staticPlayOff;
+                reInitPlay();
+            } else {
+                selectedPlayoff = firstPlayoff;
+            }
             break;
         case POMode::Static:
-            if (!gotPlan) mode = POMode::Dynamic;
+            if (!gotPlan) {
+                mode = POMode::Dynamic;
+                selectedPlayoff = dynamicPlayoff;
+                reInitPlay();
+            } else {
+                selectedPlayoff = staticPlayOff;
+            }
             break;
         case POMode::Dynamic:
+            selectedPlayoff = dynamicPlayoff;
             break;
     }
-
-    mode = POMode::First;
 
     switch (mode) {
         case POMode::None:
@@ -101,15 +106,25 @@ void CPlayOff::decideMode(const int& _agentSize, const unsigned char& _mode) {
         case POMode::Dynamic:
             selectedPlayoff = dynamicPlayoff;
             break;
-
     }
 
-}
 
-POMode CPlayOff::getMode() {
-    return mode;
 }
 
 void CPlayOff::setPlanClient(ros::ServiceClientPtr _client) {
     client = std::move(_client);
+}
+
+void CPlayOff::reInitPlay() {
+    unsigned char p_mode = (gameState->getState() == States::OurKickOff) ? parsian_ai_plan_request::KICKOFF
+                                                                         : parsian_ai_plan_request::INDIRECT;
+
+    selectedPlayoff->init(agents);
+    if(mode == POMode::Static) {
+        parsian_msgs::plan_service srv{};
+        srv.request.plan_req = getRequest(agents.size(), p_mode);
+        gotPlan = true;
+        if (client->call(srv)) setResponse(srv.response.the_plan);
+        else gotPlan = false;
+    }
 }

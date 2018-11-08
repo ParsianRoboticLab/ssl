@@ -30,14 +30,16 @@ public:
 
     parsian_ai_plan_request getRequest(const int& _agentSize, const unsigned char& mode);
     void setResponse(const parsian_plan& _plan);
-    void decideMode(const int& _agentSize, const unsigned char& _mode);
-    POMode getMode();
+    void decideMode(const int& _agentSize);
     void setPlanClient(ros::ServiceClientPtr _client);
 private:
+
+    void reInitPlay();
+
     ros::ServiceClientPtr client;
+    CFirstPlayOff *firstPlayoff;
     CStaticPlayOff *staticPlayOff;
     CDynamicPlayOff *dynamicPlayoff;
-    CFirstPlayOff *firstPlayoff;
     CAbstractPlayOff *selectedPlayoff;
     bool gotPlan;
     POMode mode;

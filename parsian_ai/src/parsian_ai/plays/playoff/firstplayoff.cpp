@@ -60,6 +60,7 @@ void CFirstPlayOff::execute() {
 
     if (finisher == agents.size() - 1) {
         firstStepEnums = Done;
+        firstFinished = true;
     }
 
 
