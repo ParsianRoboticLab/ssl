@@ -12,6 +12,11 @@
 #define _GOAL_WIDTH 1.2
 #define ROBOT_RADIUS 0.0890
 
+enum class DynamicAttackState {
+            PlaymakeControl     = 0,
+            PlaymakePass        = 1,
+            PositioningControl  = 2
+};
 
 struct FieldRegion
 {
@@ -105,8 +110,6 @@ public:
 
 
     // NEW PASS ZONE
-    void chooseBestPositons_new();
-    void assignId_new();
     bool getPMfromCaoch(){return PMfromCoach;};
     int getReceiverID(){if (receiver != nullptr) return receiver->id(); else return -1;};
 
@@ -124,7 +127,6 @@ public:
     double calcOneTouchAngleFactor(Vector2D point);
     double calcWidenessFactor(Vector2D passSenderPos, Vector2D point);
     double calcNotInWayFactor(Vector2D passSenderPos, Vector2D point);
-    void hamidDebug();
     // END NEW PASS ZONE
 
     void setDefenseClear(bool _isDefenseClearing);
@@ -136,25 +138,27 @@ public:
     void setPlayMake(Agent* _playMake);
     void setCritical(bool _critical);
     void setBallInOppJaw(bool _ballInOppJaw);
-    void choosePlan();
     void swapPlaymakeInPass();
     bool isInpass();
 
     SDynamicPlan currentPlan;
-    SDynamicPlan* nextPlanA;
-    SDynamicPlan* nextPlanB;
 
 private:
     // NEW PASS ZONE
-    FieldRegion regions[3][3];
+    static const int REGION_NUM;
+    FieldRegion *regions;
+    DynamicAttackState attackState;
+    PositionSkill positionSkill;
     QList<int> ourRelaxedIDs, oppRelaxedIDs;
     QList<int> regionPriority;
     double robotRegionsWeights[11][9];
     Vector2D bestPointForRobotsInRegions[11][9];
     QList<int> matchingIDs;
-    QList<int> matchingRegions;
     QList<QPair<int, Vector2D>> optimalPositionsForRecivers;
     int bestReceiver;
+
+    int oneTouchFailState;
+    int oneTouchDoneState;
     // END NEW PASS ZONE
 
 
@@ -163,8 +167,6 @@ private:
     Vector2D oppRob;
     double lastYDrib = 0;
     Vector2D lastPassPosLoc;
-    int lastGuards[_NUM_PLAYERS];
-    int guardSize;
     QTime positioningIntention;
     QTime dribbleIntention;
     QTime playmakeIntention;
@@ -179,6 +181,11 @@ private:
     void makePlan(int agentSize);
     void assignId();
     void assignTasks();
+    void updateAttackState();
+    bool passDone();
+    bool passFailed();
+    bool isGoodForOneTouch();
+    bool positionTaskDone();
     ///////////////////////30em 2015
 
     bool evalmovefwd();
@@ -187,34 +194,10 @@ private:
     double angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp);
     double findmax(const QList<double> &list);
 
-    //[RegionCount][RegionIndex]
-    Rect2D* guards[7];
-    void showRegions(unsigned int agentSize, QColor color = QColor(Qt::gray));
-    void assignRegions();
-    void assignRegion_0();
-    void assignRegion_1();
-    void assignRegion_2();
-    void assignRegion_3();
-    void assignRegion_4();
-    void assignRegion_5();
-    void assignRegion_6();
-    QList<int> guardIndexList;
     QList<Vector2D> semiDynamicPosition;
     QList<Vector2D> markPositions;
 
-    //[PositionAgentsCount][GuardIndex][LocationIndex]
-    Vector2D** guardLocations[7];
-    void showLocations(unsigned int agentSize, QColor color = QColor(Qt::gray));
-    void assignLocations();
-    void assignLocations_0();
-    void assignLocations_1();
-    void assignLocations_2();
-    void assignLocations_3();
-    void assignLocations_4();
-    void assignLocations_5();
-    void assignLocations_6();
     bool isRightTimeToPass();
-    int farGuardFromPoint(const int& _guardIndex, const Vector2D& _point);
     void chooseReceiverAndBestPosForPass();
     void chooseBestPositons();
     double getDynamicValue(const Vector2D& _dynamicPos) const;
@@ -232,8 +215,6 @@ private:
     int appropriatePassSpeed();
     int appropriateChipSpeed();
 
-    Vector2D neaerstGuardToPoint(const Vector2D& startVec) const;
-
     bool isPlayMakeChanged();
 
     QString getString(const DynamicMode& _mode) const;
@@ -250,12 +231,8 @@ private:
     bool passFlag, repeatFlag;
     int counter, passerID, lastPasserRoleIndex;
     long lastTime;
-    QList<Agent*> mahiPositionAgents;
     QList<Vector2D> dynamicPosition;
     QList<int> regionsList;
-    Agent* mahiPlayMaker;
-    Agent* mahiSupporter;
-    int mahiAgentsID[8];
     bool isBallInOurField;
 
     Agent* playmake;
