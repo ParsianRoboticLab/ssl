@@ -58,6 +58,7 @@ void CRoleDynamic::update() {
             moveSkill->setTargetdir(targetDir);
             moveSkill->setAvoidpenaltyarea(true);
             moveSkill->setSlowmode(false);
+            moveSkill->setBallobstacleradius(.2);
             break;
         case PositionSkill ::OneTouch:
             oneTouchSkill->setWaitpos(waitPos);
