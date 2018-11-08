@@ -12,6 +12,11 @@
 #define _GOAL_WIDTH 1.2
 #define ROBOT_RADIUS 0.0890
 
+enum class DynamicAttackState {
+            PlaymakeControl     = 0,
+            PlaymakePass        = 1,
+            PositioningControl  = 2
+};
 
 struct FieldRegion
 {
@@ -105,8 +110,6 @@ public:
 
 
     // NEW PASS ZONE
-    void chooseBestPositons_new();
-    void assignId_new();
     bool getPMfromCaoch(){return PMfromCoach;};
     int getReceiverID(){if (receiver != nullptr) return receiver->id(); else return -1;};
 
@@ -124,7 +127,6 @@ public:
     double calcOneTouchAngleFactor(Vector2D point);
     double calcWidenessFactor(Vector2D passSenderPos, Vector2D point);
     double calcNotInWayFactor(Vector2D passSenderPos, Vector2D point);
-    void hamidDebug();
     // END NEW PASS ZONE
 
     void setDefenseClear(bool _isDefenseClearing);
@@ -136,13 +138,10 @@ public:
     void setPlayMake(Agent* _playMake);
     void setCritical(bool _critical);
     void setBallInOppJaw(bool _ballInOppJaw);
-    void choosePlan();
     void swapPlaymakeInPass();
     bool isInpass();
 
     SDynamicPlan currentPlan;
-    SDynamicPlan* nextPlanA;
-    SDynamicPlan* nextPlanB;
 
 private:
     // NEW PASS ZONE
@@ -205,8 +204,6 @@ private:
                           double _radius = 1, double _treshold = .5);
     int appropriatePassSpeed();
     int appropriateChipSpeed();
-
-    Vector2D neaerstGuardToPoint(const Vector2D& startVec) const;
 
     bool isPlayMakeChanged();
 

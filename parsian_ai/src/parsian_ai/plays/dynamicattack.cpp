@@ -28,11 +28,8 @@ CDynamicAttack::CDynamicAttack() {
     repeatFlag = false;
     passerID = -1;
     counter = 0;
-    nextPlanA = new SDynamicPlan;
-    nextPlanB = new SDynamicPlan;
+
     currentPlan.reset();
-    nextPlanA->reset();
-    nextPlanB->reset();
 
     lastPasserRoleIndex = -1;
 
@@ -230,10 +227,6 @@ void CDynamicAttack::makePlan(int agentSize) {
     //// Initialize Plan with null values
     currentPlan.mode = DynamicMode::NoMode;
     currentPlan.agentSize = agentSize;
-    for (auto &positionAgent : nextPlanA->positionAgents) {
-        positionAgent.region = DynamicRegion::NoMatter;
-        positionAgent.skill = PositionSkill::NoSkill;
-    }
 
     //// We Don't have the ball -- counter-attack, blocking, move forward
     //// And Ball is in our field
@@ -273,26 +266,6 @@ void CDynamicAttack::makePlan(int agentSize) {
     }
 }
 
-void CDynamicAttack::assignId() {
-
-    int tempIndex;
-    QList<int> matchedIDList;
-    MWBM matcher;
-    int n = agents.size();
-    matcher.create(n, n);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            matcher.setWeight(i, j, -1 * semiDynamicPosition[i].dist(agents.at(j)->pos()));
-        }
-    }
-//    matcher.findMaxMinMatching();
-    matcher.findMatching();
-    for (int i = 0; i < n; i++) {
-        tempIndex = matcher.getMatch(i);
-        matchedIDList.append(tempIndex);
-    }
-}
-
 void CDynamicAttack::assignTasks() {
     if (playmake != nullptr) {
         playMake();
@@ -316,9 +289,9 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
     makePlan(agentSize);
 
 //    if (agentSize > 0 && (lastAgentCount != agentSize || isPlayMakeChanged())) {
-    chooseBestPositons_new();
+    chooseBestPositons();
 
-    assignId_new();
+    assignId();
 
     chooseReceiverAndBestPosForPass();
 //
@@ -866,15 +839,6 @@ void CDynamicAttack::setFast(bool _fast) {
     fast = _fast;
 }
 
-void CDynamicAttack::choosePlan() {
-    if (isPlanDone()) {
-        currentPlan = *nextPlanA;
-    } else if (isPlanFailed()) {
-        currentPlan = *nextPlanB;
-    }
-
-}
-
 bool CDynamicAttack::isPlanFailed() {
     switch (currentPlan.mode) {
 
@@ -990,7 +954,7 @@ void CDynamicAttack::createRegions() {
     }
 }
 
-void CDynamicAttack::chooseBestPositons_new() {
+void CDynamicAttack::chooseBestPositons() {
     clearRobotsRegionsWeights();
 
     // get the search regions
@@ -1043,7 +1007,7 @@ int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos) {
     return -1;
 }
 
-void CDynamicAttack::assignId_new() {
+void CDynamicAttack::assignId() {
     if (regionPriority.isEmpty() || playmake == nullptr) return;
     QList<int> robotIDs;
     MWBM matcher;
