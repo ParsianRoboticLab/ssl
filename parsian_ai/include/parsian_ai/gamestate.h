@@ -6,6 +6,7 @@
 #include <parsian_msgs/ssl_refree_wrapper.h>
 #include <parsian_msgs/ssl_refree_command.h>
 #include <parsian_msgs/ssl_refree_stage.h>
+#include <parsian_msgs/ssl_force_referee.h>
 
 
 enum class States {
@@ -44,6 +45,7 @@ using namespace  parsian_msgs;
 class GameState {
 private:
     int command_ctr;
+    int force_command_ctr;
     States state;
     parsian_msgs::ssl_refree_stage stage;
     int ourScore, theirScore;
@@ -55,6 +57,7 @@ public:
     GameState();
     bool ready();
     void setRefree(ssl_refree_wrapperConstPtr ref_wrapper);
+    void setForceRefree(ssl_force_refereeConstPtr command);
     void updateCommand(ssl_refree_command command);
     bool isStart();
     bool isStop();

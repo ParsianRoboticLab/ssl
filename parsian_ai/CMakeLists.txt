@@ -97,7 +97,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/plays/dynamicattack.cpp
 		src/${PROJECT_NAME}/plays/masterplay.cpp
 		src/${PROJECT_NAME}/plays/ourballplacement.cpp
-		src/${PROJECT_NAME}/plays/playoff.cpp
+		src/${PROJECT_NAME}/plays/playoff/playoff.cpp
 		src/${PROJECT_NAME}/plays/ourpenalty.cpp
 		src/${PROJECT_NAME}/plays/theirpenalty.cpp
 		src/${PROJECT_NAME}/plays/theirkickoff.cpp
@@ -119,16 +119,21 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/fault.cpp
 		src/${PROJECT_NAME}/roles/dynamicrole.cpp
 		src/${PROJECT_NAME}/roles/playmake.cpp
-        )
+		src/${PROJECT_NAME}/plays/playoff/dynamicplayoff.cpp
+        src/${PROJECT_NAME}/plays/playoff/staticplayoff.cpp
+        src/${PROJECT_NAME}/plays/playoff/firstplayoff.cpp
+		src/${PROJECT_NAME}/plays/playoff/abstractplayoff.cpp
+		)
 
 add_library(${PROJECT_NAME}_util
-		src/parsian_ai/util/defpos.cpp
-		src/parsian_ai/util/knowledge.cpp
-		src/parsian_ai/util/worldmodel.cpp
-		src/parsian_ai/util/agent.cpp)
+		src/${PROJECT_NAME}/util/defpos.cpp
+		src/${PROJECT_NAME}/util/knowledge.cpp
+		src/${PROJECT_NAME}/util/worldmodel.cpp
+		src/${PROJECT_NAME}/util/agent.cpp
+        )
 
 add_library(${PROJECT_NAME}_nodelet
-		src/parsian_ai/ai_nodelet.cpp
+		src/${PROJECT_NAME}/ai_nodelet.cpp
 		)
 
 ## Declare a C++ executable
@@ -136,7 +141,7 @@ add_library(${PROJECT_NAME}_nodelet
 ## The recommended prefix ensures that target names across packages don't collide
 
 add_executable(${PROJECT_NAME}_node
-		src/parsian_ai/ai_node.cpp
+		src/${PROJECT_NAME}/ai_node.cpp
 		)
 
 

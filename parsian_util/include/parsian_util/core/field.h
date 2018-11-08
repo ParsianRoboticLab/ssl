@@ -155,9 +155,13 @@ public:
 
     Vector2D ourGoalR() const;
 
+    Segment2D ourGoalLine() const;
+
     Vector2D oppGoalL() const;
 
     Vector2D oppGoalR() const;
+
+    Segment2D oppGoalLine() const;
 
     Vector2D ourOneThirdL() const;
 
@@ -174,8 +178,6 @@ public:
     Rect2D ourPenaltyRect() const;
 
     Rect2D oppPenaltyRect() const;
-
-    Vector2D getfOurGoal() const;
 
     bool isInField(Vector2D point) const;
 

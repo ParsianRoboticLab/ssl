@@ -11,9 +11,8 @@ void CHalftimeLineup::reset(){
     points.clear();
 }
 
-
-void CHalftimeLineup::init(const QList<Agent *> &_agents) {
-    setAgentsID(_agents);
+void CHalftimeLineup::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
 
 }

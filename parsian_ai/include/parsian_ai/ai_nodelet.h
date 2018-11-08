@@ -35,7 +35,7 @@ private:
     ros::Publisher *robTask;
     ros::Timer timer_;
 
-    ros::ServiceClient plan_client;
+    ros::ServiceClientPtr plan_client;
 
     //config server setup
     boost::shared_ptr<dynamic_reconfigure::Server<ai_config::aiConfig>> server;

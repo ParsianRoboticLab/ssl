@@ -47,7 +47,7 @@ namespace rqt_parsian_gui
         void timerCb(const ros::TimerEvent& _timer);
         parsian_msgs::parsian_team_config teamConfig;
         parsian_msgs::ssl_force_refereePtr refree_command;
-
+	int command_counter;
     };
 }
 

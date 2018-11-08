@@ -10,14 +10,9 @@ void CTheirKickOff::reset() {
     executedCycles = 0;
 }
 
-void CTheirKickOff::init(const QList<Agent*>& _agents) {
-    setAgentsID(_agents);
+void CTheirKickOff::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
-
-//  if( knowledge->getLastPlayExecuted() != TheirKickOffPlay ){
-//    reset();
-//  }
-//  knowledge->setLastPlayExecuted(TheirKickOffPlay);
 }
 
 void CTheirKickOff::execute_x() {

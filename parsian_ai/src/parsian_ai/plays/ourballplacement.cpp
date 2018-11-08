@@ -20,14 +20,9 @@ void COurBallPlacement::reset(){
     first = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
-void COurBallPlacement::init(const QList<Agent*>& _agents) {
-    setAgentsID(_agents);
+void COurBallPlacement::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
-    //if(knowledge->getLastPlayExecuted() != OurBallPlacement ){
-    //    reset();
-
-    //}
-    // knowledge->setLastPlayExecuted(OurBallPlacement);
 }
 
 

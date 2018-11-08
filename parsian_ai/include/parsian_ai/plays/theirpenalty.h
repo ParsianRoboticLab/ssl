@@ -8,7 +8,8 @@ public:
     CTheirPenalty();
     ~CTheirPenalty();
     void execute_x();
-    void init(const QList<Agent*>& _agents);
+    void init(QList<Agent*>& _agents);
+
     void generatePositions();
     void executePositioning();
     void assignSkills();

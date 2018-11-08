@@ -75,7 +75,7 @@ vector2d<num> segment_near_line(const vector2d<num> a0,const vector2d<num> a1,
   n.set(-n.y,n.x);
 
   dn = dot(v,n);
-  if(fabs(dn) < EPSILON) return(a0);
+  if(fabs(dn) < GEPSILON) return(a0);
 
   t = -dot(a0-b0,n) / dn;
   // printf("t=%f dn=%f\n",t,dn);
@@ -138,7 +138,7 @@ bool CalcCircle(vector2d<num> &cen,num &rad,
   */
 
   num det = a.x * b.y - a.y * b.x;
-  if(fabs(det) < EPSILON) return(false);
+  if(fabs(det) < GEPSILON) return(false);
 
   cen.x = ( b.y*da + -a.y*db) / det;
   cen.y = (-b.x*da +  a.x*db) / det;
@@ -181,7 +181,7 @@ vector point_on_line(const vector x0,const vector x1,const vector p)
   l = sx.sqlength();
 
   // if line is degenerate, any point will do
-  if(l < EPSILON) return(p);
+  if(l < GEPSILON) return(p);
 
   // calculate point along line nearest to p
   r = x0 + sx * (f / l);
@@ -240,7 +240,7 @@ double closest_point_time(const vector x1,const vector v1,
   double sl = v.sqlength();
   double t;
 
-  if(sl < EPSILON) return(0.0); // parallel tracks, any time is ok.
+  if(sl < GEPSILON) return(0.0); // parallel tracks, any time is ok.
 
   t = -v.dot(x1 - x2) / sl;
   if(t < 0.0) return(0.0); // nearest time was in the past, now
@@ -280,10 +280,10 @@ double distance_seg_to_seg(vector s1a,vector s1b,vector s2a,vector s2b)
            a,b);
   }
 
-  if((a < EPSILON) || (b < EPSILON)){
-    if((a < EPSILON) && (b < EPSILON)){
+  if((a < GEPSILON) || (b < GEPSILON)){
+    if((a < GEPSILON) && (b < GEPSILON)){
       return(dist(s1a,s2a));
-    }else if(a < EPSILON){
+    }else if(a < GEPSILON){
       return(distance_to_segment(s2a,s2b,s1a));
     }else{
       return(distance_to_segment(s1a,s1b,s2a));
@@ -291,7 +291,7 @@ double distance_seg_to_seg(vector s1a,vector s1b,vector s2a,vector s2b)
   }
 
   // compute the line parameters of the two closest points
-  if(D < EPSILON){ // the lines are almost parallel
+  if(D < GEPSILON){ // the lines are almost parallel
     sN = 0.0; // force using point P0 on segment S1
     sD = 1.0; // to prevent possible division by 0.0 later
     tN = e;
@@ -345,8 +345,8 @@ double distance_seg_to_seg(vector s1a,vector s1b,vector s2a,vector s2b)
   // finally do the division to get sc and tc
   // sc = sN / sD;
   // tc = tN / tD;
-  sc = (fabs(sN) < EPSILON)? 0.0 : sN / sD;
-  tc = (fabs(tN) < EPSILON)? 0.0 : tN / tD;
+  sc = (fabs(sN) < GEPSILON)? 0.0 : sN / sD;
+  tc = (fabs(tN) < GEPSILON)? 0.0 : tN / tD;
 
   // get the difference of the two closest points
   dp = w + u*sc - v*tc; // = S1(sc) - S2(tc)

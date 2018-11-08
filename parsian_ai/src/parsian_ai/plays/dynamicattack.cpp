@@ -50,14 +50,10 @@ CDynamicAttack::~CDynamicAttack() {
 
 }
 
-void CDynamicAttack::init(const QList<Agent *> &_agents) {
-    setAgentsID(_agents);
+void CDynamicAttack::init(QList<Agent*>& _agents) {
+    agents.clear();
+    agents.append(_agents);
     initMaster();
-
-    //    if( knowledge->getLastPlayExecuted() != StartPlay){
-    //        reset();
-    //    }
-    //    knowledge->setLastPlayExecuted(StartPlay);
 }
 
 void CDynamicAttack::reset() {

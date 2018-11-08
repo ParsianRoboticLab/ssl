@@ -12,14 +12,9 @@ void CTheirBallPlacement::reset() {
 
 }
 
-void CTheirBallPlacement::init(const QList<Agent*>& _agents) {
-    setAgentsID(_agents);
+void CTheirBallPlacement::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
-
-//    if( knowledge->getLastPlayExecuted() != TheirBallPlacement ){
-//        reset();
-//    }
-//    knowledge->setLastPlayExecuted(TheirBallPlacement);
 }
 
 

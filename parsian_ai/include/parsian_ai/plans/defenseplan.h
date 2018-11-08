@@ -124,7 +124,7 @@ protected:
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
-    kkDefPos tempDefPos;
+    DefPos tempDefPos;
     void matchingDefPos(int _defenseNum);
     bool defenseOneTouchOrNot();
     bool agentEffectOnBallProbability(Vector2D ballPos, Vector2D ballVel, Vector2D agentPos, Vector2D agentVel, bool isTowardOurgoal);
@@ -265,7 +265,7 @@ private:
     bool inPenaltyAreaFlag;
     int predictMostDangrousOppToBall();
     Vector2D NearestDistanceToBallSegment(Vector2D point);
-    kkDefPos defPosDecision;
+    DefPos defPosDecision;
     defenseExeptions defExceptions;
     void checkDefenseExeptions();
     void runDefenseExeptions();

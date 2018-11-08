@@ -5,6 +5,9 @@
 
 #include <QTime>
 
+
+#define BEHIND_BALL_POS Vector2D(1234, 5678)
+
 enum class RoleSkill {
     Gotopoint      = 0,
     GotopointAvoid = 1,
@@ -31,7 +34,6 @@ public:
     void execute();
     int resetTime();
     int getElapsed() const;
-    bool deleted;
     KickAction *kickSkill;
     ReceivepassAction *receivePassSkill;
     OnetouchAction *oneTouchSkill;
@@ -49,9 +51,10 @@ public:
     ClassProperty(CRolePlayOff, bool, Chip, chip, updated);
     ClassProperty(CRolePlayOff, double, KickSpeed, kickSpeed, updated);
     ClassProperty(CRolePlayOff, bool, Slow, slow, updated);
-    ClassProperty(CRolePlayOff, float, ReceiveRadius, receiveRadius, updated);
+    ClassProperty(CRolePlayOff, double, ReceiveRadius, receiveRadius, updated);
     ClassProperty(CRolePlayOff, Vector2D, WaitPos, waitPos, updated);
-    ClassProperty(CRolePlayOff, float, MaxVelocity, maxVelocity, updated);
+    ClassProperty(CRolePlayOff, Vector2D, LookAt, lookAt, updated);
+    ClassProperty(CRolePlayOff, double, MaxVelocity, maxVelocity, updated);
     ClassProperty(CRolePlayOff, bool, Intercept, intercept, updated);
     ClassProperty(CRolePlayOff, bool, AvoidBall, avoidBall, updated);
     ClassProperty(CRolePlayOff, bool, IgnoreAngle, ignoreAngle, updated);
@@ -76,7 +79,7 @@ public:
     inline void setRoleUpdate(bool _updated) {
         roleUpdate = _updated;
     }
-    inline bool getRoleUpdate() {
+    inline bool isRoleUpdated() {
         return roleUpdate;
     }
 
