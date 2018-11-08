@@ -9,9 +9,9 @@ CPlayOff::CPlayOff() : CMasterPlay() {
     mode = POMode::None;
     playOnFlag = false;
     selectedPlayoff = nullptr;
+    firstPlayoff = new CFirstPlayOff;
     staticPlayOff = new CStaticPlayOff;
     dynamicPlayoff = new CDynamicPlayOff;
-    firstPlayoff = new CFirstPlayOff;
 
 }
 

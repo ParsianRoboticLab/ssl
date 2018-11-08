@@ -16,45 +16,37 @@ enum class DynamicSelect {
     NoSelect = 0,
     Khafan = 1,
     Chip = 2,
-    Kick = 3,
-    Blocker = 4
+    Kick = 3
 };
 
+enum class DynamicState {
+    None = 0,
+    Ready = 1,
+    Pass = 2,
+    Shot = 3
+};
 
 class CDynamicPlayOff : public CAbstractPlayOff {
 public:
     CDynamicPlayOff();
-    ~CDynamicPlayOff();
-    void reset();
-    void execute();
-    void init(const QList<Agent*>& _agents);
-    CRolePlayOff *roleAgents[_NUM_PLAYERS];
-    void initDynamicPlay(const QList<Agent*> &_ourplayers);
+    ~CDynamicPlayOff() override;
+    void reset() override;
+    void execute() override;
+    void init(const QList<Agent*>& _agents) override;
 
 private:
-    bool initial;
-    Vector2D lastBallPos;
-    unsigned int lastTime;
-
-    bool playOnFlag;
-    void dynamicExecute();
     int dynamicMatch[_NUM_PLAYERS];
     DynamicSelect dynamicSelect;
-    void dynamicAssignID();
     void dynamicPlayKhafan();
-    void dynamicPlayBlocker();
     void dynamicPlayChipToGoal(bool isChip);
 
     void checkEndKhafan();
-    void checkEndBlocker();
     void checkEndChipToGoal();
-    Vector2D getDynamicTarget(int i);
 
     int dynamicAgentSize;
-    bool ready, pass, shot;
-    int dynamicState;
+    DynamicState state;
     unsigned int dynamicStartTime;
-
+    Vector2D dummyPositions[_NUM_PLAYERS];
 
 };
 

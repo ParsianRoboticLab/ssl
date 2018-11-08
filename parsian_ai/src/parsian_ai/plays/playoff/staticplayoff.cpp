@@ -10,28 +10,16 @@ CStaticPlayOff::CStaticPlayOff() {
 
     ROS_INFO("Bring yourself back online playoff");
 
-    for (auto &i : positionAgent) {
-        i.stateNumber = 0;
-    }
-    for (auto &i : roleAgent) {
-        i = new CRolePlayOff();
-    }
+    for (auto &i : positionAgent) i.stateNumber = 0;
     isBallIn = false;
     tempAgent = new CRolePlayOff();
     doPass = false;
     doAfterlife = false;
     setTimer = true;
-    ////////////
-
     masterPlan = nullptr;
-
-
-
     playOnFlag = false;
     firstPass  = true;
     havePassInPlan    = false;
-
-
     criticalInit = true;
     criticalKick = new KickAction();
 
@@ -39,10 +27,8 @@ CStaticPlayOff::CStaticPlayOff() {
 
 CStaticPlayOff::~CStaticPlayOff() {
     ROS_INFO("Playoff is gone");
-    for (auto &i : roleAgent) {
-        delete i;
-    }
     delete tempAgent;
+    delete criticalKick;
 }
 
 void CStaticPlayOff::execute() {
@@ -116,8 +102,8 @@ bool CStaticPlayOff::isBallDirChanged() {
     const int& passer = masterPlan->execution.passer.at(0).id;
     const int& receiver = masterPlan->execution.receiver.at(0).id;
     const int receiverID = masterPlan->matchedID.value(receiver);
-    if (wm->ball->pos.dist(lastBallPos) > 0.5 && !roleAgent[passer]->getChip()) {
-        Circle2D  c(roleAgent[receiverID]->getWaitPos(), 1); // TODO : CHECK radius
+    if (wm->ball->pos.dist(lastBallPos) > 0.5 && !roleAgents[passer]->getChip()) {
+        Circle2D  c(roleAgents[receiverID]->getWaitPos(), 1); // TODO : CHECK radius
         drawer->draw(wm->ball->seg(), QColor(Qt::blue));
         drawer->draw(c, QColor(Qt::red));
         return !c.intersection(wm->ball->seg());
@@ -202,7 +188,7 @@ void CStaticPlayOff::passManager() {
         doPass = positionAgent[r.id].getAbsArgs(r.state).staticPos.dist(c->pos())
                  <= masterPlan->lastDist;
         doAfterlife = !Circle2D(lastBallPos, 0.1).contains(wm->ball->pos);
-        roleAgent[p.id]->setDoPass(doPass);
+        roleAgents[p.id]->setDoPass(doPass);
     }
 
 }
@@ -241,8 +227,8 @@ bool CStaticPlayOff::isTaskDone(CRolePlayOff* _roleAgent) {
 
 void CStaticPlayOff::posExecute() {
     for (int i = 0; i < masterPlan->currentSize; i++) {
-        if (roleAgent[i]->getAgent() != nullptr) {
-            roleAgent[i]->execute();
+        if (roleAgents[i]->getAgent() != nullptr) {
+            roleAgents[i]->execute();
         }
     }
 }
@@ -250,24 +236,24 @@ void CStaticPlayOff::posExecute() {
 void CStaticPlayOff::checkEndState() {
 
     for (int i = 0; i < masterPlan->currentSize; i++) {
-        if (roleAgent[i]->getAgent() == nullptr) {
+        if (roleAgents[i]->getAgent() == nullptr) {
             ROS_WARN("ROLE AGENT IS NULL");
             continue;
         }
 
         Agent *firstPasser = getAgent(masterPlan->execution.passer.at(0).id);
 
-        if (isTaskDone(roleAgent[i]) || (doAfterlife && roleAgent[i]->getAgent()->id() != firstPasser->id())) {
+        if (isTaskDone(roleAgents[i]) || (doAfterlife && roleAgents[i]->getAgent()->id() != firstPasser->id())) {
 
-            roleAgent[i]->setRoleUpdate(false);
-            roleAgent[i]->resetTime();
+            roleAgents[i]->setRoleUpdate(false);
+            roleAgents[i]->resetTime();
 
             POFFSKILL last_skill = positionAgent[i].positionArg.at(
                     positionAgent[i].positionArg.size() - 1).staticSkill;
 
             if (last_skill == POFFSKILL::Position) {
                 if (!doAfterlife && positionAgent[i].stateNumber == positionAgent[i].positionArg.size() - 2) {
-                    roleAgent[i]->setRoleUpdate(true);
+                    roleAgents[i]->setRoleUpdate(true);
                 } else if (doAfterlife){
                     positionAgent[i].stateNumber = positionAgent[i].positionArg.size() - 1;
                 }
@@ -299,10 +285,10 @@ void CStaticPlayOff::checkEndState() {
 
 void CStaticPlayOff::fillRoleProperties() {
     for (int i = 0; i < agents.size(); i++) {
-        if (masterPlan->matchedID.contains(i) && !roleAgent[i]->isRoleUpdated()) {
+        if (masterPlan->matchedID.contains(i) && !roleAgents[i]->isRoleUpdated()) {
 
-            roleAgent[i]->setFirstMove(positionAgent[i].stateNumber == 0);
-            roleAgent[i]->setAgent(getAgent(i));
+            roleAgents[i]->setFirstMove(positionAgent[i].stateNumber == 0);
+            roleAgents[i]->setAgent(getAgent(i));
 
             //// Handle OneTouch Faster
             if (positionAgent[i].stateNumber + 1 < positionAgent[i].positionArg.size()) {
@@ -345,10 +331,10 @@ void CStaticPlayOff::fillRoleProperties() {
                 }
             }
 
-            roleAgent[i]->setRoleUpdate(true);
-            roleAgent[i]->resetTime();
-            assignTask(roleAgent[i], positionAgent[i]);
-            ROS_INFO_STREAM("NEW TASK: " << roleAgent[i]->getTarget().x << roleAgent[i]->getTarget().y);
+            roleAgents[i]->setRoleUpdate(true);
+            roleAgents[i]->resetTime();
+            assignTask(roleAgents[i], positionAgent[i]);
+            ROS_INFO_STREAM("NEW TASK: " << roleAgents[i]->getTarget().x << roleAgents[i]->getTarget().y);
 
         } else {
             if (!masterPlan->matchedID.contains(i)) {
@@ -627,7 +613,7 @@ void CStaticPlayOff::reset() {
 
     for (int i = 0; i < _NUM_PLAYERS; i++) {
         positionAgent[i].stateNumber = 0;
-        roleAgent[i]->reset();
+        roleAgents[i]->reset();
         positionAgent[i].zombie = false;
     }
     isBallIn = false;

@@ -21,6 +21,9 @@ public:
     bool getPlayonFlag();
 protected:
     QList<Agent*> agents;
+    CRolePlayOff *roleAgents[_NUM_PLAYERS];
+    void matchAgent();
+
     bool playOnFlag;
 };
 

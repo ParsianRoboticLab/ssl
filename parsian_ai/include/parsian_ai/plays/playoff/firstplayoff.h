@@ -38,9 +38,6 @@ public:
 
 private:
 
-    int dynamicMatch[_NUM_PLAYERS];
-    CRolePlayOff *roleAgents[_NUM_PLAYERS];
-
     void firstPlayForOppCorner(int _agentSize);
 
     void kickOffStopModePlay(int tagentSize);
@@ -54,8 +51,6 @@ private:
 
     void stayPoisitioning();
 
-    void movePositioning();
-
     void donePositioning();
 
     int shotBlockers();
@@ -63,8 +58,6 @@ private:
     int passBlockers();
 
     double distAverageOppMark();
-
-    void matchAgent();
 
     bool firstFinished;
 };

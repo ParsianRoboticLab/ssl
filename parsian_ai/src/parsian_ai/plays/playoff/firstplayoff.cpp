@@ -16,13 +16,11 @@ CFirstPlayOff::CFirstPlayOff() {
     kickOffPos[6] = Vector2D(-0.75, 1.7);
     kickOffPos[7] = Vector2D(-0.75, -1.7);
 
-    for (auto &roleAgent : roleAgents) roleAgent = new CRolePlayOff();
     reset();
 
 }
 
 CFirstPlayOff::~CFirstPlayOff() {
-    for (auto &roleAgent : roleAgents) delete roleAgent;
 }
 
 void CFirstPlayOff::init(const QList<Agent*>& _agent) {
@@ -242,18 +240,3 @@ double CFirstPlayOff::distAverageOppMark() {
     return  sumDist;
 }
 
-void CFirstPlayOff::matchAgent() {
-
-    MWBM matcher;
-    matcher.create(agents.size(), agents.size());
-    for (int i = 0; i < agents.size(); i++) {
-        for (int j = 0; j < agents.size(); j++) {
-                double weight = roleAgents[i]->getTarget().dist(agents[j]->pos());
-                matcher.setWeight(i, j, -(weight));
-        }
-    }
-    matcher.findMatching();
-    for (int i = 0; i < agents.size(); i++) {
-        roleAgents[i]->setAgent(agents[matcher.getMatch(i)]);
-    }
-}

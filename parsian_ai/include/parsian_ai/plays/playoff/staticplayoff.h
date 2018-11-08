@@ -206,7 +206,6 @@ private:
     unsigned int lastTime;
 
     QList<Agent *> activeAgents;
-    CRolePlayOff *roleAgent[_NUM_PLAYERS];
     CRolePlayOff *tempAgent;
 
 
