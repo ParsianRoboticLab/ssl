@@ -5,7 +5,7 @@ const int CDynamicAttack::REGION_NUM = 7;
 
 CDynamicAttack::CDynamicAttack(){
     // NEW PASS
-
+    passPosChanged = 0;
     createRegions();
     clearRobotsRegionsWeights();
     PMfromCoach = true;
@@ -322,8 +322,8 @@ void CDynamicAttack::assignId() {
             matcher.setWeight(i, j, -1 * semiDynamicPosition[i].dist(agents.at(j)->pos()));
         }
     }
-    matcher.findMaxMinMatching();
-    //matcher.findMatching();
+//    matcher.findMaxMinMatching();
+    matcher.findMatching();
     for (int i = 0; i < n; i++) {
         tempIndex = matcher.getMatch(i);
         matchedIDList.append(tempIndex);
@@ -417,7 +417,7 @@ void CDynamicAttack::playMake() {
             roleAgentPM->setChip(chipOrNot(currentPlan.passPos, 0.5, 0.1));
             roleAgentPM->setTarget(currentPlan.passPos);
             roleAgentPM->setEmptySpot(false);
-            roleAgentPM->setNoKick(true);
+            roleAgentPM->setNoKick(false);
             if (roleAgentPM->getChip()) {
 //            roleAgentPM->setChipDist(appropriateChipSpeed());       //TODO: set chip distanse not speed
                 roleAgentPM->setChipDist(conf.MediumDistChip);
@@ -490,9 +490,7 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
                     case PositionSkill::Ready: // Ready For Pass
                         ROS_INFO_STREAM("kian: too switch set : skill: ready");
                         roleAgents[i]->setTarget(_points.at(i));
-                        roleAgents[i]->setReceiveRadius(
-                                std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
-                                        .dist(roleAgents[i]->getTarget())));
+                        roleAgents[i]->setReceiveRadius(.5);
                         roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
 
                         break;
@@ -928,8 +926,15 @@ double fRand(double fMin, double fMax) {
 void CDynamicAttack::chooseReceiverAndBestPosForPass() {
     if (currentPlan.playmake.skill == PlayMakeSkill::Pass) {
         int rand_num = 0;
-        rand_num = std::rand() % std::min(agents.length(),REGION_NUM);
-        currentPlan.passPos = regions[regionPriority[rand_num]].rectangle.center();
+        if (passPosChanged <= 0) {
+            auto max_choice = std::min(agents.length(), REGION_NUM);
+            if (max_choice > 0) {
+                rand_num = std::rand() % max_choice;
+                currentPlan.passPos = regions[regionPriority[rand_num]].rectangle.center();
+                passPosChanged = 180;
+            }
+        } else
+            passPosChanged --;
     }
 
 //    optimalPositionsForRecivers.clear();
@@ -1605,8 +1610,9 @@ void CDynamicAttack::chooseBestPositons_new() {
 
     int ballR = -1;
     regionPriority.clear();
-    for (int i{0}; i < REGION_NUM; i++)
-        if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
+    if (passPosChanged <= 0)
+        for (int i{0}; i < REGION_NUM; i++)
+            if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
     switch (ballR) {
         case 0:
             regionPriority << 4 << 2 << 1 << 5 << 3 << 6;

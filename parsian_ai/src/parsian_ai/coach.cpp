@@ -810,7 +810,7 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
 
         if (pushingPenalty.contains(wm->ball->pos)) {
             dynamicAttack->setDirectShot(true);
-        } else if (mostPossible > shotToGoalthr and false) {
+        } else if (mostPossible > shotToGoalthr) {
             dynamicAttack->setDirectShot(true);
             shotToGoalthr = conf.DirectTrsh * .6;
         } else {

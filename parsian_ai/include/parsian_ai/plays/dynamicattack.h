@@ -146,6 +146,7 @@ public:
 
 private:
     // NEW PASS ZONE
+    int passPosChanged;
     static const int REGION_NUM;
     FieldRegion *regions;
     QList<int> ourRelaxedIDs, oppRelaxedIDs;
