@@ -55,7 +55,9 @@ CCoach::CCoach(Agent**_agents)
 
     //    m_planLoader = new CLoadPlayOffJson(QDir::currentPath() + QString("/playoff"));
     goalieAgent = nullptr;
-    preferredDefenseCounts = 2;
+    preferedDefenseCounts = 2;
+    overDefThr = 0;
+    shotToGoalthr = conf.DirectTrsh;
     selectedPlay = stopPlay;
     for (int &i : faultDetectionCounter) {
         i = 0;
@@ -123,6 +125,9 @@ void CCoach::decidePreferredDefenseAgentsCount() {
             preferredDefenseCounts = conf.Defense;
         }
     } else if (gameState->isStart()) {
+        //todo remove this
+        preferedDefenseCounts = 1;
+        return;
         if (know->variables["transientFlag"].toBool())
         {
             //// Add Playmake after time
@@ -571,19 +576,16 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
     if (playmakeId != -1 && wm->our[playmakeId] != nullptr) {
         double mostPossible = findMostPossible(wm->our[playmakeId]->pos);
 
-        Rect2D pushingPenalty;
-        pushingPenalty.setLength(wm->field->oppPenaltyRect().size().length() + conf.penaltyMargin*2);
-        pushingPenalty.setWidth(wm->field->oppPenaltyRect().size().width() + conf.penaltyMargin);
-        pushingPenalty.setTopLeft(wm->field->oppPenaltyRect().topLeft() + Vector2D(-conf.penaltyMargin, conf.penaltyMargin));
+        Rect2D pushingPenalty {wm->field->oppBigPenaltyArea(1.5)};
 
         if (pushingPenalty.contains(wm->ball->pos)) {
             dynamicAttack->setDirectShot(true);
-        } else if (mostPossible > (conf.DirectTrsh - shotToGoalthr)) { // TODO : Fix This
+        } else if (mostPossible > shotToGoalthr) {
             dynamicAttack->setDirectShot(true);
-            shotToGoalthr = std::max(0.0, conf.DirectTrsh - 0.4);
+            shotToGoalthr = conf.DirectTrsh * .6;
         } else {
             dynamicAttack->setDirectShot(false);
-            shotToGoalthr = 0;
+            shotToGoalthr = conf.DirectTrsh;
         }
     }
 
@@ -620,10 +622,10 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
         // TODO : matching is based on ID, It should be Goal-Oriented -- optimal -- base of position
         qSort(ourPlayers.begin(), ourPlayers.end());
         for (int i = 0; i < MarkNum; i++) {
-            PDEBUG("mark num =" , MarkNum , D_AHZ);
             selectedPlay->markAgents.append(agents[ourPlayers.front()]);
             ourPlayers.removeFirst();
         }
+        PDEBUG("marknum =" , MarkNum , D_AHZ);
         PDEBUG("mark agents =" , selectedPlay->markAgents.size() , D_AHZ);
     }
 
