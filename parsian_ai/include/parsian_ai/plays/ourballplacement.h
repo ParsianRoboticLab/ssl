@@ -19,7 +19,7 @@ public:
         COurBallPlacement();
         ~COurBallPlacement();
         void execute_x();
-        void init();
+        void init(QList<Agent*>& _agents);
         bool first;
 private:
         void reset();

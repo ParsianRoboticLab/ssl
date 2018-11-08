@@ -11,8 +11,8 @@ void CHalftimeLineup::reset(){
     points.clear();
 }
 
-
-void CHalftimeLineup::init() {
+void CHalftimeLineup::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
 
 }

@@ -15,6 +15,8 @@ CRolePlayOff::CRolePlayOff() {
     agentID = -1;
     lookForward = true;
     spin = false;
+    lookAt.invalidate();
+
 }
 
 CRolePlayOff::~CRolePlayOff() {
@@ -50,6 +52,7 @@ void CRolePlayOff::update() {
             gotoPointAvoidSkill->setMaxvelocity(maxVelocity);
             gotoPointAvoidSkill->setNoavoid(noAvoid);
             gotoPointAvoidSkill->setBallobstacleradius(0.18);
+            gotoPointAvoidSkill->setLookat(lookAt);
 
             updated = false;
             break;

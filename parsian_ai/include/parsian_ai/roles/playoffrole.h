@@ -5,6 +5,9 @@
 
 #include <QTime>
 
+
+#define BEHIND_BALL_POS Vector2D(1234, 5678)
+
 enum class RoleSkill {
     Gotopoint      = 0,
     GotopointAvoid = 1,
@@ -50,6 +53,7 @@ public:
     ClassProperty(CRolePlayOff, bool, Slow, slow, updated);
     ClassProperty(CRolePlayOff, double, ReceiveRadius, receiveRadius, updated);
     ClassProperty(CRolePlayOff, Vector2D, WaitPos, waitPos, updated);
+    ClassProperty(CRolePlayOff, Vector2D, LookAt, lookAt, updated);
     ClassProperty(CRolePlayOff, double, MaxVelocity, maxVelocity, updated);
     ClassProperty(CRolePlayOff, bool, Intercept, intercept, updated);
     ClassProperty(CRolePlayOff, bool, AvoidBall, avoidBall, updated);

@@ -13,8 +13,8 @@ CStaticPlayOff::CStaticPlayOff() {
     for (auto &i : positionAgent) {
         i.stateNumber = 0;
     }
-    for (int i = 0; i < _NUM_PLAYERS; i++) {
-        roleAgent[i] = new CRolePlayOff();
+    for (auto &i : roleAgent) {
+        i = new CRolePlayOff();
     }
     isBallIn = false;
     tempAgent = new CRolePlayOff();
@@ -39,8 +39,8 @@ CStaticPlayOff::CStaticPlayOff() {
 
 CStaticPlayOff::~CStaticPlayOff() {
     ROS_INFO("Playoff is gone");
-    for (int i = 0; i < _NUM_PLAYERS; i++) {
-        delete roleAgent[i];
+    for (auto &i : roleAgent) {
+        delete i;
     }
     delete tempAgent;
 }
@@ -48,7 +48,7 @@ CStaticPlayOff::~CStaticPlayOff() {
 void CStaticPlayOff::execute() {
 
     ROS_INFO_STREAM("lastTime: " <<ros::Time::now().sec - lastTime << "ball dist: "<<lastBallPos.dist(wm->ball->pos) );
-    if (ros::Time::now().sec - lastTime > 10 && lastBallPos.dist(wm->ball->pos) <= 0.06 && wm->ball->vel.length() > 0.5) {
+    if (ros::Time::now().sec - lastTime > 10 && lastBallPos.dist(wm->ball->pos) <= 0.06 && wm->ball->vel.length() < 0.5) {
         criticalPlay();
         playOnFlag = true;
         return;
@@ -251,6 +251,7 @@ void CStaticPlayOff::checkEndState() {
 
     for (int i = 0; i < masterPlan->currentSize; i++) {
         if (roleAgent[i]->getAgent() == nullptr) {
+            ROS_WARN("ROLE AGENT IS NULL");
             continue;
         }
 
@@ -350,11 +351,8 @@ void CStaticPlayOff::fillRoleProperties() {
             ROS_INFO_STREAM("NEW TASK: " << roleAgent[i]->getTarget().x << roleAgent[i]->getTarget().y);
 
         } else {
-            ROS_WARN("coach -> Match function doesn't work :( ");
-            if (!roleAgent[i]->isRoleUpdated()) {
-                roleAgent[i]->setAgent(agents.at(i));
-                assignTask(roleAgent[i], positionAgent[i]);
-                roleAgent[i]->setRoleUpdate(true);
+            if (!masterPlan->matchedID.contains(i)) {
+                ROS_WARN("MATCHING");
             }
         }
     }
@@ -658,8 +656,6 @@ void CStaticPlayOff::init(const QList<Agent*>& _agents) {
     agents = _agents;
     lastBallPos = wm->ball->pos;
     lastTime = ros::Time::now().sec;
-    assignTasks(masterPlan);
-    ROS_INFO_STREAM("task assigned: " << agents.size());
 }
 
 bool CStaticPlayOff::firstKickFailed() {
@@ -1057,5 +1053,6 @@ void CStaticPlayOff::parsePlan(const parsian_msgs::parsian_plan &_plan) {
 
     matchPlan(masterPlan, agents); //Match The Plan
     checkGUItoRefineMatch(masterPlan, agents);
+    assignTasks(masterPlan);
 
 }

@@ -14,13 +14,9 @@ void CTheirIndirect::reset() {
     executedCycles = 0;
 }
 
-void CTheirIndirect::init() {
+void CTheirIndirect::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
-
-//  if( knowledge->getLastPlayExecuted() != TheirIndirectPlay ){
-//    reset();
-//  }
-//  knowledge->setLastPlayExecuted(TheirIndirectPlay);
 }
 
 void CTheirIndirect::execute_x() {

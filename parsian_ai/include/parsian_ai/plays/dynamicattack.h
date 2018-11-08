@@ -101,7 +101,7 @@ public:
     ~CDynamicAttack() override;
 
     void execute_x() override;
-    void init() override;
+    void init(QList<Agent*>& _agents) override;
 
 
     // NEW PASS ZONE

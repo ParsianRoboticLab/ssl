@@ -5,13 +5,9 @@
 #ifndef PARSIAN_AI_FIRSTPLAYOFF_H
 #define PARSIAN_AI_FIRSTPLAYOFF_H
 
-#include "parsian_ai/roles/roles.h"
-#include "parsian_ai/plans/plans.h"
-#include <parsian_ai/gamestate.h>
-#include <parsian_ai/config.h>
-#include <QString>
+#include <parsian_ai/plays/playoff/abstractplayoff.h>
 
-enum FirstStep {Stay, Move, Done};
+enum FirstStep {Stay, Done};
 
 enum SHOT_SPOT {
     EveryWhere  = 0b11111111,
@@ -24,35 +20,32 @@ enum SHOT_SPOT {
     FarFar      = 0b01000000
 };
 
-class CFirstPlayOff {
+class CFirstPlayOff : public CAbstractPlayOff {
 public:
     CFirstPlayOff();
 
-    ~CFirstPlayOff();
+    ~CFirstPlayOff() override;
 
-    void execute();
+    void execute() override;
 
-    void init(const QList<Agent *> &_agents);
+    void init(const QList<Agent *> &_agents) override;
 
-    void reset();
+    void reset() override;
 
     int getShotSpot();
 
+    bool isFirstFinished();
+
 private:
 
-    QList<Agent *> agents;
     int dynamicMatch[_NUM_PLAYERS];
     CRolePlayOff *roleAgents[_NUM_PLAYERS];
-
-    void kickoffPositioning(int playersNum);
 
     void firstPlayForOppCorner(int _agentSize);
 
     void kickOffStopModePlay(int tagentSize);
 
     Vector2D kickOffPos[_NUM_PLAYERS];
-
-    bool isFirstFinished();
 
     void resetFirstPlayFinishedFlag();
 
@@ -70,6 +63,10 @@ private:
     int passBlockers();
 
     double distAverageOppMark();
+
+    void matchAgent();
+
+    bool firstFinished;
 };
 
 

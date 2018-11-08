@@ -22,7 +22,7 @@ public:
     COurPenalty();
     ~COurPenalty();
     void execute_x();
-    void init();
+    void init(QList<Agent*>& _agents);
     void setPlaymake(Agent* _playmakeAgent);
     void setState(PenaltyState _state){penaltyState = _state;};
     void executeShootoutPositioning();

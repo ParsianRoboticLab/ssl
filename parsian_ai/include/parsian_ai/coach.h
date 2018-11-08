@@ -61,6 +61,8 @@ public:
 
     void execute();
 
+    void init();
+
     DefensePlan &getDefense();
 
     BallPossesion lastBallPossesionState;
@@ -71,8 +73,6 @@ public:
 
     ////////////////////////////////////////////////////// PLAYOFF PLAN
 
-    ros::ServiceClientPtr plan_client;
-
     void setPlanClient(ros::ServiceClientPtr _plan_client);
 
     static int findGoalie();
@@ -80,7 +80,7 @@ public:
 
     void generateWorkingRobotIds();
     QList<int> workingIDs;
-    void replacefaultedrobots();
+    void replaceFaultedRobots();
     CRoleFault *faultRoles[_MAX_NUM_PLAYERS];
     void resetNonVisibleAgents();
 

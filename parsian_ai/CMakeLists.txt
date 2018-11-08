@@ -121,13 +121,16 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/roles/playmake.cpp
 		src/${PROJECT_NAME}/plays/playoff/dynamicplayoff.cpp
         src/${PROJECT_NAME}/plays/playoff/staticplayoff.cpp
-        src/parsian_ai/plays/playoff/firstplayoff.cpp include/parsian_ai/plays/playoff/firstplayoff.h)
+        src/${PROJECT_NAME}/plays/playoff/firstplayoff.cpp
+		src/${PROJECT_NAME}/plays/playoff/abstractplayoff.cpp
+		)
 
 add_library(${PROJECT_NAME}_util
 		src/${PROJECT_NAME}/util/defpos.cpp
 		src/${PROJECT_NAME}/util/knowledge.cpp
 		src/${PROJECT_NAME}/util/worldmodel.cpp
-		src/${PROJECT_NAME}/util/agent.cpp)
+		src/${PROJECT_NAME}/util/agent.cpp
+        )
 
 add_library(${PROJECT_NAME}_nodelet
 		src/${PROJECT_NAME}/ai_nodelet.cpp

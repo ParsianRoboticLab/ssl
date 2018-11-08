@@ -10,9 +10,8 @@
 #include "parsian_ai/plans/plans.h"
 #include <parsian_ai/gamestate.h>
 #include <parsian_ai/config.h>
+#include <parsian_ai/plays/playoff/abstractplayoff.h>
 #include <QString>
-
-#define BEHIND_BALL_POS Vector2D(1234, 5678)
 
 enum class POFFSKILL {
     None = 0,
@@ -144,27 +143,25 @@ struct SPlan {
 
 typedef QPair<AgentPoint, AgentPoint> AgentPair;
 
-class CStaticPlayOff {
+class CStaticPlayOff : public CAbstractPlayOff {
 public:
     CStaticPlayOff();
 
-    ~CStaticPlayOff();
+    ~CStaticPlayOff() override;
 
-    void init(const QList<Agent *> &_agents);
+    void init(const QList<Agent *> &_agents) override;
 
     void analyseShoot();
 
     void analysePass();
 
-    void reset();
+    void reset() override;
 
     void parsePlan(const parsian_msgs::parsian_plan &_plan);
 
-    void execute();
+    void execute() override;
 
 private:
-
-    QList<Agent *> agents;
 
     // Critical Play
     void criticalPlay();
@@ -291,7 +288,6 @@ private:
 
     static SPlan *planMsgToSPlan(const parsian_msgs::parsian_plan &_plan, int _currSize);
 
-    bool playOnFlag;
 };
 
 

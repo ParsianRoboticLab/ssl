@@ -7,6 +7,7 @@
 #include <parsian_ai/plays/playoff/staticplayoff.h>
 #include <parsian_ai/plays/playoff/dynamicplayoff.h>
 #include <parsian_ai/plays/playoff/firstplayoff.h>
+#include <parsian_ai/plays/playoff/abstractplayoff.h>
 
 enum class POMode {
     None    = 0,
@@ -21,7 +22,7 @@ public:
     CPlayOff();
     ~CPlayOff() override;
     void execute_x() override;
-    void init() override;
+    void init(QList<Agent*>& _agents) override;
 
     QString whoami() override { return "PlayOff"; }
     bool deleted;
@@ -37,8 +38,7 @@ private:
     CStaticPlayOff *staticPlayOff;
     CDynamicPlayOff *dynamicPlayoff;
     CFirstPlayOff *firstPlayoff;
-
-    bool firstIsFinished;
+    CAbstractPlayOff *selectedPlayoff;
     bool gotPlan;
     POMode mode;
 

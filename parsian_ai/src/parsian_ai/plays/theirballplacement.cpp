@@ -12,7 +12,8 @@ void CTheirBallPlacement::reset() {
 
 }
 
-void CTheirBallPlacement::init() {
+void CTheirBallPlacement::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
 }
 

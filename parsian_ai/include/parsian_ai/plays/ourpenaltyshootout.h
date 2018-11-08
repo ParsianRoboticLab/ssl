@@ -25,7 +25,7 @@ public:
     COurPenaltyShootout();
     ~COurPenaltyShootout();
     void execute_x();
-    void init();
+    void init(QList<Agent*>& _agents);
     void setState(PenaltyShootoutState _state){penaltyState = _state;};
     void setPlaymake(Agent* _playmakeAgent);
     void generatePositions();

@@ -15,7 +15,8 @@ void CStopPlay::reset() {
     executedCycles = 0;
 }
 
-void CStopPlay::init() {
+void CStopPlay::init(QList<Agent*>& _agents) {
+    agents = _agents;
     initMaster();
 }
 

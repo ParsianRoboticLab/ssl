@@ -86,7 +86,9 @@ CDynamicAttack::~CDynamicAttack() {
 
 }
 
-void CDynamicAttack::init() {
+void CDynamicAttack::init(QList<Agent*>& _agents) {
+    agents = _agents;
+
     initMaster();
 }
 

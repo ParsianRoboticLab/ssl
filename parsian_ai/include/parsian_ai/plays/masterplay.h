@@ -19,7 +19,7 @@ public:
     virtual ~CMasterPlay();
     virtual void reset() = 0;
     virtual void execute_x() = 0;
-    virtual void init() = 0;
+    virtual void init(QList<Agent*>& _agents) = 0;
 
     void execute(const QList<Agent*>& _agents);
     virtual QString whoami() { return "MasterPlay"; }

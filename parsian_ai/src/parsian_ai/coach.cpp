@@ -38,9 +38,6 @@ CCoach::CCoach(Agent**_agents)
     //Stop
     stopPlay            = new CStopPlay();
 
-
-    ourPlayOff->setPlanClient(plan_client);
-
     for (auto &stopRole : stopRoles) {
         stopRole = new CRoleStop(nullptr);
     }
@@ -543,15 +540,15 @@ void CCoach::decideAttack() {
         default:
             decideNull(ourPlayersID);
             return;
-            break;
     }
 
     QList<Agent*> ourAgents;
     for (auto& ourPlayer : ourPlayersID) {
         ourAgents.append(agents[ourPlayer]);
     }
+    ROS_INFO_STREAM("FT: " << firstTime << ourAgents.size());
     if (firstTime) {
-        selectedPlay->init();
+        selectedPlay->init(ourAgents);
         firstTime = false;
     }
     selectedPlay->execute(ourAgents);
@@ -701,8 +698,7 @@ void CCoach::generateWorkingRobotIds()
     }
 }
 
-void CCoach::replacefaultedrobots()
-{
+void CCoach::replaceFaultedRobots() {
     //faulted robots replacement
     QList<int> ourPlayers = wm->our.data->activeAgents;
     QList<int> faultPlayers;
@@ -753,7 +749,7 @@ void CCoach::execute()
 {
     resetNonVisibleAgents();
     generateWorkingRobotIds();
-    if(gameState->isStop()) replacefaultedrobots();
+    if(gameState->isStop()) replaceFaultedRobots();
     int goalie = findGoalie();
     assignGoalieAgent(goalie);
     decidePreferredDefenseAgentsCount();
@@ -928,7 +924,7 @@ void CCoach::decideNull(const QList<int> &_ourPlayers) {
 }
 
 void CCoach::setPlanClient(ros::ServiceClientPtr _plan_client) {
-    plan_client = std::move(_plan_client);
+    ourPlayOff->setPlanClient(_plan_client);
 }
 
 int CCoach::findGoalie() {

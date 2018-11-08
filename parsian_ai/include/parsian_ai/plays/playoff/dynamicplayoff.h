@@ -8,6 +8,7 @@
 #include "parsian_ai/roles/roles.h"
 #include "parsian_ai/plans/plans.h"
 #include <parsian_ai/gamestate.h>
+#include <parsian_ai/plays/playoff/abstractplayoff.h>
 #include <parsian_ai/config.h>
 #include <QString>
 
@@ -20,7 +21,7 @@ enum class DynamicSelect {
 };
 
 
-class CDynamicPlayOff {
+class CDynamicPlayOff : public CAbstractPlayOff {
 public:
     CDynamicPlayOff();
     ~CDynamicPlayOff();
@@ -32,7 +33,6 @@ public:
 
 private:
     bool initial;
-    QList<Agent*> agents;
     Vector2D lastBallPos;
     unsigned int lastTime;
 

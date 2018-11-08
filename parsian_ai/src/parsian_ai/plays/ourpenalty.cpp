@@ -15,7 +15,8 @@ void COurPenalty::reset() {
     executedCycles = 0;
 }
 
-void COurPenalty::init() {
+void COurPenalty::init(QList<Agent*>& _agents) {
+    agents = _agents;
 }
 
 void COurPenalty::setPlaymake(Agent* _playmakeAgent)

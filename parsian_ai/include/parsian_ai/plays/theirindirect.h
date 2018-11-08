@@ -8,7 +8,8 @@ public:
     CTheirIndirect();
     ~CTheirIndirect();
     void execute_x();
-    void init();
+    void init(QList<Agent*>& _agents);
+
 private:
     void reset();
 };
