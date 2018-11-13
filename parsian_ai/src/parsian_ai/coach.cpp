@@ -966,15 +966,14 @@ void CCoach::handlePlayMake(const QList<int> &_agentsID) {
         lastPlayMake = -1;
         playMakeIntention.restart();
 
-    } else if (playMakeIntention.elapsed() < conf.playMakeIntention) {
+    } else if (playMakeIntention.elapsed() < conf.playMakeIntention && lastPlayMake != -1) {
 
         playmakeId = lastPlayMake;
 
     } else {
-
-        if (lastPlayMake != playmakeId || isBallcollide(3, 30)) playMakeIntention.restart();
         playmakeId = choosePlayMake(_agentsID);
-
+        if (lastPlayMake != playmakeId || isBallcollide(3, 30)) playMakeIntention.restart();
     }
+
     lastPlayMake = playmakeId;
 }
