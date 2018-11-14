@@ -20,11 +20,11 @@ v_real = np.concatenate((vf_real , vn_real , vw_real), axis = 1)
 np.savetxt('velsReal.txt' , v_real , fmt = '%3.8f', delimiter= ' ')
 vw_pub = matrix_out[:,2:3]
 ######################## network layers
-l1 = tf.layers.dense(v_in, 20, tf.nn.sigmoid) # check out
+l1 = tf.layers.dense(v_in, 10, tf.nn.sigmoid) # check out
 l2 = tf.layers.dense(l1, 10, tf.nn.sigmoid)
 v_pred = tf.layers.dense(l2, 1) 
 loss = tf.losses.mean_squared_error(v_out, v_pred)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.01)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.05)
 train_op = optimizer.minimize(loss)
 
 ######################## session : train
@@ -39,8 +39,8 @@ for step in range(50000):
 ######################## session : test
 v_test = np.loadtxt("vTest.txt")
 pred_test = sess.run(v_pred,{v_in : v_test})
-np.savetxt('pred.txt' , pred_test , fmt = '%3.8f', delimiter= ' ')
-pred_test = np.loadtxt("pred.txt")
+np.savetxt('pred_vw.txt' , pred_test , fmt = '%3.8f', delimiter= ' ')
+pred_test = np.loadtxt("pred_vw.txt")
 plt.plot(pred_test[0:4000])
 plt.plot(v_test[0:4000,0])
 plt.show()

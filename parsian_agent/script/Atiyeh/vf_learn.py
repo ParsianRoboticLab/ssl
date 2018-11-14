@@ -24,7 +24,7 @@ l1 = tf.layers.dense(v_in, 8, tf.nn.sigmoid) # check out
 l2 = tf.layers.dense(l1, 8, tf.nn.sigmoid)
 v_pred = tf.layers.dense(l2, 1) 
 loss = tf.losses.mean_squared_error(v_out, v_pred)
-optimizer = tf.train.AdamOptimizer(learning_rate = 0.05)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate = 0.05)
 train_op = optimizer.minimize(loss)
 
 ######################## session : train
@@ -39,8 +39,8 @@ for step in range(30000):
 ######################## session : test
 v_test = np.loadtxt("vTest.txt")
 pred_test = sess.run(v_pred,{v_in : v_test})
-np.savetxt('pred.txt' , pred_test , fmt = '%3.8f', delimiter= ' ')
-pred_test = np.loadtxt("pred.txt")
+np.savetxt('pred_vf.txt' , pred_test , fmt = '%3.8f', delimiter= ' ')
+pred_test = np.loadtxt("pred_vf.txt")
 plt.plot(pred_test[0:4000])
 plt.plot(v_test[0:4000,0])
 plt.show()
