@@ -22,7 +22,7 @@ plt.plot(v_real[0:1000,0])
 #plt.plot(v_real[7000:,0])
 plt.show()
 
-# create test data:
+############################## create test data:
 vn_test = np.zeros((4000,1))
 for i in range(0,1000):
     vn_test[i,0] = 0.0012 * i
@@ -39,3 +39,12 @@ plt.plot(vn_test)
 plt.show()
 
 np.savetxt('vTest.txt' , v_test , fmt = '%3.8f', delimiter= ' ')
+##############################
+vn_test = np.zeros((4000,1))
+vf_test = np.zeros((4000,1))
+vw_test = np.zeros((4000,1))
+vf_test[:,0] = np.loadtxt("pred_vf.txt")
+vn_test[:,0] = np.loadtxt("pred_vn.txt")
+vw_test[:,0] = np.loadtxt("pred_vw.txt")
+v_real = np.concatenate((vf_test , vn_test , vw_test), axis = 1)
+np.savetxt('velsTEST.txt' , v_real , fmt = '%3.8f', delimiter= ' ')
