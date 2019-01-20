@@ -23,6 +23,7 @@ from parsian_msgs.msg import parsian_skill_kick
 from parsian_msgs.msg import parsian_draw
 from parsian_msgs.msg import parsian_draw_circle
 from parsian_msgs.msg import parsian_draw_text
+from parsian_msgs.msg import ssl_refree_wrapper
 from dynamic_reconfigure.server import Server
 from parsian_agent.cfg import kick_profilerConfig
 
@@ -107,6 +108,7 @@ class KickProfiler():
         self.startShoot = point.Point(0, 0)
         self.endShoot = point.Point(0, 0)
         self.m_wm = parsian_world_model()
+        self.ref = ssl_refree_wrapper()
         self.pos_count = 0
         self.my_robot1 = parsian_robot()
         self.my_robot2 = parsian_robot()
@@ -118,18 +120,8 @@ class KickProfiler():
         self.wm_sub = rospy.Subscriber('world_model', parsian_world_model, self.wmCallback, queue_size=1,
                                        buff_size=2 ** 24)
         self.draw_pub = rospy.Publisher('draws', parsian_draw, queue_size=1, latch=True)
-    def resetvalues(self):
-
-        if self.istest:
-            self.startingkickspeed = 5
-            self.endingkickspeed = 15
-            self.current_speed = self.startingkickspeed
-            self.speed_step = 1
-        elif not self.istest:
-            self.startingkickspeed = 400
-            self.endingkickspeed = 1023
-            self.current_speed = self.startingkickspeed
-            self.speed_step = 100
+        self.ref_sub = rospy.Subscriber('referee',ssl_refree_wrapper, self.refCallBack,  queue_size=1,
+                                       buff_size=2 ** 24 )
 
         self.stepnum = 0
         self.last_speed1 = 1
@@ -156,7 +148,6 @@ class KickProfiler():
         self.robot2_vels[self.current_speed] = []
         self.positions1 = []
         self.positions2 = []
-        return True
 
     def wmCallback(self, data):
         # type:(parsian_world_model) ->object
@@ -166,11 +157,24 @@ class KickProfiler():
         # starting the profile --> both robots to their starting points --> til they arrived their destination
         goalLine = Seg.Seg(point.Point(-6,-0.6),point.Point(-6,0.6))
         tmpLine = Seg.Seg(point.Point(-6.5,0),point.Point(2,0))
-        gpaPos = tmpLine.intersection(goalLine)
+        print(self.ref.command.command)
+        if self.ref.command.command == 1:
+            gpaPos = tmpLine.intersection(goalLine)
+        else:
+            gpaPos = point.Point(0,0)
         self.gotopoint(1, gpaPos, self.setdirtorobot(2))
+    # ref call back
+    def refCallBack(self, data):
+        print("miad inja")
+        self.ref = data
+    def costFunction(self):
+        # stop = 1
+        # penalty = 7
+        # NS = 2
 
-    def costFuntion(self):
-        pass
+        goalLine = Seg.Seg(point.Point(-6, -0.6), point.Point(-6, 0.6))
+        if self.ref.command.command == 7:
+
     def cfg_callback(self, config, level):
         pass
     # seperate the line joining the robot startingpoints and continue to the boarders, devide each robot distanse to borers by 10
