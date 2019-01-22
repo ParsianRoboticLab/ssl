@@ -26,6 +26,12 @@ from parsian_msgs.msg import parsian_draw_text
 from parsian_msgs.msg import ssl_refree_wrapper
 from dynamic_reconfigure.server import Server
 from parsian_agent.cfg import kick_profilerConfig
+from parsian_msgs.srv import grsim_ball_replacement
+from parsian_msgs.srv import grsim_ball_replacementRequest
+from parsian_msgs.srv import grsim_robot_replacement
+from parsian_msgs.srv import grsim_robot_replacementRequest
+from parsian_msgs.srv import grsim_ball_replacementResponse
+
 
 
 class State(Enum):
@@ -54,11 +60,23 @@ class ReceiveStat(Enum):
     ROBOT2RECING = 2
     NONE = 3
 
+class stateInput():
+    def __init__(self):
+        self.tick = 0
+        self.ballVel = point.Point(0.0,0.0)
+        self.ballPos = point.Point(0.0,0.0)
+        self.robotPos = point.Point(0.0,0.0)
+        self.robotVel = point.Point(0.0,0.0)
+        self.oppAng = point.Point(0.0,0.0)
+        self.oppAngVel = 0
+        self.cost = 0
 
 class KickProfiler():
     def __init__(self):
 
         signal.signal(signal.SIGINT, self.signal_handler)
+        self.stateInputList = []
+        self.pState = 0
         self.margin = 0  # 0.3                                  #GUI
         self.Y1 = 0  # 3                                     #GUI
         self.Y2 = 0  # -3                                    #GUI
@@ -80,14 +98,14 @@ class KickProfiler():
         self.realspeedmax = 0  # GUI
         self.ischip = False  # GUI
         self.istest = False
-
+        self.learningState = 0
         self.stepnum = 0
         self.robot1_overspeed = False
         self.robot2_overspeed = False
         self.startingkickspeed = 0
         self.endingkickspeed = 0
         self.current_speed = self.startingkickspeed
-
+        self.pTimer = 0
         self.robot1_vels = {}
         self.robot2_vels = {}
         self.positions1 = []
@@ -109,6 +127,9 @@ class KickProfiler():
         self.endShoot = point.Point(0, 0)
         self.m_wm = parsian_world_model()
         self.ref = ssl_refree_wrapper()
+        self.fakeRef = ssl_refree_wrapper()
+        self.lastFakeRef = ssl_refree_wrapper()
+        self.ballPosFake = grsim_ball_replacementRequest()
         self.pos_count = 0
         self.my_robot1 = parsian_robot()
         self.my_robot2 = parsian_robot()
@@ -122,6 +143,7 @@ class KickProfiler():
         self.draw_pub = rospy.Publisher('draws', parsian_draw, queue_size=1, latch=True)
         self.ref_sub = rospy.Subscriber('referee',ssl_refree_wrapper, self.refCallBack,  queue_size=1,
                                        buff_size=2 ** 24 )
+        self.ref_pub = rospy.Publisher('referee', ssl_refree_wrapper , queue_size=1,latch=True)
 
         self.stepnum = 0
         self.last_speed1 = 1
@@ -148,21 +170,60 @@ class KickProfiler():
         self.robot2_vels[self.current_speed] = []
         self.positions1 = []
         self.positions2 = []
+        self.startTime = 0
 
     def wmCallback(self, data):
         # type:(parsian_world_model) ->object
         # rospy.loginfo(self.state)
         self.m_wm = data
-        self.getrobots(self.robotid1, self.robotid2)
+        self.getrobots(self.robotid1, 2)
         # starting the profile --> both robots to their starting points --> til they arrived their destination
         goalLine = Seg.Seg(point.Point(-6,-0.6),point.Point(-6,0.6))
         tmpLine = Seg.Seg(point.Point(-6.5,0),point.Point(2,0))
-        print(self.ref.command.command)
+        print('command',self.ref.command.command,'counter', self.ref.command_counter)
         if self.ref.command.command == 1:
             gpaPos = tmpLine.intersection(goalLine)
         else:
             gpaPos = point.Point(0,0)
-        self.gotopoint(1, gpaPos, self.setdirtorobot(2))
+        self.costFunction()
+        self.stateMachine()
+        ###### stete machine
+    def stateMachine(self):
+        print('state',self.pState)
+        print('timme',rospy.get_time())
+        ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
+        ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
+        mePos = point.Point(self.my_robot1.pos.x, self.my_robot1.pos.y)
+        meVel = point.Point(self.my_robot1.vel.x, self.my_robot1.vel.y)
+        oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
+        oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
+        if self.pState == 0:
+            self.pTimer = 0
+            self.changeBallPos(-4.8, 0)
+            self.generateRefCommand(1)
+            self.pState =1
+            self.resetRobotPos()
+        if self.pState == 1:
+            self.pTimer +=1
+            self.changeBallPos(-4.8, 0)
+            if self.pTimer > 20:
+                self.generateRefCommand(6)
+                if oppPos.distance(ballPos) < 0.3 and self.pTimer > 50:
+                    self.pState = 2
+        if self.pState == 2:
+            self.pTimer += 1
+            self.generateRefCommand(2)
+            if self.pTimer > 500 or ballPos.x > 6.04:
+                self.generateRefCommand(1)
+                self.pState = 0
+
+    def generateRefCommand(self, command):
+        self.fakeRef.command.command = command
+        if self.fakeRef.command.command != self.ref.command.command:
+            self.fakeRef.command_counter += 1
+        self.ref_pub.publish(self.fakeRef)
+        self.lastFakeRef = self.fakeRef
+
     # ref call back
     def refCallBack(self, data):
         print("miad inja")
@@ -171,9 +232,58 @@ class KickProfiler():
         # stop = 1
         # penalty = 7
         # NS = 2
+        ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
+        ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
+        goalPoint = point.Point(5.9,0)
+        goalLine = Seg.Seg(point.Point(5.9, -0.6), point.Point(5.9, 0.6))
+        intersectLine = Seg.Seg(ballPos ,goalPoint)
+        oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
+        oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
+        oppThVel = self.my_robot2.angularVel
+        centerPos = goalPoint
 
-        goalLine = Seg.Seg(point.Point(-6, -0.6), point.Point(-6, 0.6))
-        if self.ref.command.command == 7:
+        ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
+        ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
+        mePos = point.Point(self.my_robot1.pos.x, self.my_robot1.pos.y)
+        meVel = point.Point(self.my_robot1.vel.x, self.my_robot1.vel.y)
+        oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
+        oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
+
+
+        tempStateInput = stateInput()
+        tempStateInput.ballPos = ballPos
+        tempStateInput.ballVel = ballVel
+        tempStateInput.oppAng = oppDir
+        tempStateInput.oppAngVel = self.my_robot2.angularVel
+        tempStateInput.robotPos = mePos
+        tempStateInput.robotVel = meVel
+        if self.ref.command.command != 2:
+            self.startTime = rospy.get_time()
+        if self.ref.command.command == 6 or self.ref.command.command == 2:
+            if ballVel.length() < 0.1:
+                if oppPos.distance(ballPos) < 0.3:
+                    intersectLine = Seg.Seg(ballPos, ballPos + oppDir.unitPoint()*10)
+                    centerPos = goalLine.intersection(intersectLine)
+                    print('opp th vel', oppThVel)
+                    centerPos.y += oppThVel/300
+                    if centerPos.y > 0.5:
+                        centerPos.y = 0.5
+                    if centerPos.y < -0.5:
+                        centerPos.y = -0.5
+            else:
+                intersectLine = Seg.Seg(ballPos, ballPos + ballVel.unitPoint() * 10)
+                centerPos = goalLine.intersection(intersectLine)
+                if centerPos.y > 0.5:
+                    centerPos.y = 0.5
+                if centerPos.y < -0.5:
+                   centerPos.y = -0.5
+            cost = mePos.distance(centerPos)
+            tempStateInput.cost = cost
+            self.stateInputList.append(tempStateInput)
+
+            self.gotopoint(1, centerPos, point.Point(-1.0,0.0))
+
+
 
     def cfg_callback(self, config, level):
         pass
@@ -277,7 +387,7 @@ class KickProfiler():
     def getrobots(self, id1, id2):
         # type: (int, int) -> object
 
-        for robot in self.m_wm.opp:
+        for robot in self.m_wm.our:
             if robot.id == id2:
                 self.my_robot2 = robot
         for robot in self.m_wm.our:
@@ -677,10 +787,37 @@ class KickProfiler():
                 self.savingdone = True
         sys.exit(0)
 
+    def changeBallPos(self, x , y):
+        ball_service = rospy.ServiceProxy('/GrsimBallReplacesrv', grsim_ball_replacement)
+        ballPosFake = grsim_ball_replacementRequest()
+        ballPosFake.x = x
+        ballPosFake.y = y
+        ballPosFake.vx = 0
+        ballPosFake.vy = 0
+        ball_service(ballPosFake)
+
+    def resetRobotPos(self):
+        robot_service = rospy.ServiceProxy('/GrsimRobotReplacesrv', grsim_robot_replacement)
+        robotFake = grsim_robot_replacementRequest()
+        robotFake.id = 0
+        # robotFake.yellowteam = false
+        robotFake.x = -5.9
+        robotFake.y = 0
+        robotFake.dir = 0
+        robot_service(robotFake)
+        robotFake.id = 2
+        robotFake.x = -4.5
+        robotFake.y = 0
+        robotFake.dir = 0
+        robot_service(robotFake)
+
 
 if __name__ == '__main__':
     try:
         rospy.init_node('don', anonymous=True)
+        ## move the ball
+        rospy.wait_for_service('/GrsimBallReplacesrv')
+        rospy.wait_for_service('/GrsimRobotReplacesrv')
         rospy.loginfo("don is running")
         kick = KickProfiler()
         rospy.spin()

@@ -38,6 +38,7 @@ void COurPenalty::executeShootoutPositioning()
 void COurPenalty::executeNormalPositioning()
 {
     ROS_INFO_STREAM("penalty: normal positioning");
+
     if(agents.isEmpty())
         return;
     generatePositions();
@@ -97,15 +98,15 @@ Vector2D COurPenalty::getEmptyTarget(Vector2D _position, double _radius)
     escapeRad = _radius;
     position  = _position;
     finalTarget = position;
-    for (double dist = 0.0 ; dist <= 0.5 ; dist += 0.2) {
-        for (double ang = -180.0 ; ang <= 180.0 ; ang += 60.0) {
+    for (double dist = 0.0 ; dist <= 0.6 ; dist += 0.1) {
+        for (double ang = -180.0 ; ang <= 180.0 ; ang += 20.0) {
             tempTarget = position + Vector2D::polar2vector(dist, ang);
             ////should check
             if (wm->field->isInOppPenaltyArea(tempTarget + (wm->field->oppGoal() - tempTarget).norm() * 0.3)) {
                 continue;
             }
-            for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
-                if (Circle2D(wm->opp.active(i)->pos, 0.07).contains(tempTarget)) {
+            for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+                if (Circle2D(wm->our.active(i)->pos, 0.1).contains(tempTarget)) {
                     oppCnt = 1;
                     break;
                 }

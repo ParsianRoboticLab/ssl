@@ -847,6 +847,7 @@ void CCoach::decideTheirIndirect(const QList<int> &_ourPlayers) {
 void CCoach::decideOurPenalty(QList<int> &_ourPlayers) {
     ROS_INFO_STREAM("penalty: decideourpenalty");
     selectedPlay = ourPenalty;
+
     if (0 <= playmakeId && playmakeId <= 11) {
         ourPenalty->setPlaymake(agents[playmakeId]);
         _ourPlayers.removeOne(playmakeId);
@@ -962,8 +963,8 @@ QList<int> CCoach::remainingAgent() {
 void CCoach::handlePlayMake(const QList<int> &_agentsID) {
     if (!gameState->isStart() || _agentsID.empty()) {
 
-        playmakeId = -1;
-        lastPlayMake = -1;
+//        playmakeId = -1;
+//        lastPlayMake = -1;
         playMakeIntention.restart();
 
     } else if (playMakeIntention.elapsed() < conf.playMakeIntention && lastPlayMake != -1) {
@@ -974,6 +975,6 @@ void CCoach::handlePlayMake(const QList<int> &_agentsID) {
         playmakeId = choosePlayMake(_agentsID);
         if (lastPlayMake != playmakeId || isBallcollide(3, 30)) playMakeIntention.restart();
     }
-
+    playmakeId = 2;
     lastPlayMake = playmakeId;
 }

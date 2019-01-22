@@ -20,12 +20,22 @@ class Point:
 
     def angle(self, point):
         return math.atan2(self.difY(point), self.difX(point))
-
+    def th(self):
+        return math.atan2(self.y, self.x)
     def length(self):
         return math.hypot(self.x, self.y)
+    def innerProduct(self,other):
+        return self.x*other.x + self.y*self.y
 
     def unitPoint(self):
         tempX = self.x/self.length()
         tempY = self.y/self.length()
         return Point(tempX,tempY)
-
+    def __mul__(self, other):
+        tempX = self.x * other
+        tempY = self.y * other
+        return Point(tempX, tempY)
+    def __add__(self, other):
+        tempX = self.x + other.x
+        tempY = self.y + other.y
+        return Point(tempX, tempY)
