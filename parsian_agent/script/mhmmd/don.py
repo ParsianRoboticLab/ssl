@@ -213,7 +213,7 @@ class KickProfiler():
         if self.pState == 2:
             self.pTimer += 1
             self.generateRefCommand(2)
-            if self.pTimer > 500 or ballPos.x > 6.04:
+            if self.pTimer > 300 or ballPos.x > 6.04:
                 self.generateRefCommand(1)
                 self.pState = 0
 
@@ -235,7 +235,7 @@ class KickProfiler():
         ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
         ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
         goalPoint = point.Point(5.9,0)
-        goalLine = Seg.Seg(point.Point(5.9, -0.6), point.Point(5.9, 0.6))
+        goalLine = Seg.Seg(point.Point(5.9, -1.6), point.Point(5.9, 1.6))
         intersectLine = Seg.Seg(ballPos ,goalPoint)
         oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
         oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
@@ -806,9 +806,9 @@ class KickProfiler():
         robotFake.dir = 0
         robot_service(robotFake)
         robotFake.id = 2
-        robotFake.x = -4.5
+        robotFake.x = -4.
         robotFake.y = 0
-        robotFake.dir = 0
+        robotFake.dir = 180
         robot_service(robotFake)
 
 

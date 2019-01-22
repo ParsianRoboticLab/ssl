@@ -146,11 +146,11 @@ void COurPenalty::playmakePositioning()
     Vector2D direction, position;
     direction = wm->ball->pos - playMakeAgent->pos();
     direction.y *= 1.2;
-    position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + Vector2D(0, 0.2)).norm() * (0.13);
+    position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + Vector2D(0, 0.2)).norm() * (0.18);
     PMgotopoint->setTargetpos(position);
     PMgotopoint->setTargetdir(direction);
     PMgotopoint->setSlowmode(true);
-    PMgotopoint->setNoavoid(false);
+    PMgotopoint->setNoavoid(true);
     PMgotopoint->setPenaltykick(true);
     PMgotopoint->setAvoidpenaltyarea(false);
     PMgotopoint->setAvoidcentercircle(false);
@@ -171,14 +171,14 @@ void COurPenalty::playmakeKick()
     if (timerStartFlag) {
         if (changeDirPenaltyStrikerTime.elapsed() < 2500)
         {
-            if (penaltyTarget.y * wm->field->oppGoalL().y < 0 && penaltyTarget.dist(wm->field->oppGoal()) > 0.25) {
+            if (true || penaltyTarget.y * wm->field->oppGoalL().y < 0 && penaltyTarget.dist(wm->field->oppGoal()) > 0.25) {
                 penaltyTarget.y = wm->field->oppGoalR().y * 2;
                 shift = Vector2D(0, 0.3);
             } else {
                 penaltyTarget.y = wm->field->oppGoalL().y * 2;
                 shift = Vector2D(0, -0.3);
             }
-            position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + shift).norm() * (0.13);
+            position = wm->ball->pos + (wm->ball->pos - wm->field->oppGoal() + shift).norm() * (0.15);
             PMgotopoint->setTargetdir(penaltyTarget);
             PMgotopoint->setTargetpos(position);
             PMgotopoint->setLookat(wm->ball->pos);
@@ -186,11 +186,12 @@ void COurPenalty::playmakeKick()
             timerStartFlag = false;
         }
     }
-    PMgotopoint->setDivemode(true);
-    PMgotopoint->setSlowmode(false);
-    PMkick->setSpin(1);
+    PMgotopoint->setDivemode(false);
+
+    PMgotopoint->setSlowmode(true);
+    PMkick->setSpin(0);
     PMkick->setTarget(penaltyTarget);
-    PMkick->setKickspeed(6);
+    PMkick->setKickspeed(4);
     PMkick->setPenaltykick(true);
     PMkick->setInterceptmode(false);
     PMkick->setSpin(false);
