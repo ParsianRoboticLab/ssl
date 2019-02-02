@@ -1,5 +1,5 @@
 
-#include <parsian_protobuf_wrapper/referee.pb.h>
+#include <parsian_protobuf_wrapper/ssl_referee.pb.h>
 #include "parsian_protobuf_wrapper/ssl-refbox/convert/convert_referee.h"
 
 #include "parsian_protobuf_wrapper/ssl-vision/convert/convert_units.h"
