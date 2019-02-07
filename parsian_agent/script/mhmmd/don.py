@@ -75,6 +75,8 @@ class KickProfiler():
     def __init__(self):
 
         signal.signal(signal.SIGINT, self.signal_handler)
+        self.observation_space = list(range(0, 3))
+        self.action_space = list(range(-61, 61, 3))
         self.stateInputList = []
         self.pState = 0
         self.margin = 0  # 0.3                                  #GUI
@@ -99,7 +101,6 @@ class KickProfiler():
         self.ischip = False  # GUI
         self.istest = False
         self.learningState = 0
-        self.stepnum = 0
         self.robot1_overspeed = False
         self.robot2_overspeed = False
         self.startingkickspeed = 0
@@ -110,7 +111,7 @@ class KickProfiler():
         self.robot2_vels = {}
         self.positions1 = []
         self.positions2 = []
-
+        self.rewardFound = False
         self.last_speed1 = 1
         self.last_speed2 = 1
         self.speed_step = 0
@@ -171,6 +172,52 @@ class KickProfiler():
         self.positions1 = []
         self.positions2 = []
         self.startTime = 0
+        self.reward = 0
+        self.lastReward = 0
+        self.lastStep = 0
+        self.stepPen = 0
+        self.Q = np.zeros([len(self.observation_space), len(self.action_space)])
+        # Set learning parameters
+        self.lr = .05
+        self.y = .8
+        # create lists to contain total rewards and steps per episode
+        self.rList = []
+        self.epoch = 0
+        self.action = min(np.argmax(self.Q[self.stepPen, :] +
+                                            np.random.randn(1, len(self.action_space)) * (1. / (float(self.epoch/1) + 1))),len(self.action_space)-1)
+        self.total_reward = 0
+        self.save_rate = 0
+        self.save_list = []
+        self.actionf_list = []
+        self.actions_list = []
+    def reinforcement(self):
+        self.costFunction()
+        if  self.stepPen - self.lastStep == 1:
+            self.Q[self.lastStep, self.action] = self.Q[self.lastStep, self.action] \
+                                                 + self.lr * (self.reward + self.y * np.max(self.Q[self.stepPen, :])
+                                                              - self.Q[self.lastStep, self.action])
+            self.lastStep = self.stepPen
+            self.lastReward = self.reward
+            self.total_reward += self.reward
+            self.action = min(np.argmax(self.Q[self.stepPen, :] +
+                                        np.random.randn(1, len(self.action_space)) * (1. / (float(self.epoch/1) + 1))),
+                              len(self.action_space) - 1)
+            if self.stepPen > 1:
+                self.rList.append(self.total_reward)
+                f = open("/home/parsian-ai/data/reward.txt", "w")
+                f.write(str(self.rList))
+                f.close()
+                self.total_reward = 0
+                self.reward = 0
+                self.epoch += 1
+                self.stepPen = 0
+                self.lastStep = 0
+                self.lr *= (1/(1+0.01))
+                self.reset()
+
+        elif rospy.get_time() - self.startTime > 15:
+            self.startTime = rospy.get_time()
+            self.reset()
 
     def wmCallback(self, data):
         # type:(parsian_world_model) ->object
@@ -180,17 +227,33 @@ class KickProfiler():
         # starting the profile --> both robots to their starting points --> til they arrived their destination
         goalLine = Seg.Seg(point.Point(-6,-0.6),point.Point(-6,0.6))
         tmpLine = Seg.Seg(point.Point(-6.5,0),point.Point(2,0))
-        print('command',self.ref.command.command,'counter', self.ref.command_counter)
+        ####print('command',self.ref.command.command,'counter', self.ref.command_counter)
         if self.ref.command.command == 1:
             gpaPos = tmpLine.intersection(goalLine)
         else:
             gpaPos = point.Point(0,0)
-        self.costFunction()
+        self.reinforcement()
         self.stateMachine()
+
+
         ###### stete machine
+    def reset(self):
+        self.pTimer = 0
+        self.changeBallPos(-4.8, 0)
+        self.generateRefCommand(1)
+        self.pState = 0
+        self.startTime = rospy.get_time()
+        self.stepPen = 0
+        self.lastStep = 0
+        self.action = min(np.argmax(self.Q[self.stepPen, :] +
+                                            np.random.randn(1, len(self.action_space)) *
+                                    (1. / (float(self.epoch/1) + 1))),len(self.action_space)-1)
+        self.resetRobotPos()
+        rospy.sleep(1)
+
     def stateMachine(self):
-        print('state',self.pState)
-        print('timme',rospy.get_time())
+        ####print('state',self.pState)
+        ####print('timme',rospy.get_time())
         ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
         ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
         mePos = point.Point(self.my_robot1.pos.x, self.my_robot1.pos.y)
@@ -198,24 +261,29 @@ class KickProfiler():
         oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
         oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
         if self.pState == 0:
-            self.pTimer = 0
-            self.changeBallPos(-4.8, 0)
-            self.generateRefCommand(1)
-            self.pState =1
-            self.resetRobotPos()
-        if self.pState == 1:
             self.pTimer +=1
             self.changeBallPos(-4.8, 0)
-            if self.pTimer > 20:
+            if self.pTimer > 10:
                 self.generateRefCommand(6)
                 if oppPos.distance(ballPos) < 0.3 and self.pTimer > 50:
-                    self.pState = 2
-        if self.pState == 2:
+                    self.pState = 1
+        if self.pState == 1:
             self.pTimer += 1
             self.generateRefCommand(2)
-            if self.pTimer > 300 or ballPos.x > 6.04:
+            if self.pTimer > 1000 or ballPos.x > 6.04:
                 self.generateRefCommand(1)
-                self.pState = 0
+                # self.reset()
+                self.pState = 100
+
+    def checkState(self):
+        ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
+        ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
+        if ballVel.length() < 0.1:
+            return 0
+        elif ballPos.x < 6:
+            return 1
+        else:
+            return 2
 
     def generateRefCommand(self, command):
         self.fakeRef.command.command = command
@@ -226,7 +294,7 @@ class KickProfiler():
 
     # ref call back
     def refCallBack(self, data):
-        print("miad inja")
+        ####print("miad inja")
         self.ref = data
     def costFunction(self):
         # stop = 1
@@ -241,47 +309,92 @@ class KickProfiler():
         oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
         oppThVel = self.my_robot2.angularVel
         centerPos = goalPoint
-
         ballPos = point.Point(self.m_wm.ball.pos.x, self.m_wm.ball.pos.y)
         ballVel = point.Point(self.m_wm.ball.vel.x, self.m_wm.ball.vel.y)
         mePos = point.Point(self.my_robot1.pos.x, self.my_robot1.pos.y)
         meVel = point.Point(self.my_robot1.vel.x, self.my_robot1.vel.y)
         oppPos = point.Point(self.my_robot2.pos.x, self.my_robot2.pos.y)
         oppDir = point.Point(self.my_robot2.dir.x, self.my_robot2.dir.y)
-
-
-        tempStateInput = stateInput()
-        tempStateInput.ballPos = ballPos
-        tempStateInput.ballVel = ballVel
-        tempStateInput.oppAng = oppDir
-        tempStateInput.oppAngVel = self.my_robot2.angularVel
-        tempStateInput.robotPos = mePos
-        tempStateInput.robotVel = meVel
-        if self.ref.command.command != 2:
-            self.startTime = rospy.get_time()
-        if self.ref.command.command == 6 or self.ref.command.command == 2:
-            if ballVel.length() < 0.1:
-                if oppPos.distance(ballPos) < 0.3:
-                    intersectLine = Seg.Seg(ballPos, ballPos + oppDir.unitPoint()*10)
-                    centerPos = goalLine.intersection(intersectLine)
-                    print('opp th vel', oppThVel)
-                    centerPos.y += oppThVel/300
-                    if centerPos.y > 0.5:
-                        centerPos.y = 0.5
-                    if centerPos.y < -0.5:
-                        centerPos.y = -0.5
-            else:
-                intersectLine = Seg.Seg(ballPos, ballPos + ballVel.unitPoint() * 10)
+        if ballVel.length() < 0.1:
+            if oppPos.distance(ballPos) < 0.3:
+                intersectLine = Seg.Seg(ballPos, ballPos + oppDir.unitPoint() * 10)
                 centerPos = goalLine.intersection(intersectLine)
+                ####print('opp th vel', oppThVel)
+                centerPos.y += oppThVel / 300
                 if centerPos.y > 0.5:
                     centerPos.y = 0.5
                 if centerPos.y < -0.5:
-                   centerPos.y = -0.5
-            cost = mePos.distance(centerPos)
-            tempStateInput.cost = cost
-            self.stateInputList.append(tempStateInput)
+                    centerPos.y = -0.5
+        else:
+            intersectLine = Seg.Seg(ballPos, ballPos + ballVel.unitPoint() * 10)
+            centerPos = goalLine.intersection(intersectLine)
+            if centerPos.y > 0.5:
+                centerPos.y = 0.5
+            if centerPos.y < -0.5:
+                centerPos.y = -0.5
+        actionPos = point.Point(5.9, float(self.action_space[self.action])/100)
+        print('epoch:', self.epoch, 'state is:', self.stepPen, 'action_pos is:', actionPos.y,
+              'action index is:', self.action)
+        if self.stepPen == 0:
+            actionPos.y = centerPos.y + np.sign(centerPos.y) * actionPos.y
+        else:
+            actionPos.y = actionPos.y* 5 * (ballVel.length()/np.sign(ballVel.y)) + centerPos.y
+        # print('epoch:', self.epoch, 'state is:', self.stepPen, 'action_pos is:', actionPos.y)
+        self.gotopoint(1, centerPos, point.Point(-1.0, 0.0))
 
-            self.gotopoint(1, centerPos, point.Point(-1.0,0.0))
+        if (rospy.get_time() - self.startTime > 10.0 or ballPos.x > 6.02) and (self.stepPen == 1):
+            self.lastStep = 1
+            self.stepPen = 2
+            if not(ballPos.y < 0.6 and ballPos.y > -0.6 and ballPos.x > 6):
+                self.reward = 3
+                self.save_rate += 1
+            else:
+                penalty = float(self.epoch)/100
+                if penalty > 2.5:
+                    penalty = 2.5
+                self.reward -= penalty
+            self.save_list.append(float(self.save_rate)/(self.epoch+1))
+            f = open('/home/parsian-ai/data/save_percent.txt','w')
+            f.write(str(self.save_list))
+            f.close()
+
+        elif (ballVel.length() < 0.1) and (self.stepPen == 0):
+            if actionPos.y < 0.6 and actionPos.y > -0.6:
+                self.reward = 0
+            else:
+                self.reward = -4
+        elif (self.stepPen != 2) and ballVel.x > 0.1:
+            if self.stepPen == 0:
+                self.lastStep = 0
+            self.stepPen = 1
+            if ballPos.x > 5.75 and ballVel.x > 0.1:
+                self.reward = 0.8 * (((1/ballPos.distance(mePos))-5) + 0.5*meVel.innerProduct((ballPos.minus(mePos)).unitPoint()))
+
+
+        if self.lastStep == 0 and self.stepPen == 1:
+            self.reward = self.lastReward
+        #
+        # if self.ref.command.command == 6 or self.ref.command.command == 2:
+        #     if ballVel.length() < 0.1:
+        #         if oppPos.distance(ballPos) < 0.3:
+        #             intersectLine = Seg.Seg(ballPos, ballPos + oppDir.unitPoint()*10)
+        #             centerPos = goalLine.intersection(intersectLine)
+        #             ####print('opp th vel', oppThVel)
+        #             centerPos.y += oppThVel/300
+        #             if centerPos.y > 0.5:
+        #                 centerPos.y = 0.5
+        #             if centerPos.y < -0.5:
+        #                 centerPos.y = -0.5
+        #     else:
+        #         intersectLine = Seg.Seg(ballPos, ballPos + ballVel.unitPoint() * 10)
+        #         centerPos = goalLine.intersection(intersectLine)
+        #         if centerPos.y > 0.5:
+        #             centerPos.y = 0.5
+        #         if centerPos.y < -0.5:
+        #            centerPos.y = -0.5
+        #     cost = mePos.distance(centerPos)
+        #     self.stateInputList.append(tempStateInput)
+
 
 
 
@@ -305,7 +418,7 @@ class KickProfiler():
                 for i in range(self.stepnum):
                     self.positions1.append(point.Point(firstp.x, firstp.y + i * step1))
                     self.positions2.append(point.Point(secondp.x, secondp.y - i * step2))
-                    # print('pos1.y = ', firstp.y + i * step1,'and pos2.y',secondp.y - i * step2)
+                    # ####print('pos1.y = ', firstp.y + i * step1,'and pos2.y',secondp.y - i * step2)
             else:
                 d1 = math.fabs(self.Y2M - firstp.y)
                 d2 = math.fabs(secondp.y - self.Y1M)
@@ -314,7 +427,7 @@ class KickProfiler():
                 for i in range(self.stepnum):
                     self.positions1.append(point.Point(firstp.x, firstp.y - i * step1))
                     self.positions2.append(point.Point(secondp.x, secondp.y + i * step2))
-                    # print('pos1.y = ', firstp.y - i * step1,'and pos2.y',secondp.y + i * step2)
+                    # ####print('pos1.y = ', firstp.y - i * step1,'and pos2.y',secondp.y + i * step2)
         # y1 == y2
         elif firstp.y == secondp.y:
             if firstp.x < secondp.x:
@@ -325,7 +438,7 @@ class KickProfiler():
                 for i in range(self.stepnum):
                     self.positions1.append(point.Point(firstp.x - i * step1, firstp.y))
                     self.positions2.append(point.Point(secondp.x + i * step2, secondp.y))
-                    # print('pos1.y = ', firstp.y + i * step1,'and pos2.y',secondp.y - i * step2)
+                    # ####print('pos1.y = ', firstp.y + i * step1,'and pos2.y',secondp.y - i * step2)
             else:
                 d1 = math.fabs(self.X2M - firstp.x)
                 d2 = math.fabs(secondp.x - self.X1M)
@@ -334,7 +447,7 @@ class KickProfiler():
                 for i in range(self.stepnum):
                     self.positions1.append(point.Point(firstp.x + i * step1, firstp.y))
                     self.positions2.append(point.Point(secondp.x - i * step2, secondp.y))
-                    # print('pos1.x = ', firstp.x + i * step1,'and pos2.x',secondp.x - i * step2)
+                    # ####print('pos1.x = ', firstp.x + i * step1,'and pos2.x',secondp.x - i * step2)
         else:
             m = (secondp.y - firstp.y) / (secondp.x - firstp.x)
             b = secondp.y - m * secondp.x
@@ -352,7 +465,7 @@ class KickProfiler():
                 sols.append(point.Point(x_up, self.Y1M))
             if x_down < self.X2M and x_down > self.X1M:
                 sols.append(point.Point(x_down, self.Y2M))
-            # print(sols[0].x, sols[0].y, sols[1].x, sols[1].y)
+            # ####print(sols[0].x, sols[0].y, sols[1].x, sols[1].y)
             sol0_dist_first = sols[0].distance(firstp)
             sol0_dist_second = sols[0].distance(secondp)
             sol1_dist_first = sols[1].distance(firstp)
@@ -373,7 +486,7 @@ class KickProfiler():
                 newPos.x = firstp.x + i * step1 * udelta.x
                 newPos.y = firstp.y + i * step1 * udelta.y
                 self.positions1.append(newPos)
-                # print('pos1.x = ', newPos.x, 'and pos1.y', newPos.y)
+                # ####print('pos1.x = ', newPos.x, 'and pos1.y', newPos.y)
             # obtain positions for robot1
             delta = secondp.minus(firstp)
             udelta = delta.unitPoint()
@@ -779,7 +892,7 @@ class KickProfiler():
                                self.my_robot2.pos.y - self.my_robot1.pos.y)
 
     def signal_handler(self, signal, frame):
-        print('You pressed Ctrl+C!')
+        ####print('You pressed Ctrl+C!')
         if not self.savingdone:
             ans = raw_input("save the results?(y,n)")
             if ans == "y":
@@ -806,10 +919,19 @@ class KickProfiler():
         robotFake.dir = 0
         robot_service(robotFake)
         robotFake.id = 2
-        robotFake.x = -4.
+        robotFake.x = -4
         robotFake.y = 0
         robotFake.dir = 180
         robot_service(robotFake)
+        for i in [1, 3, 4, 5, 6, 7]:
+            robotFake.id = i
+            robotFake.x = -10 - i
+            robotFake.y = 0
+            robotFake.dir = 180
+            robot_service(robotFake)
+
+
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -819,7 +941,23 @@ if __name__ == '__main__':
         rospy.wait_for_service('/GrsimBallReplacesrv')
         rospy.wait_for_service('/GrsimRobotReplacesrv')
         rospy.loginfo("don is running")
-        kick = KickProfiler()
+        env = KickProfiler()
         rospy.spin()
+        # Initialize table with all zeros
+
     except rospy.ROSInterruptException:
         pass
+
+
+#
+# if __name__ == '__main__':
+#     try:
+#         rospy.init_node('don', anonymous=True)
+#         ## move the ball
+#         rospy.wait_for_service('/GrsimBallReplacesrv')
+#         rospy.wait_for_service('/GrsimRobotReplacesrv')
+#         rospy.loginfo("don is running")
+#         kick = KickProfiler()
+#         rospy.spin()
+#     except rospy.ROSInterruptException:
+#         pass

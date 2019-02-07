@@ -295,6 +295,8 @@ catkin_install_python(PROGRAMS script/parsian_profiler/motion_profiler_node.py
 							   script/parsian_profiler/kick_profiler_node.py
 							   script/parsian_profiler/chip_handy_test_node.py
 							   script/mhmmd/don.py
+							   script/mhmmd/reinF.py
+
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 #############
 ## Testing ##
