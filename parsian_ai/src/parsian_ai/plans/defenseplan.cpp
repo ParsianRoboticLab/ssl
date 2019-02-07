@@ -1,6 +1,8 @@
 #include "parsian_ai/plans/defenseplan.h"
 #include "parsian_util/tools/blackboard.h"
 #include "parsian_util/geom/polygon_2d.h"
+#include "parsian_ai/plays/ourpenalty.h"
+
 
 using namespace std;
 
@@ -933,7 +935,9 @@ int DefensePlan::findNeededDefense(){
     return neededDefense;
 }
 
-bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition) {
+
+bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition){
+
     //// If defense agents stuck together , this function
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
         for (int j = i+1 ; j < agentsPosition.size() ; j++) {
@@ -986,7 +990,7 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
     nonRepetitiveFinalSolvedPosition.clear();
     solvedPositionsAreNotInThePenaltyArea.clear();
     ///////////////////////////////////////////////////////////////////////////
-    for (int i = 0 ; i < stuckPositions.size() ; i++) {
+    for (int i = 0 ; i < stuckPositions.size() ; i++) {//should check
         if (i % 2 == 0) {
             centerToCenter.append(Segment2D(stuckPositions.at(i) , stuckPositions.at(i + 1)));
         } else {
@@ -2330,14 +2334,15 @@ void DefensePlan::execute(){
     else if(gameState->ourDirectKick()){
         drawer->draw("OUR DIRECT" , Vector2D(-6.2 , 3) , 30);
     }
+
     ballPosHistory.prepend(Vector2D(wm->ball->pos.x, wm->ball->pos.y));
     if (ballPosHistory.count() > 7){
         ballPosHistory.removeLast();
     }
     //////////////////////////////////////
     playOnMode = gameState->isStart();
-    if(gameState->theirPenaltyKick() && !gameState->penaltyShootout()){
-        if (goalKeeperAgent != nullptr) {
+    if(gameState->theirPenaltyKick() && !gameState->penaltyShootout()){//Normal penalty
+        if (goalKeeperAgent != nullptr){ //if the goalie is available on the ground
             drawer->draw(QString("Penalty") , Vector2D(1, 2) , "white");
             penaltyMode();
         }
@@ -2613,66 +2618,69 @@ void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
     //// of the opponent agents that will shot to our goal in pentalty mode.
 
-    Vector2D ballPos = wm->ball->pos;
-    const float goalLineExtra = 0.03;
+    Vector2D ballPos = wm->ball->pos;//getting the ball position
+    const float goalLineExtra = 0.03;//a little after our goal line line
     const double xDiff = 0.10;
     Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
                     wm->field->ourGoalR() + Vector2D(+xDiff, -goalLineExtra));
     const double epsilon = 0.12;
     Vector2D target(-2.93, 0.0);
-
+    //time2 = 0;
     Line2D ballRay(ballPos, ballPos + wm->opp[know->nearestOppToBall()]->dir);
+    Line2D ballRay2(ballPos,ballPos-wm->opp[know->nearestOppToBall()]->dir);//Mahdi
+    Vector2D intersectionPoint2 = goalLine.intersection(ballRay2);
+
 
 
     Vector2D intersectionPoint = goalLine.intersection(ballRay);
-    double ang = ballRay.a() * goalLine.b() - ballRay.b() * goalLine.a();
+    double ang = ballRay.a() * goalLine.b() - ballRay.b() * goalLine.a();//calculating the angle of opp robot to our goal
+    int flagFordetectingAngleofOpp=0;
+    Vector2D movingTarget = intersectionPoint;
 
-    if (fabs(ang) > 0.01 && fabs(ang) < 0.95) {
-        if (ang * intersectionPoint.y > 0) {
-            intersectionPoint.y = wm->field->oppGoalR().y;
-        } else if (ang * intersectionPoint.y < 0) {
-            intersectionPoint.y = wm->field->oppGoalL().y;
-        }
-    }
 
-    if (ang <= 0.95) {
-        intersectionPoint.y *= -1;
-    }
 
-    intersectionPoint.y *= (7.0 / 10.0);
 
-    //    if(fabs(knowledge->getAgent(goalKeeperAgent->id())->pos().y) > fabs(wm->field->ourGoalR().y))
-    //        intersectionPoint.y += 1*knowledge->getAgent(goalKeeperAgent->id())->pos().dist(intersectionPoint)*knowledge->getAgent(goalKeeperAgent->id())->pos().dist(intersectionPoint)
-    //                *(fabs((intersectionPoint-knowledge->getAgent(goalKeeperAgent->id())->pos()).y)/(intersectionPoint-knowledge->getAgent(goalKeeperAgent->id())->pos()).y);   // sign
-
-    if (intersectionPoint.valid()) {
-        target = intersectionPoint;
-        drawer->draw(target, "red");
-    } else {
-        target.y = 0.0;
-    }
-
-    //    target.y = min(max(target.y, wm->field->ourGoalR().y + epsilon), wm->field->ourGoalL().y - epsilon + 0.03);
-    Vector2D targetDir(10, 5);
-    targetDir.setDir(AngleDeg(0));
-    targetDir.setLength(1);
-
-    //check
-    target.x = -5.92;
-
+    Vector2D targetDir(0, 1);
+  if(fabs(ang)<=0.5){
+      flagFordetectingAngleofOpp=1;
+  }
 
     drawer->draw(target, "blue");
 
-    assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
-    gpa[goalKeeperAgent->id()]->setSlowmode(false);
-    gpa[goalKeeperAgent->id()]->setDivemode(true);
 
-    gpa[goalKeeperAgent->id()]->setTargetpos(target); //HINT : gpa->init
-    gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
+  //starting the idea for having adynamic goalie in penaltymode
+  //switch(time2 % 2){
 
-    //gpa[goalKeeperAgent->id()]->init(target , targetDir);
+      //case 1:
+          if(Circle2D(target,0.15).contains(goalKeeperAgent->pos())) {
+              movingTarget = -target;
+          }
+          //break;
+     // default:
+         // break;
 
-}
+
+
+
+                  //  for(target.y=0;target.y<=intersectionPoint.y;target.y++){
+
+                        //actions that we send to our robot
+
+                        assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
+                        gpa[goalKeeperAgent->id()]->setSlowmode(false);
+                        gpa[goalKeeperAgent->id()]->setDivemode(true);
+                        gpa[goalKeeperAgent->id()]->setTargetpos(target);
+                        gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
+                        ROS_INFO_STREAM("MAHDI:THEIR PENALTY");
+
+                //   }
+
+    //time2 + = 1;
+
+
+  }
+
+
 
 Vector2D* DefensePlan::getIntersectWithDefenseArea(const Line2D& line, const Vector2D& blockPoint) {
     //// This function return the intersection a line with defense area (3 part).

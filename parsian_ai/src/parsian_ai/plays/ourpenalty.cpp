@@ -6,6 +6,7 @@ COurPenalty::COurPenalty() : CMasterPlay()
     playmakeRole = new CRolePlayMake(nullptr);
     PMgotopoint = new GotopointavoidAction();
     PMkick = new KickAction();
+    time = 0;
 }
 
 COurPenalty::~COurPenalty() = default;
@@ -37,8 +38,7 @@ void COurPenalty::executeShootoutPositioning()
 
 void COurPenalty::executeNormalPositioning()
 {
-    ROS_INFO_STREAM("penalty: normal positioning");
-
+    ROS_INFO_STREAM("Mahdi_penalty: normal positioning");
     if(agents.isEmpty())
         return;
     generatePositions();
@@ -62,7 +62,7 @@ void COurPenalty::execute_x() {
         }
         else
         {
-            ROS_INFO_STREAM("penalty: norma");
+            ROS_INFO_STREAM("penalty: normal");
             executeNormalPositioning();
         }
 
@@ -78,10 +78,11 @@ void COurPenalty::execute_x() {
 void COurPenalty::generatePositions()
 {
     ROS_INFO_STREAM("penalty: generate positions");
+
     positions.clear();
     double penaltyPositioningOffset = 0.4;
     double penaltyRuleOffset = 0.4;
-    double maximum_x_width = wm->field->oppGoalL().x - (wm->field->_PENALTY_DEPTH + penaltyRuleOffset + penaltyPositioningOffset);
+    double maximum_x_width =  3;
     for(int i{}; i < agents.size(); i++)
     {
         positions.append(getEmptyTarget(Vector2D{maximum_x_width, pow(-1, i)* i/2}, penaltyPositioningOffset));
@@ -128,17 +129,24 @@ Vector2D COurPenalty::getEmptyTarget(Vector2D _position, double _radius)
 
 void COurPenalty::assignSkills()
 {
-    ROS_INFO_STREAM("penalty: assign skills");
+    ROS_INFO_STREAM("Mahdi_penalty: assign skills");
     moveSkills.clear();
     for(int i{0}; i<agents.count(); i++)
     {
         moveSkills.append(new GotopointavoidAction());
-        moveSkills[i]->setTargetpos(positions[i]);
-        moveSkills[i]->setTargetdir(wm->field->oppGoal());
-        moveSkills[i]->setSlowmode(true);
-        moveSkills[i]->setBallobstacleradius(0.1);
-        agents[i]->action = moveSkills[i];
+
+
+        if(i!=1) {
+            moveSkills[i]->setTargetpos(positions[i]);
+            moveSkills[i]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 0.05));//should change
+            moveSkills[i]->setSlowmode(true);
+            moveSkills[i]->setBallobstacleradius(0.1);
+            agents[i]->action = moveSkills[i];
+        }
     }
+    moveSkills[1]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 0.05) - positions[1]);
+    moveSkills[1]->setPenaltykick(true);
+    agents[1]->action = moveSkills[1];
 }
 
 void COurPenalty::playmakePositioning()
