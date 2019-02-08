@@ -123,6 +123,7 @@ namespace rqt_parsian_gui
             task->kickTask.kickchargetime = 500;
             task->kickTask.target.x = pos->x;
             task->kickTask.target.y = pos->y;
+            task->kickTask.avoidPenaltyArea = true;
             task->select = parsian_msgs::parsian_robot_task::KICK;
 
         }
@@ -130,6 +131,7 @@ namespace rqt_parsian_gui
             ROS_INFO("RECEIVE");
             task->receivePassTask.target.x = pos->x;
             task->receivePassTask.target.y = pos->y;
+            task->receivePassTask.receiveRadius = 0.5;
             task->select = parsian_msgs::parsian_robot_task::RECIVEPASS;
 
         }
