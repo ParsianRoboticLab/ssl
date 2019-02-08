@@ -1,95 +1,139 @@
 #include <rqt_parsian_gui/taskRunnerWidget.h>
+#include <parsian_msgs/parsian_world_model.h>
 
 
 namespace rqt_parsian_gui
 {
     TaskRunnerWidget::TaskRunnerWidget(ros::NodeHandle & n) : QWidget() {
-        task.reset(new parsian_msgs::parsian_robot_task());
-        task->select = 255;
-        client = new parsian_msgs::grsim_ball_replacement();
+
         gridLayout = new QGridLayout();
 
-        toolButton = new QToolButton();
-        toolButton->setText("Choose Task");
 
-        agentId = new QToolButton;
-        agentId->setText("0");
-        agent_id =0;
+        //toolButton = new QToolButton();
+        //toolButton->setText("GoToPointAvoid");
 
-        tasks = new QAction* [TASK_NUM];
-        ids   = new QAction* [_MAX_NUM_PLAYERS];
+        //agentId = new QToolButton;
+        //agentId->setText("0");
 
-        for (int i = 0; i < TASK_NUM; ++i) {
+        comboBoxTask = new QComboBox;
+        comboBoxTask->addItem("GotoPointAvoid");
+        comboBoxTask->addItem("Kick");
+        comboBoxTask->addItem("Receive");
+
+        comboBoxPN = new QComboBox;
+        comboBoxPN->addItem("0");
+        comboBoxPN->addItem("1");
+        comboBoxPN->addItem("2");
+        comboBoxPN->addItem("3");
+        comboBoxPN->addItem("4");
+        comboBoxPN->addItem("5");
+        comboBoxPN->addItem("6");
+        comboBoxPN->addItem("7");
+        comboBoxPN->addItem("8");
+        comboBoxPN->addItem("9");
+        comboBoxPN->addItem("10");
+        comboBoxPN->addItem("11");
+
+
+
+
+
+
+
+        tasks = new QAction* [_TASK_NUM];
+        ids   = new QAction* [_PLAYER_NUMBER];
+
+        //connect(toolButton,SIGNAL(triggered(QAction*)),this,SLOT(setTask(QAction*)));
+
+        for (int i = 0; i < _TASK_NUM; ++i) {
             tasks[i] = new QAction(taskNames[i], this);
-            connect(toolButton, SIGNAL(triggered(QAction * )), this, SLOT(setTask(QAction * )));
-            toolButton->addAction(tasks[i]);
+            connect(comboBoxTask, SIGNAL(triggered(QAction * )), this, SLOT(setTask(QAction * )));
+            comboBoxTask->addAction(tasks[i]);
         }
-            //##################################################
-        for (int i = 0; i < _MAX_NUM_PLAYERS; ++i) {
+
+        for(int i{};i <_PLAYER_NUMBER;i++){
             ids[i] = new QAction(QString::number(i),this);
-            connect(agentId, SIGNAL(triggered(QAction * )), this, SLOT(setID(QAction * )));
-            agentId->addAction(ids[i]);
-
+            connect(comboBoxPN, SIGNAL(triggered(QAction * )), this, SLOT(setID(QAction * )));
+            comboBoxPN->addAction(ids[i]);
         }
 
-        gridLayout->addWidget(toolButton);
-        gridLayout->addWidget(agentId);
+
+
+
+        gridLayout->addWidget(comboBoxTask);
+        gridLayout->addWidget(comboBoxPN);
         this->setLayout(gridLayout);
 
-        mousePosSub = n.subscribe("/mousePos",10, &TaskRunnerWidget::mousePosCallBack, this);
-        ballReplacementClient = n.serviceClient<parsian_msgs::grsim_ball_replacement>("/GrsimBallReplacesrv",true);
-        robTaskPub = new ros::Publisher[_MAX_NUM_PLAYERS];
-        for (int i = 0; i < _MAX_NUM_PLAYERS; ++i) {
+        //robTaskPub = n.advertise<parsian_msgs::parsian_robot_task>("/agent_0/task",100);
+        for (int i = 0; i < _PLAYER_NUMBER; ++i) {
             std::string topic(QString("/agent_%1/task").arg(i).toStdString());
             robTaskPub[i] = n.advertise<parsian_msgs::parsian_robot_task>(topic, 100);
         }
-        timer = n.createTimer(ros::Duration(0.016), &TaskRunnerWidget::timerCb, this);
-    }
+        worldModelSub = n.subscribe<parsian_msgs::parsian_world_model>("/world_model", 1000, boost::bind(& TaskRunnerWidget::m_wmCb, this, _1));
+        mousePosSub = n.subscribe("/mousePos",10, &TaskRunnerWidget::mousePosCallBack,this);
+        ROS_INFO("Satr");
 
+
+
+}
     void TaskRunnerWidget::setTask(QAction* action) {
-        task->select = 255;
-        toolButton->setText(action->text());
+      /////////
+      //////////
     }
 
     void TaskRunnerWidget::setID(QAction * action ){
-        task->select = 255;
-        agentId->setText(action->text());
-        agent_id = action->text().toInt();
+        //agentId->setText(action->text());
+       // agent_id = action->text().toInt();
+
+
+//        task->select = 255;
     }
+
+
+    void TaskRunnerWidget::m_wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm) {
+
+        ROS_INFO_STREAM(comboBoxTask->currentText().toStdString());
+        //ROS_INFO("wm_in");
+        if(task != 0){
+            robTaskPub[(comboBoxPN->currentText()).toInt()].publish(task);
+        }
+
+    }
+
+
+
 
     TaskRunnerWidget::~TaskRunnerWidget() {
     }
 
     void TaskRunnerWidget::mousePosCallBack(parsian_msgs::vector2DConstPtr pos) {
-        if (QString::fromStdString(taskNames[0]) == toolButton->text()){  // BALL REPLACEMENT REQUEST
-            client->request.vx = 0;
-            client->request.vy = 0;
-            client->request.x = pos->x;
-            client->request.y = pos->y;
-            if(ballReplacementClient.call(*client)){
-                ROS_INFO_STREAM("YES");
-            } else ROS_INFO_STREAM("CALL FAILED");
-
-
-        } else if(QString::fromStdString(taskNames[1]) == toolButton->text()){
-            task->gotoPointAvoidTask = *new parsian_msgs::parsian_skill_gotoPointAvoid();
-            task->gotoPointAvoidTask.base.targetPos.x=pos->x;
-            task->gotoPointAvoidTask.base.targetPos.y=pos->y;
+        ROS_INFO("MOSPOS");
+        task.reset(new parsian_msgs::parsian_robot_task());
+        if(QString::fromStdString(taskNames[0]) == comboBoxTask->currentText()) {
+            ROS_INFO("GOTOPOINTAVOID");
+            task->gotoPointAvoidTask.base.targetPos.x = pos->x;
+            task->gotoPointAvoidTask.base.targetPos.y = pos->y;
             task->select = parsian_msgs::parsian_robot_task::GOTOPOINTAVOID;
+            //robTaskPub.publish(task);
         }
-        else if(QString::fromStdString(taskNames[2]) == toolButton->text()){
-            task->gotoPointAvoidTask = *new parsian_msgs::parsian_skill_gotoPointAvoid();
-            task->gotoPointAvoidTask.base.targetPos.x=pos->x;
-            task->gotoPointAvoidTask.base.targetPos.y=pos->y;
-            task->gotoPointAvoidTask.noAvoid = static_cast<unsigned char>(true);
-            task->select = parsian_msgs::parsian_robot_task::GOTOPOINTAVOID;
-        }else{
-        }
-    }
+        //else if (QString::fromStdString(taskNames[1]) == comboBoxTask->currentText()){
+        else if(QString::fromStdString(taskNames[1]) == comboBoxTask->currentText()){
+            ROS_INFO("KICK");
+            task->kickTask.iskickchargetime = true;
+            task->kickTask.kickchargetime = 500;
+            task->kickTask.target.x = pos->x;
+            task->kickTask.target.y = pos->y;
+            task->select = parsian_msgs::parsian_robot_task::KICK;
 
-    void TaskRunnerWidget::timerCb(const ros::TimerEvent& _timer){
-        if(task->select != 255)
-            robTaskPub[agent_id].publish(task);
+        }
+        else if(QString::fromStdString(taskNames[2]) == comboBoxTask->currentText()) {
+            ROS_INFO("RECEIVE");
+            task->receivePassTask.target.x = pos->x;
+            task->receivePassTask.target.y = pos->y;
+            task->select = parsian_msgs::parsian_robot_task::RECIVEPASS;
+
+        }
+
     }
 }
 
