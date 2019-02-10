@@ -56,6 +56,11 @@ namespace auto_decider {
 
         void statusCb(const parsian_msgs::parsian_robots_status msg) {
             timer.start();
+            for(int i{}; i < robotInfos.size(); i++)
+            {
+                robotInfos[i].status = parsian_msgs::parsian_robot_status();
+                robotInfos[i].status.id = i;
+            }
             for (auto stat: msg.status)
                 robotInfos[stat.id].status = stat;
         }
