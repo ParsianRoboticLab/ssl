@@ -17,6 +17,7 @@
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_msgs/parsian_behavior.h>
 #include <parsian_msgs/parsian_ai_status.h>
+#include <parsian_msgs/parsian_robots_fault.h>
 #include <parsian_ai/ai.h>
 
 #include <dynamic_reconfigure/server.h>
@@ -49,7 +50,7 @@ private:
     void robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & _rs);
     void teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf);
     void mousePosCb(const parsian_msgs::vector2DConstPtr& _mousePos);
-    void faultdetectionCallBack(const parsian_msgs::parsian_robot_fault & _rs);
+    void faultdetectionCallBack(const parsian_msgs::parsian_robots_fault &_rs);
 
 };
 }

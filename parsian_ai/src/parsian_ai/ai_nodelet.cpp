@@ -64,7 +64,7 @@ void AINodelet::refereeCallBack(const parsian_msgs::ssl_refree_wrapperConstPtr &
     ai->updateReferee(_ref);
 }
 
-void AINodelet::faultdetectionCallBack(const parsian_msgs::parsian_robot_fault & _rs) {
+void AINodelet::faultdetectionCallBack(const parsian_msgs::parsian_robots_fault & _rs) {
     ai->updateRobotFaults(_rs);
 }
 
