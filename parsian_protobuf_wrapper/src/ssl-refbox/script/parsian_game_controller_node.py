@@ -45,13 +45,15 @@ class GameController():
         self.IP = '127.0.0.1' #TODO delete this
         #register
         self.register()
-        self.assigngoalie()
 
         return config
 
 
 
     def register(self):
+
+        self.socket.close()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.socket.connect((self.IP, self.PORT))
         except:
@@ -60,40 +62,40 @@ class GameController():
             self.register()
         ##getting initiate response
         initiate_result_msg = self.gc.readControllerToTeam(self.socket)
+        if not self.gc.verification:
+            rospy.loginfo('problem in getting the initiate response from controller')
+            sleep(0.5)
+            self.register()
         ##send registration data
         registration_serialized = self.gc.teamSerializedRegistration(self.socket, TEAM_NAME, self.gc.token, self.privatekey)
-        self.gc.sendSerializedMessage(self.socket, registration_serialized)
+        self.gc.sendSerializedMessage(self.socket, registration_serialized, False)
         ##getting registration result message
         registration_result_msg = self.gc.readControllerToTeam(self.socket)
         while self.gc.verification != 1:##NOT VERIFIED
             rospy.loginfo("error in registration message: " + registration_result_msg.controller_reply.reason)
             sleep(0.5)
-            registration_serialized = self.gc.teamSerializedRegistration(self.socket, TEAM_NAME, self.gc.token, self.privatekey)
-            self.gc.sendSerializedMessage(self.socket, registration_serialized)
-            ##getting registration result message
-            registration_result_msg = self.gc.readControllerToTeam(self.socket)
+            self.register()
 
         rospy.loginfo("TEAM REGISTERED")
         self.registered = True
+        self.assigngoalie()
 
 
     def assigngoalie(self):
         ##send assigngoalie data
         assigngoalie_serialized = self.gc.teamSerializedAssignGoalie(self.socket, self.goalie_id, self.gc.token, self.privatekey)
-        self.gc.sendSerializedMessage(self.socket, assigngoalie_serialized)
+        self.gc.sendSerializedMessage(self.socket, assigngoalie_serialized, False)
         ##getting assigngoalie result message
         assigngoalie_result_msg = self.gc.readControllerToTeam(self.socket)
         while self.gc.verification != 1:  ##NOT VERIFIED
             rospy.loginfo("error in goalie assignment message: " + assigngoalie_result_msg.controller_reply.reason)
             sleep(0.5)
-            assigngoalie_serialized = self.gc.teamSerializedAssignGoalie(self.socket, self.goalie_id, self.gc.token,
-                                                                    self.privatekey)
-            self.gc.sendSerializedMessage(self.socket, assigngoalie_serialized)
-            ##getting registration result message
-            assigngoalie_result_msg = self.gc.readControllerToTeam(self.socket)
+            self.register()
 
         rospy.loginfo("GOALIE ASSIGNED")
         self.isgoalieassigned = True
+
+
 
 
 

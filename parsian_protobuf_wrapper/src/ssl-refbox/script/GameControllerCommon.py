@@ -67,14 +67,15 @@ class GameControllerCommon:
         serializedmessage = assigngoalie.SerializeToString()
         return serializedmessage
 
-    def sendSerializedMessage(self, socket, serializedmsg):
-        # type:(socket.socket, str) ->object
+    def sendSerializedMessage(self, socket, serializedmsg, repeat):
+        # type:(socket.socket, str, bool) ->object
         size = len(serializedmsg)
         data = varint.encode(size) + serializedmsg
         try:
             socket.send(data)
             return True
         except:
-            sleep(0.5)
             print("cannot send data to the gamecontroller")
-            self.sendSerializedMessage(socket, serializedmsg)
+            if repeat:
+                sleep(0.5)
+                self.sendSerializedMessage(socket, serializedmsg, repeat)
