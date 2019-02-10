@@ -13,13 +13,16 @@
 using namespace rcsc;
 # define buffer_size  200
 # define threshold 0.25
-#define _MAX_NUM_PLAYERS 12         //TODO must be get from somewhere else
+#define _MAX_NUM_PLAYERS 12
 #define status_timeout 10000
 
-//TODOS
-//1)select what state the damaged robot is
-//2)what kick(or what ever)fault = true means (dameged or not)
-//3)whats the best number f0or threshold and buffersize
+//                          about this node
+//this node detects robots faults based on wm and robot_status data,
+//and publishes the result on /autofualt topic
+//the result contains a list of robot_fualt message for all robots
+//if the robots dont send their status for more than 'status_timeout' ms
+//the node decides to not to detect faults for any robots
+
 
 namespace auto_decider {
 
