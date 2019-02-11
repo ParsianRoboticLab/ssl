@@ -26,9 +26,10 @@ void CSubstitution::init(QList<Agent*>& _agents) {
 
 
 void CSubstitution::execute_x(){
+    std::string faultIDs{"The faulted robots are >> "};
     for(auto agent: agents)
-        ROS_INFO_STREAM("kianf : " << agent->id());
-    ROS_INFO_STREAM("kianf : ----------------------------");
+        faultIDs += std::to_string(agent->id()) + " - ";
+    ROS_INFO_STREAM("kian : " << faultIDs);
 
     QList<Vector2D> positions = generatepositions(agents.size());
     for(int i{}; i < agents.size(); i++)

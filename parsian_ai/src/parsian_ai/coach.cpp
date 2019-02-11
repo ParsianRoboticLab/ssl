@@ -765,7 +765,7 @@ void CCoach::execute()
             stopRole->execute();
         }
     }
-    if(gameState->isStop()) replaceFaultedRobots();//[substitution]
+    if(gameState->isStop() && damagedIDs.size() > 0) replaceFaultedRobots();//[substitution]
 
 }
 
