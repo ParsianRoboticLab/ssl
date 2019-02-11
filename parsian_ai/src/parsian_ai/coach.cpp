@@ -29,6 +29,7 @@ CCoach::CCoach(Agent**_agents)
     ourBallPlacement    = new COurBallPlacement;
     halftimeLineup      = new CHalftimeLineup;
     theirBallPlacement  = new CTheirBallPlacement;
+    substitution         = new CSubstitution;
 
 
     // New Plays
@@ -62,6 +63,7 @@ CCoach::CCoach(Agent**_agents)
         i = 0;
     }
     firstTime = true;
+    firsttime_forsubstitution = true;
 
     haltAction = new NoAction;
 
@@ -80,6 +82,7 @@ CCoach::~CCoach() {
     delete stopPlay          ;
     delete ourPlayOff        ;
     delete dynamicAttack     ;
+    delete substitution      ;
 }
 
 void CCoach::decidePreferredDefenseAgentsCount() {
@@ -693,12 +696,21 @@ void CCoach::seperateHealthyAndDamagedRobots()
 
 void CCoach::replaceFaultedRobots() {
 
-    for(int i{}; i < damagedIDs.size(); i++)
-        faultRoles[i]->assign(agents[damagedIDs[i]]);
+    QList<Agent*> ouragents;
+    for(int i{}; i < _MAX_NUM_PLAYERS; i++)
+        if(damagedIDs.contains(agents[i]->id()))
+            ouragents.push_back(agents[i]);
 
-    for (auto &faultRole : faultRoles)
-        if (faultRole->agent != nullptr)
-            faultRole->execute();
+    if(firsttime_forsubstitution)
+        substitution->init(ouragents);
+    substitution->execute(ouragents);
+
+//    for(int i{}; i < damagedIDs.size(); i++)
+//        faultRoles[i]->assign(agents[damagedIDs[i]]);
+
+//    for (auto &faultRole : faultRoles)
+//        if (faultRole->agent != nullptr)
+//            faultRole->execute();
 }
 
 void CCoach::resetNonVisibleAgents()

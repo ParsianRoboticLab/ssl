@@ -116,6 +116,7 @@ private:
     CDynamicAttack *dynamicAttack;
     CStopPlay *stopPlay;
     CHalftimeLineup *halftimeLineup;
+    CSubstitution *substitution;
 
 public:
     CRoleStop *stopRoles[_MAX_NUM_PLAYERS];
@@ -130,6 +131,7 @@ private:
     QList<int> robotsIdHist;
     bool first;
     QList<int> missMatchIds;
+    bool firsttime_forsubstitution;
 
     ///////////////////////////////////////
     int cyclesWaitAfterballMoved;
