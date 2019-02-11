@@ -753,7 +753,7 @@ void CCoach::execute()
             stopRole->execute();
         }
     }
-    if(gameState->isStop()) replaceFaultedRobots();
+    if(gameState->isStop()) replaceFaultedRobots();//[substitution]
 
 }
 
