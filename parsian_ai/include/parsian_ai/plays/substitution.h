@@ -11,6 +11,8 @@ public:
         void init(QList<Agent*>& _agents);
 private:
         void reset();
+        QList<Vector2D> generatepositions(int count);
+        QList<GotopointavoidAction*> gpa;
 
 };
 
