@@ -78,8 +78,9 @@ public:
     static int findGoalie();
     static bool useGoalieInPlayOff();
 
-    void generateWorkingRobotIds();
-    QList<int> workingIDs;
+    void seperateHealthyAndDamagedRobots();
+    QList<int> healthyIDs;
+    QList<int> damagedIDs;
     void replaceFaultedRobots();
     CRoleFault *faultRoles[_MAX_NUM_PLAYERS];
     void resetNonVisibleAgents();
