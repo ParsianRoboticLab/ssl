@@ -37,6 +37,7 @@ public:
 
 private:
     parsian_msgs::parsian_robot_task robotsTask[_MAX_NUM_PLAYERS];
+    void validateRobotTask(parsian_msgs::parsian_robot_task* task);
 
 };
 

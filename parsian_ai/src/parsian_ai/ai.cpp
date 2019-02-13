@@ -63,8 +63,51 @@ parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
 
         }
     }
-
+    if(conf.parsianWorkshop)
+        validateRobotTask(&robotsTask[robotID]);
     return robotsTask[robotID];
+}
+
+void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
+{
+    if(teamConfig.side == teamConfig.LEFT)
+    {
+        switch (task->select) {
+        case task->GOTOPOINTAVOID:
+            if(task->gotoPointAvoidTask.base.targetPos.x > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.3;
+            break;
+        case task->GOTOPOINT:
+            if(task->gotoPointTask.targetPos.x > 0) task->gotoPointTask.targetPos.x = -0.3;
+            break;
+        case task->RECIVEPASS:
+            if(task->receivePassTask.target.x > 0) task->receivePassTask.target.x = -0.3;
+            break;
+        case task->ONETOUCH:
+            if(task->oneTouchTask.waitPos.x > 0) task->oneTouchTask.waitPos.x = -0.3;
+            break;
+        default:
+            break;
+        }
+    }
+    else
+    {
+        switch (task->select) {
+        case task->GOTOPOINTAVOID:
+            if(task->gotoPointAvoidTask.base.targetPos.x < 0) task->gotoPointAvoidTask.base.targetPos.x = 0.3;
+            break;
+        case task->GOTOPOINT:
+            if(task->gotoPointTask.targetPos.x < 0) task->gotoPointTask.targetPos.x = 0.3;
+            break;
+        case task->RECIVEPASS:
+            if(task->receivePassTask.target.x < 0) task->receivePassTask.target.x = 0.3;
+            break;
+        case task->ONETOUCH:
+            if(task->oneTouchTask.waitPos.x < 0) task->oneTouchTask.waitPos.x = 0.3;
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
