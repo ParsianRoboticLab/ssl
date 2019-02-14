@@ -19,6 +19,7 @@ namespace rqt_parsian_gui
         comboBoxTask->addItem("GotoPointAvoid");
         comboBoxTask->addItem("Kick");
         comboBoxTask->addItem("Receive");
+        comboBoxTask->addItem("OneTouch");
 
         comboBoxPN = new QComboBox;
         comboBoxPN->addItem("0");
@@ -39,7 +40,7 @@ namespace rqt_parsian_gui
 
 
 
-
+        connect(comboBoxTask,SIGNAL(currentTextChanged(QString)),this,SLOT(comboChange(QString)));
         tasks = new QAction* [_TASK_NUM];
         ids   = new QAction* [_PLAYER_NUMBER];
 
@@ -64,6 +65,8 @@ namespace rqt_parsian_gui
         gridLayout->addWidget(comboBoxPN);
         this->setLayout(gridLayout);
 
+        task.reset(new parsian_msgs::parsian_robot_task());
+
         //robTaskPub = n.advertise<parsian_msgs::parsian_robot_task>("/agent_0/task",100);
         for (int i = 0; i < _PLAYER_NUMBER; ++i) {
             std::string topic(QString("/agent_%1/task").arg(i).toStdString());
@@ -76,9 +79,12 @@ namespace rqt_parsian_gui
 
 
 }
-    void TaskRunnerWidget::setTask(QAction* action) {
-      /////////
-      //////////
+
+
+
+    void TaskRunnerWidget::comboChange(QString) {
+        task->select = 5;
+        ROS_INFO("comboChange");
     }
 
     void TaskRunnerWidget::setID(QAction * action ){
@@ -94,8 +100,10 @@ namespace rqt_parsian_gui
 
         ROS_INFO_STREAM(comboBoxTask->currentText().toStdString());
         //ROS_INFO("wm_in");
-        if(task != 0){
-            robTaskPub[(comboBoxPN->currentText()).toInt()].publish(task);
+        if(task != 0) {
+            if (setData == true) {
+                robTaskPub[(comboBoxPN->currentText()).toInt()].publish(task);
+            }
         }
 
     }
@@ -106,13 +114,14 @@ namespace rqt_parsian_gui
     TaskRunnerWidget::~TaskRunnerWidget() {
     }
 
-    void TaskRunnerWidget::mousePosCallBack(parsian_msgs::vector2DConstPtr pos) {
+    void TaskRunnerWidget::mousePosCallBack(parsian_msgs::mouse_eventConstPtr msg) {
         ROS_INFO("MOSPOS");
-        task.reset(new parsian_msgs::parsian_robot_task());
+        setData = false;
         if(QString::fromStdString(taskNames[0]) == comboBoxTask->currentText()) {
             ROS_INFO("GOTOPOINTAVOID");
-            task->gotoPointAvoidTask.base.targetPos.x = pos->x;
-            task->gotoPointAvoidTask.base.targetPos.y = pos->y;
+            task->gotoPointAvoidTask.base.targetPos.x = msg->pos.x;
+            task->gotoPointAvoidTask.base.targetPos.y = msg->pos.y;
+            setData = true;
             task->select = parsian_msgs::parsian_robot_task::GOTOPOINTAVOID;
             //robTaskPub.publish(task);
         }
@@ -121,20 +130,46 @@ namespace rqt_parsian_gui
             ROS_INFO("KICK");
             task->kickTask.iskickchargetime = true;
             task->kickTask.kickchargetime = 500;
-            task->kickTask.target.x = pos->x;
-            task->kickTask.target.y = pos->y;
+            task->kickTask.target.x = msg->pos.x;
+            task->kickTask.target.y = msg->pos.y;
+            setData = true;
             task->kickTask.avoidPenaltyArea = true;
             task->select = parsian_msgs::parsian_robot_task::KICK;
 
         }
         else if(QString::fromStdString(taskNames[2]) == comboBoxTask->currentText()) {
             ROS_INFO("RECEIVE");
-            task->receivePassTask.target.x = pos->x;
-            task->receivePassTask.target.y = pos->y;
+            task->receivePassTask.target.x = msg->pos.x;
+            task->receivePassTask.target.y = msg->pos.y;
             task->receivePassTask.receiveRadius = 0.5;
+            setData = true;
             task->select = parsian_msgs::parsian_robot_task::RECIVEPASS;
 
         }
+        else if(QString::fromStdString((taskNames[3])) == comboBoxTask->currentText()) {
+            ROS_INFO("ONETOUCH");
+            if(msg->isLeftClicked == false) {
+                ROS_INFO("RightClicked");
+                rightSet = true;
+                ROS_INFO_STREAM(msg->pos.x);
+                ROS_INFO_STREAM(msg->pos.y);
+                task->oneTouchTask.target.x = msg->pos.x;
+                task->oneTouchTask.target.y = msg->pos.y;
+            }
+            else if(msg->isLeftClicked == true) {
+                ROS_INFO("LeftClicked");
+                leftSet = true;
+                ROS_INFO_STREAM(msg->pos.x);
+                ROS_INFO_STREAM(msg->pos.y);
+                task->oneTouchTask.waitPos.x = msg->pos.x;
+                task->oneTouchTask.waitPos.y = msg->pos.y;
+            }
+            if(leftSet && rightSet ){
+                setData = true;
+            }
+            task->select = parsian_msgs::parsian_robot_task::ONETOUCH;
+        }
+
 
     }
 }
