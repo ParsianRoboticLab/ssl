@@ -75,6 +75,7 @@ void CSkillReceivePass::intersect() {
     if(agent->pos().dist(bestPoint) < 0.5) gotopointavoid->setOnetouchmode(true);
     gotopointavoid->init(bestPoint, wm->ball->pos - bestPoint);
     gotopointavoid->setSlowmode(false);
+    ROS_INFO_STREAM("E:" << bestPoint);
     drawer -> draw(bestPoint,QColor(Qt::red));
 }
 
