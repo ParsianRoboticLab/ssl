@@ -418,8 +418,8 @@ void CCoach::decideDefense(){
     ROS_INFO_STREAM("SD: " << preferredDefenseCounts << " : " << defenseAgents.size());
     if (gameState->theirPenaltyKick()) {
         defenseAgents.clear();
-        selectedPlay->defensePlan.initGoalKeeper(goalieAgent);
-        selectedPlay->defensePlan.initDefense(defenseAgents);
+        selectedPlay->defensePlan.initGoalKeeper(goalieAgent);//Set goalie(goal keeper)
+        selectedPlay->defensePlan.initDefense(defenseAgents);//Set the robots which are used for defense
         selectedPlay->defensePlan.execute();
     } else {
         selectedPlay->defensePlan.initGoalKeeper(goalieAgent);
@@ -481,7 +481,7 @@ void CCoach::decideAttack() {
     // find unused agents!
 
     QList<int> ourPlayersID = workingIDs;
-    if (goalieAgent != nullptr) {
+    if (goalieAgent != nullptr) {//if it is on the ground
         ourPlayersID.removeOne(goalieAgent->id());
     }
     for (auto defenseAgent : defenseAgents) {
@@ -887,9 +887,9 @@ void CCoach::decideOurPenaltyshootout(QList<int>& _ourPlayers) {
 }
 
 void CCoach::decideTheirPenaltyshootout(const QList<int> &) {
-    ROS_INFO_STREAM("penalty: decideourpenalty");
     selectedPlay = theirPenalty;
 }
+    //ROS_INFO_STREAM("penalty: decideourpenalty");
 
 void CCoach::decideStart(QList<int> &_ourPlayers) {
     ROS_INFO_STREAM("kian: in start mode");
@@ -960,7 +960,9 @@ QList<int> CCoach::remainingAgent() {
 }
 
 void CCoach::handlePlayMake(const QList<int> &_agentsID) {
-    if (!gameState->isStart() || _agentsID.empty()) {
+    bool ispenalty = gameState->ourPenaltyKick() || gameState->ourPenaltyShootout();
+    bool assign = ! gameState->isStart() && !ispenalty;
+    if (assign || _agentsID.empty()) {
 
         playmakeId = -1;
         lastPlayMake = -1;

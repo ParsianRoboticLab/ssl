@@ -2614,6 +2614,15 @@ void DefensePlan::penaltyShootOutMode() {
 
 }
 
+Line2D DefensePlan::changeLine(double angVel,Vector2D Point1,Vector2D Point2){
+if(Point2.y>=0)
+Point2.y+=angVel;
+else if(Point2.y<0)
+Point2.y-=angVel;
+    return Line2D(Point1,Point2);
+
+}
+
 void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
     //// of the opponent agents that will shot to our goal in pentalty mode.
@@ -2621,57 +2630,72 @@ void DefensePlan::penaltyMode() {
     Vector2D ballPos = wm->ball->pos;//getting the ball position
     const float goalLineExtra = 0.03;//a little after our goal line line
     const double xDiff = 0.10;
-    Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
+    double angularVel=wm->opp[know->nearestOppToBall()]->angularVel;
+    Line2D goalLine(wm->field->ourGoal(),wm->field->ourGoalR());
+    Line2D goalLine2(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
                     wm->field->ourGoalR() + Vector2D(+xDiff, -goalLineExtra));
     const double epsilon = 0.12;
     Vector2D target(-2.93, 0.0);
     //time2 = 0;
-    Line2D ballRay(ballPos, ballPos + wm->opp[know->nearestOppToBall()]->dir);
-    Line2D ballRay2(ballPos,ballPos-wm->opp[know->nearestOppToBall()]->dir);//Mahdi
-    Vector2D intersectionPoint2 = goalLine.intersection(ballRay2);
+    //Line2D ballRay(ballPos, ballPos + agent(4)->pos());
+    Line2D ballRay2(wm->opp[know->nearestOppToBall()]->dir, ballPos+wm->opp[know->nearestOppToBall()]->dir);
+    Line2D ballRay3{changeLine(angularVel,wm->opp[know->nearestOppToBall()]->dir,ballPos+wm->opp[know->nearestOppToBall()]->dir)};
 
 
-
-    Vector2D intersectionPoint = goalLine.intersection(ballRay);
-    double ang = ballRay.a() * goalLine.b() - ballRay.b() * goalLine.a();//calculating the angle of opp robot to our goal
+    Vector2D intersectionPoint = goalLine.intersection(ballRay3);
+    double ang = ballRay2.a() * goalLine.b() - ballRay2.b() * goalLine.a();//calculating the angle of opp robot to our goal
     int flagFordetectingAngleofOpp=0;
     Vector2D movingTarget = intersectionPoint;
+    Vector2D target1 = wm->field->ourGoal();
+   // if(target.y>0)
+      target = intersectionPoint;
+     //   else if(target.y<0)
+       // target = intersectionPoint+Vector2D(0,-0.1);
+    int cnt = 0;
+
+    /*if(!(Circle2D(goalKeeperAgent->pos(),6),wm->opp.activeAgentID(0))){
+
+        target = target1;
+
+    }*/ //for checking the available opp robots and decide the first target
 
 
-
-
-    Vector2D targetDir(0, 1);
-  if(fabs(ang)<=0.5){
-      flagFordetectingAngleofOpp=1;
-  }
-
+    Vector2D targetDir(1, 0);
     drawer->draw(target, "blue");
+    drawer->draw(Segment2D(wm->field->ourGoalL(), wm->field->ourGoalR()), QColor("red"));
+    drawer->draw(Segment2D(wm->opp[know->nearestOppToBall()]->dir, ballPos+wm->opp[know->nearestOppToBall()]->dir), QColor("red"));
 
-
-  //starting the idea for having adynamic goalie in penaltymode
+  //starting the idea for having a dynamic goalie in penaltymode
   //switch(time2 % 2){
 
       //case 1:
           if(Circle2D(target,0.15).contains(goalKeeperAgent->pos())) {
               movingTarget = -target;
+              drawer->draw(Circle2D(target,0.15),0,360,QColor("Red"),false);
           }
           //break;
      // default:
          // break;
 
-
-
-
                   //  for(target.y=0;target.y<=intersectionPoint.y;target.y++){
 
                         //actions that we send to our robot
+
+                        if(target.y>0.35)
+                            target.y = 0.35;
+                        if(target.y<-0.35)
+                            target.y = -0.35;
 
                         assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
                         gpa[goalKeeperAgent->id()]->setSlowmode(false);
                         gpa[goalKeeperAgent->id()]->setDivemode(true);
                         gpa[goalKeeperAgent->id()]->setTargetpos(target);
                         gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
-                        ROS_INFO_STREAM("MAHDI:THEIR PENALTY");
+                        ROS_INFO_STREAM("MAHDI:THEIR PENALTY"<<"->nearest robot:"<<wm->opp[know->nearestOppToBall()]->id<<"->target"<<target);
+                        //ROS_INFO_STREAM("agent:"<<agents[4]->id());
+                        ROS_INFO_STREAM("GoalLine:"<<wm->field->ourGoalR()-wm->field->ourGoalL());
+                        ROS_INFO_STREAM("ballAngVel:"<<angularVel);
+                        DBUG("Goalie in Penalty",D_Mahdi);
 
                 //   }
 

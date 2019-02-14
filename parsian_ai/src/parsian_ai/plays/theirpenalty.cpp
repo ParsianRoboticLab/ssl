@@ -54,10 +54,10 @@ void CTheirPenalty::assignSkills()
 
 void CTheirPenalty::generatePositions()
 {
-    ROS_INFO_STREAM("penalty: generate positions");
+    ROS_INFO_STREAM("Mahdi_penalty: generate positions");
     positions.clear();
-    double penaltyPositioningOffset = 0.4;
-    double penaltyRuleOffset = 0.4;
+    double penaltyPositioningOffset = 2.8;
+    double penaltyRuleOffset = 2.8;
     double maximum_x_width = wm->field->ourGoalL().x + (wm->field->_PENALTY_DEPTH + penaltyRuleOffset + penaltyPositioningOffset);
     for(int i{}; i < agents.size(); i++)
     {

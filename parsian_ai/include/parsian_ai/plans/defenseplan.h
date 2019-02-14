@@ -135,6 +135,7 @@ protected:
     int penaltyShootoutMode = beforeTouch;
     void penaltyShootOutMode();
     GotopointavoidAction* striker_Robot;
+    Line2D changeLine( double,Vector2D,Vector2D);
     void penaltyMode();
     enum exepMode {
         defOneTouch = 1,
@@ -182,6 +183,7 @@ public:
     Vector2D ballBouncePos, playOffStartBallPos, playOffPassDir,beforeTransientPassDir;
     ///////////////////////////////////
     bool DangerOppLessThan(const int &, const int &);
+    //static double time2;
 
 
 private:

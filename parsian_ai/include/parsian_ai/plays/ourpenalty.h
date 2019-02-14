@@ -32,7 +32,7 @@ public:
     void playmakePositioning();
     void playmakeKick();
     double angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp);
-
+    double time;
 
 
 

@@ -64,6 +64,7 @@ void COurPenalty::execute_x() {
         {
             ROS_INFO_STREAM("penalty: normal");
             executeNormalPositioning();
+            DBUG("Penalty",D_Mahdi);
         }
 
         playmakePositioning();
@@ -128,27 +129,27 @@ Vector2D COurPenalty::getEmptyTarget(Vector2D _position, double _radius)
     return finalTarget;
 }
 
-void COurPenalty::assignSkills()
-{
+void COurPenalty::assignSkills() {
     ROS_INFO_STREAM("Mahdi_penalty: assign skills");
     moveSkills.clear();
-    for(int i{0}; i<agents.count(); i++)
-    {
+    for (int i{0}; i < agents.count(); i++) {
         moveSkills.append(new GotopointavoidAction());
 
 
-        if(i!=1) {
-            moveSkills[i]->setTargetpos(positions[i]);
-            moveSkills[i]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 0.05));//should change
-            moveSkills[i]->setSlowmode(true);
-            moveSkills[i]->setBallobstacleradius(0.1);
-            agents[i]->action = moveSkills[i];
+        if(i!=5) {
+        moveSkills[i]->setTargetpos(positions[i]);
+        moveSkills[i]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 0.05));//should change
+        moveSkills[i]->setSlowmode(true);
+        moveSkills[i]->setBallobstacleradius(0.1);
+        agents[i]->action = moveSkills[i];
+         }
         }
+         moveSkills[5]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 1) );
+         moveSkills[5]->setPenaltykick(true);
+         ROS_INFO_STREAM("I kick!");
+        agents[5]->action = moveSkills[1];
     }
-    moveSkills[1]->setTargetdir(getEmptyTarget(wm->field->oppGoal(), 0.05) - positions[1]);
-    moveSkills[1]->setPenaltykick(true);
-    agents[1]->action = moveSkills[1];
-}
+
 
 void COurPenalty::playmakePositioning()
 {
@@ -174,7 +175,7 @@ void COurPenalty::playmakeKick()
     Vector2D shift;
     Vector2D position;
     penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 8.0, true, 0.03); //////// tune
-    ROS_INFO_STREAM("kian: penalty target" << penaltyTarget);
+    ROS_INFO_STREAM("Mahdi: penalty target" << penaltyTarget);
     PMgotopoint->setRoller(1);
     ////////////// change robot direction before kicking //////////////
     if (timerStartFlag) {
