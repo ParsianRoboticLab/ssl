@@ -7,7 +7,7 @@
 //
 
 #define _PLAYER_NUMBER 12
-#define _TASK_NUM 3
+#define _TASK_NUM 4
 
 #include <ros/ros.h>
 #include <QWidget>
@@ -21,11 +21,12 @@
 #include <parsian_msgs/parsian_skill_gotoPointAvoid.h>
 #include <parsian_msgs/grsim_ball_replacement.h>
 #include <parsian_msgs/parsian_world_model.h>
+#include <parsian_msgs/mouse_event.h>
 
 namespace rqt_parsian_gui
 {
-  //  #define TASK_NUM 3
-  static const char* taskNames[_TASK_NUM] = {"GotoPointAvoid","Kick","Receive"};
+
+  static const char* taskNames[_TASK_NUM] = {"GotoPointAvoid","Kick","Receive","OneTouch"};
     class TaskRunnerWidget:public QWidget {
     Q_OBJECT
     public:
@@ -35,13 +36,14 @@ namespace rqt_parsian_gui
         virtual ~TaskRunnerWidget();
 
     public slots:
-        void setTask(QAction*);
+        void comboChange(QString);
         void setID(QAction * );
 
     protected:
 
     private:
         int agent_id;
+        bool rightSet,leftSet,setData;
         ros::Subscriber worldModelSub;
         ros::Subscriber mousePosSub;
         ros::ServiceClient ballReplacementClient;
@@ -51,7 +53,7 @@ namespace rqt_parsian_gui
         QToolButton *toolButton,*agentId;
         QComboBox *comboBoxPN , *comboBoxTask;
         QGridLayout *gridLayout;
-        void mousePosCallBack(parsian_msgs::vector2DConstPtr pos);
+        void mousePosCallBack(parsian_msgs::mouse_eventConstPtr msg);
         //void timerCb(const ros::TimerEvent& _timer);
         void m_wmCb(const parsian_msgs::parsian_world_modelConstPtr& _wm);
 
