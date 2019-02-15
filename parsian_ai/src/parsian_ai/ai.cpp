@@ -70,43 +70,24 @@ parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
 
 void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
 {
+    int flag = -1;
     if(teamConfig.side == teamConfig.LEFT)
-    {
-        switch (task->select) {
+        flag = 1;
+    switch (task->select) {
         case task->GOTOPOINTAVOID:
-            if(task->gotoPointAvoidTask.base.targetPos.x > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.7;
+            if (task->gotoPointAvoidTask.base.targetPos.x * flag > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.7 * flag;
             break;
         case task->GOTOPOINT:
-            if(task->gotoPointTask.targetPos.x > 0) task->gotoPointTask.targetPos.x = -0.7;
+            if (task->gotoPointTask.targetPos.x * flag > 0) task->gotoPointTask.targetPos.x = -0.7 * flag;
             break;
         case task->RECIVEPASS:
-            if(task->receivePassTask.target.x > 0) task->receivePassTask.target.x = -0.7;
+            if (task->receivePassTask.target.x * flag > 0) task->receivePassTask.target.x = -0.7 * flag;
             break;
         case task->ONETOUCH:
-            if(task->oneTouchTask.waitPos.x > 0) task->oneTouchTask.waitPos.x = -0.7;
+            if (task->oneTouchTask.waitPos.x * flag > 0) task->oneTouchTask.waitPos.x = -0.7 * flag;
             break;
         default:
             break;
-        }
-    }
-    else
-    {
-        switch (task->select) {
-        case task->GOTOPOINTAVOID:
-            if(task->gotoPointAvoidTask.base.targetPos.x < 0) task->gotoPointAvoidTask.base.targetPos.x = 0.7;
-            break;
-        case task->GOTOPOINT:
-            if(task->gotoPointTask.targetPos.x < 0) task->gotoPointTask.targetPos.x = 0.7;
-            break;
-        case task->RECIVEPASS:
-            if(task->receivePassTask.target.x < 0) task->receivePassTask.target.x = 0.7;
-            break;
-        case task->ONETOUCH:
-            if(task->oneTouchTask.waitPos.x < 0) task->oneTouchTask.waitPos.x = 0.7;
-            break;
-        default:
-            break;
-        }
     }
 }
 
