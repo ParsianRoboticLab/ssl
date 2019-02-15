@@ -2663,7 +2663,7 @@ void DefensePlan::penaltyMode() {
     Vector2D targetDir(1, 0);
     drawer->draw(target, "blue");
     drawer->draw(Segment2D(wm->field->ourGoalL(), wm->field->ourGoalR()), QColor("red"));
-    wm->opp[know->nearestOppToBall()]->dir->y+= wm->opp[know->nearestOppToBall()]->angularVel;
+    //wm->opp[know->nearestOppToBall()]->dir->y+= wm->opp[know->nearestOppToBall()]->angularVel;
     drawer->draw(Segment2D(wm->opp[know->nearestOppToBall()]->dir, ballPos+wm->opp[know->nearestOppToBall()]->dir), QColor("red"));
 
 
