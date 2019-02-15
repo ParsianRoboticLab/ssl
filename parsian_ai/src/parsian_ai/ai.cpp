@@ -74,16 +74,16 @@ void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
     {
         switch (task->select) {
         case task->GOTOPOINTAVOID:
-            if(task->gotoPointAvoidTask.base.targetPos.x > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.3;
+            if(task->gotoPointAvoidTask.base.targetPos.x > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.7;
             break;
         case task->GOTOPOINT:
-            if(task->gotoPointTask.targetPos.x > 0) task->gotoPointTask.targetPos.x = -0.3;
+            if(task->gotoPointTask.targetPos.x > 0) task->gotoPointTask.targetPos.x = -0.7;
             break;
         case task->RECIVEPASS:
-            if(task->receivePassTask.target.x > 0) task->receivePassTask.target.x = -0.3;
+            if(task->receivePassTask.target.x > 0) task->receivePassTask.target.x = -0.7;
             break;
         case task->ONETOUCH:
-            if(task->oneTouchTask.waitPos.x > 0) task->oneTouchTask.waitPos.x = -0.3;
+            if(task->oneTouchTask.waitPos.x > 0) task->oneTouchTask.waitPos.x = -0.7;
             break;
         default:
             break;
@@ -93,16 +93,16 @@ void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
     {
         switch (task->select) {
         case task->GOTOPOINTAVOID:
-            if(task->gotoPointAvoidTask.base.targetPos.x < 0) task->gotoPointAvoidTask.base.targetPos.x = 0.3;
+            if(task->gotoPointAvoidTask.base.targetPos.x < 0) task->gotoPointAvoidTask.base.targetPos.x = 0.7;
             break;
         case task->GOTOPOINT:
-            if(task->gotoPointTask.targetPos.x < 0) task->gotoPointTask.targetPos.x = 0.3;
+            if(task->gotoPointTask.targetPos.x < 0) task->gotoPointTask.targetPos.x = 0.7;
             break;
         case task->RECIVEPASS:
-            if(task->receivePassTask.target.x < 0) task->receivePassTask.target.x = 0.3;
+            if(task->receivePassTask.target.x < 0) task->receivePassTask.target.x = 0.7;
             break;
         case task->ONETOUCH:
-            if(task->oneTouchTask.waitPos.x < 0) task->oneTouchTask.waitPos.x = 0.3;
+            if(task->oneTouchTask.waitPos.x < 0) task->oneTouchTask.waitPos.x = 0.7;
             break;
         default:
             break;

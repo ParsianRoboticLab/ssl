@@ -64,19 +64,22 @@ void CSkillReceivePass::waitPos() {
 void CSkillReceivePass::intersect() {
 
     Vector2D bestPoint = bestPointToIntersect();
+    drawer -> draw(bestPoint,QColor(Qt::black), 0.07);
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 20);
     if (!bestPoint.valid() || Circle2D(agent->pos(), 0.15).intersection(Segment2D(wm->ball->pos, wm->ball->getPosInFuture(0.5)))) {
         bestPoint = ballPath.nearestPoint(agent->pos());
+        drawer -> draw(bestPoint,QColor(Qt::blue), 0.07);
+
     }
-    validatePoint(bestPoint);
+    //validatePoint(bestPoint);
     agent->setRoller(1);
 
     gotopointavoid->setOnetouchmode(false);
     if(agent->pos().dist(bestPoint) < 0.5) gotopointavoid->setOnetouchmode(true);
     gotopointavoid->init(bestPoint, wm->ball->pos - bestPoint);
     gotopointavoid->setSlowmode(false);
-    ROS_INFO_STREAM("E:" << bestPoint);
-    drawer -> draw(bestPoint,QColor(Qt::red));
+
+    drawer -> draw(bestPoint,QColor(Qt::red), 0.07);
 }
 
 void CSkillReceivePass::receive() {
@@ -92,7 +95,7 @@ void CSkillReceivePass::validatePoint(Vector2D& _point) {
 }
 
 Vector2D CSkillReceivePass::bestPointToIntersect() {
-    bestPointToIntersect(agent);
+    return bestPointToIntersect(agent);
 }
 
 void CSkillReceivePass::validatePointFromPenalty(Vector2D &_point, const Rect2D& _penalty) {
