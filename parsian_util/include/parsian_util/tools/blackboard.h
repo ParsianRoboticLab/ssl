@@ -25,6 +25,7 @@
 #define D_KK         14
 #define D_HOSSEIN    15
 #define D_ATOUSA     16
+#define D_Mahdi       17
 
 
 #define PDEBUG(prefix, value, type) MONITOR(prefix,value,type)

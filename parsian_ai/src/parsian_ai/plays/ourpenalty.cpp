@@ -175,6 +175,7 @@ void COurPenalty::playmakeKick()
     Vector2D shift;
     Vector2D position;
     penaltyTarget = know->getEmptyPosOnGoalForPenalty(1.0 / 8.0, true, 0.03); //////// tune
+    drawer->draw(penaltyTarget, "blue");
     ROS_INFO_STREAM("Mahdi: penalty target" << penaltyTarget);
     PMgotopoint->setRoller(1);
     ////////////// change robot direction before kicking //////////////

@@ -2665,6 +2665,7 @@ void DefensePlan::penaltyMode() {
     drawer->draw(Segment2D(wm->field->ourGoalL(), wm->field->ourGoalR()), QColor("red"));
     drawer->draw(Segment2D(wm->opp[know->nearestOppToBall()]->dir, ballPos+wm->opp[know->nearestOppToBall()]->dir), QColor("red"));
 
+
   //starting the idea for having a dynamic goalie in penaltymode
   //switch(time2 % 2){
 
@@ -2685,6 +2686,9 @@ void DefensePlan::penaltyMode() {
                             target.y = 0.35;
                         if(target.y<-0.35)
                             target.y = -0.35;
+
+                        
+
 
                         assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
                         gpa[goalKeeperAgent->id()]->setSlowmode(false);
