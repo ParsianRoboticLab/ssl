@@ -63,8 +63,32 @@ parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
 
         }
     }
-
+    if(conf.parsianWorkshop)
+        validateRobotTask(&robotsTask[robotID]);
     return robotsTask[robotID];
+}
+
+void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
+{
+    int flag = -1;
+    if(teamConfig.side == teamConfig.LEFT)
+        flag = 1;
+    switch (task->select) {
+        case task->GOTOPOINTAVOID:
+            if (task->gotoPointAvoidTask.base.targetPos.x * flag > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.7 * flag;
+            break;
+        case task->GOTOPOINT:
+            if (task->gotoPointTask.targetPos.x * flag > 0) task->gotoPointTask.targetPos.x = -0.7 * flag;
+            break;
+        case task->RECIVEPASS:
+            if (task->receivePassTask.target.x * flag > 0) task->receivePassTask.target.x = -0.7 * flag;
+            break;
+        case task->ONETOUCH:
+            if (task->oneTouchTask.waitPos.x * flag > 0) task->oneTouchTask.waitPos.x = -0.7 * flag;
+            break;
+        default:
+            break;
+    }
 }
 
 void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
