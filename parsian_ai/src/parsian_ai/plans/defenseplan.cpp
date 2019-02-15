@@ -2631,7 +2631,7 @@ void DefensePlan::penaltyMode() {
     const float goalLineExtra = 0.03;//a little after our goal line line
     const double xDiff = 0.10;
     double angularVel=wm->opp[know->nearestOppToBall()]->angularVel;
-    Line2D goalLine(wm->field->ourGoal(),wm->field->ourGoalR());
+    Line2D goalLine(wm->field->ourGoal() + Vector2D(0.2 , 0) ,wm->field->ourGoalR() + Vector2D(0.2 , 0));
     Line2D goalLine2(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
                     wm->field->ourGoalR() + Vector2D(+xDiff, -goalLineExtra));
     const double epsilon = 0.12;
@@ -2663,6 +2663,7 @@ void DefensePlan::penaltyMode() {
     Vector2D targetDir(1, 0);
     drawer->draw(target, "blue");
     drawer->draw(Segment2D(wm->field->ourGoalL(), wm->field->ourGoalR()), QColor("red"));
+    wm->opp[know->nearestOppToBall()]->dir->y+= wm->opp[know->nearestOppToBall()]->angularVel;
     drawer->draw(Segment2D(wm->opp[know->nearestOppToBall()]->dir, ballPos+wm->opp[know->nearestOppToBall()]->dir), QColor("red"));
 
 
@@ -2682,10 +2683,10 @@ void DefensePlan::penaltyMode() {
 
                         //actions that we send to our robot
 
-                        if(target.y>0.35)
-                            target.y = 0.35;
-                        if(target.y<-0.35)
-                            target.y = -0.35;
+                        if(target.y>0.3)
+                            target.y = 0.3;
+                        if(target.y<-0.3)
+                            target.y = -0.3;
 
                         
 
