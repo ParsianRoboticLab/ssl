@@ -90,12 +90,12 @@ void CNewBangBang::bangBangSpeed(Vector2D _agentPos, Vector2D _agentVel, Vector2
     if (oneTouch || diveMode) {
         posPidDist = 0.5;
     } else {
-        posPidDist = 0.15;
+        posPidDist = 0.25;
     }
     if (slow) {
         posPid->kp = (conf->posKP) * (0.001 / (agentPos.dist(pos2) * agentPos.dist(pos2)));
-        posPid->kp = min(posPid->kp, 2.5);
-        posPid->kp = max(posPid->kp, 1.5);
+        posPid->kp = min(posPid->kp, 1);
+        posPid->kp = max(posPid->kp, 1);
 
         posPid->kd = conf->posKD;
         posPid->ki = conf->posKI;

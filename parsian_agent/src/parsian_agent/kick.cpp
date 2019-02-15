@@ -28,7 +28,7 @@ KMode CSkillKick::decideMode() {
     if (dontKick) mode = KMode::DONTKICK;
     else if ((playMakeMode || avoidPenaltyArea) && wm->field->isInOurPenaltyArea(wm->ball->pos)) mode = KMode::AvoidOurPenalty;
     else if (isOppPenaltyMode()) mode = KMode::AvoidOppPenalty;
-    else if (wm->ball->vel.length() < 0.5 && kickerArea.contains(wm->ball->pos) && std::fabs((kickFinalDir - agent->dir().th()).degree()) > 30) mode = KMode::TurnForKick;
+    else if (wm->ball->vel.length() < 0.5 && kickerArea.contains(wm->ball->pos) && std::fabs((kickFinalDir - agent->dir().th()).degree()) > 30) mode = KMode::JTurn;
     else {
         Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);
         if (wm->ball->vel.length() > 0.5 - distThr) {
@@ -181,7 +181,7 @@ void CSkillKick::jTurn() {
     speedPid->kp = 6 + 4 * agent->pos().dist(wm->ball->pos) + dirReduce*2 ;
 
     if (penaltyKick) {
-        speedPid->kp = 4;
+        speedPid->kp = 0.5;
     }
 
     angPid->kp = 4.5;
@@ -189,7 +189,7 @@ void CSkillKick::jTurn() {
     double vx = movementThSpeed.x * speedPid->PID_OUT();
     double vy = movementThSpeed.y * speedPid->PID_OUT();
     angPid->error = (kickFinalDir - agent->dir().th()).radian();
-    agent->setRobotAbsVel(wm->ball->vel.x*1 + vx, wm->ball->vel.y*1 + vy, angPid->PID_OUT());
+    agent->setRobotAbsVel(vx, vy, angPid->PID_OUT());
     speedPid->pError = speedPid->error;
 
     posPid->pError = posPid->error;

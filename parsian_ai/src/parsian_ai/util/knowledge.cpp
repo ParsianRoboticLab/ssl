@@ -583,8 +583,8 @@ Vector2D Knowledge::getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double t
 
     if (oppGoal) {
 //        goalLine.assign(wm->field->oppGoalL(), wm->field->oppGoalR());
-        goalieID = wm->opp.data->goalieID;
-        goalie = wm->opp[goalieID];
+        goalieID = 0;
+        goalie = wm->our[goalieID];
         goalieR = wm->field->oppGoalR();
         goalieL = wm->field->oppGoalL();
 
@@ -596,8 +596,8 @@ Vector2D Knowledge::getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double t
         goalieL = wm->field->ourGoalL();
     }
 
-    distanceR = wm->opp[goalieID]->pos.dist(goalieR);
-    distanceL = wm->opp[goalieID]->pos.dist(goalieL);
+    distanceR = wm->our[goalieID]->pos.dist(goalieR);
+    distanceL = wm->our[goalieID]->pos.dist(goalieL);
 
     if (ourAgent != nullptr) {
 
