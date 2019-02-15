@@ -63,6 +63,7 @@ namespace rqt_parsian_gui
 
         gridLayout->addWidget(comboBoxTask);
         gridLayout->addWidget(comboBoxPN);
+        this->setMaximumHeight(91);
         this->setLayout(gridLayout);
 
         task.reset(new parsian_msgs::parsian_robot_task());
