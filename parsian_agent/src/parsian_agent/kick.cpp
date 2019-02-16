@@ -129,7 +129,7 @@ void CSkillKick::jTurn() {
     AngleDeg kickFinalDir = (target - wm->ball->pos).th();
     double movementDir = ((wm->ball->pos - agent->pos()).th() - kickFinalDir).degree();
     double shift = 0;
-    double distCoef = 0.15;
+    double distCoef = 0.10;
 
     Vector2D idealPass = (wm->ball->pos - agent->pos()).norm() * distCoef;
 
@@ -178,7 +178,7 @@ void CSkillKick::jTurn() {
         dirReduce -= 1;
     }
 
-    speedPid->kp = 6 + 4 * agent->pos().dist(wm->ball->pos) + dirReduce*2 ;
+    speedPid->kp = 5 + 4 * agent->pos().dist(wm->ball->pos) + dirReduce*2 ;
 
     if (penaltyKick) {
         speedPid->kp = 4;
