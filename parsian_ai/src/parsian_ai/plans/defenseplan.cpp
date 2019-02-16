@@ -2627,6 +2627,20 @@ void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
     //// of the opponent agents that will shot to our goal in pentalty mode.
 
+	if(wm->opp[know->nearestOppToBall()]==nullptr){
+
+		        assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
+                        gpa[goalKeeperAgent->id()]->setSlowmode(false);
+                        gpa[goalKeeperAgent->id()]->setDivemode(true);
+                        gpa[goalKeeperAgent->id()]->setTargetpos(wm->field->ourGoal());
+                        gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D(1,0));
+			ROS_INFO_STREAM("No Opponents");
+
+
+
+}
+
+    else{
     Vector2D ballPos = wm->ball->pos;//getting the ball position
     const float goalLineExtra = 0.03;//a little after our goal line line
     const double xDiff = 0.10;
@@ -2640,13 +2654,17 @@ void DefensePlan::penaltyMode() {
 
 
     Vector2D intersectionPoint = goalLine.intersection(ballRay2);
+
     double ang = ballRay2.a() * goalLine.b() - ballRay2.b() * goalLine.a();//calculating the angle of opp robot to our goal
+	//I SHould Solve the problem of the baraks boodan robot
+	//robot harifo vaghti nadaram segment mide
     int flagFordetectingAngleofOpp=0;
     Vector2D movingTarget = intersectionPoint;
     Vector2D target1 = wm->field->ourGoal();
       target = intersectionPoint;
 
 	ROS_INFO_STREAM("PENALTY_MODE");
+        ROS_INFO_STREAM("ANGLE:"<<ang);
 
     Vector2D targetDir(1, 0);
     drawer->draw(intersectionPoint, "blue");
@@ -2659,13 +2677,27 @@ void DefensePlan::penaltyMode() {
               movingTarget = -target;
               drawer->draw(Circle2D(target,0.15),0,360,QColor("Red"),false);
           }
-         
+
+
+		if(ang>=-1.2 && ang<=0)
+				target.y = -target.y;
+			//else if(ang>=-1.2 && ang<=0 && ballPos.y<wm->opp[know->nearestOppToBall()]->pos.y())
+         			
+				//target.y = -(wm->field->ourGoalL().y-0.1);
+
                         //actions that we send to our robot
 
-                        if(target.y>0.27)
-                            target.y = 0.27;
-                        if(target.y<-0.27)
-                            target.y = -0.27;
+                        if(target.y > wm->field->ourGoalL().y-0.1){
+			ROS_INFO_STREAM("our limit area"<<"OurgoalL:"<<wm->field->ourGoalL().y);
+
+                            target.y = wm->field->ourGoalL().y-0.1;
+}
+
+                        if(target.y < -(wm->field->ourGoalL().y-0.1)){
+                            target.y = -(wm->field->ourGoalL().y-0.1);
+			ROS_INFO_STREAM("our limit area2");
+
+}
 
                         
 
@@ -2680,7 +2712,7 @@ void DefensePlan::penaltyMode() {
                       //ROS_INFO_STREAM("ballAngVel:"<<angularVel);
                        
 
-
+}
   }
 
 
