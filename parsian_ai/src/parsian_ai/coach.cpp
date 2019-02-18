@@ -756,10 +756,11 @@ void CCoach::execute()
     decidePreferredDefenseAgentsCount();
 
     // choose playmake agent
-    bool defenseFirst = wm->ball->vel.length() > 1
-                        && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();
+    bool defenseFirst = (wm->ball->vel.length() > 1)
+                        && (wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid());
     playmakeId = -1;
     defenseAgents.clear();
+
     if (defenseFirst) {
         decideDefense();
         handlePlayMake(remainingAgent());
@@ -767,7 +768,6 @@ void CCoach::execute()
         handlePlayMake(remainingAgent());
         decideDefense();
     }
-
 
     // decide the whole strategy for defense agents, including Goalie, defense and Mark
 
@@ -950,9 +950,12 @@ bool CCoach::useGoalieInPlayOff() {
 
 QList<int> CCoach::remainingAgent() {
     QList<int> ourPlayers = wm->our.data->activeAgents;
-    if(ourPlayers.contains(goalieAgent->id())) {
-        ourPlayers.removeOne(goalieAgent->id());
-    }
+    ROS_INFO_STREAM("Segmenttt");
+    if(goalieAgent != nullptr){
+        if(ourPlayers.contains(goalieAgent->id())) {
+            ourPlayers.removeOne(goalieAgent->id());
+         }
+     }
     for (auto& d : defenseAgents) {
         if (ourPlayers.contains(d->id())) ourPlayers.removeOne(d->id());
     }

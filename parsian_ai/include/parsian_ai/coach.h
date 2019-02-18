@@ -94,6 +94,7 @@ private:
     States lastState;
     Agent *goalieAgent;
 
+
     QList<Agent *> defenseAgents;
     int preferredDefenseCounts;
     Vector2D defenseTargets[_MAX_NUM_PLAYERS];
