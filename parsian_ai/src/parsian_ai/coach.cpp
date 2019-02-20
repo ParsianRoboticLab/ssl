@@ -29,6 +29,7 @@ CCoach::CCoach(Agent**_agents)
     ourBallPlacement    = new COurBallPlacement;
     halftimeLineup      = new CHalftimeLineup;
     theirBallPlacement  = new CTheirBallPlacement;
+    substitution         = new CSubstitution;
 
 
     // New Plays
@@ -62,6 +63,7 @@ CCoach::CCoach(Agent**_agents)
         i = 0;
     }
     firstTime = true;
+    firsttime_forsubstitution = true;
 
     haltAction = new NoAction;
 
@@ -80,36 +82,37 @@ CCoach::~CCoach() {
     delete stopPlay          ;
     delete ourPlayOff        ;
     delete dynamicAttack     ;
+    delete substitution      ;
 }
 
 void CCoach::decidePreferredDefenseAgentsCount() {
 
     missMatchIds.clear();
     if (gameState->getState() == States::Stop || gameState->getState() == States::Halt || first) {
-        if (workingIDs.size() != 0u) {
+        if (wm->our.data->activeAgents.size() != 0u) {
             robotsIdHist.clear();
-            for (int workingID : workingIDs) {
-                robotsIdHist.append(workingID);
+            for (int id : wm->our.data->activeAgents) {
+                robotsIdHist.append(id);
             }
         }
         first = false;
     }
 
-    if (workingIDs.size() > _NUM_PLAYERS) {
+    if (wm->our.data->activeAgents.size() > _NUM_PLAYERS) {
         missMatchIds.clear();
-        for (int workingID : workingIDs) {
+        for (int id : wm->our.data->activeAgents) {
             for (int k = 0 ; k < robotsIdHist.count() ; k++) {
-                if (robotsIdHist.at(k) == workingID) {
+                if (robotsIdHist.at(k) == id) {
                     break;
                 }
                 if (k == robotsIdHist.count() - 1) {
-                    missMatchIds.append(workingID);
+                    missMatchIds.append(id);
                 }
             }
         }
     }
 
-    int agentsCount = workingIDs.size() - missMatchIds.count();
+    int agentsCount = wm->our.data->activeAgents.size() - missMatchIds.count();
     if (goalieAgent != nullptr) {
         if (goalieAgent->isVisible()) {
             agentsCount--;
@@ -186,7 +189,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
 
 void CCoach::assignGoalieAgent(int goalieID) {
     goalieAgent = nullptr;
-    if (workingIDs.contains(goalieID)) {
+    if (wm->our.data->activeAgents.contains(goalieID)) {
         goalieAgent = agents[goalieID];
     }
 }
@@ -292,13 +295,18 @@ void CCoach::assignDefenseAgents(int defenseCount) {
         return;
     }
 
-    QList<int> ids = workingIDs;
+    QList<int> ids = wm->our.data->activeAgents;
     if (goalieAgent != nullptr) {
         ids.removeOne(goalieAgent->id());
     }
     if (playmakeId != -1) {
         ids.removeOne(playmakeId);
     }
+    //remove damaged robots in stop for substitution[substitution]
+    if(gameState->isStop())
+        for(auto id: ids)
+            if(damagedIDs.contains(id))
+                ids.removeOne(id);
 
     selectedPlay->defensePlan.fillDefencePositionsTo(defenseTargets);
     double nearestDist;
@@ -438,8 +446,8 @@ double CCoach::findMostPossible(Vector2D agentPos) {
         obstacles.append(Circle2D(wm->opp.active(i)->pos, 0.1));
     }
 
-    for (int i = 0 ; i < workingIDs.size() ; i++) {
-        if (workingIDs[i] != playmakeId) {
+    for (int i = 0 ; i < wm->our.data->activeAgents.size() ; i++) {
+        if (wm->our[i]->id != playmakeId) {
             obstacles.append(Circle2D(wm->our.active(i)->pos, 0.1));
         }
     }
@@ -480,7 +488,7 @@ int CCoach::choosePlayMake(const QList<int> &_agentsID){
 void CCoach::decideAttack() {
     // find unused agents!
 
-    QList<int> ourPlayersID = workingIDs;
+    QList<int> ourPlayersID = wm->our.data->activeAgents;
     if (goalieAgent != nullptr) {
         ourPlayersID.removeOne(goalieAgent->id());
     }
@@ -673,84 +681,52 @@ void CCoach::checkTransitionToForceStart() {
     }
 }
 
-void CCoach::generateWorkingRobotIds()
+void CCoach::seperateHealthyAndDamagedRobots()
 {
-    workingIDs.clear();
-    workingIDs = wm->our.data->activeAgents;
+    healthyIDs.clear();
+    damagedIDs.clear();
     for(int i{}; i < _MAX_NUM_PLAYERS; i++)
     {
-        if(agents[i] != nullptr)
-        {
-            if(agents[i]->fault && agents[i]->faultstate == Agent::FaultState::DESTROYED)
-            {
-                if(workingIDs.contains(agents[i]->id()))
-                {
-                    workingIDs.removeOne(agents[i]->id());
-                }
-            }
-            if(gameState->isStop() && agents[i]->fault && agents[i]->faultstate == Agent::FaultState::DAMEGED)
-            {
-                if(workingIDs.contains(agents[i]->id()))
-                {
-                    workingIDs.removeOne(agents[i]->id());
-                }
-            }
-        }
+        if(agents[i]->faultstate == Agent::FaultState::HEALTHY)
+            healthyIDs.push_back(agents[i]->id());
+        else if(agents[i]->faultstate == Agent::FaultState::DAMEGED)
+            damagedIDs.push_back(agents[i]->id());
     }
 }
 
 void CCoach::replaceFaultedRobots() {
-    //faulted robots replacement
-    QList<int> ourPlayers = wm->our.data->activeAgents;
-    QList<int> faultPlayers;
-    for(int i{}; i < _MAX_NUM_PLAYERS; i++)
-    {
-        if(agents[i] != nullptr)
-        {
-            if(agents[i]->fault && agents[i]->faultstate == Agent::FaultState::DAMEGED)
-            {
-                if(ourPlayers.contains(agents[i]->id()))
-                {
-                    faultPlayers.push_back(agents[i]->id());
-                    //ROS_INFO_STREAM("kian:assign to faultPlayers " << agents[i]->id());
-                }
-            }
-        }
-    }
 
-    for (int i = 0; i < faultPlayers.size(); i++) {
-        faultRoles[i]->assign(agents[faultPlayers.at(i)]);
-    }
-    for (auto &faultRole : faultRoles) {
-        if (faultRole->agent != nullptr) {
-            faultRole->execute();
-        }
-    }
+    QList<Agent*> ouragents;
+    for(int i{}; i < _MAX_NUM_PLAYERS; i++)
+        if(damagedIDs.contains(agents[i]->id()))
+            ouragents.push_back(agents[i]);
+
+    if(firsttime_forsubstitution)
+        substitution->init(ouragents);
+    substitution->execute(ouragents);
+
+//    for(int i{}; i < damagedIDs.size(); i++)
+//        faultRoles[i]->assign(agents[damagedIDs[i]]);
+
+//    for (auto &faultRole : faultRoles)
+//        if (faultRole->agent != nullptr)
+//            faultRole->execute();
 }
 
 void CCoach::resetNonVisibleAgents()
 {
-    for(int i{}; i < _MAX_NUM_PLAYERS; i++) {
-        if(agents[i] != nullptr) {
-            bool isvisible{false};
-            for(int j{}; j < wm->our.activeAgentsCount(); j++) {
-                if (agents[i]->id() == wm->our.activeAgentID(j)) isvisible = true;
-            }
-
-            if(!isvisible) {
-                ROS_INFO_STREAM("kian: reset: " << agents[i]->id());
-                agents[i]->fault = false;
-                agents[i]->faultstate = Agent::FaultState::HEALTHY;
-            }
+    for(int i{}; i < _MAX_NUM_PLAYERS; i++)
+        if(!wm->our.data->activeAgents.contains(i))
+        {
+            agents[i]->fault = false;
+            agents[i]->faultstate = Agent::FaultState::HEALTHY;
         }
-    }
 }
 
 void CCoach::execute()
 {
-    resetNonVisibleAgents();
-    generateWorkingRobotIds();
-    if(gameState->isStop()) replaceFaultedRobots();
+    resetNonVisibleAgents();//[substitution]
+    seperateHealthyAndDamagedRobots();//[substitution]
     int goalie = findGoalie();
     assignGoalieAgent(goalie);
     decidePreferredDefenseAgentsCount();
@@ -779,12 +755,17 @@ void CCoach::execute()
     for (auto &stopRole : stopRoles) {
         stopRole->assign(nullptr);
     }
+    for (auto &faultRole : faultRoles) {
+        faultRole->assign(nullptr);
+    }
+
     decideAttack();
     for (auto &stopRole : stopRoles) {
         if (stopRole->agent != nullptr) {
             stopRole->execute();
         }
     }
+    if(gameState->isStop() && damagedIDs.size() > 0) replaceFaultedRobots();//[substitution]
 
 }
 
@@ -821,7 +802,7 @@ void CCoach::decideStop(const QList<int> & _ourPlayers) {
     }
 
     for (int i = 0; i < _ourPlayers.size(); i++) {
-        if(!agents[_ourPlayers.at(i)]->fault)
+        if(!damagedIDs.contains(_ourPlayers[i]))//[substitution]
             stopRoles[i]->assign(agents[_ourPlayers.at(i)]);
     }
 //    _ourPlayers.clear(); TODO: CHECK THIS

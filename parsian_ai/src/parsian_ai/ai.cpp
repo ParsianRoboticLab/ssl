@@ -71,26 +71,30 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 
 }
 
-void AI::updateRobotFaults(const parsian_msgs::parsian_robot_fault & _rs)
+void AI::updateRobotFaults(const parsian_msgs::parsian_robots_fault & _rs)
 {
-    if(_rs.select == 0)
+    for(auto robotinfo: _rs.robots)
     {
-        soccer->agents[_rs.robot_id]->fault = false;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
-    }
-    if(_rs.select == 1)
-    {
-        ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
-    }
-    if(_rs.select == 2)
-    {
-        soccer->agents[_rs.robot_id]->fault = true;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
-    }
-    if(_rs.select == 3)
-    {
-        soccer->agents[_rs.robot_id]->fault = true;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
+        if(robotinfo.select == robotinfo.HEALTHY)
+        {
+            soccer->agents[robotinfo.robot_id]->fault = false;
+            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::HEALTHY;
+        }
+        else if(robotinfo.select == robotinfo.DISREPAIRED)
+        {
+            soccer->agents[robotinfo.robot_id]->fault = true;
+            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DISREPAIRED;
+        }
+        else if(robotinfo.select == robotinfo.DAMEGED)
+        {
+            soccer->agents[robotinfo.robot_id]->fault = true;
+            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DAMEGED;
+        }
+        else if(robotinfo.select == robotinfo.DESTROYED)
+        {
+            soccer->agents[robotinfo.robot_id]->fault = true;
+            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DESTROYED;
+        }
     }
 }
 
