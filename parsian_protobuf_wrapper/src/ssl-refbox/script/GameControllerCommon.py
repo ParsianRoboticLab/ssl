@@ -12,6 +12,7 @@ class GameControllerCommon:
     def __init__(self):
         self.token = ''
         self.verification = False
+        self.status = False
 
     def readPrivateKey(self, filename):
         if not os.path.isfile(filename):
@@ -23,19 +24,38 @@ class GameControllerCommon:
             return True, privatekey
 
     def readControllerToTeam(self, socket):
-        # type:(socket.socket) ->object
+        # type:(socket.socket) ->(object, object)
         result = socket.recv(131072)
         result_msg = ssl_game_controller_team_pb2.ControllerToTeam()
         result_msg.ParseFromString(result[1:])
-        verification_tmp = result_msg.controller_reply.verification
-        if verification_tmp == 1:
-            self.verification = True
+        ##ControllerReply
+        isControllerReply = False
+        if result_msg.HasField("controller_reply"):
+            isControllerReply = True
+            verification_tmp = -1
+            if result_msg.controller_reply.HasField("verification"):
+                verification_tmp = result_msg.controller_reply.verification
+            if verification_tmp == 1:
+                self.verification = True
+            else:
+                self.verification = False
+            if result_msg.controller_reply.HasField("next_token"):
+                self.token = result_msg.controller_reply.next_token
+            else:
+                rospy.loginfo("NO TOKEN RECEIVED")
+            status_tmp = -1
+            if result_msg.controller_reply.HasField("status_code"):
+                status_tmp = result_msg.controller_reply.status_code
+            if status_tmp == 1:
+                self.status = True
+            else:
+                self.status = False
+        ##AdvantageChoice = Do Nothing just wait for ControllerReply
         else:
-            self.verification = False
-        if self.verification:
-            self.token = result_msg.controller_reply.next_token
-        rospy.loginfo(result_msg)
-        return result_msg
+            self.readControllerToTeam(socket)
+
+        #rospy.loginfo(result_msg)
+        return (result_msg, isControllerReply)
 
     def teamSerializedRegistration(self, socket, teamname, token, privatekey):
         # type:(socket.socket, str, str, rsa.privatekey) ->object
