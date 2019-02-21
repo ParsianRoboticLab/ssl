@@ -114,6 +114,8 @@ class GameController():
 
     def assigngoalie(self):
         self.isgoalieassigned = False
+        if not self.registered:
+            return
         ##send assigngoalie data
         assigngoalie_serialized = self.gc.teamSerializedAssignGoalie(self.socket, self.goalie_id, self.gc.token, self.privatekey)
         self.gc.sendSerializedMessage(self.socket, assigngoalie_serialized, False)
@@ -128,6 +130,8 @@ class GameController():
 
 
     def substitute(self):
+        if not self.registered:
+            return False
         ##send substitute data
         substitute_serialized = self.gc.teamSerializedsubstitute(self.socket, self.gc.token, self.privatekey)
         self.gc.sendSerializedMessage(self.socket, substitute_serialized, False)
