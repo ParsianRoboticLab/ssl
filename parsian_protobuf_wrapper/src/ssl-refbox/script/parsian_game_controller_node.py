@@ -12,6 +12,9 @@ from parsian_msgs.msg import parsian_draws
 from parsian_msgs.msg import parsian_draw
 from parsian_msgs.msg import parsian_draw_text
 from parsian_msgs.msg import parsian_world_model
+from parsian_msgs.msg import ssl_refree_wrapper
+from parsian_msgs.msg import parsian_robots_fault
+from parsian_msgs.msg import parsian_robot_substitution
 
 TEAM_NAME = 'Test Team'
 
@@ -43,6 +46,14 @@ class GameController():
         self.wm_sub = rospy.Subscriber('world_model', parsian_world_model, self.wmCallback, queue_size=1,
                                        buff_size=2 ** 24)
 
+        ##substitude
+        self.ref_sub = rospy.Subscriber('/referee', ssl_refree_wrapper, self.refCallback, queue_size=1,
+                                       buff_size=2 ** 24)
+        self.autofault_sub = rospy.Subscriber('/autofault', parsian_robots_fault, self.faultCallback, queue_size=1,
+                                        buff_size=2 ** 24)
+        self.substitute_pub = rospy.Publisher('/substitute', parsian_robot_substitution, queue_size=1, latch=True)
+        self.isStop = False
+        self.robots_status = [False for i in range(12)]
 
 
     def cfg_callback_net(self, config, level):
@@ -115,8 +126,44 @@ class GameController():
         self.isgoalieassigned = True
 
 
+    def substitute(self):
+        ##send substitute data
+        substitute_serialized = self.gc.teamSerializedsubstitute(self.socket, self.gc.token, self.privatekey)
+        self.gc.sendSerializedMessage(self.socket, substitute_serialized, False)
+        ##getting substitute result message
+        substitute_result_msg, iscontrollerreply = self.gc.readControllerToTeam(self.socket)
+        if not self.gc.status:  ##NOT VERIFIED
+            rospy.loginfo("error in goalie assignment message: " + substitute_result_msg.controller_reply.reason)
+            return False
+
+        rospy.loginfo("SUBSTITUDE VERIFIED")
+        return True
+
+    def faultCallback(self, data):
+        #type:(parsian_robots_fault)->None
+        if self.isStop:
+            for i in range(12):
+                if data.robots[i].select == 2: #DAMAGED
+                    if not self.robots_status[data.robots[i].robot_id]:
+                        result = self.substitute()
+                        self.robots_status[data.robots[i].robot_id] = result
+        substitude_msg = parsian_robot_substitution()
+        substitude_msg.substitutional_IDs = self.robots_status
+        self.substitute_pub.publish(substitude_msg)
+
+
+    def refCallback(self, data):
+        #type:(ssl_refree_wrapper)->None
+        if data.command.command == data.command.STOP:
+            self.isStop = True
+        else:
+            if self.isStop:
+                self.robots_status = [False for i in range(12)]
+                self.isStop = False
+
+
     def wmCallback(self, data):
-        #type:(parsian_world_model)
+        #type:(parsian_world_model)->None
         if self.registered and self.isgoalieassigned:
             return
         draws = parsian_draws()

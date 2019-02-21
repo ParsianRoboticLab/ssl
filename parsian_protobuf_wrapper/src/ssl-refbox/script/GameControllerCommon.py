@@ -87,6 +87,21 @@ class GameControllerCommon:
         serializedmessage = assigngoalie.SerializeToString()
         return serializedmessage
 
+    def teamSerializedsubstitute(self, socket, token, privatekey):
+        # type:(socket.socket, str, rsa.privatekey) ->object
+        substitute = ssl_game_controller_team_pb2.TeamToController()
+        substitute.substitute_bot = True
+        substitute.signature.token = token
+        substitute.signature.pkcs1v15 = bytes()
+        ##creating signature
+        serialized = substitute.SerializeToString()
+        hash = rsa.compute_hash(serialized, 'SHA-256')
+        signature = rsa.sign_hash(hash, privatekey, 'SHA-256')
+        substitute.signature.pkcs1v15 = signature
+        ##sending registration
+        serializedmessage = substitute.SerializeToString()
+        return serializedmessage
+
     def sendSerializedMessage(self, socket, serializedmsg, repeat):
         # type:(socket.socket, str, bool) ->object
         size = len(serializedmsg)
