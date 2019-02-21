@@ -3,9 +3,10 @@
 
 import rospy
 import socket
+import rospkg
 from time import sleep
 from GameControllerCommon import GameControllerCommon
-from dynamic_reconfigure.server import Server
+import dynamic_reconfigure.client
 from parsian_protobuf_wrapper.cfg import refereeConfig
 from parsian_ai.cfg import aiConfig
 from parsian_msgs.msg import parsian_draws
@@ -28,7 +29,7 @@ class GameController():
         self.isFirstGoalieAssignment = True
         self.gc = GameControllerCommon()
         ##load rsa key
-        is_privatekey_exist, self.privatekey = self.gc.readPrivateKey(TEAM_NAME + '.key.pem')
+        is_privatekey_exist, self.privatekey = self.gc.readPrivateKey(rospkg.RosPack().get_path("parsian_protobuf_wrapper")+"/src/ssl-refbox/script/", TEAM_NAME + '.key.pem')
         if not is_privatekey_exist:
             rospy.loginfo('COULDNT FIND ANY PRIVATE KEY')
             exit(0)
@@ -38,8 +39,10 @@ class GameController():
         #dynamic reconfigure
         self.IP = '127.0.0.1'
         self.PORT = 10008
-        self.srv_net = Server(refereeConfig, self.cfg_callback_net, "/refbox")
-        self.srv_ai = Server(aiConfig, self.cfg_callback_ai, "/ai_node")
+        self.client_net = dynamic_reconfigure.client.Client("/refbox", timeout=30, config_callback=self.cfg_callback_net)
+        self.client_ai = dynamic_reconfigure.client.Client("/ai_node", timeout=30, config_callback=self.cfg_callback_ai)
+        #self.srv_net = Server(refereeConfig, self.cfg_callback_net, "/refbox")
+        #self.srv_ai = Server(aiConfig, self.cfg_callback_ai, "/ai_node")
 
         #draw
         self.draw_pub = rospy.Publisher('/draws', parsian_draws, queue_size=1, latch=True)
@@ -56,22 +59,20 @@ class GameController():
         self.robots_status = [False for i in range(12)]
 
 
-    def cfg_callback_net(self, config, level):
+    def cfg_callback_net(self, config):
         self.IP = config.refree_listen_ip
         self.PORT = config.refree_listen_port
         self.IP = '127.0.0.1' #TODO delete this
         #register
         self.register()
 
-        return config
 
-    def cfg_callback_ai(self, config, level):
+    def cfg_callback_ai(self, config):
         if self.goalie_id != config.Goalie:
             self.goalie_id = config.Goalie
             if self.registered:
                 self.assigngoalie()
 
-        return config
 
 
     def register(self):
@@ -147,6 +148,8 @@ class GameController():
                     if not self.robots_status[data.robots[i].robot_id]:
                         result = self.substitute()
                         self.robots_status[data.robots[i].robot_id] = result
+                else:
+                    self.robots_status[data.robots[i].robot_id] = False
         substitude_msg = parsian_robot_substitution()
         substitude_msg.substitutional_IDs = self.robots_status
         self.substitute_pub.publish(substitude_msg)

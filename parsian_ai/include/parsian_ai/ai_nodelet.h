@@ -17,7 +17,7 @@
 #include <parsian_msgs/parsian_team_config.h>
 #include <parsian_msgs/parsian_behavior.h>
 #include <parsian_msgs/parsian_ai_status.h>
-#include <parsian_msgs/parsian_robots_fault.h>
+#include <parsian_msgs/parsian_robot_substitution.h>
 #include <parsian_ai/ai.h>
 
 #include <dynamic_reconfigure/server.h>
@@ -30,7 +30,7 @@ class AINodelet : public nodelet::Nodelet {
 
 private:
     boost::shared_ptr<AI> ai;
-    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, mousePosSub,forceRefereeSub, robotfaultSub;
+    ros::Subscriber worldModelSub, robotStatusSub, refereeSub, teamConfSub, mousePosSub,forceRefereeSub, robotSubstituteSub;
     ros::Publisher drawPub;
 
     ros::Publisher *robTask;
@@ -50,7 +50,7 @@ private:
     void robotStatusCallBack(const parsian_msgs::parsian_robotConstPtr & _rs);
     void teamConfCb(const parsian_msgs::parsian_team_configConstPtr& _conf);
     void mousePosCb(const parsian_msgs::vector2DConstPtr& _mousePos);
-    void faultdetectionCallBack(const parsian_msgs::parsian_robots_fault &_rs);
+    void substitutedetectionCallBack(const parsian_msgs::parsian_robot_substitution &_rs);
 
 };
 }

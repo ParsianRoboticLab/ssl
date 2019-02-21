@@ -71,31 +71,16 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 
 }
 
-void AI::updateRobotFaults(const parsian_msgs::parsian_robots_fault & _rs)
+void AI::updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &_rs)
 {
-    for(auto robotinfo: _rs.robots)
+    for(int i{}; i < _rs.substitutional_IDs.size(); i++)
     {
-        if(robotinfo.select == robotinfo.HEALTHY)
-        {
-            soccer->agents[robotinfo.robot_id]->fault = false;
-            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::HEALTHY;
-        }
-        else if(robotinfo.select == robotinfo.DISREPAIRED)
-        {
-            soccer->agents[robotinfo.robot_id]->fault = true;
-            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DISREPAIRED;
-        }
-        else if(robotinfo.select == robotinfo.DAMEGED)
-        {
-            soccer->agents[robotinfo.robot_id]->fault = true;
-            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DAMEGED;
-        }
-        else if(robotinfo.select == robotinfo.DESTROYED)
-        {
-            soccer->agents[robotinfo.robot_id]->fault = true;
-            soccer->agents[robotinfo.robot_id]->faultstate = Agent::FaultState::DESTROYED;
-        }
+        if(_rs.substitutional_IDs[i])
+            soccer->agents[i]->substitutePermission = true;
+        else
+            soccer->agents[i]->substitutePermission = false;
     }
+
 }
 
 void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {

@@ -687,9 +687,9 @@ void CCoach::seperateHealthyAndDamagedRobots()
     damagedIDs.clear();
     for(int i{}; i < _MAX_NUM_PLAYERS; i++)
     {
-        if(agents[i]->faultstate == Agent::FaultState::HEALTHY)
+        if(!agents[i]->substitutePermission)
             healthyIDs.push_back(agents[i]->id());
-        else if(agents[i]->faultstate == Agent::FaultState::DAMEGED)
+        else if(agents[i]->substitutePermission)
             damagedIDs.push_back(agents[i]->id());
     }
 }
@@ -717,10 +717,7 @@ void CCoach::resetNonVisibleAgents()
 {
     for(int i{}; i < _MAX_NUM_PLAYERS; i++)
         if(!wm->our.data->activeAgents.contains(i))
-        {
-            agents[i]->fault = false;
-            agents[i]->faultstate = Agent::FaultState::HEALTHY;
-        }
+            agents[i]->substitutePermission = false;
 }
 
 void CCoach::execute()

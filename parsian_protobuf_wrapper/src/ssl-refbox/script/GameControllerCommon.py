@@ -14,7 +14,8 @@ class GameControllerCommon:
         self.verification = False
         self.status = False
 
-    def readPrivateKey(self, filename):
+    def readPrivateKey(self, path, filename):
+        os.chdir(path)
         if not os.path.isfile(filename):
             return False, 'empty'
         else:
