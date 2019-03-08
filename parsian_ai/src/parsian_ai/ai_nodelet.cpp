@@ -9,6 +9,17 @@ void AINodelet::onInit() {
     ros::NodeHandle& nh = getNodeHandle();
     ros::NodeHandle& private_nh = getPrivateNodeHandle();
     ai.reset(new AI());
+    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
+    plan_client.reset(new ros::ServiceClient);
+    *plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
+    ai->getSoccer()->getCoach()->setPlanClient(plan_client);
+
+    //config server settings
+    server.reset(new dynamic_reconfigure::Server<ai_config::aiConfig>(private_nh));
+    dynamic_reconfigure::Server<ai_config::aiConfig>::CallbackType f;
+    f = boost::bind(&AINodelet::ConfigServerCallBack, this, _1, _2);
+    server->setCallback(f);
+
     ROS_INFO("init2");
     robTask = new ros::Publisher[_MAX_NUM_PLAYERS];
     for (int i = 0; i < _MAX_NUM_PLAYERS; ++i) {
@@ -25,17 +36,8 @@ void AINodelet::onInit() {
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
     robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
 
-    drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
 
-    plan_client.reset(new ros::ServiceClient);
-    *plan_client = nh.serviceClient<parsian_msgs::plan_service> ("/get_plans", true);
-    ai->getSoccer()->getCoach()->setPlanClient(plan_client);
 
-    //config server settings
-    server.reset(new dynamic_reconfigure::Server<ai_config::aiConfig>(private_nh));
-    dynamic_reconfigure::Server<ai_config::aiConfig>::CallbackType f;
-    f = boost::bind(&AINodelet::ConfigServerCallBack, this, _1, _2);
-    server->setCallback(f);
 
 }
 void AINodelet::mousePosCb(const parsian_msgs::vector2DConstPtr &_mousePos) {

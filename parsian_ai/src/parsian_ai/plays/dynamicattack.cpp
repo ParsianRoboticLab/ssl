@@ -284,7 +284,7 @@ void CDynamicAttack::assignTasks() {
  * @param agentSize number of positioning Agents
  */
 void CDynamicAttack::dynamicPlanner(int agentSize) {
-    for (size_t i = 0; i < 8; i++) {
+    for (size_t i = 0; i < matchingIDs.size(); i++) {
         matchingIDs[i] = -1;
     }
     for (int i = 0; i < REGION_NUM; i++)
@@ -1031,10 +1031,11 @@ void CDynamicAttack::assignId() {
 //    matcher.findMaxMinMatching();
     matcher.findMatching();
     semiDynamicPosition.clear();
+    matchingIDs.clear();
     for (int v = 0; v < robotIDs.count(); v++) {
         // todo : find best pos in region from searchRegions.points
         semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
-        matchingIDs[v] = matcher.getMatch(v);
+        matchingIDs.append(matcher.getMatch(v));
     }
 }
 
