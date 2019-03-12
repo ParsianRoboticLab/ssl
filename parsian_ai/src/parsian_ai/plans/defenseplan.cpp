@@ -2574,8 +2574,6 @@ void DefensePlan::penaltyShootOutMode() {
 void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
     //// of the opponent agents that will shot to our goal in pentalty mode.
-
-    Vector2D ballPos = wm->ball->pos;
     const float goalLineExtra = 0.03;
     const double xDiff = 0.10;
     Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
@@ -2583,8 +2581,7 @@ void DefensePlan::penaltyMode() {
     const double epsilon = 0.12;
     Vector2D target(-2.93, 0.0);
 
-    Line2D ballRay(ballPos, ballPos + wm->opp[know->nearestOppToBall()]->dir);
-
+    Line2D ballRay(wm->ball->pos, wm->ball->pos + wm->opp[know->nearestOppToBall()]->dir);
 
     Vector2D intersectionPoint = goalLine.intersection(ballRay);
     double ang = ballRay.a() * goalLine.b() - ballRay.b() * goalLine.a();
@@ -2596,11 +2593,9 @@ void DefensePlan::penaltyMode() {
             intersectionPoint.y = wm->field->oppGoalL().y;
         }
     }
-
     if (ang <= 0.95) {
         intersectionPoint.y *= -1;
     }
-
     intersectionPoint.y *= (7.0 / 10.0);
 
     //    if(fabs(knowledge->getAgent(goalKeeperAgent->id())->pos().y) > fabs(wm->field->ourGoalR().y))
@@ -2618,16 +2613,20 @@ void DefensePlan::penaltyMode() {
     Vector2D targetDir(10, 5);
     targetDir.setDir(AngleDeg(0));
     targetDir.setLength(1);
-
+    ROS_INFO_STREAM("Lhum:" << targetDir);
     //check
     target.x = -5.92;
 
-
     drawer->draw(target, "blue");
-    Agent *goalKeeperAgent, const bool diveMode, const bool slowMode, const bool oneTouchMode, const bool oneTouchFlag, const bool chip, const bool noAvoid, const bool avoidPenaltyArea, const Vector2D& targetPos, const Vector2D& targetDir){
 
-    goToPointAvoidTask(goalKeeperAgent, true, false, true, , , true, false, target, targetDir);
+    assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
+    gpa[goalKeeperAgent->id()]->setSlowmode(false);
+    gpa[goalKeeperAgent->id()]->setDivemode(true);
+    gpa[goalKeeperAgent->id()]->setNoavoid(true);
+    gpa[goalKeeperAgent->id()]->setTargetpos(target); //HINT : gpa->init
+    gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
 
+    //gpa[goalKeeperAgent->id()]->init(target , targetDir);
 }
 
 Vector2D* DefensePlan::getIntersectWithDefenseArea(const Line2D& line, const Vector2D& blockPoint) {
