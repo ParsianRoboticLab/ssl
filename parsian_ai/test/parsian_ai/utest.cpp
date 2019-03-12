@@ -79,6 +79,26 @@ TEST(GameState, RefereeCommand) {
 
 }
 
+TEST(Amir, bayat) {
+    wm = new WorldModel();
+    auto test = new CRoleStopInfo("stop");
+    auto res = test->getEmptyTarget(Vector2D(0.0,0.0), 1);
+    EXPECT_DOUBLE_EQ(0.0, res.x);
+    EXPECT_DOUBLE_EQ(0.0, res.y);
+    parsian_msgs::parsian_world_modelPtr _wm;
+    parsian_msgs::parsian_robotPtr robot;
+    robot->pos.x = 0;
+    robot->pos.y = 0;
+    robot->id = 0;
+
+    _wm->opp.push_back(*robot);
+    wm->update(_wm);
+    auto res2 = test->getEmptyTarget(Vector2D(0.0,0.0), 1);
+    EXPECT_NE(0.0, res2.x);
+    EXPECT_NE(0.0, res2.y);
+
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv){
     testing::InitGoogleTest(&argc, argv);
