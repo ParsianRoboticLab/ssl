@@ -62,7 +62,7 @@ class GameController():
     def cfg_callback_net(self, config):
         self.IP = config.refree_listen_ip
         self.PORT = config.refree_listen_port
-        self.IP = '127.0.0.1' #TODO delete this
+        #self.IP = '127.0.0.1' #TODO delete this
         #register
         self.register()
 
