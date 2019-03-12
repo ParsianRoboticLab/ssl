@@ -13,7 +13,7 @@ namespace rqt_parsian_gui
         //toolButton->setText("GoToPointAvoid");
 
         //agentId = new QToolButton;
-        //agentId->setText("0");
+        
 
         comboBoxTask = new QComboBox;
         comboBoxTask->addItem("GotoPointAvoid");
