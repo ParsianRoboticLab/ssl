@@ -497,7 +497,8 @@ void CCoach::decideAttack() {
             ourPlayersID.removeOne(defenseAgent->id());
         }
     }
-
+    ROS_INFO_STREAM("fil in coach" << " " << defenseAgents.size());
+    gameState->setState(States::OurBallPlacement);
     switch (gameState->getState()) { // GAMESTATE
 
         case States::Halt:
@@ -555,7 +556,8 @@ void CCoach::decideAttack() {
     }
 
     QList<Agent*> ourAgents;
-    for (auto& ourPlayer : ourPlayersID) {
+
+    for (auto& ourPlayer : wm->our.data->activeAgents) {
         ourAgents.append(agents[ourPlayer]);
     }
     ROS_INFO_STREAM("FT: " << firstTime << ourAgents.size());
@@ -737,11 +739,11 @@ void CCoach::execute()
     playmakeId = -1;
     defenseAgents.clear();
     if (defenseFirst) {
-        decideDefense();
+        //decideDefense();
         handlePlayMake(remainingAgent());
     } else {
         handlePlayMake(remainingAgent());
-        decideDefense();
+        //decideDefense();
     }
 
 

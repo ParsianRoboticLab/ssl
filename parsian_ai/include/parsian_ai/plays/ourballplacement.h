@@ -14,23 +14,42 @@ enum class BallPlacement {
     DONE = 7
 };
 
-class COurBallPlacement : public CMasterPlay{
+class COurBallPlacement : public CMasterPlay {
 public:
         COurBallPlacement();
         ~COurBallPlacement();
         void execute_x();
         void init(QList<Agent*>& _agents);
         bool first;
-private:
-        void reset();
-        BallPlacement state;
-        bool flag;
-        Vector2D passballpos;
-        int minIndexPos;
-        CAgent *ap;
-        int minIndex;
-        CAgent *a;
+        static int chooseFirst();
 
+private:
+    Agent* kickerAgent;
+    long long int  loopCounter;
+    Agent* receiverAgent;
+    bool nearFlag, shotFlag, updateFlag , loop;
+    Agent* nearID ;
+    Vector2D lastBallPos;
+    Vector2D ballPosBeforKick;
+    GotopointavoidAction *gpaP, *gpaK;
+    GotopointavoidAction *gpaH, *gpaR;
+    GotopointavoidAction *sag;
+    GotopointavoidAction *gpa[_NUM_PLAYERS];
+    ReceivepassAction *recivePass;
+    KickAction *pass;
+
+    bool isAgentsOnThePosition(Agent* kickerAgent, Agent* reciverAgent);
+    static bool isBallHaseMoved(const Vector2D &, const Vector2D &, const double &);
+    static bool isBallDidntKickedWell(const Vector2D &ballPos, const Vector2D &ballPosBeforKick, const double dist);
+    bool isAgentOnThePosition(Agent* agent, const Vector2D &targetPos, const double diist);
+    static bool isBallNearToTarget(const Vector2D &ballPos, const Vector2D &targetPos, const double &dist);
+    bool isBallSpeedLow(const double &speed, const Vector2D &velocity);
+    bool isPassReceived(const Vector2D &ballPos, const Vector2D &desiredPos);
+    void reset() override;
+    void otherRobotsFormation(Agent* ,Agent*) const;
+    Agent* reciverFinder(const Vector2D &, Agent*);
+    Agent* kickerfinder(const Vector2D & );
+    Agent* firstStep(const Vector2D &);
 };
 
 #endif // OURBALLPLACEMENT_H
