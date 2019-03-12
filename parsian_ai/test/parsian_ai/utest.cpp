@@ -20,7 +20,7 @@ TEST(GameState, ForceCommand) {
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Halt);
 
-    // STOP
+    /// STOP
     c.command = parsian_msgs::ssl_refree_command::STOP;
     r->command = c;
     ai.forceUpdateReferee(r);
@@ -37,6 +37,7 @@ TEST(GameState, ForceCommand) {
     for (int i = parsian_msgs::ssl_refree_command::FORCE_START; i < parsian_msgs::ssl_refree_command::INDIRECT_FREE_THEM; i++) {
         c.command = static_cast<unsigned char>(i);
         r->command = c;
+        r->command_number++;
         ai.forceUpdateReferee(r);
         ROS_INFO_STREAM(static_cast<int>(gameState->getState()));
         start &= (gameState->getState() == States::Start);
