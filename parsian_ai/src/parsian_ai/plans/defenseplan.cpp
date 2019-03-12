@@ -2570,54 +2570,6 @@ void DefensePlan::penaltyShootOutMode() {
         break;
     }
 }
-void goToPointAvoidTask(Agent *goalKeeperAgent , bool Divemode , bool Slowmode , bool ontouchmode , bool onetouchflag , bool chip , bool noavoid , bool avoidpenaltyarea , Vector2D targetpos , Vector2D Targetdir){
-
-//
-//        AHZSkills = gpa[goalKeeperAgent->id()];
-//        gpa[goalKeeperAgent->id()]->setDivemode(false);
-//        gpa[goalKeeperAgent->id()]->setSlowmode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-//        gpa[goalKeeperAgent->id()]->setChip(false);
-//        gpa[goalKeeperAgent->id()]->setNoavoid(true);
-//        gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-//        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-//        drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "cyan");
-//        if(GKReciveBallInTS)
-//            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
-//        else
-//            gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperTarget - wm->field->ourGoal());
-//    }
-//    else
-//        if(stopMode){
-//        DBUG("Stop Mode" , D_AHZ);
-//        know->variables["goalKeeperClearMode"] = false;
-//        know->variables["goalKeeperOneTouchMode"] = false;
-//        AHZSkills = gpa[goalKeeperAgent->id()];
-//        goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
-//        gpa[goalKeeperAgent->id()]->setDivemode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-//        gpa[goalKeeperAgent->id()]->setChip(false);
-//        gpa[goalKeeperAgent->id()]->setSlowmode(true);
-//        gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-//        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
-//        gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
-//    }
-//    else if (ballIsOutOfField) {
-//        DBUG("Ball is out of field" , D_AHZ);
-//        know->variables["goalKeeperClearMode"] = false;
-//        know->variables["goalKeeperOneTouchMode"] = false;
-//        AHZSkills = gpa[goalKeeperAgent->id()];
-//        gpa[goalKeeperAgent->id()]->setDivemode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-//        gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-//        gpa[goalKeeperAgent->id()]->setChip(false);
-//        gpa[goalKeeperAgent->id()]->setSlowmode(true);
-//        gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-//        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
-//        gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
-}
 
 void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
@@ -2672,15 +2624,9 @@ void DefensePlan::penaltyMode() {
 
 
     drawer->draw(target, "blue");
-//    goToPointAvoidTask(goalKeeperAgent , );
-    assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
-    gpa[goalKeeperAgent->id()]->setSlowmode(false);
-    gpa[goalKeeperAgent->id()]->setDivemode(true);
+    Agent *goalKeeperAgent, const bool diveMode, const bool slowMode, const bool oneTouchMode, const bool oneTouchFlag, const bool chip, const bool noAvoid, const bool avoidPenaltyArea, const Vector2D& targetPos, const Vector2D& targetDir){
 
-    gpa[goalKeeperAgent->id()]->setTargetpos(target); //HINT : gpa->init
-    gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
-
-    //gpa[goalKeeperAgent->id()]->init(target , targetDir);
+    goToPointAvoidTask(goalKeeperAgent, true, false, true, , , true, false, target, targetDir);
 
 }
 
