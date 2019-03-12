@@ -95,27 +95,16 @@ void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
 
 }
 
-void AI::updateRobotFaults(const parsian_msgs::parsian_robot_fault & _rs)
+void AI::updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &_rs)
 {
-    if(_rs.select == 0)
+    for(int i{}; i < _rs.substitutional_IDs.size(); i++)
     {
-        soccer->agents[_rs.robot_id]->fault = false;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::HEALTHY;
+        if(_rs.substitutional_IDs[i])
+            soccer->agents[i]->substitutePermission = true;
+        else
+            soccer->agents[i]->substitutePermission = false;
     }
-    if(_rs.select == 1)
-    {
-        ROS_INFO_STREAM("kian: " << soccer->agents[_rs.robot_id]->id() << " disrepaired");
-    }
-    if(_rs.select == 2)
-    {
-        soccer->agents[_rs.robot_id]->fault = true;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DAMEGED;
-    }
-    if(_rs.select == 3)
-    {
-        soccer->agents[_rs.robot_id]->fault = true;
-        soccer->agents[_rs.robot_id]->faultstate = Agent::FaultState::DESTROYED;
-    }
+
 }
 
 void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {

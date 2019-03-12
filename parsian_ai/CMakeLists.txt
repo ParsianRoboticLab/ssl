@@ -108,6 +108,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/plays/ourpenaltyshootout.cpp
 		src/${PROJECT_NAME}/plays/stopplay.cpp
 		src/${PROJECT_NAME}/plays/halftimelineup.cpp
+		src/${PROJECT_NAME}/plays/substitution.cpp
 		src/${PROJECT_NAME}/plans/defenseplan.cpp
 		src/${PROJECT_NAME}/plans/markplan.cpp
 		src/${PROJECT_NAME}/plans/plan.cpp
