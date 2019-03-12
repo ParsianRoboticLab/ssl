@@ -159,7 +159,6 @@ public:
 private:
     ///////////////////////Lhum checked them//////////////
     void drawGameState();
-    void goToPointAvoidTask(Agent *goalKeeperAgent , bool Divemode , bool Slowmode , bool ontouchmode , bool onetouchflag , bool chip , bool noavoid , bool avoidpenaltyarea , Vector2D targetpos , Vector2D Targetdir);
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
