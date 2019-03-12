@@ -2579,7 +2579,7 @@ void DefensePlan::penaltyMode() {
     Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
                     wm->field->ourGoalR() + Vector2D(+xDiff, -goalLineExtra));
     const double epsilon = 0.12;
-    Vector2D target(-2.93, 0.0);
+    Vector2D target(-5.92, 0.0);
 
     Line2D ballRay(wm->ball->pos, wm->ball->pos + wm->opp[know->nearestOppToBall()]->dir);
 
@@ -2603,19 +2603,13 @@ void DefensePlan::penaltyMode() {
     //                *(fabs((intersectionPoint-knowledge->getAgent(goalKeeperAgent->id())->pos()).y)/(intersectionPoint-knowledge->getAgent(goalKeeperAgent->id())->pos()).y);   // sign
 
     if (intersectionPoint.valid()) {
-        target = intersectionPoint;
-        drawer->draw(target, "red");
+        target.y = intersectionPoint.y;
     } else {
-        target.y = 0.0;
+        target.y = 0.0;//TODO
     }
 
     //    target.y = min(max(target.y, wm->field->ourGoalR().y + epsilon), wm->field->ourGoalL().y - epsilon + 0.03);
-    Vector2D targetDir(10, 5);
-    targetDir.setDir(AngleDeg(0));
-    targetDir.setLength(1);
-    ROS_INFO_STREAM("Lhum:" << targetDir);
     //check
-    target.x = -5.92;
 
     drawer->draw(target, "blue");
 
@@ -2624,7 +2618,7 @@ void DefensePlan::penaltyMode() {
     gpa[goalKeeperAgent->id()]->setDivemode(true);
     gpa[goalKeeperAgent->id()]->setNoavoid(true);
     gpa[goalKeeperAgent->id()]->setTargetpos(target); //HINT : gpa->init
-    gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
+    gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D (1 , 0));
 
     //gpa[goalKeeperAgent->id()]->init(target , targetDir);
 }
