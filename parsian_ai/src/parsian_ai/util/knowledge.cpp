@@ -984,53 +984,6 @@ NewFastestToBall Knowledge::newFastestToBall(double timeStep, QList<int> ourList
     return result;
 }
 
-double Knowledge::chipGoalPropability(bool isOurChip, Vector2D _goaliePos) {
-    double GoalDistanceToBall;
-    double GoalieDistanseToBall;
-    double GoalDistanceToGoalie;
-    Vector2D goal, goaliePos;
-    if (isOurChip) {
-        goal = wm->field->oppGoal();
-        goaliePos = wm->opp[wm->opp.data->goalieID]->pos;
-
-    } else {
-        goal = wm->field->ourGoal();
-        goaliePos = _goaliePos;
-    }
-
-    GoalDistanceToBall = wm->ball->pos.dist(goal) / 1.9;
-    GoalieDistanseToBall = wm->ball->pos.dist(goaliePos);
-    GoalDistanceToGoalie = goaliePos.dist(goal);
-    if (goaliePos.dist(wm->ball->pos) < 0.35
-            || wm->ball->pos.dist(goal) < 1) {
-        return 0;
-    } else if (((GoalDistanceToBall - GoalieDistanseToBall) / GoalDistanceToGoalie) * 2 > 0) {
-        return ((GoalDistanceToBall - GoalieDistanseToBall) / GoalDistanceToGoalie) * 2;
-    } else {
-        return 0;
-    }
-}
-
-int Knowledge::getNearestOppToPoint(Vector2D point) {
-    double minDist = 1.0e13;
-    int nearest = -1;
-    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
-        if (wm->opp.active(i)->inSight <= 0) {
-            continue;
-        }
-        double dist = (wm->opp.active(i)->pos - point).length();
-        if (dist < minDist) {
-            minDist = dist;
-            nearest = wm->opp.active(i)->id;
-        }
-    }
-    return nearest;
-}
-
-int Knowledge::nearestOppToBall() {
-    return getNearestOppToPoint(wm->ball->pos);
-}
-
 double Knowledge::chipGoalPropability(bool isOurChip) {
     double GoalDistanceToBall;
     double GoalieDistanseToBall;
@@ -1051,13 +1004,28 @@ double Knowledge::chipGoalPropability(bool isOurChip) {
     if (goaliePos.dist(wm->ball->pos) < 0.35
             || wm->ball->pos.dist(goal) < 1) {
         return 0;
-    } else if (((GoalDistanceToBall - GoalieDistanseToBall) / GoalDistanceToGoalie) * 2 > 0) {
-        return ((GoalDistanceToBall - GoalieDistanseToBall) / GoalDistanceToGoalie) * 2;
-    } else {
-        return 0;
     }
+    return max(((GoalDistanceToBall - GoalieDistanseToBall) / GoalDistanceToGoalie) * 2 , 0);
+}
 
+int Knowledge::getNearestOppToPoint(Vector2D point) {
+    double minDist = 1.0e13;
+    int nearest = -1;
+    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+        if (wm->opp.active(i)->inSight <= 0) {
+            continue;
+        }
+        double dist = (wm->opp.active(i)->pos - point).length();
+        if (dist < minDist) {
+            minDist = dist;
+            nearest = wm->opp.active(i)->id;
+        }
+    }
+    return nearest;
+}
 
+int Knowledge::nearestOppToBall() {
+    return getNearestOppToPoint(wm->ball->pos);
 }
 
 Knowledge * know = new Knowledge();

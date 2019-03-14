@@ -36,12 +36,11 @@ protected:
     NoAction* noSkill;
     Action* AHZSkills;
     Vector2D pointForKick, oneToucherDir;
-    Vector2D goalKeeperTarget,lastTarget , defensePoints[12], defenseTargets[12];
+    Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
     void setGoalKeeperState();
     void setGoalKeeperTargetPoint();
     bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
-    double strictfollowThr;
     double differentialTime = 0;
     bool dangerForGoalKeeperClear;
     int oneTouchCnt;
@@ -95,8 +94,6 @@ protected:
     bool dangerForGoalKeeperClearByOurAgents;
     bool dangerForGoalKeeperClearByOppAgents;
     bool dangerForInsideOfThePenaltyArea;
-    bool stopMode;
-    bool playOffMode;
     bool manToManMarkBlockPassFlag;
     bool GKReciveBallInTS;
     bool ballIntersectOurPenaltyArea;
@@ -111,11 +108,6 @@ protected:
     int decideNumOfMarks();
     void matchingDefPos(int _defenseNum);
     bool defenseOneTouchOrNot();
-    bool agentEffectOnBallProbability(Vector2D ballPos, Vector2D ballVel, Vector2D agentPos, Vector2D agentVel, bool isTowardOurgoal);
-    Vector2D getGoalieShootOutTarget(bool isSkyDive);
-    int decideShootOutMode();
-    int penaltyShootoutMode = beforeTouch;
-    void penaltyShootOutMode();
     enum exepMode {
         defOneTouch = 1,
         defClear = 2,
@@ -157,6 +149,10 @@ private:
     void drawGameState();
     void penaltyMode();
     bool canReachToBall(const int& agentId, const int& theirAgentId);
+    void penaltyShootOutMode();
+    Vector2D getGoalieShootOutTarget(bool isSkyDive);
+    bool agentEffectOnBallProbability(const Vector2D& agentPos);
+    int decideShootOutMode();
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
