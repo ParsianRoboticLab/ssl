@@ -2306,14 +2306,13 @@ void DefensePlan::execute(){
     drawGameState();
 
     if (gameState->theirPenaltyKick()) {
-        if (goalKeeperAgent != nullptr)
-            penaltyMode();
+        penaltyMode();
         return;
     }
     if(gameState->theirPenaltyShootout()){
         //TO DO: add penalty goalie for penalty shootout
         penaltyShootOutMode();// hamid penalty //lhum will read it
-        lastBallPosition = wm->ball->pos;
+        lastBallPosition = wm->ball->pos;//Lhum0
         return;
     }
     if(gameState->canKickBall() && gameState->penaltyShootout()) {
@@ -2383,23 +2382,18 @@ void DefensePlan::execute(){
 
 bool DefensePlan::agentEffectOnBallProbability(Vector2D ballPos, Vector2D ballVel, Vector2D agentPos, Vector2D agentVel, bool isTowardOurgoal) {
     Vector2D goal;
-    bool isInPenaltyRect;
 
     if (isTowardOurgoal) {
         goal = wm->field->ourGoal();
-        isInPenaltyRect = wm->field->isInOurPenaltyArea(ballPos);
     } else {
         goal = wm->field->oppGoal();
-        isInPenaltyRect = wm->field->isInOppPenaltyArea(ballPos);
     }
-
 
     if (ballVel.length() > 4 || ballPos.dist(goal) < 3) {
         agentEffectOnBallProbabilityRes = true;     // skyDive
     } else if (ballVel.length() < 2 || ballPos.dist(agentPos) > 1) {
         agentEffectOnBallProbabilityRes = false;    // ballBisector
     }
-
     return agentEffectOnBallProbabilityRes;
 }
 
@@ -2458,53 +2452,42 @@ Vector2D DefensePlan::getGoalieShootOutTarget(bool isSkyDive) {
     }
 }
 
-bool DefensePlan::canReachToBall(int ourAgentId, int theirAgentId) {
+bool DefensePlan::canReachToBall(const int& ourAgentId, const int& theirAgentId) {
     if (wm->our[ourAgentId] == nullptr
             || wm->opp[theirAgentId] == nullptr) {
         return false;
     }
-    Vector2D ballPosAndVel;
-    ballPosAndVel = wm->ball->pos + wm->ball->vel;
-
+    Vector2D ballPosAndVel= wm->ball->pos + wm->ball->vel;
     return wm->our[ourAgentId]->pos.dist(ballPosAndVel) < wm->opp[theirAgentId]->pos.dist(ballPosAndVel) - 0.3
             && wm->ball->pos.dist(wm->field->ourGoal()) > 2.5 && wm->ball->pos.dist(wm->opp[theirAgentId]->pos) > 1;
 }
 
 int DefensePlan::decideShootOutMode() {
-    if (goalKeeperAgent == nullptr || goalKeeperAgent->id() == -1) {
-        return 0;
-    }
-    int result;
-
-
     if (lastBallPosition.dist(wm->ball->pos) < 0.04) {
         DBUG("beforeTouch", D_FATEME);
         shootOutClearModeSelected = false;
-        result = beforeTouch;
+        return beforeTouch;
     } else if (canReachToBall(goalKeeperAgent->id(), know->nearestOppToBall())
-               || (!Circle2D(wm->ball->pos, 0.10).contains(wm->opp[know->nearestOppToBall()]->pos)
-                   && wm->ball->pos.dist(wm->field->ourGoal()) < 1.7)
+               || (!Circle2D(wm->ball->pos, 0.10).contains(wm->opp[know->nearestOppToBall()]->pos) && wm->ball->pos.dist(wm->field->ourGoal()) < 1.7)
                || shootOutClearModeSelected
-               ) {
+               ){
         DBUG("shootOutClear", D_FATEME);
         shootOutClearModeSelected = true;
-        result = shootOutClear;
-    } else if (!agentEffectOnBallProbability(wm->ball->pos, wm->ball->vel, wm->opp[know->nearestOppToBall()]->pos, wm->opp[know->nearestOppToBall()]->vel, true)) {
+        return shootOutClear;
+    } else if (!agentEffectOnBallProbability(wm->ball->pos, wm->ball->vel, wm->opp[know->nearestOppToBall()]->pos, wm->opp[know->nearestOppToBall()]->vel, true)) {//Lhum2
         DBUG("ballBisector", D_FATEME);
-        result = ballBisector;
+        return ballBisector;
     } else {
         DBUG("skydive", D_FATEME);
-        result = skyDive;
+        return skyDive;
     }
-
-    return result;
 }
 
 void DefensePlan::penaltyShootOutMode() {
     if (goalKeeperAgent == nullptr || goalKeeperAgent->id() == -1) {
         return;
     }
-    penaltyShootoutMode = decideShootOutMode();
+    penaltyShootoutMode = decideShootOutMode();//Lhum1
 
     Vector2D targetDir(10, 5), agentTarget;
     targetDir = wm->opp[know->nearestOppToBall()]->pos - wm->field->ourGoal();
@@ -2574,6 +2557,9 @@ void DefensePlan::penaltyShootOutMode() {
 void DefensePlan::penaltyMode() {
     //// By this function goalKeeper is able to move according to the direction
     //// of the opponent agents that will shot to our goal in pentalty mode.
+    if (goalKeeperAgent == nullptr || goalKeeperAgent->id() == -1) {
+        return;
+    }
     const float goalLineExtra = 0.03;
     const double xDiff = 0.10;
     Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
@@ -2605,7 +2591,7 @@ void DefensePlan::penaltyMode() {
     if (intersectionPoint.valid()) {
         target.y = intersectionPoint.y;
     } else {
-        target.y = 0.0;//TODO
+        target.y = 0.0;//TODO:change it
     }
 
     //    target.y = min(max(target.y, wm->field->ourGoalR().y + epsilon), wm->field->ourGoalL().y - epsilon + 0.03);

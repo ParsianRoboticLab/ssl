@@ -18,6 +18,14 @@
 #define MIN_TWO_ROBOTS_DIST 0.02
 #define MIN_MORE_ROBOTS_DIST 0.05
 
+enum shootOutMode {
+    beforeTouch,
+    shootOutClear,
+    ballBisector,
+    skyDive
+
+};
+
 class DefensePlan : public Plan {
 protected:
     int defenseCount;
@@ -107,24 +115,16 @@ protected:
     bool defenseOneTouchOrNot();
     bool agentEffectOnBallProbability(Vector2D ballPos, Vector2D ballVel, Vector2D agentPos, Vector2D agentVel, bool isTowardOurgoal);
     Vector2D getGoalieShootOutTarget(bool isSkyDive);
-    bool canReachToBall(int agentId, int theirAgentId);
     int decideShootOutMode();
     QList <Vector2D> lastBallPos;
     int penaltyShootoutMode = beforeTouch;
     void penaltyShootOutMode();
-    void penaltyMode();
     enum exepMode {
         defOneTouch = 1,
         defClear = 2,
         NoneExep = 3
     };
-    enum shootOutMode {
-        beforeTouch,
-        shootOutClear,
-        ballBisector,
-        skyDive
 
-    };
 
     bool shootOutClearModeSelected = false;
     bool agentEffectOnBallProbabilityRes;
@@ -159,6 +159,8 @@ public:
 private:
     ///////////////////////Lhum checked them//////////////
     void drawGameState();
+    void penaltyMode();
+    bool canReachToBall(const int& agentId, const int& theirAgentId);
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
