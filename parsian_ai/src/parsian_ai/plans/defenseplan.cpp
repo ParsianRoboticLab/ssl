@@ -2309,73 +2309,67 @@ void DefensePlan::execute(){
         penaltyMode();
         return;
     }
-    if(gameState->theirPenaltyShootout()){
+    if(gameState->penaltyShootout()){
         //TO DO: add penalty goalie for penalty shootout
-        penaltyShootOutMode();// hamid penalty //lhum will read it
-        lastBallPosition = wm->ball->pos;//Lhum0
+        penaltyShootOutMode();// hamid penalty //Lhum0
         return;
     }
-    if(gameState->canKickBall() && gameState->penaltyShootout()) {
-        penaltyShootOutMode();// hamid penalty
+    if(goalKeeperAgent != nullptr){
+        setGoalKeeperState();
+        setGoalKeeperTargetPoint();
+        executeGoalKeeper();
+        assignSkill(goalKeeperAgent , AHZSkills);
     }
-    else{
-        if(goalKeeperAgent != nullptr){
-            setGoalKeeperState();
-            setGoalKeeperTargetPoint();
-            executeGoalKeeper();
-            assignSkill(goalKeeperAgent , AHZSkills);
-        }
-        if(!defenseAgents.empty()){
-            if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
-                if(gameState->isStart() || gameState->isStop()){
+    if(!defenseAgents.empty()){
+        if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
+            if(gameState->isStart() || gameState->isStop()){
 //                    checkDefenseExeptions();
 //                    if (defExceptions.active && !know->variables["transientFlag"].toBool()) {
 //                        runDefenseExeptions();
 //                        defenseCount = defenseAgents.size() - 1;
 //                    }
 //                    else {
-                        defExceptions.exepAgentId = -1;
-                        defExceptions.exeptionMode = NoneExep;
-                        defenseCount = defenseAgents.size();
-                        know->variables["defenseOneTouchMode"] = false;
-//                    }
-                }
-                else{
-                    know->variables["defenseOneTouchMode"] = false;
+                    defExceptions.exepAgentId = -1;
+                    defExceptions.exeptionMode = NoneExep;
                     defenseCount = defenseAgents.size();
-                }
-                if(defenseCount > 0){
-                    if(conf.ThreeDefenseMode){
-                        realDefSize = min(3 , defenseCount);
-                        if(realDefSize == 3){
-                            if(findNeededDefense() == 3){
-                                AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                                defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
-                            }
-                            else{
-                                AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                                defenseFormationForRectangularPositioning(findNeededDefense() , realDefSize , 1.4 , 2.5));
-                                for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
-                                    AHZDefPoints.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
-                                }
-                            }
-                        }
-                        else if(realDefSize < 3){
+                    know->variables["defenseOneTouchMode"] = false;
+//                    }
+            }
+            else{
+                know->variables["defenseOneTouchMode"] = false;
+                defenseCount = defenseAgents.size();
+            }
+            if(defenseCount > 0){
+                if(conf.ThreeDefenseMode){
+                    realDefSize = min(3 , defenseCount);
+                    if(realDefSize == 3){
+                        if(findNeededDefense() == 3){
                             AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
                                                             defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
                         }
+                        else{
+                            AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , realDefSize , conf.DownLimit , conf.UpLimit),
+                                                            defenseFormationForRectangularPositioning(findNeededDefense() , realDefSize , 1.4 , 2.5));
+                            for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
+                                AHZDefPoints.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
+                            }
+                        }
                     }
-                    else{
-                        realDefSize = defenseCount - decideNumOfMarks();
+                    else if(realDefSize < 3){
                         AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
                                                         defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
                     }
-                    matchingDefPos(realDefSize);
                 }
+                else{
+                    realDefSize = defenseCount - decideNumOfMarks();
+                    AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
+                                                    defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
+                }
+                matchingDefPos(realDefSize);
             }
-            else{
-                drawer->draw("Vision Problem", Vector2D(0, 0), "red" , 20);
-            }
+        }
+        else{
+            drawer->draw("Vision Problem", Vector2D(0, 0), "red" , 20);
         }
     }
 }
@@ -2459,28 +2453,29 @@ bool DefensePlan::canReachToBall(const int& ourAgentId, const int& theirAgentId)
     }
     Vector2D ballPosAndVel= wm->ball->pos + wm->ball->vel;
     return wm->our[ourAgentId]->pos.dist(ballPosAndVel) < wm->opp[theirAgentId]->pos.dist(ballPosAndVel) - 0.3
-            && wm->ball->pos.dist(wm->field->ourGoal()) > 2.5 && wm->ball->pos.dist(wm->opp[theirAgentId]->pos) > 1;
+        && wm->ball->pos.dist(wm->field->ourGoal()) > 2.5 && wm->ball->pos.dist(wm->opp[theirAgentId]->pos) > 1;
 }
 
 int DefensePlan::decideShootOutMode() {
-    if (lastBallPosition.dist(wm->ball->pos) < 0.04) {
+    if (wm->ball->pos.dist(Vector2D(0 , 0)) < 0.2 || wm->ball->pos.x > 0) {
         DBUG("beforeTouch", D_FATEME);
         shootOutClearModeSelected = false;
         return beforeTouch;
-    } else if (canReachToBall(goalKeeperAgent->id(), know->nearestOppToBall())
+    }
+    if (canReachToBall(goalKeeperAgent->id(), know->nearestOppToBall())
                || (!Circle2D(wm->ball->pos, 0.10).contains(wm->opp[know->nearestOppToBall()]->pos) && wm->ball->pos.dist(wm->field->ourGoal()) < 1.7)
                || shootOutClearModeSelected
                ){
         DBUG("shootOutClear", D_FATEME);
         shootOutClearModeSelected = true;
         return shootOutClear;
-    } else if (!agentEffectOnBallProbability(wm->ball->pos, wm->ball->vel, wm->opp[know->nearestOppToBall()]->pos, wm->opp[know->nearestOppToBall()]->vel, true)) {//Lhum2
+    }
+    if (!agentEffectOnBallProbability(wm->ball->pos, wm->ball->vel, wm->opp[know->nearestOppToBall()]->pos, wm->opp[know->nearestOppToBall()]->vel, true)) {//Lhum2
         DBUG("ballBisector", D_FATEME);
         return ballBisector;
-    } else {
-        DBUG("skydive", D_FATEME);
-        return skyDive;
     }
+    DBUG("skydive", D_FATEME);
+    return skyDive;
 }
 
 void DefensePlan::penaltyShootOutMode() {
@@ -2489,26 +2484,18 @@ void DefensePlan::penaltyShootOutMode() {
     }
     penaltyShootoutMode = decideShootOutMode();//Lhum1
 
-    Vector2D targetDir(10, 5), agentTarget;
-    targetDir = wm->opp[know->nearestOppToBall()]->pos - wm->field->ourGoal();
-
-    if (lastBallPos.count() < 15) {
-        lastBallPos.append(wm->ball->pos);
-    } else {
-        lastBallPos.removeFirst();
-    }
-
+    Vector2D agentTarget;
+    Vector2D targetDir = wm->opp[know->nearestOppToBall()]->pos - wm->field->ourGoal();
 
     switch (penaltyShootoutMode) {
     case beforeTouch:
         assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
         gpa[goalKeeperAgent->id()]->setSlowmode(false);
         gpa[goalKeeperAgent->id()]->setDivemode(true);
+        gpa[goalKeeperAgent->id()]->setNoavoid(true);
         gpa[goalKeeperAgent->id()]->setTargetpos(wm->field->ourGoal() + Vector2D(0.1, 0));
         gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
-
         break;
-
     case shootOutClear:
         assignSkill(goalKeeperAgent, kickSkill);
         kickSkill->setTolerance(50);
@@ -2521,7 +2508,6 @@ void DefensePlan::penaltyShootOutMode() {
         kickSkill->setChipdist(4.5);
         kickSkill->setTarget(wm->field->oppGoal());
         kickSkill->setSagmode(true);
-
         break;
 
     case ballBisector:
@@ -2530,10 +2516,8 @@ void DefensePlan::penaltyShootOutMode() {
         gpa[goalKeeperAgent->id()]->setDivemode(false);
         gpa[goalKeeperAgent->id()]->setLookat(wm->ball->pos);
         agentTarget = getGoalieShootOutTarget(false);
-
         gpa[goalKeeperAgent->id()]->setTargetpos(agentTarget);
         gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
-
         drawer->draw(agentTarget, QColor(Qt::darkRed));
         break;
 
@@ -2543,10 +2527,8 @@ void DefensePlan::penaltyShootOutMode() {
         gpa[goalKeeperAgent->id()]->setDivemode(true);
         gpa[goalKeeperAgent->id()]->setLookat(wm->ball->pos);
         agentTarget = getGoalieShootOutTarget(true) ;
-
         gpa[goalKeeperAgent->id()]->setTargetpos(agentTarget);
         gpa[goalKeeperAgent->id()]->setTargetdir(targetDir);
-
         drawer->draw(agentTarget, QColor(Qt::darkBlue));
         break;
     default:

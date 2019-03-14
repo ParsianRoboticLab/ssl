@@ -35,9 +35,8 @@ protected:
     KickAction* kickSkill;
     NoAction* noSkill;
     Action* AHZSkills;
-    CDefPos defPos;
     Vector2D pointForKick, oneToucherDir;
-    Vector2D goalKeeperTarget,lastTarget, goalieDirection , defensePoints[12], defenseTargets[12];
+    Vector2D goalKeeperTarget,lastTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
     void setGoalKeeperState();
     void setGoalKeeperTargetPoint();
@@ -110,13 +109,11 @@ protected:
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
-    DefPos tempDefPos;
     void matchingDefPos(int _defenseNum);
     bool defenseOneTouchOrNot();
     bool agentEffectOnBallProbability(Vector2D ballPos, Vector2D ballVel, Vector2D agentPos, Vector2D agentVel, bool isTowardOurgoal);
     Vector2D getGoalieShootOutTarget(bool isSkyDive);
     int decideShootOutMode();
-    QList <Vector2D> lastBallPos;
     int penaltyShootoutMode = beforeTouch;
     void penaltyShootOutMode();
     enum exepMode {
@@ -137,7 +134,6 @@ protected:
     };
     Vector2D ballPrediction(bool _isGoalie);
 
-    Vector2D lastBallPosition;
 public:
     DefensePlan();
     void execute() override;
