@@ -39,6 +39,7 @@ protected:
     void setPointToKick();
     void setGoalKeeperState();
     void setGoalKeeperTargetPoint();
+    void setGoalKeeperStateInDangerMode();
     bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
     double strictfollowThr;
     double differentialTime = 0;
@@ -102,6 +103,12 @@ protected:
     bool dangerForGoalKeeperClearByOurAgents;
     bool dangerForGoalKeeperClearByOppAgents;
     bool dangerForInsideOfThePenaltyArea;
+    bool DangerMode;
+    bool DangerByOurAgentsInPenaltyArea;
+    bool DangerByOppAgentsInPenaltyArea;
+    bool DangerByOurAgentsOutOfPenaltyArea;
+    bool DangerByOppAgentsOutOfPenaltyArea;
+
     bool stopMode;
     bool playOffMode;
     bool playOnMode;
@@ -147,6 +154,15 @@ protected:
         shootOutClear,
         ballBisector,
         skyDive
+
+    };
+    enum DangerModes{
+        DangerMode;
+        DangerByOurAgentsInPenaltyArea;
+        DangerByOppAgentsInPenaltyArea;
+        DangerByOurAgentsOutOfPenaltyArea;
+        DangerByOppAgentsOutOfPenaltyArea;
+
 
     };
 

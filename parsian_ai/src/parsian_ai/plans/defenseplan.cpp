@@ -1515,7 +1515,7 @@ void DefensePlan::setGoalKeeperState(){
     //// 4- Ball is out of the field.
 
     ////////////////// Variables of this function //////////////////////////////
-    dangerForGoalKeeperClear = false;
+    dangerForGoalKeeperClear = false;//No robots are neare the GK
     dangerForInsideOfThePenaltyArea = false;
     dangerForGoalKeeperClearByOurAgents = false;
     dangerForGoalKeeperClearByOppAgents = false;
@@ -1568,12 +1568,13 @@ void DefensePlan::setGoalKeeperState(){
                     }
                 }
                 if (isCrowdedInFrontOfPenaltyAreaByOurAgents) {
-                    DBUG("Crowded" , D_AHZ);
+                    ROS_INFO_STREAM("Mahdi:crowded by our agents");
                     if (dangerCircle.contains(wm->ball->pos)) {
                         dangerForGoalKeeperClearByOurAgents = true;
                     }
                 }
                 if (isCrowdedInFrontOfPenaltyAreaByOppAgents) {
+                    ROS_INFO_STREAM("Mahdi:crowded by opp agents");
                     if (dangerCircle1.contains(wm->ball->pos)) {
                         dangerForGoalKeeperClearByOppAgents = true;
                     }
@@ -1637,7 +1638,90 @@ void DefensePlan::setGoalKeeperState(){
         drawer->draw("GoalKeeper is gone !!!!" , Vector2D(0, 0) , "red");
     }
 }
+void DefensePlan::setGoalKeeperStateInDangerMode(){
+   DangerMode= false;
+   DangerByOurAgentsInPenaltyArea= false;
+   DangerByOppAgentsInPenaltyArea= false;
+   DangerByOurAgentsOutOfPenaltyArea= false;
+   DangerByOppAgentsOutOfPenaltyArea= false;
+   Vector2D ballPos=wm->ball->pos;
 
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                drawer->draw(Circle2D(wm->field->ourGoal(),0.7),0,360);
+
+                if (Circle2D(wm->field->ourGoal(),0.7).contains(wm->our.active(i)->pos) && fabs(wm->ball->pos.x - wm->field->ourGoal().x)<0.55) {
+                    DangerByOurAgentsInPenaltyArea = true;
+                    ROS_INFO_STREAM("Mahdi:DangerByOurAgentsInPenaltyArea");
+
+                }
+            }
+        }
+
+    }
+
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                drawer->draw(Circle2D(ballPos,0.7),0,360);
+
+                if (Circle2D(ballPos,0.7).contains(wm->opp.active(i)->pos) && fabs(wm->ball->pos.x - wm->field->ourGoal().x)<0.55) {
+                    DangerByOppAgentsInPenaltyArea = true;
+                    ROS_INFO_STREAM("Mahdi:DangerByOppAgentsInPenaltyArea");
+
+                }
+            }
+        }
+
+    }
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                drawer->draw(Circle2D(ballPos,0.5),0,360);
+
+                if (Circle2D(ballPos,0.5).contains(wm->our.active(i)->pos) && fabs(wm->ball->pos.x - wm->field->ourGoal().x)>=0.55) {
+                    DangerByOurAgentsOutOfPenaltyArea= true;
+                    ROS_INFO_STREAM("Mahdi:DangerByOurAgentsOutOfPenaltyArea");
+                }
+            }
+        }
+
+    }
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                drawer->draw(Circle2D(ballPos,0.5),0,360);
+
+                if (Circle2D(ballPos,0.5).contains(wm->opp.active(i)->pos) && fabs(wm->ball->pos.x - wm->field->ourGoal().x)>=0.55) {
+                    DangerByOppAgentsOutOfPenaltyArea= true;
+                    ROS_INFO_STREAM("Mahdi:DangerByOppAgentsOutOfPenaltyArea");
+                }
+            }
+        }
+
+    }
+
+    if(DangerByOppAgentsInPenaltyArea || DangerByOurAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyArea){
+
+        DangerMode=true;
+
+
+    }
+
+
+
+
+
+
+}
 void DefensePlan::setGoalKeeperTargetPoint() {
     //// This function determine the target point that goalkeeper must go to it.
     //// For producing the target point, we certainly consider the states that
@@ -1815,7 +1899,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {
                 dangerForInsideOfThePenaltyArea = true;
                 DBUG(QString("inside : %1").arg(dangerForInsideOfThePenaltyArea) , D_AHZ);
                 if (dangerForGoalKeeperClearByOppAgents) {
-                    //                     goalKeeperTarget =  know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() ,0.2);
+                                        goalKeeperTarget =  know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() ,0.2);
                 }
                 else if (dangerForGoalKeeperClearByOurAgents){
                     DBUG("danger" , D_AHZ);
@@ -2363,6 +2447,7 @@ void DefensePlan::execute(){
     else{
         if(goalKeeperAgent != nullptr){
             setGoalKeeperState();
+            setGoalKeeperStateInDangerMode();
             setGoalKeeperTargetPoint();
             executeGoalKeeper();
             assignSkill(goalKeeperAgent , AHZSkills);
@@ -2674,7 +2759,7 @@ void DefensePlan::penaltyMode() {
 
   //starting the idea for having a dynamic goalie in penaltymode
           if(Circle2D(target,0.15).contains(goalKeeperAgent->pos())) {
-              movingTarget = -target;
+              movingTarget = -target;0
               drawer->draw(Circle2D(target,0.15),0,360,QColor("Red"),false);
           }
 
