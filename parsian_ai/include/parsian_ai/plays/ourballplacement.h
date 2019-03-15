@@ -27,7 +27,7 @@ private:
     Agent* kickerAgent;
     long long int  loopCounter;
     Agent* receiverAgent;
-    bool nearFlag, shotFlag, updateFlag , loop;
+    bool nearFlag, shotFlag, updateFlag , loop, pauseFLag;
     Agent* nearID ;
     Vector2D lastBallPos;
     Vector2D ballPosBeforKick;

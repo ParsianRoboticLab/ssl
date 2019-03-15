@@ -6,6 +6,7 @@
 COurBallPlacement::COurBallPlacement() {
 
     loopCounter = 0;
+    pauseFLag = false;
     first = true;
     loop = false;
     recivePass = new ReceivepassAction;
@@ -181,13 +182,14 @@ Agent* COurBallPlacement::firstStep(const Vector2D& ballPos ) {
 bool COurBallPlacement::isPassReceived(const Vector2D &ballPos, const Vector2D &desiredPos) {
 
     ROS_INFO_STREAM("debug KickAndRecive");
-    if (!isBallNearToTarget(ballPos, desiredPos, 0.25)) {              ////////////////ball did not arrived in near of target
+    if (isBallNearToTarget(ballPos, desiredPos, 0.3) && isBallSpeedLow(0.2, wm->ball->vel)) {
+        ROS_INFO_STREAM("hahaha ball_recived");
+        pauseFLag = true;
+        return true;
+    }else{
         ROS_INFO_STREAM("debug agent shoted");
         pass->setDontkick(false);
-        return false;
-    }else{                                                              ////////////////ball arrived in near of target
-        ROS_INFO_STREAM("debug ball_recived");
-        return true;
+        return false;////////////////ball arrived in near of targe
     }
 
 }
@@ -200,9 +202,9 @@ bool COurBallPlacement::isPassReceived(const Vector2D &ballPos, const Vector2D &
  */
 bool COurBallPlacement::isAgentsOnThePosition(Agent* kickerAgent, Agent* reciverAgent) {
     ROS_INFO_STREAM(" isAgentsOnThePosition function");
-    Vector2D targetedPoint = Vector2D(0,0);
+    Vector2D targetedPoint = Vector2D(-4,-1);
     Vector2D difference = wm->ball->pos - targetedPoint;
-    return isAgentOnThePosition(reciverAgent, targetedPoint, 0.25) && isAgentOnThePosition(kickerAgent, wm->ball->pos + difference.norm()*0.4, 0.1);
+    return isAgentOnThePosition(reciverAgent, targetedPoint, 0.25) && isAgentOnThePosition(kickerAgent, wm->ball->pos + difference.norm()*0.4, 0.2);
 }
 
 
@@ -210,8 +212,8 @@ bool COurBallPlacement::isAgentsOnThePosition(Agent* kickerAgent, Agent* reciver
  * this func will execute in execute function of masterPlay class
  */
 void COurBallPlacement::execute_x(){
-    Vector2D targetedPoint = Vector2D(0,0);
-    ///Vector2D targetedPoint = wm->ballplacementPoint();
+    Vector2D targetedPoint = Vector2D(-4, -1);
+    //Vector2D targetedPoint = wm->ballplacementPoint();
     kickerAgent = firstStep(wm->ball->pos);
     //if( loopCounter == 30) {
     receiverAgent = reciverFinder(targetedPoint, kickerAgent);        //////TODO: is kickerAgent id good for here//////////////////////////////////////
@@ -222,29 +224,25 @@ void COurBallPlacement::execute_x(){
     otherRobotsFormation(kickerAgent, receiverAgent);
     Vector2D difference = wm->ball->pos - targetedPoint;
     gpaK->setLookat(targetedPoint);
-    gpaK->setTargetpos(wm->ball->pos + difference.norm()*0.4);            //////////30 centimeter behind the ball locking at targeted position
+    gpaK->setTargetpos(wm->ball->pos + difference.norm()*0.45);            //////////30 centimeter behind the ball locking at targeted position
     gpaK->setTargetdir(targetedPoint);
-    gpaK->setBallobstacleradius(0.15);
+    gpaK->setBallobstacleradius(0.20);
     gpaR->setLookat(wm->ball->pos);
     gpaR->setTargetpos(targetedPoint);
     gpaR->setTargetdir(targetedPoint);
     ///set pass action for nearAgent
     pass->setTarget(targetedPoint);
-    pass->setKickspeed(4.5);
+    pass->setKickspeed(3);
     pass->setSlow(true);
     pass->setDontkick(true);
     ROS_INFO_STREAM("speed:" << pass->getKickspeed());
     ///recive pass action
-    recivePass->setReceiveradius(0.3);
+    recivePass->setReceiveradius(1);
     recivePass->setTarget(targetedPoint);
     recivePass->setSlow(true);
     if(isAgentsOnThePosition(kickerAgent, receiverAgent)){
         ROS_INFO_STREAM("shit agents on the positions");
-        if(!isPassReceived(wm->ball->pos, targetedPoint)){
-            ROS_INFO_STREAM("hamit invalid pass");
-            kickerAgent->action = pass;
-            receiverAgent->action = recivePass;
-        } else{
+        if(isPassReceived(wm->ball->pos, targetedPoint)){
             ROS_INFO_STREAM("shit pass received");
             const Vector2D position = wm->ball->pos - targetedPoint;
             gpaP->setLookat(targetedPoint);
@@ -255,6 +253,12 @@ void COurBallPlacement::execute_x(){
             gpaH->setTargetdir(wm->ball->pos);
             kickerAgent->action = gpaP;
             receiverAgent->action = gpaH;
+            //receiverAgent->action = recivePass;
+
+        } else{
+            ROS_INFO_STREAM("hamit invalid pass");
+            kickerAgent->action = pass;
+            receiverAgent->action = recivePass;
         }
     }
     else{
