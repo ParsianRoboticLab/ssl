@@ -103,11 +103,14 @@ protected:
     bool dangerForGoalKeeperClearByOurAgents;
     bool dangerForGoalKeeperClearByOppAgents;
     bool dangerForInsideOfThePenaltyArea;
-    bool DangerMode;
+    bool DangerModes;
     bool DangerByOurAgentsInPenaltyArea;
     bool DangerByOppAgentsInPenaltyArea;
     bool DangerByOurAgentsOutOfPenaltyArea;
     bool DangerByOppAgentsOutOfPenaltyArea;
+    bool isJustOurAgentsInDanger;
+    bool isJustOppAgentsInDanger;
+    bool isOurAgentsAndOppAgentsInDanger;
 
     bool stopMode;
     bool playOffMode;
@@ -154,15 +157,6 @@ protected:
         shootOutClear,
         ballBisector,
         skyDive
-
-    };
-    enum DangerModes{
-        DangerMode;
-        DangerByOurAgentsInPenaltyArea;
-        DangerByOppAgentsInPenaltyArea;
-        DangerByOurAgentsOutOfPenaltyArea;
-        DangerByOppAgentsOutOfPenaltyArea;
-
 
     };
 
