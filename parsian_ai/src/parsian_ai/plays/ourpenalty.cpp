@@ -3,7 +3,6 @@
 COurPenalty::COurPenalty() : CMasterPlay()
 {
     initMaster();
-    playmakeRole = new CRolePlayMake(nullptr);
     PMgotopoint = new GotopointavoidAction();
     PMkick = new KickAction();
 }
@@ -19,64 +18,39 @@ void COurPenalty::init(QList<Agent*>& _agents) {
     agents = _agents;
 }
 
-void COurPenalty::setPlaymake(Agent* _playmakeAgent)
-{
-    ROS_INFO_STREAM("penalty:  before set playmake to: ");
-    if(_playmakeAgent != nullptr)
-    {
-        playMakeAgent = _playmakeAgent;
-        playmakeRole->assign(playMakeAgent);
-    }
-    ROS_INFO_STREAM("penalty: set playmake to: " << playMakeAgent->id());
-}
-
-void COurPenalty::executeShootoutPositioning()
-{
-
-}
-
-void COurPenalty::executeNormalPositioning()
-{
-    ROS_INFO_STREAM("penalty: normal positioning");
-    if(agents.isEmpty())
-        return;
-    generatePositions();
-    assignSkills();
-}
-
 void COurPenalty::execute_x() {
     ROS_INFO_STREAM("penalty: execute_x");
     if (playMakeAgent == nullptr || (playMakeAgent->id() == -1)) {
         ROS_INFO_STREAM("penalty: playmakeagent is null");
         return;
     }
-    isPenaltyShootOut = gameState->ourPenaltyShootout();
-    //playmakeRole->execute();
     if(penaltyState == PenaltyState::Positioning)
     {
-        if(isPenaltyShootOut)
-        {
-            ROS_INFO_STREAM("penalty: shootout");
-            executeShootoutPositioning();
-        }
-        else
-        {
-            ROS_INFO_STREAM("penalty: norma");
-            executeNormalPositioning();
-        }
-
+        executeNormalPositioning();
         playmakePositioning();
     }
     if(penaltyState == PenaltyState::Kicking)
-    {
-        ROS_INFO_STREAM("penalty: in kicking state");
         playmakeKick();
+}
+
+void COurPenalty::setPlaymake(Agent* _playmakeAgent)
+{
+    if(_playmakeAgent != nullptr)
+    {
+        playMakeAgent = _playmakeAgent;
     }
+}
+
+void COurPenalty::executeNormalPositioning()
+{
+    if(agents.isEmpty())
+        return;
+    generatePositions();
+    assignSkills();
 }
 
 void COurPenalty::generatePositions()
 {
-    ROS_INFO_STREAM("penalty: generate positions");
     positions.clear();
     double penaltyPositioningOffset = 0.4;
     double penaltyRuleOffset = 0.4;
@@ -127,7 +101,6 @@ Vector2D COurPenalty::getEmptyTarget(Vector2D _position, double _radius)
 
 void COurPenalty::assignSkills()
 {
-    ROS_INFO_STREAM("penalty: assign skills");
     moveSkills.clear();
     for(int i{0}; i<agents.count(); i++)
     {
