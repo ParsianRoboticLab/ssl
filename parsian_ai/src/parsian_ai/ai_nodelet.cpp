@@ -23,7 +23,7 @@ void AINodelet::onInit() {
     teamConfSub = nh.subscribe("/team_config", 100, &AINodelet::teamConfCb, this);
     mousePosSub = nh.subscribe("/mousePos", 100, &AINodelet::mousePosCb, this);
     forceRefereeSub = nh.subscribe("/force_referee", 100, &AINodelet::forceRefereeCallBack, this);
-    robotfaultSub = nh.subscribe("/autofault", 100, &AINodelet::faultdetectionCallBack, this);
+    robotSubstituteSub = nh.subscribe("/substitute", 100, &AINodelet::substitutedetectionCallBack, this);
 
     drawPub = nh.advertise<parsian_msgs::parsian_draws>("/draws", 1000);
 
@@ -64,8 +64,8 @@ void AINodelet::refereeCallBack(const parsian_msgs::ssl_refree_wrapperConstPtr &
     ai->updateReferee(_ref);
 }
 
-void AINodelet::faultdetectionCallBack(const parsian_msgs::parsian_robots_fault & _rs) {
-    ai->updateRobotFaults(_rs);
+void AINodelet::substitutedetectionCallBack(const parsian_msgs::parsian_robot_substitution & _rs) {
+    ai->updateRobotSubstitutes(_rs);
 }
 
 void AINodelet::forceRefereeCallBack(const parsian_msgs::ssl_force_refereeConstPtr & _command){

@@ -15,7 +15,7 @@
 #include <parsian_ai/soccer.h>
 #include <parsian_msgs/parsian_robot_task.h>
 #include <parsian_ai/config.h>
-#include <parsian_msgs/parsian_robots_fault.h>
+#include <parsian_msgs/parsian_robot_substitution.h>
 
 
 
@@ -28,7 +28,7 @@ public:
 
     void updateWM(const parsian_msgs::parsian_world_modelConstPtr&);
     void updateRobotStatus(const parsian_msgs::parsian_robotConstPtr&);
-    void updateRobotFaults(const parsian_msgs::parsian_robots_fault &);
+    void updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &);
     void updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr&);
     void forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command);
     CSoccer* getSoccer();
@@ -37,6 +37,7 @@ public:
 
 private:
     parsian_msgs::parsian_robot_task robotsTask[_MAX_NUM_PLAYERS];
+    void validateRobotTask(parsian_msgs::parsian_robot_task* task);
 
 };
 
