@@ -1499,7 +1499,7 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
     }
 }
 
-void DefensePlan::setGoalKeeperState(){
+void DefensePlan::setGoalKeeperState(){//lhum1
     //// In this function,we determine the specific states that goalkeeper must
     //// have a logical behavior by good conditions.In other word we have some
     //// exceptions mode for goalkeeper.These modes are :
@@ -1514,120 +1514,115 @@ void DefensePlan::setGoalKeeperState(){
     dangerForGoalKeeperClearByOurAgents = false;
     dangerForGoalKeeperClearByOppAgents = false;
     isCrowdedInFrontOfPenaltyAreaByOppAgents = false;
+    isCrowdedInFrontOfPenaltyAreaByOurAgents = false;
     Rect2D ourLeftPole(wm->field->ourGoalL() + Vector2D(0.2 , 0.3) , wm->field->ourGoalL() - Vector2D(0 , 0.3));
     Rect2D ourRightPole(wm->field->ourGoalR() + Vector2D(0.2 , 0.3) , wm->field->ourGoalR() - Vector2D(0 , 0.3));
-    isCrowdedInFrontOfPenaltyAreaByOurAgents = false;
     ////////////////////////////////////////////////////////////////////////////
     Circle2D dangerCircle;
     Circle2D dangerCircle1;
     Vector2D sol[2];
-    if (goalKeeperAgent != nullptr && goalKeeperAgent->id() != -1) {
-        if (wm->field->isInField(wm->ball->pos)){
-            ballIsOutOfField = false;
-            QList<Vector2D> solutions;
-            Segment2D ballLine(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
-            Segment2D goalLine(wm->field->ourGoal() + Vector2D(0 , 1) , wm->field->ourGoal() - Vector2D(0 , 1));
-            QList<Circle2D> defs;
-            double AZBisecOpenAngle = 0, AZBigestOpenAngle = 0, AZDangerPercent = 0;
-            for (int g = 0; g < defenseAgents.count(); g++) {
-                defs.append(Circle2D(defenseAgents[g]->pos(), Robot::robot_radius_new));
+    if (wm->field->isInField(wm->ball->pos)){
+        ballIsOutOfField = false;
+        QList<Vector2D> solutions;
+        Segment2D ballLine(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
+        Segment2D goalLine(wm->field->ourGoal() + Vector2D(0 , 1) , wm->field->ourGoal() - Vector2D(0 , 1));
+        QList<Circle2D> defs;
+        double AZBisecOpenAngle = 0, AZBigestOpenAngle = 0, AZDangerPercent = 0;
+        for (int g = 0; g < defenseAgents.count(); g++) {
+            defs.append(Circle2D(defenseAgents[g]->pos(), Robot::robot_radius_new));
+        }
+        know->getEmptyAngle(wm->ball->pos, wm->field->ourGoalL(), wm->field->ourGoalR(), defs, AZDangerPercent, AZBisecOpenAngle, AZBigestOpenAngle, false);
+        /////////////////////// Added danger mode for not switching between "ball behindGoalie && danger mode /////////////
+        wm->field->ourBigPenaltyArea(1,0,0).intersection(Segment2D(wm->ball->pos , wm->field->ourGoal()) , &sol[0] , &sol[1]);
+        if(sol[0].isValid()){
+            solutions.append(sol[0]);
+        }
+        if(sol[1].isValid()){
+            solutions.append(sol[1]);
+        }
+        if (solutions.size()){
+            if (solutions.size() == 2) {
+                dangerCircle = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
+                dangerCircle1 = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
             }
-            know->getEmptyAngle(wm->ball->pos, wm->field->ourGoalL(), wm->field->ourGoalR(), defs, AZDangerPercent, AZBisecOpenAngle, AZBigestOpenAngle, false);
-            /////////////////////// Added danger mode for not switching between "ball behindGoalie && danger mode /////////////
-            wm->field->ourBigPenaltyArea(1,0,0).intersection(Segment2D(wm->ball->pos , wm->field->ourGoal()) , &sol[0] , &sol[1]);
-            if(sol[0].isValid()){
-                solutions.append(sol[0]);
-            }
-            if(sol[1].isValid()){
-                solutions.append(sol[1]);
-            }
-            if (solutions.size()){
-                if (solutions.size() == 2) {
-                    dangerCircle = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
-                    dangerCircle1 = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
-                }
-                if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0){
-                    for (int i = 0; i < wm->our.activeAgentsCount() ; i++) {
-                        if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                            if (dangerCircle.contains(wm->our.active(i)->pos)) {
-                                isCrowdedInFrontOfPenaltyAreaByOurAgents = true;
-                            }
-                        }
-                    }
-                    for (int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
-                        if (dangerCircle.contains(wm->opp.active(i)->pos)) {
-                            isCrowdedInFrontOfPenaltyAreaByOppAgents = true;
+            if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0){
+                for (int i = 0; i < wm->our.activeAgentsCount() ; i++) {
+                    if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+                        if (dangerCircle.contains(wm->our.active(i)->pos)) {
+                            isCrowdedInFrontOfPenaltyAreaByOurAgents = true;
                         }
                     }
                 }
-                if (isCrowdedInFrontOfPenaltyAreaByOurAgents) {
-                    DBUG("Crowded" , D_AHZ);
-                    if (dangerCircle.contains(wm->ball->pos)) {
-                        dangerForGoalKeeperClearByOurAgents = true;
+                for (int i = 0 ; i < wm->opp.activeAgentsCount() ; i++) {
+                    if (dangerCircle.contains(wm->opp.active(i)->pos)) {
+                        isCrowdedInFrontOfPenaltyAreaByOppAgents = true;
                     }
-                }
-                if (isCrowdedInFrontOfPenaltyAreaByOppAgents) {
-                    if (dangerCircle1.contains(wm->ball->pos)) {
-                        dangerForGoalKeeperClearByOppAgents = true;
-                    }
-                }
-                if (dangerForGoalKeeperClearByOurAgents || dangerForGoalKeeperClearByOppAgents) {
-                    dangerForGoalKeeperClear = true;
                 }
             }
-            ///////////////////////////////////////////////////////////////////////
-            if (gameState->isStart() && !dangerForGoalKeeperClear) {
-                if ((wm->ball->vel.length() > 1.3) && (goalLine.intersection(ballLine).valid() || oneTouchCnt < 5)) {
-                    ballIsBesidePoles = false;
-                    goalKeeperOneTouch = true;
-                    goalKeeperClearMode = false;
-                    ballIsOutOfField = false;
-                    if (!goalLine.intersection(ballLine).valid()) {
-                        oneTouchCnt++;
-                        return;
-                    }
-                    oneTouchCnt = 0;
-                    return;
+            if (isCrowdedInFrontOfPenaltyAreaByOurAgents) {
+                DBUG("Crowded" , D_AHZ);
+                if (dangerCircle.contains(wm->ball->pos)) {
+                    dangerForGoalKeeperClearByOurAgents = true;
                 }
-                else if (wm->field->isInOurPenaltyArea(wm->ball->pos)){
-                    if(wm->ball->vel.length() < 0.1 && (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
-                                                        (wm->field->ourGoalL().y >= wm->ball->pos.y
-                                                         && wm->field->ourGoalR().y < wm->ball->pos.y
-                                                         && wm->field->ourGoal().x < wm->ball->pos.x
-                                                         && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))){
-                        ballIsBesidePoles = true;
-                        goalKeeperOneTouch = false;
-                        goalKeeperClearMode = false;
-                        ballIsOutOfField = false;
-                        return;
-                    }
-                    else {//Lhum thinks it is wrong
-                        ballIsBesidePoles = false;
-                        goalKeeperOneTouch = false;
-                        goalKeeperClearMode = true;
-                        ballIsOutOfField = false;
-                        return;
-                    }
+            }
+            if (isCrowdedInFrontOfPenaltyAreaByOppAgents) {
+                if (dangerCircle1.contains(wm->ball->pos)) {
+                    dangerForGoalKeeperClearByOppAgents = true;
                 }
-                else {
-                    goalKeeperClearMode = false;
-                    goalKeeperOneTouch = false;
-                    ballIsBesidePoles = false;
-                    ballIsOutOfField = false;
-                    return;
-                }
+            }
+            if (dangerForGoalKeeperClearByOurAgents || dangerForGoalKeeperClearByOppAgents) {
+                dangerForGoalKeeperClear = true;
             }
         }
-        else {
-            ballIsBesidePoles = false;
-            goalKeeperOneTouch = false;
-            goalKeeperClearMode = false;
-            ballIsOutOfField = true;
-            return;
+        ///////////////////////////////////////////////////////////////////////
+        if (gameState->isStart() && !dangerForGoalKeeperClear) {
+            if ((wm->ball->vel.length() > 1.3) && (goalLine.intersection(ballLine).valid() || oneTouchCnt < 5)) {
+                ballIsBesidePoles = false;
+                goalKeeperOneTouch = true;
+                goalKeeperClearMode = false;
+                ballIsOutOfField = false;
+                if (!goalLine.intersection(ballLine).valid()) {
+                    oneTouchCnt++;
+                    return;
+                }
+                oneTouchCnt = 0;
+                return;
+            }
+            else if (wm->field->isInOurPenaltyArea(wm->ball->pos)){
+                if(wm->ball->vel.length() < 0.1 && (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
+                                                    (wm->field->ourGoalL().y >= wm->ball->pos.y
+                                                     && wm->field->ourGoalR().y < wm->ball->pos.y
+                                                     && wm->field->ourGoal().x < wm->ball->pos.x
+                                                     && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))){
+                    ballIsBesidePoles = true;
+                    goalKeeperOneTouch = false;
+                    goalKeeperClearMode = false;
+                    ballIsOutOfField = false;
+                    return;
+                }
+                else {//Lhum thinks it is wrong
+                    ballIsBesidePoles = false;
+                    goalKeeperOneTouch = false;
+                    goalKeeperClearMode = true;
+                    ballIsOutOfField = false;
+                    return;
+                }
+            }
+            else {
+                goalKeeperClearMode = false;
+                goalKeeperOneTouch = false;
+                ballIsBesidePoles = false;
+                ballIsOutOfField = false;
+                return;
+            }
         }
     }
     else {
-        drawer->draw("GoalKeeper is gone !!!!" , Vector2D(0, 0) , "red");
+        ballIsBesidePoles = false;
+        goalKeeperOneTouch = false;
+        goalKeeperClearMode = false;
+        ballIsOutOfField = true;
+        return;
     }
 }
 
@@ -1660,10 +1655,6 @@ void DefensePlan::setGoalKeeperTargetPoint() {
     ballRectanglePoints.clear();
     ///////////////////////////////////////////////////////////////////////////
 
-    //ROS_INFO_STREAM("E: ____________");
-    ballPos = wm->ball->pos;
-    ballVel = wm->ball->vel;
-    predictedBall = ballPos + ballVel;
     wm->field->ourBigPenaltyArea(1,0,0).intersection(Segment2D(wm->ball->pos , wm->field->ourGoal()) , &sol[0] , &sol[1]);
     if(sol[0].isValid()){
         solutions.append(sol[0]);
@@ -1671,11 +1662,9 @@ void DefensePlan::setGoalKeeperTargetPoint() {
     if(sol[1].isValid()){
         solutions.append(sol[1]);
     }
-    if (solutions.size()) {
-        if (solutions.size() == 2) {
-            dangerCircle = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
-            dangerCircle1 = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
-        }
+    if (solutions.size() == 2) {
+        dangerCircle = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
+        dangerCircle1 = Circle2D(solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1), 0.40);
     }
     drawer->draw(dangerCircle , "yellow");
     drawer->draw(dangerCircle1 , "yellow");
@@ -1764,7 +1753,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {
     }
     else if (goalKeeperOneTouch){
         lastStateForGoalKeeper = QString("noBesidePoleMode");
-        Segment2D ballLine(ballPos, ballPos + ballVel.norm() * 100);
+        Segment2D ballLine(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
         goalKeeperTarget = ballLine.nearestPoint(goalKeeperAgent->pos());
         return;
     }
@@ -2017,7 +2006,7 @@ void DefensePlan::setGoalKeeperTargetPoint() {
             predictedBall = ballPrediction(true);
             /*if(predictedBall.x - 0.02 < goalKeeperAgent->pos().x) {//Lhum???
                 ROS_INFO_STREAM("E: !!!!!!!!!!!!!!!!!");
-                Segment2D ball2PredictedBall(ballPos, predictedBall);
+                Segment2D ball2PredictedBall(wm->ball->pos, predictedBall);
                 Line2D robotPrGoalLine(goalKeeperAgent->pos(), Vector2D(goalKeeperAgent->pos().x, (goalKeeperAgent->pos().y + 0.01)));
                 if (ball2PredictedBall.intersection(robotPrGoalLine).valid()) {
                     predictedBall = ball2PredictedBall.intersection(robotPrGoalLine);
@@ -2518,11 +2507,8 @@ void DefensePlan::penaltyMode() {
     const double xDiff = 0.10;
     Line2D goalLine(wm->field->ourGoalL() + Vector2D(+xDiff, +goalLineExtra),
                     wm->field->ourGoalR() + Vector2D(+xDiff, -goalLineExtra));
-    const double epsilon = 0.12;
     Vector2D target(-5.92, 0.0);
-
     Line2D ballRay(wm->ball->pos, wm->ball->pos + wm->opp[know->nearestOppToBall()]->dir);
-
     Vector2D intersectionPoint = goalLine.intersection(ballRay);
     double ang = ballRay.a() * goalLine.b() - ballRay.b() * goalLine.a();
 
@@ -2550,16 +2536,13 @@ void DefensePlan::penaltyMode() {
 
     //    target.y = min(max(target.y, wm->field->ourGoalR().y + epsilon), wm->field->ourGoalL().y - epsilon + 0.03);
     //check
-
     drawer->draw(target, "blue");
-
     assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
     gpa[goalKeeperAgent->id()]->setSlowmode(false);
     gpa[goalKeeperAgent->id()]->setDivemode(true);
     gpa[goalKeeperAgent->id()]->setNoavoid(true);
     gpa[goalKeeperAgent->id()]->setTargetpos(target); //HINT : gpa->init
     gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D (1 , 0));
-
     //gpa[goalKeeperAgent->id()]->init(target , targetDir);
 }
 
@@ -2695,172 +2678,118 @@ void DefensePlan::executeGoalKeeper() {
         }
         //goalKeeperTarget = ballRectanglePoints.at(0).dist(goalKeeperAgent->pos()) < ballRectanglePoints.at(1).dist(goalKeeperAgent->pos()) ? ballRectanglePoints.at(0) : ballRectanglePoints.at(1);
     }
-    if (goalKeeperAgent != nullptr && goalKeeperAgent->id() != -1) {
-        DBUG(QString("goalKeeper clear mode : %1").arg(know->variables["goalKeeperClearMode"].toBool()) , D_AHZ);
-        DBUG(QString("goalKeeper oneTouch mode : %1").arg(know->variables["goalKeeperOneTouchMode"].toBool()) , D_AHZ);
-        if (gameState->directKick() || gameState->indirectKick() || gameState->kickoff()) {
-            DBUG("Their Indirect" , D_AHZ);
-            know->variables["goalKeeperClearMode"] = false;
-            know->variables["goalKeeperOneTouchMode"] = false;
-            AHZSkills = gpa[goalKeeperAgent->id()];
-            gpa[goalKeeperAgent->id()]->setDivemode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-            gpa[goalKeeperAgent->id()]->setChip(false);
-            gpa[goalKeeperAgent->id()]->setSlowmode(false);
-            gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);            
-            gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
 
-        }
-        else if(know->variables["transientFlag"].toBool()){
-            drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
-            DBUG("TS Mode" , D_AHZ);
-            know->variables["goalKeeperClearMode"] = false;
-            know->variables["goalKeeperOneTouchMode"] = false;
-            AHZSkills = gpa[goalKeeperAgent->id()];
-            gpa[goalKeeperAgent->id()]->setDivemode(false);
-            gpa[goalKeeperAgent->id()]->setSlowmode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-            gpa[goalKeeperAgent->id()]->setChip(false);
-            gpa[goalKeeperAgent->id()]->setNoavoid(true);
-            gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-            gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-            drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "cyan");
-            if(GKReciveBallInTS)
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
-            else
-                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperTarget - wm->field->ourGoal());
-        }
-        else if(gameState->isStop()){
-            DBUG("Stop Mode" , D_AHZ);
-            know->variables["goalKeeperClearMode"] = false;
-            know->variables["goalKeeperOneTouchMode"] = false;
-            AHZSkills = gpa[goalKeeperAgent->id()];
+    //init skill
+    AHZSkills = gpa[goalKeeperAgent->id()];
+    know->variables["goalKeeperClearMode"] = false;
+    know->variables["goalKeeperOneTouchMode"] = false;
+    gpa[goalKeeperAgent->id()]->setDivemode(false);
+    gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
+    gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
+    gpa[goalKeeperAgent->id()]->setChip(false);
+    gpa[goalKeeperAgent->id()]->setSlowmode(false);
+    gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
+    gpa[goalKeeperAgent->id()]->setSlowmode(false);
+    gpa[goalKeeperAgent->id()]->setNoavoid(true);
+
+    DBUG(QString("goalKeeper clear mode : %1").arg(know->variables["goalKeeperClearMode"].toBool()) , D_AHZ);
+    DBUG(QString("goalKeeper oneTouch mode : %1").arg(know->variables["goalKeeperOneTouchMode"].toBool()) , D_AHZ);
+    if (gameState->directKick() || gameState->indirectKick() || gameState->kickoff()) {
+        DBUG("Play off" , D_AHZ);
+        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
+        gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
+    }
+    else if(know->variables["transientFlag"].toBool()){
+        drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "red");
+        DBUG("TS Mode" , D_AHZ);
+        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
+        drawer->draw(Circle2D(goalKeeperTarget , 0.2) , "cyan");
+        if(GKReciveBallInTS)
+            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
+        else
+            gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperTarget - wm->field->ourGoal());
+    }
+    else if(gameState->isStop()){
+        DBUG("Stop Mode" , D_AHZ);
+        goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
+        gpa[goalKeeperAgent->id()]->setSlowmode(true);
+        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
+        gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
+    }
+    else if (ballIsOutOfField) {
+        DBUG("Ball is out of field" , D_AHZ);
+        gpa[goalKeeperAgent->id()]->setSlowmode(true);
+        gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
+        gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
+    }
+    else if (ballIsBesidePoles){
+        DBUG("Ball is beside the poles" , D_AHZ);
+        counterBallWasBesidePoles = 0;
+        if(f > 3){
+            gpa[goalKeeperAgent->id()]->setSlowmode(true);
+            gpa[goalKeeperAgent->id()]->setTargetpos(wm->ball->pos);
+            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
             goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
-            gpa[goalKeeperAgent->id()]->setDivemode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-            gpa[goalKeeperAgent->id()]->setChip(false);
+        }
+        else{
             gpa[goalKeeperAgent->id()]->setSlowmode(true);
-            gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
             gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
+            gpa[goalKeeperAgent->id()]->setBallobstacleradius(0.2);
+            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
+        }
+    }
+    else if (goalKeeperClearMode && !dangerForGoalKeeperClear) {
+        know->variables["goalKeeperClearMode"] = true;
+        drawer->draw(Circle2D(wm->ball->pos , 0.1) , "red");
+        if (wm->ball->vel.length() > 0.4 && wm->ball->vel.length() < 1.3) {
+            DBUG("Clear slow ball" , D_AHZ);
+            gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
             gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
         }
-        else if (ballIsOutOfField) {
-            DBUG("Ball is out of field" , D_AHZ);
-            know->variables["goalKeeperClearMode"] = false;
-            know->variables["goalKeeperOneTouchMode"] = false;            
+        else{
+            drawer->draw(Circle2D(Vector2D(0 , 0) , 0.1) , "black");
+            AHZSkills = kickSkill;
+            if(lastStateForGoalKeeper == QString("BesidePoleMode") || counterBallWasBesidePoles < 100){
+                counterBallWasBesidePoles++;
+                kickSkill->setTarget(Vector2D(0 , wm->ball->pos.y));
+                kickSkill->setSlow(true);
+            }
+            else{
+                kickSkill->setSlow(false);
+                if(wm->ball->pos.y >= 0){
+                    kickSkill->setTarget(Vector2D(-10 , -4) - wm->field->ourGoal());
+                } else {
+                    kickSkill->setTarget(Vector2D(-10 , 4) - wm->field->ourGoal());
+                }
+            }
+            DBUG("Clear Mode" , D_AHZ);
+            kickSkill->setTolerance(4);
+            kickSkill->setDontkick(false);
+            kickSkill->setSpin(0);
+            kickSkill->setAvoidpenaltyarea(false);
+            kickSkill->setGoaliemode(true);
+            kickSkill->setChip(true);
+            kickSkill->setIskickchargetime(true);
+            kickSkill->setKickchargetime(1023);
+            ////lhum thinks kick avoid penalty area
+        }
+    }
+    else {
+        if (goalKeeperOneTouch) {
+            DBUG("One touch Mode" , D_AHZ);
+            know->variables["goalKeeperOneTouchMode"] = true;
             AHZSkills = gpa[goalKeeperAgent->id()];
-            gpa[goalKeeperAgent->id()]->setDivemode(false);            
-            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-            gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-            gpa[goalKeeperAgent->id()]->setChip(false);
-            gpa[goalKeeperAgent->id()]->setSlowmode(true);
-            gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);            
+            gpa[goalKeeperAgent->id()]->setDivemode(true);
+            gpa[goalKeeperAgent->id()]->setOnetouchmode(true);
+            gpa[goalKeeperAgent->id()]->setOnetouchflag(true);
+            gpa[goalKeeperAgent->id()]->setChip(true);
             gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
-            gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
+            gpa[goalKeeperAgent->id()]->setTargetdir(-goalKeeperTarget + wm->ball->pos);
+            gpa[goalKeeperAgent->id()]->setChipdist(1023);
+            gpa[goalKeeperAgent->id()]->setKickspeed(0);
         }
-        else if (ballIsBesidePoles){
-            DBUG("Ball is beside the poles" , D_AHZ);
-            counterBallWasBesidePoles = 0;
-            know->variables["goalKeeperClearMode"] = false;
-            know->variables["goalKeeperOneTouchMode"] = false;
-            if(f > 3){
-                AHZSkills = gpa[goalKeeperAgent->id()];
-                gpa[goalKeeperAgent->id()]->setDivemode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-                gpa[goalKeeperAgent->id()]->setChip(false);
-                gpa[goalKeeperAgent->id()]->setSlowmode(true);
-                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-                gpa[goalKeeperAgent->id()]->setTargetpos(wm->ball->pos);
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
-                goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
-            }
-            else{
-                AHZSkills = gpa[goalKeeperAgent->id()];
-                gpa[goalKeeperAgent->id()]->setDivemode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-                gpa[goalKeeperAgent->id()]->setChip(false);
-                gpa[goalKeeperAgent->id()]->setSlowmode(true);
-                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-                gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
-                gpa[goalKeeperAgent->id()]->setBallobstacleradius(0.2);
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - goalKeeperTarget);
-            }            
-        }
-        else if (goalKeeperClearMode && !dangerForGoalKeeperClear) {            
-            know->variables["goalKeeperClearMode"] = true;
-            know->variables["goalKeeperOneTouchMode"] = false;
-            drawer->draw(Circle2D(wm->ball->pos , 0.1) , "red");
-            if (wm->ball->vel.length() > 0.4 && wm->ball->vel.length() < 1.3) {
-                AHZSkills = gpa[goalKeeperAgent->id()];
-                DBUG("Clear slow ball" , D_AHZ);                
-                gpa[goalKeeperAgent->id()]->setDivemode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-                gpa[goalKeeperAgent->id()]->setChip(false);
-                gpa[goalKeeperAgent->id()]->setSlowmode(false);
-                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);                
-                gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-                gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
-            }
-            else{
-                drawer->draw(Circle2D(Vector2D(0 , 0) , 0.1) , "black");
-                AHZSkills = kickSkill;
-                if(lastStateForGoalKeeper == QString("BesidePoleMode") || counterBallWasBesidePoles < 100){
-                    counterBallWasBesidePoles++;
-                    kickSkill->setTarget(Vector2D(0 , wm->ball->pos.y));
-                    kickSkill->setSlow(true);
-                }
-                else{
-                    kickSkill->setSlow(false);
-                    if(wm->ball->pos.y >= 0){
-                        kickSkill->setTarget(Vector2D(-10 , -4) - wm->field->ourGoal());
-                    } else {
-                        kickSkill->setTarget(Vector2D(-10 , 4) - wm->field->ourGoal());
-                    }
-                }
-                DBUG("Clear Mode" , D_AHZ);
-                kickSkill->setTolerance(4);
-                kickSkill->setDontkick(false);                
-                kickSkill->setSpin(0);
-                kickSkill->setAvoidpenaltyarea(false);
-                kickSkill->setGoaliemode(true);
-                kickSkill->setChip(true);
-                kickSkill->setIskickchargetime(true);
-                kickSkill->setKickchargetime(1023);
-                ////lhum thinking kick avoid penalty area
-//
-//                AHZSkills = gpa[goalKeeperAgent->id()];
-//                DBUG("Clear slow ball" , D_AHZ);
-//                gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperAgent->pos());
-
-            }
-        }
-        else {            
-            if (goalKeeperOneTouch) {
-                DBUG("One touch Mode" , D_AHZ);
-                know->variables["goalKeeperClearMode"] = false;
-                know->variables["goalKeeperOneTouchMode"] = true;
-                AHZSkills = gpa[goalKeeperAgent->id()];
-                gpa[goalKeeperAgent->id()]->setSlowmode(false);
-                gpa[goalKeeperAgent->id()]->setDivemode(true);
-                gpa[goalKeeperAgent->id()]->setOnetouchmode(true);
-                gpa[goalKeeperAgent->id()]->setTargetdir(-goalKeeperTarget + wm->ball->pos);
-                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-                gpa[goalKeeperAgent->id()]->setNoavoid(true);
-                gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget); //HINT : gpa->init
-                gpa[goalKeeperAgent->id()]->setOnetouchflag(true);
-                gpa[goalKeeperAgent->id()]->setChip(true);
-                gpa[goalKeeperAgent->id()]->setChipdist(1023);
-                gpa[goalKeeperAgent->id()]->setKickspeed(0);
-            }
-            else if (dangerForGoalKeeperClear) {
-                drawer->draw(Circle2D(goalKeeperTarget , 0.5), QColor(Qt::red));
+        else if (dangerForGoalKeeperClear) {
+            drawer->draw(Circle2D(goalKeeperTarget , 0.5), QColor(Qt::red));
 //                if (dangerForInsideOfThePenaltyArea) {
 //                    know->variables["goalKeeperClearMode"] = true;
 //                    know->variables["goalKeeperOneTouchMode"] = false;
@@ -2882,42 +2811,23 @@ void DefensePlan::executeGoalKeeper() {
 //                    }
 //                }
 //                else{
-                    goalKeeperTarget = strictFollowBall(ballPrediction(true));
-                    know->variables["goalKeeperClearMode"] = false;
-                    know->variables["goalKeeperOneTouchMode"] = false;
-                    AHZSkills = gpa[goalKeeperAgent->id()];
-                    gpa[goalKeeperAgent->id()]->setSlowmode(false);
-                    gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-                    gpa[goalKeeperAgent->id()]->setDivemode(false);                    
-                    gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-                    gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
-                    gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-                    gpa[goalKeeperAgent->id()]->setNoavoid(true);
-//                }
-            }
-            else {
-                ROS_INFO_STREAM("TS: sf");
-                //// strict follow
-                know->variables["goalKeeperClearMode"] = false;
-                know->variables["goalKeeperOneTouchMode"] = false;
-                AHZSkills = gpa[goalKeeperAgent->id()];
-                gpa[goalKeeperAgent->id()]->setSlowmode(false);
-                gpa[goalKeeperAgent->id()]->setDivemode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
-                gpa[goalKeeperAgent->id()]->setOnetouchflag(false);
-                gpa[goalKeeperAgent->id()]->setChip(false);
+                goalKeeperTarget = strictFollowBall(ballPrediction(true));
                 gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-                gpa[goalKeeperAgent->id()]->setTargetdir(ballPrediction(true) - wm->field->ourGoal());
-                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-                goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
-            }
-            drawer->draw(Circle2D(goalKeeperTarget , 0.05) , 0 , 360 , "black" , true);
+                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+//                }
         }
-        DBUG(QString("beside flag : %1").arg(ballIsBesidePoles) , D_AHZ);
+        else {
+            ROS_INFO_STREAM("TS: sf");
+            //// strict follow
+            gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
+            gpa[goalKeeperAgent->id()]->setTargetdir(ballPrediction(true) - wm->field->ourGoal());
+            goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
+        }
+        drawer->draw(Circle2D(goalKeeperTarget , 0.05) , 0 , 360 , "black" , true);
     }
 }
 
-bool DefensePlan::defenseOneTouchOrNot() {
+bool DefensePlan:: defenseOneTouchOrNot() {
     //// First of All this function checks if other defense agents (that isn't
     //// one toucher) can be one toucher , those role changes to it. Then we
     //// check that if ball is shot to the our goal, we active the one touch flag.
@@ -2934,7 +2844,7 @@ bool DefensePlan::defenseOneTouchOrNot() {
                 otherAgents.append(i);
             }
         }
-        for (int i = 0 ; i < otherAgents.size() ; i++) {
+        for(int i = 0 ; i < otherAgents.size() ; i++) {
             Segment2D otherAgentIntersect(wm->ball->pos , pointForKick);
             Vector2D sol1 , sol2;
             Circle2D circ(defenseAgents.at(otherAgents.at(i))->pos() , Robot::robot_radius_new);
@@ -2943,8 +2853,8 @@ bool DefensePlan::defenseOneTouchOrNot() {
             Line2D ballWay(wm->ball->pos , wm->ball->vel + wm->ball->pos);
             Segment2D ballWay1(wm->ball->pos , wm->ball->vel + wm->ball->pos);
             //////// danger for defense one touch ///////
-            for (int i = 0 ; i < defenseAgents.size() ; i++) {
-                if(Circle2D(defenseAgents.at(i)->pos() , Robot::robot_radius_new).intersection(ballWay1 , &sol[0] , &sol[1])) {
+            for(int j = 0 ; j < defenseAgents.size() ; j++) {
+                if(Circle2D(defenseAgents.at(j)->pos() , Robot::robot_radius_new).intersection(ballWay1 , &sol[0] , &sol[1])) {
                     isIntersect = true;
                     break;
                 }
