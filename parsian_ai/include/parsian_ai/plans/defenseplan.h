@@ -18,13 +18,25 @@
 #define MIN_TWO_ROBOTS_DIST 0.02
 #define MIN_MORE_ROBOTS_DIST 0.05
 
-enum shootOutMode {
+enum class shootOutMode {
     beforeTouch,
     shootOutClear,
     ballBisector,
     skyDive
 
 };
+
+enum class GKstate{
+    transient,
+    Stop,
+    ballIsOutOfField,
+    ballIsBesidePoles,
+    clearMode,
+    oneTouch,
+    dnagerForClear,
+    strictFollow
+};
+
 
 class DefensePlan : public Plan {
 protected:
@@ -38,7 +50,7 @@ protected:
     Vector2D pointForKick, oneToucherDir;
     Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
-    void setGoalKeeperState();
+    GKstate setGoalKeeperState();
     void setGoalKeeperTargetPoint();
     bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
     double differentialTime = 0;
@@ -152,7 +164,8 @@ private:
     void penaltyShootOutMode();
     Vector2D getGoalieShootOutTarget(bool isSkyDive);
     bool agentEffectOnBallProbability(const Vector2D& agentPos);
-    int decideShootOutMode();
+    shootOutMode decideShootOutMode();
+    bool dangerForGK();
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
