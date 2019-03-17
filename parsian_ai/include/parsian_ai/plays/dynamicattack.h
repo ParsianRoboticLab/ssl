@@ -264,6 +264,10 @@ private:
     bool inTimePlan();
 protected:
     void reset() override;
+
+
+    // amir added
+    void bestPos(const QList<int>&, MWBM&);
 };
 
 #endif // DYNAMICATTACK_H

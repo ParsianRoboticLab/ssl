@@ -64,10 +64,28 @@ void CDynamicAttack::reset() {
 void CDynamicAttack::execute_x() {
     ROS_INFO_STREAM("Dynamic Attack : " << agents.size());
     ROS_INFO_STREAM("ali:state  "<< static_cast<int>(attackState));
+
+    //
+    ROS_INFO_STREAM("amir1");
+    //
+
+
     globalExecute(agents.size());
+
+    //
+    ROS_INFO_STREAM("amir2");
+    //
+
     for (auto &p : semiDynamicPosition) {
         drawer->draw(Circle2D(p, .1), QColor(Qt::red), true);
     }
+
+    //
+    ROS_INFO_STREAM("amir3");
+    //
+
+    //Todo -> ai code has segment error rqt has graphical shows.
+
 }
 
 void CDynamicAttack::globalExecute(int agentSize) {
@@ -414,6 +432,13 @@ void CDynamicAttack::playMake() {
 void CDynamicAttack::positioning(QList<Vector2D> _points) {
     // hamid pos
     ROS_INFO_STREAM("hamid inside positioning2");
+    /// amir added
+    for (size_t i{}; i < _points.size(); i++) {
+        ROS_INFO_STREAM("amir_x :" << _points[i].x);
+        ROS_INFO_STREAM("amir_y :" << _points[i].y);
+    }
+
+    ///
     bool check = false;
     for (int i = 0; i < currentPlan.agentSize; i++) {
         if (matchingIDs[i] >= 0) {
@@ -1031,8 +1056,25 @@ void CDynamicAttack::assignId() {
 //    matcher.findMaxMinMatching();
     matcher.findMatching();
     semiDynamicPosition.clear();
-    for (int v = 0; v < robotIDs.count(); v++) {
+
+    //amir added
+
+    bestPos(robotIDs, matcher);
+
+    // amir comment this
+
+    /*for (int v = 0; v < robotIDs.count(); v++) {
         // todo : find best pos in region from searchRegions.points
+        semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
+
+        matchingIDs[v] = matcher.getMatch(v);
+    }*/
+}
+
+
+void CDynamicAttack::bestPos(const QList<int>& robotIDs, MWBM& matcher) {
+    for (size_t v{}; v < robotIDs.count(); v++)
+    {
         semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
         matchingIDs[v] = matcher.getMatch(v);
     }
