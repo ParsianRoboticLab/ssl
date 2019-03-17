@@ -25,9 +25,11 @@ public:
 
 private:
     Agent* kickerAgent;
-    long long int  loopCounter;
+    int i;
+    int  loopCounter;
+    int fuckOff;
     Agent* receiverAgent;
-    bool nearFlag, shotFlag, updateFlag , loop, pauseFLag;
+    bool nearFlag, shotFlag, updateFlag , find;
     Agent* nearID ;
     Vector2D lastBallPos;
     Vector2D ballPosBeforKick;
@@ -45,8 +47,9 @@ private:
     static bool isBallNearToTarget(const Vector2D &ballPos, const Vector2D &targetPos, const double &dist);
     bool isBallSpeedLow(const double &speed, const Vector2D &velocity);
     bool isPassReceived(const Vector2D &ballPos, const Vector2D &desiredPos);
+    double kickSpeedCalculator(const Vector2D &ballPos, const Vector2D &targetPos);
     void reset() override;
-    void otherRobotsFormation(Agent* ,Agent*) const;
+    void otherRobotsFormation(Agent* ,Agent*);
     Agent* reciverFinder(const Vector2D &, Agent*);
     Agent* kickerfinder(const Vector2D & );
     Agent* firstStep(const Vector2D &);

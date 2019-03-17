@@ -6,9 +6,9 @@
 COurBallPlacement::COurBallPlacement() {
 
     loopCounter = 0;
-    pauseFLag = false;
+    find = false;
+    fuckOff = -1;
     first = true;
-    loop = false;
     recivePass = new ReceivepassAction;
     pass = new KickAction;
     gpaP = new GotopointavoidAction; gpaH = new GotopointavoidAction;
@@ -40,6 +40,22 @@ void COurBallPlacement::init(QList<Agent*>& _agents) {
     //ROS_INFO_STREAM("shiit : "<<agents.size());
     initMaster();
 }
+/**
+ *
+ * @return kick speed
+ */
+double COurBallPlacement::kickSpeedCalculator(const Vector2D &ballPos ,const Vector2D &targetPos) {
+    if(ballPos.dist(targetPos) > 8 ) {
+        return conf.ballPlacementLongKick+2;
+    }
+    else if(ballPos.dist(targetPos) > 3 ) {
+        return conf.ballPlacementMedimKick+2;
+    }
+    else {
+        return conf.ballPlacementSlowKick+2;
+    }
+}
+
 /**
  *
  * @param currentBallPos
@@ -133,17 +149,39 @@ Agent *COurBallPlacement::kickerfinder(const Vector2D & target) {
 /**
  * this function will order not selected robots to what to do when ballPLacement is on
  * now they go in the corner and step out of the way
- * @param nearAgent the robot that is nearest to ball
+ * @param nearAgent the robot that is nearest to ball should
  * @param restFlag rest is all the agent except the nearAgent
  */
-void COurBallPlacement::otherRobotsFormation(Agent* kickerAgent , Agent* receiverAgent) const {
+void COurBallPlacement::otherRobotsFormation(Agent* kickerAgent , Agent* receiverAgent)  {
 
-    for(int i=0 ;i<agents.size() ;i++) {
-        if(i != kickerAgent->id() && i != receiverAgent->id()) {                            /////////TODO: is ID uses corectly here??????
-            gpa[i]->setTargetpos(wm->field->center() - Vector2D((i * 0.5 - 5), 4));
-            gpa[i]->setTargetdir(Vector2D(1, 0));
-            drawer->draw(wm->field->center() - Vector2D(i * 0.5 - 5, 4), QColor("red"));
-            agents[i]->action = gpa[i];
+    Segment2D ballToTargetLine = Segment2D(wm->ball->pos, Vector2D(-4, -1));
+    Segment2D robotXLine = Segment2D(Vector2D(-1, -1), Vector2D(-1, -1));
+    Segment2D robotYLine = Segment2D(Vector2D(-1, -1), Vector2D(-1, -1));
+    for(auto agent : agents){
+        if(agent->id() != kickerAgent->id() && agent->id() != receiverAgent->id()){
+            robotXLine = Segment2D(Vector2D(agent->pos().x-robot_radius_new, agent->pos().y), Vector2D(agent->pos().x + robot_radius_new, agent->pos().y));
+            robotYLine = Segment2D(Vector2D(agent->pos().x, agent->pos().y + robot_radius_new), Vector2D(agent->pos().x, agent->pos().y - robot_radius_new));
+            if(ballToTargetLine.existIntersection(robotXLine) || ballToTargetLine.existIntersection(robotYLine)){
+                fuckOff = agent->id();
+                gpa[agent->id()]->setTargetpos(wm->field->center() - Vector2D(-5, -3));
+                gpa[agent->id()]->setTargetdir(Vector2D(100, 0));
+                //drawer->draw(wm->field->center() - Vector2D(-5, - 3)), QColor("red"));
+                agents[agent->id()]->action = gpa[agent->id()];
+                //loopCounter++;
+                //ROS_INFO_STREAM("checkintersect  ....  exist "<< agent->id() << loopCounter);
+            }else{
+                if(fuckOff == agent->id()){
+                    gpa[agent->id()]->setTargetpos(wm->field->center() - Vector2D(-4, -3));
+                    gpa[agent->id()]->setTargetdir(Vector2D(100, 0));
+                    //drawer->draw(wm->field->center() - Vector2D(-5, - 3)), QColor("red"));
+                    agents[agent->id()]->action = gpa[agent->id()];
+                } else {
+                    gpa[agent->id()]->setTargetpos(wm->field->center() - Vector2D(-4, agent->id() * 0.3 - 2));
+                    gpa[agent->id()]->setTargetdir(Vector2D(100, 0));
+                    //drawer->draw(wm->field->center() - Vector2D(-4, agent->id()*0.3 - 2)), QColor("red"));
+                    agents[agent->id()]->action = gpa[agent->id()];
+                }
+            }
         }
     }
 }
@@ -184,7 +222,6 @@ bool COurBallPlacement::isPassReceived(const Vector2D &ballPos, const Vector2D &
     ROS_INFO_STREAM("debug KickAndRecive");
     if (isBallNearToTarget(ballPos, desiredPos, 0.3) && isBallSpeedLow(0.2, wm->ball->vel)) {
         ROS_INFO_STREAM("hahaha ball_recived");
-        pauseFLag = true;
         return true;
     }else{
         ROS_INFO_STREAM("debug agent shoted");
@@ -198,13 +235,14 @@ bool COurBallPlacement::isPassReceived(const Vector2D &ballPos, const Vector2D &
  *
  * @param kickerAgent
  * @param reciverAgent
- * @return
+ * @return is kicker AND receiver agents are on their position
  */
 bool COurBallPlacement::isAgentsOnThePosition(Agent* kickerAgent, Agent* reciverAgent) {
     ROS_INFO_STREAM(" isAgentsOnThePosition function");
     Vector2D targetedPoint = Vector2D(-4,-1);
     Vector2D difference = wm->ball->pos - targetedPoint;
-    return isAgentOnThePosition(reciverAgent, targetedPoint, 0.25) && isAgentOnThePosition(kickerAgent, wm->ball->pos + difference.norm()*0.4, 0.2);
+    const double threshold = 0.45;
+    return reciverAgent->pos().dist(targetedPoint) < 0.25 && kickerAgent->pos().dist(wm->ball->pos + difference.norm()*threshold) < threshold - robot_radius_new + 0.06;
 }
 
 
@@ -213,18 +251,21 @@ bool COurBallPlacement::isAgentsOnThePosition(Agent* kickerAgent, Agent* reciver
  */
 void COurBallPlacement::execute_x(){
     Vector2D targetedPoint = Vector2D(-4, -1);
-    //Vector2D targetedPoint = wm->ballplacementPoint();
-    kickerAgent = firstStep(wm->ball->pos);
-    //if( loopCounter == 30) {
-    receiverAgent = reciverFinder(targetedPoint, kickerAgent);        //////TODO: is kickerAgent id good for here//////////////////////////////////////
-    //}
-    if(receiverAgent == nullptr){
-        ROS_INFO_STREAM("fil its null");
+    //Vector2D targetedPoint = wm->ballplacementPoint()
+    if(!find){
+        kickerAgent = firstStep(wm->ball->pos);
+        receiverAgent = reciverFinder(targetedPoint, kickerAgent);
+    }
+    if(!find && kickerAgent != nullptr && receiverAgent != nullptr) {
+        find = true;
+    }
+    if(wm->ball->pos.dist(kickerAgent->pos()) > 8){
+        find = false;
     }
     otherRobotsFormation(kickerAgent, receiverAgent);
     Vector2D difference = wm->ball->pos - targetedPoint;
     gpaK->setLookat(targetedPoint);
-    gpaK->setTargetpos(wm->ball->pos + difference.norm()*0.45);            //////////30 centimeter behind the ball locking at targeted position
+    gpaK->setTargetpos(wm->ball->pos + difference.norm()*0.45);
     gpaK->setTargetdir(targetedPoint);
     gpaK->setBallobstacleradius(0.20);
     gpaR->setLookat(wm->ball->pos);
@@ -232,18 +273,20 @@ void COurBallPlacement::execute_x(){
     gpaR->setTargetdir(targetedPoint);
     ///set pass action for nearAgent
     pass->setTarget(targetedPoint);
-    pass->setKickspeed(3);
+    pass->setKickspeed(kickSpeedCalculator(wm->ball->pos, targetedPoint));
     pass->setSlow(true);
     pass->setDontkick(true);
+    pass->setIsplayoff(true);
     ROS_INFO_STREAM("speed:" << pass->getKickspeed());
     ///recive pass action
-    recivePass->setReceiveradius(1);
+    recivePass->setReceiveradius(0.6);
     recivePass->setTarget(targetedPoint);
     recivePass->setSlow(true);
     if(isAgentsOnThePosition(kickerAgent, receiverAgent)){
         ROS_INFO_STREAM("shit agents on the positions");
         if(isPassReceived(wm->ball->pos, targetedPoint)){
             ROS_INFO_STREAM("shit pass received");
+            fuckOff = -1;
             const Vector2D position = wm->ball->pos - targetedPoint;
             gpaP->setLookat(targetedPoint);
             gpaP->setTargetpos(wm->ball->pos + position.norm()*0.4);
