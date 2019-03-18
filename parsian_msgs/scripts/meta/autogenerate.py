@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3
 
 import pystache
 import datetime
@@ -137,7 +137,7 @@ def generate_actions(folder):
 
 def main():
     # Setup stuff
-    if os.getcwd().endswith('/parsian_ssl/parsian_msgs/scripts/meta') is False:
+    if os.getcwd().endswith('/parsian_msgs/scripts/meta') is False:
         print("Please run script on /scripts/meta folder")
         exit(1)
 

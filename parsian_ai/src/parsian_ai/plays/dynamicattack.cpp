@@ -50,7 +50,7 @@ CDynamicAttack::~CDynamicAttack() {
 
 }
 
-void CDynamicAttack::init(QList<Agent*>& _agents) {
+void CDynamicAttack::init(QList<Agent *> &_agents) {
     agents.clear();
     agents.append(_agents);
     initMaster();
@@ -63,7 +63,7 @@ void CDynamicAttack::reset() {
 
 void CDynamicAttack::execute_x() {
     ROS_INFO_STREAM("Dynamic Attack : " << agents.size());
-    ROS_INFO_STREAM("ali:state  "<< static_cast<int>(attackState));
+    ROS_INFO_STREAM("ali:state  " << static_cast<int>(attackState));
 
     //
     ROS_INFO_STREAM("amir1");
@@ -306,8 +306,8 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
         matchingIDs[i] = -1;
     }
     for (int i = 0; i < REGION_NUM; i++)
-    for (int i = 0; i < REGION_NUM; i++)
-        drawer->draw(regions[i].rectangle);
+        for (int i = 0; i < REGION_NUM; i++)
+            drawer->draw(regions[i].rectangle);
     updateAttackState();
     makePlan(agentSize);
 
@@ -440,17 +440,15 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
     }
 
 
-    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++)
-    {
-        ROS_INFO_STREAM("amir opp places x " << i  << " : " << wm->opp.active(i)->pos.x);
-        ROS_INFO_STREAM("amir opp places y " << i  << " : " << wm->opp.active(i)->pos.y);
+    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++) {
+        ROS_INFO_STREAM("amir opp places x " << i << " : " << wm->opp.active(i)->pos.x);
+        ROS_INFO_STREAM("amir opp places y " << i << " : " << wm->opp.active(i)->pos.y);
     }
 
     //TODO: these point are static. how can we make them dynamic?
 
 
-    for (size_t i{}; i < regions[1].points.size(); i++)
-    {
+    for (size_t i{}; i < regions[1].points.size(); i++) {
         ROS_INFO_STREAM("amir points x " << i << " : " << regions[1].points[i].x);
         ROS_INFO_STREAM("amir points y " << i << " : " << regions[1].points[i].y);
     }
@@ -1089,55 +1087,34 @@ void CDynamicAttack::assignId() {
 }
 
 
-void CDynamicAttack::bestPos(const QList<int>& robotIDs, MWBM& matcher) {
-    QList<Vector2D> positions;
-    for (size_t v{}; v < robotIDs.count(); v++)
-    {
+void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
+
+    for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
-        ROS_INFO_STREAM("ali best pos.x : " << regions[regionPriority[matcher.getMatch(v)]].rectangle.center().x);
-        ROS_INFO_STREAM("ali best pos.Y : " << regions[regionPriority[matcher.getMatch(v)]].rectangle.center().y);
-    }
-
-    for (size_t v{}; v < robotIDs.count(); v++) {
-
-        //semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
-        /*positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
-        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.bottomLeft());
-        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.bottomRight());
-        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.topLeft());
-        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.topRight());*/
-        //matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
 
 
-        //for (size_t i{}; i < regionPriority.size(); i++) {
-            double tmp{};
-            Vector2D tmp_point{};
-            for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
-                double tmp1 = sqrt((regions[regionPriority[matcher.getMatch(v)]].points[j].x - wm->opp.active(j)->pos.x) *
-                                   (regions[regionPriority[matcher.getMatch(v)]].points[j].x
-                                    - wm->opp.active(j)->pos.x)
-                                   + (regions[regionPriority[matcher.getMatch(v)]].points[j].y - wm->opp.active(j)->pos.y) *
-                                     (regions[regionPriority[matcher.getMatch(v)]].points[j].y
-                                      - wm->opp.active(j)->pos.y));
-                if (tmp1 > tmp) {
-                    tmp = tmp1;
-                    tmp_point.x = regions[regionPriority[v]].points[j].x;
-                    tmp_point.y = regions[regionPriority[v]].points[j].y;
-                }
+        for (size_t i{}; i < regions[0].points.size(); i++) {
+        double min_dist{100000};
+        Vector2D tmp_point{};
+        for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
+            auto tmp = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+            if (tmp < min_dist) {
+                min_dist = tmp;
+                tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
             }
-            regions[regionPriority[v]].theirNearestRobot = tmp;
-            semiDynamicPosition.append(tmp_point);
-            matchingIDs[v] = matcher.getMatch(v);
-            ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
-            ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
+        }
+        regions[regionPriority[matchingIDs[v]]].theirNearestRobot = min_dist;
+        semiDynamicPosition.append(tmp_point);
 
-        //}
+        ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
+        ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
+
+        }
 
 
     }
 }
-
 
 
 Vector2D CDynamicAttack::getBestPosToShootToGoal(Vector2D from, double &regionWidth, bool oppGaol) {
@@ -1550,25 +1527,23 @@ void CDynamicAttack::updateAttackState() {
     switch (attackState) {
         case DynamicAttackState::PlaymakeControl:
             if (!directShot)
-                attackState = DynamicAttackState ::PlaymakePass;
+                attackState = DynamicAttackState::PlaymakePass;
             break;
         case DynamicAttackState::PlaymakePass:
             if (passDone()) {
                 attackState = DynamicAttackState::PositioningControl;
                 if (isGoodForOneTouch()) {
-                positionSkill = PositionSkill::OneTouch;
-                oneTouchFailState = 0;
-                oneTouchDoneState = 0;
-            }
-                else
+                    positionSkill = PositionSkill::OneTouch;
+                    oneTouchFailState = 0;
+                    oneTouchDoneState = 0;
+                } else
                     positionSkill = PositionSkill::Ready;
-            }
-            else if (directShot || passFailed())
-                attackState = DynamicAttackState ::PlaymakeControl;
+            } else if (directShot || passFailed())
+                attackState = DynamicAttackState::PlaymakeControl;
             break;
         case DynamicAttackState::PositioningControl:
             if (positionTaskDone())
-                attackState = DynamicAttackState ::PlaymakeControl;
+                attackState = DynamicAttackState::PlaymakeControl;
             break;
         default:
             break;
@@ -1595,14 +1570,15 @@ bool CDynamicAttack::isGoodForOneTouch() {
 bool CDynamicAttack::positionTaskDone() {
 
     if (positionSkill == PositionSkill::Ready)
-        if ((wm->ball->vel.length() < .02) || (wm->ball->vel.length() < .1 && wm->ball->pos.dist(currentPlan.passPos) > 2))
+        if ((wm->ball->vel.length() < .02) ||
+            (wm->ball->vel.length() < .1 && wm->ball->pos.dist(currentPlan.passPos) > 2))
             return true;
     if (positionSkill == PositionSkill::OneTouch) {
         double dist = wm->ball->pos.dist(currentPlan.passPos);
         if (dist > 2)
-            oneTouchFailState ++;
+            oneTouchFailState++;
         if (dist < 1.5)
-            oneTouchDoneState ++;
+            oneTouchDoneState++;
 
         if (oneTouchDoneState > 30 && dist > 2)
             return true;
