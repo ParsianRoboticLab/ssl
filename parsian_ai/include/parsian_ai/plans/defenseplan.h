@@ -14,6 +14,8 @@
 #include <parsian_ai/config.h>
 #include <parsian_util/geom/polygon_2d.h>
 #include <parsian_util/action/autogenerate/noaction.h>
+#include "parsian_util/tools/blackboard.h"
+#include "parsian_util/geom/polygon_2d.h"
 #define LOOP_TIME_BYKK 0.016
 #define MIN_TWO_ROBOTS_DIST 0.02
 #define MIN_MORE_ROBOTS_DIST 0.05
@@ -27,13 +29,16 @@ enum class shootOutMode {
 };
 
 enum class GKstate{
-    transient,
+    GKReciveBallInTS,
+    GKPredictInTs,
+    playoff,
     Stop,
     ballIsOutOfField,
     ballIsBesidePoles,
     clearMode,
+    clearSlowBall,
     oneTouch,
-    dnagerForClear,
+    dangerForClear,
     strictFollow
 };
 
@@ -51,7 +56,7 @@ protected:
     Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
     GKstate setGoalKeeperState();
-    void setGoalKeeperTargetPoint();
+    Vector2D setGoalKeeperTargetPoint(GKstate);
     bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
     double differentialTime = 0;
     bool dangerForGoalKeeperClear;
@@ -166,6 +171,8 @@ private:
     bool agentEffectOnBallProbability(const Vector2D& agentPos);
     shootOutMode decideShootOutMode();
     bool dangerForGK();
+    Vector2D movePointToPenaltyArea(const Vector2D&);
+    Vector2D ballIsBesidePoles();
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
