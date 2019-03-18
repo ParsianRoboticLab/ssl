@@ -86,6 +86,14 @@ function parsian() {
 			catkin clean -y
 			catkin build "${@:2}"
 			;;
+		window)
+			rqt --perspective-file "$PARSIAN_ROOT/src/ssl/parsian_tools/Main.perspective"&
+			while :
+			do
+				rqt --perspective-file "$PARSIAN_ROOT/src/ssl/parsian_tools/GraphicalClient.perspective"
+			done
+
+			;;
 		behavior)
 			case $2 in
 			remove) # TODO : This feature is kinda tricky

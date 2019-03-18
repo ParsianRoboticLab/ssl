@@ -12,13 +12,14 @@ namespace rqt_parsian_gui
 
     void TaskRunner::initPlugin(qt_gui_cpp::PluginContext& context)
     {
-
+        ROS_INFO_STREAM("Kian");
         n = getNodeHandle();
         n_private = getPrivateNodeHandle();
-        // create QWidget
+       // create QWidget
 
         taskRunnerWidget = new TaskRunnerWidget(n);
         context.addWidget(taskRunnerWidget);
+//         ROS_INFO("kasra");
 
     }
 
