@@ -306,6 +306,7 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
         matchingIDs[i] = -1;
     }
     for (int i = 0; i < REGION_NUM; i++)
+    for (int i = 0; i < REGION_NUM; i++)
         drawer->draw(regions[i].rectangle);
     updateAttackState();
     makePlan(agentSize);
@@ -436,6 +437,22 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
     for (size_t i{}; i < _points.size(); i++) {
         ROS_INFO_STREAM("amir_x :" << _points[i].x);
         ROS_INFO_STREAM("amir_y :" << _points[i].y);
+    }
+
+
+    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++)
+    {
+        ROS_INFO_STREAM("amir opp places x " << i  << " : " << wm->opp.active(i)->pos.x);
+        ROS_INFO_STREAM("amir opp places y " << i  << " : " << wm->opp.active(i)->pos.y);
+    }
+
+    //TODO: these point are static. how can we make them dynamic?
+
+
+    for (size_t i{}; i < regions[1].points.size(); i++)
+    {
+        ROS_INFO_STREAM("amir points x " << i << " : " << regions[1].points[i].x);
+        ROS_INFO_STREAM("amir points y " << i << " : " << regions[1].points[i].y);
     }
 
     ///
@@ -1073,12 +1090,54 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int>& robotIDs, MWBM& matcher) {
+    QList<Vector2D> positions;
     for (size_t v{}; v < robotIDs.count(); v++)
     {
-        semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
         matchingIDs[v] = matcher.getMatch(v);
+        ROS_INFO_STREAM("ali best pos.x : " << regions[regionPriority[matcher.getMatch(v)]].rectangle.center().x);
+        ROS_INFO_STREAM("ali best pos.Y : " << regions[regionPriority[matcher.getMatch(v)]].rectangle.center().y);
+    }
+
+    for (size_t v{}; v < robotIDs.count(); v++) {
+
+        //semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
+        /*positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
+        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.bottomLeft());
+        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.bottomRight());
+        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.topLeft());
+        positions.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.topRight());*/
+        //matchingIDs[v] = matcher.getMatch(v);
+        // finding nearest opp
+
+
+        //for (size_t i{}; i < regionPriority.size(); i++) {
+            double tmp{};
+            Vector2D tmp_point{};
+            for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
+                double tmp1 = sqrt((regions[regionPriority[matcher.getMatch(v)]].points[j].x - wm->opp.active(j)->pos.x) *
+                                   (regions[regionPriority[matcher.getMatch(v)]].points[j].x
+                                    - wm->opp.active(j)->pos.x)
+                                   + (regions[regionPriority[matcher.getMatch(v)]].points[j].y - wm->opp.active(j)->pos.y) *
+                                     (regions[regionPriority[matcher.getMatch(v)]].points[j].y
+                                      - wm->opp.active(j)->pos.y));
+                if (tmp1 > tmp) {
+                    tmp = tmp1;
+                    tmp_point.x = regions[regionPriority[v]].points[j].x;
+                    tmp_point.y = regions[regionPriority[v]].points[j].y;
+                }
+            }
+            regions[regionPriority[v]].theirNearestRobot = tmp;
+            semiDynamicPosition.append(tmp_point);
+            matchingIDs[v] = matcher.getMatch(v);
+            ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
+            ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
+
+        //}
+
+
     }
 }
+
 
 
 Vector2D CDynamicAttack::getBestPosToShootToGoal(Vector2D from, double &regionWidth, bool oppGaol) {

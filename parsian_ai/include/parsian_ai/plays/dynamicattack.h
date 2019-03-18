@@ -18,20 +18,28 @@ enum class DynamicAttackState {
             PositioningControl  = 2
 };
 
-struct FieldRegion
+
+///amir
+// changed to class. added angle and theirNearestRobot and chance.
+
+class FieldRegion
 {
-    Rect2D rectangle;
-    QList<Vector2D> points;
-    int id;
+    public:
+        Rect2D rectangle;
+        QList<Vector2D> points;
+        int id;
+        double angle;
+        double theirNearestRobot;
+        double chance;
 
-    FieldRegion(){};
+        FieldRegion(){};
 
-    FieldRegion(Rect2D r, QList<Vector2D> p)
-    {
-        rectangle = r;
-        for(auto& point : p)
-            points.push_back(point);
-    }
+        FieldRegion(Rect2D r, QList<Vector2D> p)
+        {
+            rectangle = r;
+            for(auto& point : p)
+                points.push_back(point);
+        }
 };
 
 
