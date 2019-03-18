@@ -108,9 +108,13 @@ protected:
     bool DangerByOppAgentsInPenaltyArea;
     bool DangerByOurAgentsOutOfPenaltyArea;
     bool DangerByOppAgentsOutOfPenaltyArea;
+    bool DangerByBothAgentsOutOfPenaltyArea;
+    bool DangerByBothAgentsInPenaltyArea;
     bool isJustOurAgentsInDanger;
     bool isJustOppAgentsInDanger;
     bool isOurAgentsAndOppAgentsInDanger;
+    bool isInPenaltyArea;
+
 
     bool stopMode;
     bool playOffMode;
