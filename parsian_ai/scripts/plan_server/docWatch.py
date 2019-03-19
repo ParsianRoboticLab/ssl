@@ -5,6 +5,8 @@ import os
 import json
 from watchdog.events import FileSystemEventHandler
 from parsian_msgs.msg import parsian_plan
+from parsian_msgs.msg import vector2D
+
 
 
 
@@ -102,7 +104,51 @@ class Watcher(FileSystemEventHandler):
                     self.all_badjsons_root.append(line)
 
     def get_desired_plans(self):
-        pass
+        self.generate_parsianplan_from_json(self.all_desiredjsons_root[0])
 
     def generate_parsianplan_from_json(self, planpath):
+        plan_json = None
+        with open(planpath) as json_file:
+            try:
+                plan_json = json.load(json_file)
+            except:
+                return False
+
         plan_message = parsian_plan()
+        plan_message.planFile = planpath
+        plan_message.isActive = True                                #need change in client request
+        plan_message.isMaster = False                               #need change in client request
+        plan_message.symmetry = False                               #need change in ai requests
+        plan_message.chance = plan_json["plans"][0]["chance"]       #could be toggled in client or ai in future
+        plan_message.lastDist = plan_json["plans"][0]["lastDist"]
+
+        ##start agentsize
+        #all agents that thier initPos isnt -100, except for the first kicker
+        agentSize = 0
+        agentSize += 1 #first kicker
+        for agentsPos in plan_json["plans"][0]["agentInitPos"]:
+            if agentsPos["x"] != -100:
+                agentSize += 1
+        plan_message.agentSize = agentSize
+        ##finish agentsize
+
+        parsian_plan.tags = plan_json["plans"][0]["tags"]
+        parsian_plan.planMode = plan_json["plans"][0]["planMode"]
+
+        ##start ballInitPos
+        ballpos = vector2D()
+        ballpos.x = plan_json["plans"][0]["ballInitPos"]["x"]
+        ballpos.y = plan_json["plans"][0]["ballInitPos"]["y"]
+        parsian_plan.ballInitPos = ballpos
+        ##finish ballInitPos
+
+        plan_message.successRate = 0                                #could be toggled in client or ai in future
+        plan_message.planRepeat = 0                                 #could be toggled here in future
+
+        ##start agentInitPos
+        allinitpos = []
+        for initpos in plan_json["plans"][0]["agentInitPos"]:
+            initpos_tmp = vector2D()
+            initpos_tmp.x = initpos["x"]
+            initpos_tmp.y = initpos["y"]
+
