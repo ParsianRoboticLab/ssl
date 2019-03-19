@@ -4,6 +4,7 @@ import rospy
 import os
 import json
 from watchdog.events import FileSystemEventHandler
+from parsian_msgs.msg import parsian_plan
 
 
 
@@ -17,10 +18,11 @@ class Watcher(FileSystemEventHandler):
         self.is_newEvent_happend = True
 
         #update_plans
-        self.all_jsons_root = []#all files with json extension
-        self.all_ignoredjsons_root = []#all ignored files with json extension
-        self.all_desiredjsons_root = []#all json files that are not in ignore file
-        self.all_badjsons_root = []#all json files that cant be opend
+        self.all_jsons_root = []        #all files with json extension
+        self.all_ignoredjsons_root = [] #all ignored files with json extension
+        self.all_desiredjsons_root = [] #all json files that are not in ignore file
+        self.all_badjsons_root = []     #all json files that cant be opend
+        self.desired_plans = {}         #all desired plans -> filepath: [parsian_plan, chosen_count]
 
 
     def on_any_event(self, event):
@@ -37,6 +39,8 @@ class Watcher(FileSystemEventHandler):
         self.get_all_ignoredjsons_root()
 
         self.get_all_desiredjsons_root()
+
+        self.get_desired_plans()
 
 
     def get_all_jsons_root(self):
@@ -96,3 +100,9 @@ class Watcher(FileSystemEventHandler):
                     self.all_desiredjsons_root.append(line)
                 else:
                     self.all_badjsons_root.append(line)
+
+    def get_desired_plans(self):
+        pass
+
+    def generate_parsianplan_from_json(self, planpath):
+        plan_message = parsian_plan()
