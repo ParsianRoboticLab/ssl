@@ -188,8 +188,9 @@ class Watcher(FileSystemEventHandler):
             agent_tmp.positions = positions
             agent_tmp.posSize = len(positions)
             agents.append(agent_tmp)
+        plan_message.agents = agents
         ##finish agents
-        print(agents)
+
 
 
 
