@@ -6,6 +6,10 @@ import json
 from watchdog.events import FileSystemEventHandler
 from parsian_msgs.msg import parsian_plan
 from parsian_msgs.msg import vector2D
+from parsian_msgs.msg import parsian_plan_agent
+from parsian_msgs.msg import parsian_plan_position
+from parsian_msgs.msg import parsian_plan_skill
+
 
 
 
@@ -151,4 +155,41 @@ class Watcher(FileSystemEventHandler):
             initpos_tmp = vector2D()
             initpos_tmp.x = initpos["x"]
             initpos_tmp.y = initpos["y"]
+            allinitpos.append(initpos_tmp)
+        plan_message.agentInitPos = allinitpos
+        ##finish agentInitPos
+
+        ##start agents
+        agents = []
+        for agent in plan_json["plans"][0]["agents"]:
+            agent_tmp = parsian_plan_agent()
+            agent_tmp.id = agent["ID"]
+            positions = []
+            for position in agent["positions"]:
+                position_tmp = parsian_plan_position()
+                position_tmp.angel = position["angel"]
+                position_tmp.pos.x = position["pos-x"]
+                position_tmp.pos.y = position["pos-y"]
+                position_tmp.tolerance = position["tolerance"]
+                skills = []
+                for skill in position["skills"]:
+                    skill_tmp = parsian_plan_skill()
+                    skill_tmp.flag = skill["flag"]
+                    skill_tmp.name = skill["name"]
+                    skill_tmp.primary = skill["primary"]
+                    skill_tmp.secondry = skill["secondary"]
+                    if "target" in skill:
+                        skill_tmp.agent = skill["target"]["agent"]
+                        skill_tmp.index = skill["target"]["index"]
+                    skills.append(skill_tmp)
+                position_tmp.skills = skills
+                position_tmp.skillSize = len(skills)
+                positions.append(position_tmp)
+            agent_tmp.positions = positions
+            agent_tmp.posSize = len(positions)
+            agents.append(agent_tmp)
+        ##finish agents
+        print(agents)
+
+
 
