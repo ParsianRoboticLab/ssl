@@ -1,21 +1,9 @@
 # use python regex; write your comments and data in seperate lines.
-/NewPlan.json
-/hello2.json
 # ignore all files and directories in /plans/sth:
-/sth/
-/old_plans/
-/another/sth
-/\w*/\w*MRL.*\.json
-/\w*MRL.*\.json
-/blabla/
-/mahi.json
-/2pass.json
-/hshm2.json
-/2p_1.json
-/2p_2.json
-/chip_2P.json
-/kickoff/prs_kickoff_chip.json
-/kickoff/prs_kickoff_pass.json
-/afterlife/
-/kickoff/kickoff2.json
-/ERforce/template.json
+/old_plans/#ss
+kianPlan123.json
+global
+kickoff
+mrl
+ZJu
+old_plans
