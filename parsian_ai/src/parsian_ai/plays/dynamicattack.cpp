@@ -1093,28 +1093,34 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
 
+        double max_dist{-1};
+        Vector2D tmp_point{};
 
         for (size_t i{}; i < regions[0].points.size(); i++) {
-        double min_dist{100000};
-        Vector2D tmp_point{};
-        for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
-            auto tmp = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
-            if (tmp < min_dist) {
-                min_dist = tmp;
+            double nearest_opp_robot_dist{100000};
+            for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) { // cal nearest_opp_robot
+                auto tmp = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+                if (tmp < nearest_opp_robot_dist) {
+                    nearest_opp_robot_dist = tmp;
+                }
+            }
+            if (nearest_opp_robot_dist > max_dist) {
+                max_dist = nearest_opp_robot_dist;
                 tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
             }
         }
-        regions[regionPriority[matchingIDs[v]]].theirNearestRobot = min_dist;
+
+        regions[regionPriority[matchingIDs[v]]].theirNearestRobot = max_dist;
         semiDynamicPosition.append(tmp_point);
 
         ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
         ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
 
-        }
-
-
     }
+
+
 }
+
 
 
 Vector2D CDynamicAttack::getBestPosToShootToGoal(Vector2D from, double &regionWidth, bool oppGaol) {
