@@ -9,6 +9,9 @@ from parsian_msgs.msg import vector2D
 from parsian_msgs.msg import parsian_plan_agent
 from parsian_msgs.msg import parsian_plan_position
 from parsian_msgs.msg import parsian_plan_skill
+from parsian_msgs.srv import plan_service
+from parsian_msgs.srv import plan_serviceResponse
+from parsian_msgs.srv import plan_serviceRequest
 
 
 
@@ -28,7 +31,7 @@ class Watcher(FileSystemEventHandler):
         self.all_ignoredjsons_root = [] #all ignored files with json extension
         self.all_desiredjsons_root = [] #all json files that are not in ignore file
         self.all_badjsons_root = []     #all json files that cant be opend
-        self.desired_plans = {}         #all desired plans -> filepath: [parsian_plan, chosen_count]
+        self.desired_plans = {}         #all desired plans -> filepath: [parsian_plan]
 
 
     def on_any_event(self, event):
@@ -108,7 +111,8 @@ class Watcher(FileSystemEventHandler):
                     self.all_badjsons_root.append(line)
 
     def get_desired_plans(self):
-        self.generate_parsianplan_from_json(self.all_desiredjsons_root[0])
+        for root in self.all_desiredjsons_root:
+            self.desired_plans[root] = self.generate_parsianplan_from_json(root)
 
     def generate_parsianplan_from_json(self, planpath):
         plan_json = None
@@ -136,14 +140,14 @@ class Watcher(FileSystemEventHandler):
         plan_message.agentSize = agentSize
         ##finish agentsize
 
-        parsian_plan.tags = plan_json["plans"][0]["tags"]
-        parsian_plan.planMode = plan_json["plans"][0]["planMode"]
+        plan_message.tags = [str(tag) for tag in plan_json["plans"][0]["tags"]]
+        plan_message.planMode = str(plan_json["plans"][0]["planMode"])
 
         ##start ballInitPos
         ballpos = vector2D()
         ballpos.x = plan_json["plans"][0]["ballInitPos"]["x"]
         ballpos.y = plan_json["plans"][0]["ballInitPos"]["y"]
-        parsian_plan.ballInitPos = ballpos
+        plan_message.ballInitPos = ballpos
         ##finish ballInitPos
 
         plan_message.successRate = 0                                #could be toggled in client or ai in future
@@ -156,7 +160,7 @@ class Watcher(FileSystemEventHandler):
             initpos_tmp.x = initpos["x"]
             initpos_tmp.y = initpos["y"]
             allinitpos.append(initpos_tmp)
-        plan_message.agentInitPos = allinitpos
+        plan_message.agentInitPos[0:len(allinitpos)] = allinitpos
         ##finish agentInitPos
 
         ##start agents
@@ -175,22 +179,32 @@ class Watcher(FileSystemEventHandler):
                 for skill in position["skills"]:
                     skill_tmp = parsian_plan_skill()
                     skill_tmp.flag = skill["flag"]
-                    skill_tmp.name = skill["name"]
+                    skill_tmp.name = str(skill["name"])
                     skill_tmp.primary = skill["primary"]
                     skill_tmp.secondry = skill["secondary"]
                     if "target" in skill:
                         skill_tmp.agent = skill["target"]["agent"]
                         skill_tmp.index = skill["target"]["index"]
+                    else:
+                        skill_tmp.agent = -1
+                        skill_tmp.index = -1
                     skills.append(skill_tmp)
-                position_tmp.skills = skills
+
+                position_tmp.skills[0:len(skills)] = skills
                 position_tmp.skillSize = len(skills)
                 positions.append(position_tmp)
-            agent_tmp.positions = positions
+            agent_tmp.positions[0:len(positions)] = positions
             agent_tmp.posSize = len(positions)
             agents.append(agent_tmp)
-        plan_message.agents = agents
+        plan_message.agents[0:len(agents)] = agents
         ##finish agents
 
+        return plan_message
 
+    def choose_plan(self, req):
+        response = plan_serviceResponse()
+        response.the_plan = self.generate_parsianplan_from_json(self.all_desiredjsons_root[0])
+        response.time_us = 0
+        return response
 
 
