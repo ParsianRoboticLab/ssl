@@ -28,7 +28,7 @@ enum class shootOutMode {
 
 };
 
-enum class GKstate{
+enum class GKState{
     GKReciveBallInTS,
     GKPredictInTs,
     playoff,
@@ -50,16 +50,13 @@ protected:
     GotopointAction* gps[_MAX_NUM_PLAYERS];
     GotopointavoidAction *gpa[_MAX_NUM_PLAYERS];
     KickAction* kickSkill;
-    NoAction* noSkill;
     Action* AHZSkills;
     Vector2D pointForKick, oneToucherDir;
     Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
-    GKstate setGoalKeeperState();
-    Vector2D setGoalKeeperTargetPoint(GKstate);
-    bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
+    GKState setGoalKeeperState();
+    Vector2D setGoalKeeperTargetPoint(GKState);
     double differentialTime = 0;
-    bool dangerForGoalKeeperClear;
     int oneTouchCnt;
     ////////////////////////////// AHZ ///////////////////
     Line2D getBisectorLine(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
@@ -106,20 +103,13 @@ protected:
     double ballCircleR = 0.5;
     double xLimitForblockingPass;
     double suitableRadius;
-    bool isCrowdedInFrontOfPenaltyAreaByOurAgents;
-    bool isCrowdedInFrontOfPenaltyAreaByOppAgents;
-    bool dangerForGoalKeeperClearByOurAgents;
-    bool dangerForGoalKeeperClearByOppAgents;
-    bool dangerForInsideOfThePenaltyArea;
     bool manToManMarkBlockPassFlag;
-    bool GKReciveBallInTS;
     bool ballIntersectOurPenaltyArea;
     QList <QString> markRoles;
     QList <QString> lastMarkRoles;
     QString lastStateForGoalKeeper;
     QList<Vector2D> AHZDefPoints;
     ///////////////////////////////////////////////////
-    void executeGoalKeeper();
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
@@ -173,6 +163,8 @@ private:
     bool dangerForGK();
     Vector2D movePointToPenaltyArea(const Vector2D&);
     Vector2D ballIsBesidePoles();
+    void executeGoalKeeper(const Vector2D& , const GKState&);
+    int stateBallBesidePolles;
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
