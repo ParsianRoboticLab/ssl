@@ -21,7 +21,8 @@ class PlanServer:
         self.observer.start()
 
     def handle_ai_request(self, req):
-        return self.watcher.choose_plan(req)
+        res = self.watcher.choose_plan(req)
+        return res
 
 
 

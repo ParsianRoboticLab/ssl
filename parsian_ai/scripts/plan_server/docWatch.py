@@ -212,8 +212,6 @@ class Watcher(FileSystemEventHandler):
             return
         shuffle = randint(0, len(all_matched_plans.keys()) - 1)
 
-        print(all_matched_plans)
-
         response = plan_serviceResponse()
         response.the_plan = self.desired_plans[all_matched_plans.keys()[shuffle]]
         response.the_plan.symmetry = all_matched_plans[all_matched_plans.keys()[shuffle]]
