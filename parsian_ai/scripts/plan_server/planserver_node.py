@@ -6,6 +6,7 @@ import os
 from docWatch import Watcher
 from watchdog.observers import Observer
 from parsian_msgs.srv import plan_service
+from parsian_msgs.srv import parsian_update_plans
 
 
 
@@ -15,6 +16,7 @@ class PlanServer:
         self.watcher = Watcher(self.path)
 
         self.ai_service = rospy.Service('get_plans', plan_service, self.handle_ai_request)
+        self.gui_service = rospy.Service('update_plans', parsian_update_plans, self.handle_gui_request)
 
         self.observer = Observer()
         self.observer.schedule(self.watcher, self.path, recursive=True)
@@ -23,6 +25,9 @@ class PlanServer:
     def handle_ai_request(self, req):
         res = self.watcher.choose_plan(req)
         return res
+
+    def handle_gui_request(self, req):
+        self.watcher.gui_request(req)
 
 
 

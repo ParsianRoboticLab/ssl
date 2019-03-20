@@ -14,6 +14,7 @@ from parsian_msgs.msg import parsian_plan_skill
 from parsian_msgs.srv import plan_service
 from parsian_msgs.srv import plan_serviceResponse
 from parsian_msgs.srv import plan_serviceRequest
+from parsian_msgs.srv import parsian_update_plansRequest
 
 
 
@@ -234,8 +235,6 @@ class Watcher(FileSystemEventHandler):
                         matched[plan] = isSymmetry
         return matched
 
-
-
     def check_ballPos(self, plan, ballPosX, ballPosY):
         actual_distX = self.desired_plans[plan].ballInitPos.x - ballPosX
         actual_distY = self.desired_plans[plan].ballInitPos.y - ballPosY
@@ -251,3 +250,56 @@ class Watcher(FileSystemEventHandler):
             return (True, True) #isMatched - isSymmetry
         else:
             return (False, False)
+
+    def gui_request(self, req):
+        os.chdir(self.path)
+        if req.Mode == 1:#ACTIVATE
+            for path in req.Plans:
+                path = os.path.join(self.path, path)
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    self.desired_plans[path].isActive = True
+                elif os.path.isdir(path):
+                    for root, dirs, files in os.walk(path, topdown=False):
+                        for name in files:
+                            name = os.path.join(root, name)
+                            if name in self.desired_plans.keys():
+                                self.desired_plans[name].isActive = True
+
+        elif req.Mode == 2:#DEACTIVATE
+            for path in req.Plans:
+                path = os.path.join(self.path, path)
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    self.desired_plans[path].isActive = False
+                elif os.path.isdir(path):
+                    for root, dirs, files in os.walk(path, topdown=False):
+                        for name in files:
+                            name = os.path.join(root, name)
+                            if name in self.desired_plans.keys():
+                                self.desired_plans[name].isActive = False
+
+        elif req.Mode == 3:#MASTER
+            if req.Plans[0] != '' or req.Plans[0] != None:
+                path = os.path.join(self.path, req.Plans[0])
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    for plan in self.desired_plans:
+                        self.desired_plans[plan].isMaster = False
+                    self.desired_plans[path].isMaster = True
+
+        elif req.Mode == 4:#DEMASTER
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isMaster = False
+
+        elif req.Mode == 5:#ACTIVATE_ALL
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isActive = True
+
+        elif req.Mode == 6:#DEACTIVATE_ALL
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isActive = False
+
+
+        for plan in self.desired_plans:
+            if self.desired_plans[plan].isActive:
+                print(plan)
+
+
