@@ -115,9 +115,13 @@ class Watcher(FileSystemEventHandler):
                     self.all_badjsons_root.append(line)
 
     def get_desired_plans(self):
+        last_desired_plans = self.desired_plans.copy()
         self.desired_plans = {}
         for root in self.all_desiredjsons_root:
             self.desired_plans[root] = self.generate_parsianplan_from_json(root)
+
+        #check for plans that if they were  active or master the last time
+        self.check_desired_plans_history(last_desired_plans)
 
     def generate_parsianplan_from_json(self, planpath):
         plan_json = None
@@ -297,9 +301,20 @@ class Watcher(FileSystemEventHandler):
             for plan in self.desired_plans:
                 self.desired_plans[plan].isActive = False
 
+        # print("active")
+        # for plan in self.desired_plans:
+        #     if self.desired_plans[plan].isActive:
+        #         print(plan)
+        # print("master")
+        # for plan in self.desired_plans:
+        #     if self.desired_plans[plan].isMaster:
+        #         print(plan)
+        # print("--------------------------------------")
 
+    def check_desired_plans_history(self, last_desired_plans):
         for plan in self.desired_plans:
-            if self.desired_plans[plan].isActive:
-                print(plan)
+            if plan in last_desired_plans.keys():
+                self.desired_plans[plan].isActive = last_desired_plans[plan].isActive
+                self.desired_plans[plan].isMaster = last_desired_plans[plan].isMaster
 
 
