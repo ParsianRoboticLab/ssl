@@ -3,6 +3,8 @@
 import rospy
 import os
 import json
+import math
+from random import randint
 from watchdog.events import FileSystemEventHandler
 from parsian_msgs.msg import parsian_plan
 from parsian_msgs.msg import vector2D
@@ -41,6 +43,7 @@ class Watcher(FileSystemEventHandler):
     def my_callback(self, event):
         if not self.is_newEvent_happend:
             return
+
         self.is_newEvent_happend = False
 
         self.get_all_jsons_root()
@@ -72,7 +75,7 @@ class Watcher(FileSystemEventHandler):
                     continue
                 elif line.find('#') > 0:
                     clear_comment_lines.append(line[0: line.find('#')].rstrip())
-                else:
+                elif not len(line.strip()) == 0:#not a blank line
                     clear_comment_lines.append(line.rstrip())
 
         for i in range(len(clear_comment_lines)):
@@ -111,6 +114,7 @@ class Watcher(FileSystemEventHandler):
                     self.all_badjsons_root.append(line)
 
     def get_desired_plans(self):
+        self.desired_plans = {}
         for root in self.all_desiredjsons_root:
             self.desired_plans[root] = self.generate_parsianplan_from_json(root)
 
@@ -202,9 +206,50 @@ class Watcher(FileSystemEventHandler):
         return plan_message
 
     def choose_plan(self, req):
+        all_matched_plans = self.get_all_matched_plans(req.plan_req.gameMode, req.plan_req.playersNum, req.plan_req.ballPos.x, req.plan_req.ballPos.y)#{planpath: isSymmetric}
+
+        if len(all_matched_plans.keys()) == 0:
+            return
+        shuffle = randint(0, len(all_matched_plans.keys()) - 1)
+
+        print(all_matched_plans)
+
         response = plan_serviceResponse()
-        response.the_plan = self.generate_parsianplan_from_json(self.all_desiredjsons_root[0])
+        response.the_plan = self.desired_plans[all_matched_plans.keys()[shuffle]]
+        response.the_plan.symmetry = all_matched_plans[all_matched_plans.keys()[shuffle]]
         response.time_us = 0
         return response
 
+    def get_all_matched_plans(self, gameMode, playersNum, ballPosX, ballPosY):
+        matched = {}
+        if gameMode == 3:#KICKOFF
+            for plan in self.desired_plans:
+                if self.desired_plans[plan].planMode == "KICKOFF":
+                    if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0:
+                        matched[plan] = False#not symmetric
 
+        else:
+            for plan in self.desired_plans:
+                if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0:
+                    isMatched, isSymmetry = self.check_ballPos(plan, ballPosX, ballPosY)
+                    if isMatched:
+                        matched[plan] = isSymmetry
+        return matched
+
+
+
+    def check_ballPos(self, plan, ballPosX, ballPosY):
+        actual_distX = self.desired_plans[plan].ballInitPos.x - ballPosX
+        actual_distY = self.desired_plans[plan].ballInitPos.y - ballPosY
+        actual_dist = math.sqrt(math.pow(actual_distX, 2) + math.pow(actual_distY, 2))
+
+        symm_distX = self.desired_plans[plan].ballInitPos.x - ballPosX
+        symm_distY = -self.desired_plans[plan].ballInitPos.y - ballPosY
+        symm_dist = math.sqrt(math.pow(symm_distX, 2) + math.pow(symm_distY, 2))
+
+        if actual_dist <= symm_dist and actual_dist < 2:
+            return (True, False) #isMatched - isSymmetry
+        if actual_dist > symm_dist and symm_dist < 2:
+            return (True, True) #isMatched - isSymmetry
+        else:
+            return (False, False)
