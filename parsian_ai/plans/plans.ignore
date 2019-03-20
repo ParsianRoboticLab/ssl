@@ -1,10 +1,5 @@
 # use python regex; write your comments and data in seperate lines.
 # ignore all files and directories in /plans/sth:
-/old_plans/#ss
-kianPlan123.json
-global
-kickoff
-mrl
-ZJu
-old_plans
-test2.json
+oldPlans/#2018 plans
+jolo2.json
+kickoff2.json
