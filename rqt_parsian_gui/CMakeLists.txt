@@ -85,8 +85,8 @@ set (${PROJECT_NAME}_SRCS
         src/${PROJECT_NAME}/mode_chooser.cpp
         src/${PROJECT_NAME}/modeChooserWidget.cpp
         src/${PROJECT_NAME}/handycontroller.cpp
-        src/${PROJECT_NAME}/playoffWidget.cpp
-        src/${PROJECT_NAME}/playoff.cpp
+        src/${PROJECT_NAME}/playoff/playoffWidget.cpp
+        src/${PROJECT_NAME}/playoff/playoff.cpp
         src/${PROJECT_NAME}/taskRunner.cpp
         src/${PROJECT_NAME}/taskRunnerWidget.cpp
         src/${PROJECT_NAME}/referee.cpp
@@ -99,8 +99,8 @@ set(${PROJECT_NAME}_HDRS
         include/${PROJECT_NAME}/mode_chooser.h
         include/${PROJECT_NAME}/modeChooserWidget.h
         include/${PROJECT_NAME}/handycontroller.h
-        include/${PROJECT_NAME}/playoffWidget.h
-        include/${PROJECT_NAME}/playoff.h
+        include/${PROJECT_NAME}/playoff/playoffWidget.h
+        include/${PROJECT_NAME}/playoff/playoff.h
         include/${PROJECT_NAME}/taskRunner.h
         include/${PROJECT_NAME}/taskRunnerWidget.h
         include/${PROJECT_NAME}/referee.h
