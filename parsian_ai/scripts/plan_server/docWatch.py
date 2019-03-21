@@ -55,7 +55,6 @@ class Watcher(FileSystemEventHandler):
 
         self.get_desired_plans()
 
-
     def get_all_jsons_root(self):
         self.all_jsons_root = []
         for root, dirs, files in os.walk(self.path, topdown=False):
@@ -211,6 +210,17 @@ class Watcher(FileSystemEventHandler):
         return plan_message
 
     def choose_plan(self, req):
+        #check for master plan
+        for plan in self.desired_plans:
+            if self.desired_plans[plan].isMaster:
+                response = plan_serviceResponse()
+                response.the_plan = self.desired_plans[plan]
+                isMatched, isSymmetry = self.check_ballPos(plan, req.plan_req.ballPos.x, req.plan_req.ballPos.y)
+                response.the_plan.symmetry = isSymmetry
+                response.time_us = 0
+                return response
+
+        #no master plans
         all_matched_plans = self.get_all_matched_plans(req.plan_req.gameMode, req.plan_req.playersNum, req.plan_req.ballPos.x, req.plan_req.ballPos.y)#{planpath: isSymmetric}
 
         if len(all_matched_plans.keys()) == 0:
@@ -228,12 +238,12 @@ class Watcher(FileSystemEventHandler):
         if gameMode == 3:#KICKOFF
             for plan in self.desired_plans:
                 if self.desired_plans[plan].planMode == "KICKOFF":
-                    if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0:
+                    if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0 and self.desired_plans[plan].isActive:
                         matched[plan] = False#not symmetric
 
         else:
             for plan in self.desired_plans:
-                if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0:
+                if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0 and self.desired_plans[plan].isActive:
                     isMatched, isSymmetry = self.check_ballPos(plan, ballPosX, ballPosY)
                     if isMatched:
                         matched[plan] = isSymmetry

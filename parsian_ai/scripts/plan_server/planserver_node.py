@@ -24,6 +24,7 @@ class PlanServer:
 
     def handle_ai_request(self, req):
         res = self.watcher.choose_plan(req)
+        # print("chooso: ", res.the_plan.planFile)
         return res
 
     def handle_gui_request(self, req):
