@@ -15,6 +15,8 @@ from parsian_msgs.srv import plan_service
 from parsian_msgs.srv import plan_serviceResponse
 from parsian_msgs.srv import plan_serviceRequest
 from parsian_msgs.srv import parsian_update_plansRequest
+from parsian_msgs.msg import parsian_playoff_client
+
 
 
 
@@ -28,6 +30,7 @@ class Watcher(FileSystemEventHandler):
         self.path = path
         rospy.Timer(rospy.Duration(0.5), self.my_callback)
         self.is_newEvent_happend = True
+        self.client_pub = None
 
         #update_plans
         self.all_jsons_root = []        #all files with json extension
@@ -35,6 +38,7 @@ class Watcher(FileSystemEventHandler):
         self.all_desiredjsons_root = [] #all json files that are not in ignore file
         self.all_badjsons_root = []     #all json files that cant be opend
         self.desired_plans = {}         #all desired plans -> filepath: [parsian_plan]
+        self.last_ai_respond = None
 
 
     def on_any_event(self, event):
@@ -54,6 +58,8 @@ class Watcher(FileSystemEventHandler):
         self.get_all_desiredjsons_root()
 
         self.get_desired_plans()
+
+        self.publish_information()
 
     def get_all_jsons_root(self):
         self.all_jsons_root = []
@@ -218,12 +224,15 @@ class Watcher(FileSystemEventHandler):
                 isMatched, isSymmetry = self.check_ballPos(plan, req.plan_req.ballPos.x, req.plan_req.ballPos.y)
                 response.the_plan.symmetry = isSymmetry
                 response.time_us = 0
+                self.last_ai_respond = plan
+                self.publish_information()
                 return response
 
         #no master plans
         all_matched_plans = self.get_all_matched_plans(req.plan_req.gameMode, req.plan_req.playersNum, req.plan_req.ballPos.x, req.plan_req.ballPos.y)#{planpath: isSymmetric}
 
         if len(all_matched_plans.keys()) == 0:
+            self.last_ai_respond = None
             return
         shuffle = randint(0, len(all_matched_plans.keys()) - 1)
 
@@ -231,6 +240,8 @@ class Watcher(FileSystemEventHandler):
         response.the_plan = self.desired_plans[all_matched_plans.keys()[shuffle]]
         response.the_plan.symmetry = all_matched_plans[all_matched_plans.keys()[shuffle]]
         response.time_us = 0
+        self.last_ai_respond = all_matched_plans.keys()[shuffle]
+        self.publish_information()
         return response
 
     def get_all_matched_plans(self, gameMode, playersNum, ballPosX, ballPosY):
@@ -311,6 +322,8 @@ class Watcher(FileSystemEventHandler):
             for plan in self.desired_plans:
                 self.desired_plans[plan].isActive = False
 
+        self.publish_information()
+
         # print("active")
         # for plan in self.desired_plans:
         #     if self.desired_plans[plan].isActive:
@@ -327,4 +340,21 @@ class Watcher(FileSystemEventHandler):
                 self.desired_plans[plan].isActive = last_desired_plans[plan].isActive
                 self.desired_plans[plan].isMaster = last_desired_plans[plan].isMaster
 
+    def publish_information(self):
+        message = parsian_playoff_client()
+        if self.last_ai_respond == None:
+            message.last_ai_response = "NO RESPONSE"
+        else:
+            message.last_ai_response = self.last_ai_respond
+        for plan in self.desired_plans:
+            message.desired_plans.append(plan)
+            if self.desired_plans[plan].isActive:
+                message.active_plans.append(plan)
+            if self.desired_plans[plan].isMaster:
+                message.master_plan = plan
+        for plan in self.all_ignoredjsons_root:
+            message.ignored_plans.append(plan)
+
+        if self.client_pub != None:
+            self.client_pub.publish(message)
 
