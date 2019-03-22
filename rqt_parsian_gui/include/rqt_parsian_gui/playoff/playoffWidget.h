@@ -7,7 +7,10 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <rqt_parsian_gui/playoff/planLabel.h>
+#include <rqt_parsian_gui/playoff/plansView.h>
 #include <parsian_msgs/parsian_update_plans.h>
+#include <vector>
+#include <string>
 
 
 
@@ -29,17 +32,7 @@ namespace rqt_parsian_gui
 
     private:
         ros::ServiceClient* server_update;
-
         QGridLayout* main_layout;
-        PlanLabel* b1;
-        PlanLabel* b2;
-        PlanLabel* b3;
-        PlanLabel* b4;
-        PlanLabel* b5;
-        PlanLabel* b6;
-        PlanLabel* b7;
-        PlanLabel* b8;
-        PlanLabel* b9;
 
     };
 }

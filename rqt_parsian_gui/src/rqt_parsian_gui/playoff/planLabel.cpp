@@ -45,7 +45,7 @@ namespace rqt_parsian_gui
 
         //margin and padding
         this->setContentsMargins(0, 0, 0, 0);
-        this->setMaximumHeight(50);
+        this->setFixedHeight(50);
         this->main->setContentsMargins(0, 0, 0, 0);
         this->main->setMargin(0);
         this->main->setSpacing(0);
