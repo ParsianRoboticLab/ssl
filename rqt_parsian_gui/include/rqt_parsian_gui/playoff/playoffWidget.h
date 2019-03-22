@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QGridLayout>
+#include <rqt_parsian_gui/playoff/planLabel.h>
 
 
 namespace rqt_parsian_gui
@@ -24,15 +25,15 @@ namespace rqt_parsian_gui
 
     private:
         QGridLayout* main_layout;
-        QPushButton* b1;
-        QPushButton* b2;
-        QPushButton* b3;
-        QPushButton* b4;
-        QPushButton* b5;
-        QPushButton* b6;
-        QPushButton* b7;
-        QPushButton* b8;
-        QPushButton* b9;
+        PlanLabel* b1;
+        PlanLabel* b2;
+        PlanLabel* b3;
+        PlanLabel* b4;
+        PlanLabel* b5;
+        PlanLabel* b6;
+        PlanLabel* b7;
+        PlanLabel* b8;
+        PlanLabel* b9;
 
     };
 }

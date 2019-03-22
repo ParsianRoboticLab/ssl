@@ -1,0 +1,82 @@
+QWidget#main_widget {
+    background-color: #b3ccff;
+    border: 2px solid gray;
+}
+
+QPushButton#activate_button:disabled   {
+    background-color: #00ff00;
+    font: bold 20px;
+    border: 2px solid gray;
+    color: black;
+}
+
+QPushButton#activate_button:enabled {
+    background-color: #f2f2f2;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+QPushButton#activate_button:enabled:hover {
+    background-color: #f2f2f2;
+    font: bold 30px;
+    border: 7px solid gray;
+}
+
+QPushButton#activate_button::checked {
+    background-color: #b3ffd9;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+
+QPushButton#deactivate_button:disabled   {
+    background-color: #ff3300;
+    font: bold 20px;
+    border: 2px solid gray;
+    color: black;
+}
+
+QPushButton#deactivate_button:enabled {
+    background-color: #f2f2f2;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+QPushButton#deactivate_button:enabled:hover {
+    background-color: #f2f2f2;
+    font: bold 30px;
+    border: 7px solid gray;
+}
+
+QPushButton#deactivate_button::checked {
+    background-color: #b3ffd9;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+
+QPushButton#master_button:disabled   {
+    background-color: #66ffff;
+    font: bold 20px;
+    border: 2px solid gray;
+    color: black;
+}
+
+QPushButton#master_button:enabled {
+    background-color: #f2f2f2;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+QPushButton#master_button:enabled:hover {
+    background-color: #f2f2f2;
+    font: bold 30px;
+    border: 7px solid gray;
+}
+
+QPushButton#master_button::checked {
+    background-color: #b3ffd9;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+

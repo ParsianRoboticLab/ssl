@@ -11,15 +11,24 @@ namespace rqt_parsian_gui
     void PlayOffWidget::create_main_widget()
     {
         this->main_layout = new QGridLayout(this);
-        b1 = new QPushButton("A");
-        b2 = new QPushButton("B");
-        b3 = new QPushButton("C");
-        b4 = new QPushButton("D");
-        b5 = new QPushButton("E");
-        b6 = new QPushButton("F");
-        b7 = new QPushButton("G");
-        b8 = new QPushButton("H");
-        b9 = new QPushButton("I");
+        b1 = new PlanLabel(true);
+        b1->create_plan("plan A", true, true);
+        b2 = new PlanLabel(true);
+        b2->create_plan("plan B", true, false);
+        b3 = new PlanLabel(true);
+        b3->create_plan("plan C", false, true);
+        b4 = new PlanLabel(true);
+        b4->create_plan("plan D", false, false);
+        b5 = new PlanLabel(false);
+        b5->create_plan("plan E", true, true);
+        b6 = new PlanLabel(false);
+        b6->create_plan("plan F", true, false);
+        b7 = new PlanLabel(false);
+        b7->create_plan("plan G", false, true);
+        b8 = new PlanLabel(false);
+        b8->create_plan("plan H", false, false);
+        b9 = new PlanLabel(true);
+        b9->create_plan("plan I", true, true);
         this->main_layout->addWidget(b1, 0, 0, 1, 4);
         this->main_layout->addWidget(b2, 0, 4, 1, 8);
         this->main_layout->addWidget(b3, 1, 0, 1, 4);

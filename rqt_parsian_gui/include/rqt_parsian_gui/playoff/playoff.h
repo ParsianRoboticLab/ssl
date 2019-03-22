@@ -10,6 +10,7 @@
 #include <rqt_gui_cpp/plugin.h>
 #include <pluginlib/class_list_macros.h>
 #include <rqt_parsian_gui/playoff/playoffWidget.h>
+#include <rqt_parsian_gui/playoff/planLabel.h>
 
 namespace rqt_parsian_gui
 {
