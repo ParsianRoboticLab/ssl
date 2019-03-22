@@ -11,6 +11,8 @@
 #include <pluginlib/class_list_macros.h>
 #include <rqt_parsian_gui/playoff/playoffWidget.h>
 #include <rqt_parsian_gui/playoff/planLabel.h>
+#include <parsian_msgs/parsian_update_plans.h>
+
 
 namespace rqt_parsian_gui
 {
@@ -27,6 +29,7 @@ namespace rqt_parsian_gui
             ros::NodeHandle n;
             ros::NodeHandle n_private;
             PlayOffWidget* playoffWidget;
+            ros::ServiceClient server_update;
         };
 }
 #endif  // RQT_PLAYOFF_H

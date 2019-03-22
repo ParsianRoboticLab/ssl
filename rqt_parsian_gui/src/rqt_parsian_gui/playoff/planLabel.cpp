@@ -10,7 +10,8 @@ namespace rqt_parsian_gui
         resourcePath = QString::fromStdString(path);
         resourcePath += "/resource/style_sheet/playoff_planLabel.qss";
         File.setFileName(resourcePath);
-        ROS_INFO_STREAM("is qt PlanLabel_stylesheet opend:" <<File.open(QFile::ReadOnly));
+        File.open(QFile::ReadOnly);
+        //ROS_INFO_STREAM("is qt PlanLabel_stylesheet opend:" <<File.open(QFile::ReadOnly));
         FormStyleSheet = QLatin1String(File.readAll());
         this->setStyleSheet(FormStyleSheet);
         File.close();
@@ -29,12 +30,15 @@ namespace rqt_parsian_gui
             this->activate = new QPushButton("A", this);
             this->activate->setObjectName("activate_button");
             this->activate->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            connect(this->activate, SIGNAL(pressed()), this, SLOT(activatepressed()));
             this->deactivate = new QPushButton("D", this);
             this->deactivate->setObjectName("deactivate_button");
             this->deactivate->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            connect(this->deactivate, SIGNAL(pressed()), this, SLOT(deacvtivateressed()));
             this->master = new QPushButton("M", this);
             this->master->setObjectName("master_button");
             this->master->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            connect(this->master, SIGNAL(pressed()), this, SLOT(masterpressed()));
         }
         this->planName = new QLabel("No Plan", this);
         this->planName->setObjectName("planName");
@@ -54,10 +58,10 @@ namespace rqt_parsian_gui
 
     void PlanLabel::create_plan(QString _plan, bool _isActive, bool _isMaster)
     {
-        this->plan = "   " + _plan;
+        this->plan = _plan;
         this->isActive = _isActive;
         this->isMaster = _isMaster;
-        this->planName->setText(this->plan);
+        this->planName->setText("   " + this->plan);
         if(this->put_options)
         {
             this->main_layout->addWidget(this->planName, 0, 0, 1, 5);
@@ -101,6 +105,45 @@ namespace rqt_parsian_gui
 
     }
 
+    void PlanLabel::setServerUpdateService(ros::ServiceClient& _client) {
+        server_update = &_client;
+    }
+
+    void PlanLabel::activatepressed()
+    {
+        if(this->server_update == nullptr)
+            return;
+        parsian_msgs::parsian_update_plansRequest req;
+        parsian_msgs::parsian_update_plansResponse rep;
+        req.Mode = 1;//ACTIVATE
+        req.Plans.push_back(this->plan.toStdString());
+        server_update->call(req, rep);
+    }
+
+    void PlanLabel::deacvtivateressed()
+    {
+        if(this->server_update == nullptr)
+            return;
+        parsian_msgs::parsian_update_plansRequest req;
+        parsian_msgs::parsian_update_plansResponse rep;
+        req.Mode = 2;//DEACTIVATE
+        req.Plans.push_back(this->plan.toStdString());
+        if(server_update->call(req, rep))
+            ROS_INFO("it did");
+        else
+            ROS_INFO("it did not");
+    }
+
+    void PlanLabel::masterpressed()
+    {
+        if(this->server_update == nullptr)
+            return;
+        parsian_msgs::parsian_update_plansRequest req;
+        parsian_msgs::parsian_update_plansResponse rep;
+        req.Mode = 3;//MASTER
+        req.Plans.push_back(this->plan.toStdString());
+        server_update->call(req, rep);
+    }
 
     PlanLabel::~PlanLabel()
     {

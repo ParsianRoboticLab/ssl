@@ -13,6 +13,7 @@
 #include <QString>
 #include <QLabel>
 #include <QVariant>
+#include <parsian_msgs/parsian_update_plans.h>
 
 
 namespace rqt_parsian_gui
@@ -24,16 +25,23 @@ namespace rqt_parsian_gui
         explicit PlanLabel(bool _put_options);
         virtual ~PlanLabel();
         void create_plan(QString _plan, bool _isActive, bool _isMaster);
+        void setServerUpdateService(ros::ServiceClient& _client);
         QString plan;
         bool put_options;
         bool isActive;
         bool isMaster;
 
     public slots:
+        void activatepressed();
+        void deacvtivateressed();
+        void masterpressed();
 
     protected:
 
     private:
+        ros::ServiceClient* server_update;
+
+
         //stylesheet
         QFile File;
         QString FormStyleSheet;

@@ -7,6 +7,8 @@
 #include <QPushButton>
 #include <QGridLayout>
 #include <rqt_parsian_gui/playoff/planLabel.h>
+#include <parsian_msgs/parsian_update_plans.h>
+
 
 
 namespace rqt_parsian_gui
@@ -18,12 +20,16 @@ namespace rqt_parsian_gui
         explicit PlayOffWidget();
         virtual ~PlayOffWidget();
         void create_main_widget();
+        void setServerUpdateService(ros::ServiceClient& _client);
+
 
     public slots:
 
     protected:
 
     private:
+        ros::ServiceClient* server_update;
+
         QGridLayout* main_layout;
         PlanLabel* b1;
         PlanLabel* b2;

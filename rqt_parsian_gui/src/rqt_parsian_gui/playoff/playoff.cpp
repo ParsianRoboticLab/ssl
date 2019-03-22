@@ -15,9 +15,13 @@ namespace rqt_parsian_gui
 
         n = getNodeHandle();
         n_private = getPrivateNodeHandle();
+
+        server_update =  n.serviceClient<parsian_msgs::parsian_update_plans>("/update_plans");
+
         // create QWidget
 
         playoffWidget = new PlayOffWidget();
+        playoffWidget->setServerUpdateService(server_update);
         context.addWidget(playoffWidget);
 
     }
