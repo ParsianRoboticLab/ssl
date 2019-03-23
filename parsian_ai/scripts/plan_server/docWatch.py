@@ -343,17 +343,17 @@ class Watcher(FileSystemEventHandler):
     def publish_information(self):
         message = parsian_playoff_client()
         if self.last_ai_respond == None:
-            message.last_ai_response = "NO RESPONSE"
+            message.last_ai_response = ""
         else:
-            message.last_ai_response = self.last_ai_respond
+            message.last_ai_response = self.last_ai_respond[len(self.path) + 1:len(self.last_ai_respond)]
         for plan in self.desired_plans:
-            message.desired_plans.append(plan)
+            message.desired_plans.append(plan[len(self.path) + 1:len(plan)])
             if self.desired_plans[plan].isActive:
-                message.active_plans.append(plan)
+                message.active_plans.append(plan[len(self.path) + 1:len(plan)])
             if self.desired_plans[plan].isMaster:
-                message.master_plan = plan
+                message.master_plan = plan[len(self.path) + 1:len(plan)]
         for plan in self.all_ignoredjsons_root:
-            message.ignored_plans.append(plan)
+            message.ignored_plans.append(plan[len(self.path) + 1:len(plan)])
 
         if self.client_pub != None:
             self.client_pub.publish(message)
