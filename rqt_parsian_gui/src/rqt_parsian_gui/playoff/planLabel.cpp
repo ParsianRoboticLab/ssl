@@ -111,7 +111,7 @@ namespace rqt_parsian_gui
 
     void PlanLabel::activatepressed()
     {
-        if(this->server_update == nullptr)
+        if(this->server_update == nullptr || this->server_update == NULL)
             return;
         parsian_msgs::parsian_update_plansRequest req;
         parsian_msgs::parsian_update_plansResponse rep;
@@ -122,7 +122,7 @@ namespace rqt_parsian_gui
 
     void PlanLabel::deacvtivateressed()
     {
-        if(this->server_update == nullptr)
+        if(this->server_update == nullptr || this->server_update == NULL)
             return;
         parsian_msgs::parsian_update_plansRequest req;
         parsian_msgs::parsian_update_plansResponse rep;
@@ -136,7 +136,7 @@ namespace rqt_parsian_gui
 
     void PlanLabel::masterpressed()
     {
-        if(this->server_update == nullptr)
+        if(this->server_update == nullptr || this->server_update == NULL)
             return;
         parsian_msgs::parsian_update_plansRequest req;
         parsian_msgs::parsian_update_plansResponse rep;

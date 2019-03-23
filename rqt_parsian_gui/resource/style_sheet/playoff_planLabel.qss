@@ -80,3 +80,21 @@ QPushButton#master_button::checked {
     border: 2px solid gray;
 }
 
+QPushButton#tab:enabled {
+    background-color: #f2f2f2;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+
+QPushButton#tab:enabled:hover {
+    background-color: #f2f2f2;
+    font: bold 30px;
+    border: 7px solid gray;
+}
+
+QPushButton#tab::checked {
+    background-color: #b3ffd9;
+    font: bold 20px;
+    border: 2px solid gray;
+}
+

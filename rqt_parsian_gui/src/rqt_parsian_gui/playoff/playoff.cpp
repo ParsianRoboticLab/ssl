@@ -24,6 +24,7 @@ namespace rqt_parsian_gui
 
         playoffWidget = new PlayOffWidget();
         playoffWidget->setServerUpdateService(server_update);
+        playoffWidget->create_main_widget();
         context.addWidget(playoffWidget);
 
     }
@@ -34,8 +35,7 @@ namespace rqt_parsian_gui
     }
 
     void PlayOff::sub(const parsian_msgs::parsian_playoff_clientConstPtr& _msg) {
-        ROS_INFO_STREAM("salam");
-
+        playoffWidget->subscribe(_msg);
     }
 
 }

@@ -1,8 +1,18 @@
-#include <rqt_parsian_gui/playoff/plansView.h>
+#include <rqt_parsian_gui/playoff/tabWidget.h>
 namespace rqt_parsian_gui
 {
-    PlansView::PlansView(QScrollArea *parent) : QScrollArea(parent)
+    TabWidget::TabWidget(QScrollArea *parent) : QScrollArea(parent)
     {
+
+        //getting style sheets
+        std::string path = ros::package::getPath("rqt_parsian_gui");
+        resourcePath = QString::fromStdString(path);
+        resourcePath += "/resource/style_sheet/playoff_planLabel.qss";
+        File.setFileName(resourcePath);
+        File.open(QFile::ReadOnly);
+        FormStyleSheet = QLatin1String(File.readAll());
+        this->setStyleSheet(FormStyleSheet);
+        File.close();
         //layout
         contacts_list_layout = new QVBoxLayout(this);
         contacts_list_layout->setContentsMargins(0, 0, 0, 0);
@@ -28,52 +38,57 @@ namespace rqt_parsian_gui
 
     }
 
-    void PlansView::add_contact(QString plan, bool isActive, bool isMaster, bool put_option)
+    void TabWidget::add_contact(QString name)
     {
-//        //check if the username already exists
-//        for(int i{}; i < contacts_list.size(); i++)
-//            if(contacts_list[i]->plan == plan)
-//                return;
-        PlanLabel* new_contact = new PlanLabel(put_option);
-        new_contact->create_plan(plan, isActive, isMaster);
-        new_contact->setServerUpdateService(*server_update);
+        //check if the username already exists
+        for(int i{}; i < contacts_list.size(); i++)
+            if(contacts_list[i]->text() == name)
+                return;
+        QPushButton* new_contact = new QPushButton(name);
+        new_contact->setFixedHeight(100);
+        new_contact->setObjectName("tab");
         contacts_list_layout->addWidget(new_contact, 0, Qt::AlignTop);
         contacts_list.push_back(new_contact);
         contacts_list_layout->removeWidget(filler);
-        if(this->height() - contacts_list.size()*50 > 0)
-            filler->setFixedHeight(this->height() - contacts_list.size()*50);
+        if(this->height() - contacts_list.size()*100 > 0)
+            filler->setFixedHeight(this->height() - contacts_list.size()*100);
         else
             filler->setFixedHeight(0);
         contacts_list_layout->addWidget(filler);
     }
 
+    QPushButton* TabWidget::get_contact(QString name)
+    {
+        for(int i{}; i < contacts_list.size(); i++)
+            if(contacts_list[i]->text() == name)
+                return contacts_list[i];
+        //nothing found(if this line reached means something in code is wrong)
+        return nullptr;
+    }
 
-    void PlansView::sort()
+
+    void TabWidget::sort()
     {
         for(const auto& contact : contacts_list)
             contacts_list_layout->removeWidget(contact);
         contacts_list_layout->removeWidget(filler);
-        std::sort(contacts_list.begin(), contacts_list.end());
+        //std::sort(contacts_list.begin(), contacts_list.end());
         //update GUI
         for(const auto& contact : contacts_list)
         {
             contacts_list_layout->addWidget(contact, 0, Qt::AlignTop);
-            contact->setServerUpdateService(*server_update);
         }
-        if(this->height() - contacts_list.size()*50 > 0)
-            filler->setFixedHeight(this->height() - contacts_list.size()*50);
+        if(this->height() - contacts_list.size()*100 > 0)
+            filler->setFixedHeight(this->height() - contacts_list.size()*100);
         else
             filler->setFixedHeight(0);
         contacts_list_layout->addWidget(filler);
     }
 
 
-    void PlansView::resizeEvent(QResizeEvent *)
+    void TabWidget::resizeEvent(QResizeEvent *)
     {
         this->sort();
     }
 
-    void PlansView::setServerUpdateService(ros::ServiceClient& _client) {
-        server_update = &_client;
-    }
 }
