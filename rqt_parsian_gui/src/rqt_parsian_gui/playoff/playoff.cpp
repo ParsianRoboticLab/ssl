@@ -27,6 +27,7 @@ namespace rqt_parsian_gui
         playoffWidget->create_main_widget();
         context.addWidget(playoffWidget);
 
+
     }
 
     void PlayOff::shutdownPlugin() {
@@ -34,7 +35,7 @@ namespace rqt_parsian_gui
         n_private.shutdown();
     }
 
-    void PlayOff::sub(const parsian_msgs::parsian_playoff_clientConstPtr& _msg) {
+    void PlayOff::sub(const parsian_msgs::parsian_playoff_clientConstPtr &_msg) {
         playoffWidget->subscribe(_msg);
     }
 

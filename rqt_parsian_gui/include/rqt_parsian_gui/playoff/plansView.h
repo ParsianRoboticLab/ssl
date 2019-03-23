@@ -27,6 +27,7 @@ namespace rqt_parsian_gui
             void add_contact(QString username, bool isActive, bool isMaster, bool no_option = true);
             void setServerUpdateService(ros::ServiceClient& _client);
             void sort();
+            void clear_all();
 
 
         private:

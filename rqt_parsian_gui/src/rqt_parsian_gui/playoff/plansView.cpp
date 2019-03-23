@@ -46,6 +46,21 @@ namespace rqt_parsian_gui
             filler->setFixedHeight(0);
         contacts_list_layout->addWidget(filler);
     }
+    void PlansView::clear_all()
+    {
+        for(const auto& contact : contacts_list)
+        {
+            contacts_list_layout->removeWidget(contact);
+            contact->hide();
+        }
+        contacts_list_layout->removeWidget(filler);
+        contacts_list.clear();
+        if(this->height() - contacts_list.size()*50 > 0)
+            filler->setFixedHeight(this->height() - contacts_list.size()*50);
+        else
+            filler->setFixedHeight(0);
+        contacts_list_layout->addWidget(filler);
+    }
 
 
     void PlansView::sort()

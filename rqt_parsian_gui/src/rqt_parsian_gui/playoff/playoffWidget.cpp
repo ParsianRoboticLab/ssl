@@ -20,6 +20,8 @@ namespace rqt_parsian_gui
         activate_all = new QPushButton("Activate All");
         deactivate_all = new QPushButton("DeActivate All");
         demaster = new QPushButton("DeMaster");
+
+        connect(this, SIGNAL(subscribe_sig()), this, SLOT(subscribe_slot()));
     }
 
     void PlayOffWidget::create_main_widget()
@@ -63,8 +65,6 @@ namespace rqt_parsian_gui
         this->main_layout->addWidget(tabWidget, 3, 0, 7, 4);
         this->main_layout->addWidget(plansView_widg, 3, 4, 7, 8);
         this->setLayout(this->main_layout);
-        for(int i{}; i< 27 ; i++)
-            all_plansView->add_contact("plan ", true , true, true);
 
         prev_view->hide();
         this->main_layout->addWidget(plansView_widg, 3, 4, 7, 8);
@@ -137,42 +137,51 @@ namespace rqt_parsian_gui
         server_update->call(req, rep);
     }
 
-    void PlayOffWidget::subscribe(const parsian_msgs::parsian_playoff_clientConstPtr& _msg)
+    void PlayOffWidget::subscribe(const parsian_msgs::parsian_playoff_clientConstPtr &msg)
     {
-        return;
-        all_plansView = new PlansView();
-        active_plansView = new PlansView();
-        ignored_plansView = new PlansView();
+        this->lastPlan = msg->last_ai_response;
+        this->masterPlan = msg->master_plan;
+        this->allPlan = msg->desired_plans;
+        this->activePlan = msg->active_plans;
+        this->ignoredPlan = msg->ignored_plans;
 
-        last_plan->create_plan(QString::fromStdString(_msg->last_ai_response), false, false);
-        master_plan->create_plan(QString::fromStdString(_msg->master_plan), false, false);
+        emit subscribe_sig();
 
-        for(const auto& plan : _msg->active_plans)
+    }
+
+    void PlayOffWidget::subscribe_slot()
+    {
+        all_plansView->clear_all();
+        active_plansView->clear_all();
+        ignored_plansView->clear_all();
+
+        last_plan->create_plan(QString::fromStdString(lastPlan), false, false);
+        master_plan->create_plan(QString::fromStdString(masterPlan), false, false);
+        for(const auto& plan : activePlan)
         {
-            if(plan == _msg->master_plan)
+            if(plan == masterPlan)
                 active_plansView->add_contact(QString::fromStdString(plan), true, true, true);
             else
                 active_plansView->add_contact(QString::fromStdString(plan), true, false, true);
         }
 
-        for(const auto& plan : _msg->desired_plans)
+        for(const auto& plan : allPlan)
         {
-            if(std::find(_msg->active_plans.begin(), _msg->active_plans.end(), plan) != _msg->active_plans.end() && plan == _msg->master_plan) {
+            if(std::find(activePlan.begin(), activePlan.end(), plan) != activePlan.end() && plan == masterPlan) {
                 all_plansView->add_contact(QString::fromStdString(plan), true, true, true);
-            } else if(std::find(_msg->active_plans.begin(), _msg->active_plans.end(), plan) != _msg->active_plans.end()) {
+            } else if(std::find(activePlan.begin(), activePlan.end(), plan) != activePlan.end()) {
                 all_plansView->add_contact(QString::fromStdString(plan), true, false, true);
-            }else if(plan == _msg->master_plan){
-                all_plansView->add_contact(QString::fromStdString(plan), true, true, true);
+            }else if(plan == masterPlan){
+                all_plansView->add_contact(QString::fromStdString(plan), false, true, true);
             }else{
-                all_plansView->add_contact(QString::fromStdString(plan), true, false, true);
+                all_plansView->add_contact(QString::fromStdString(plan), false, false, true);
             }
         }
 
-        for(const auto& plan : _msg->ignored_plans)
+        for(const auto& plan : ignoredPlan)
         {
             ignored_plansView->add_contact(QString::fromStdString(plan), false, false, false);
         }
-
     }
 
 

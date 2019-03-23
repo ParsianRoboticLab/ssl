@@ -29,7 +29,7 @@ namespace rqt_parsian_gui
         virtual ~PlayOffWidget();
         void create_main_widget();
         void setServerUpdateService(ros::ServiceClient& _client);
-        void subscribe(const parsian_msgs::parsian_playoff_clientConstPtr& _msg);
+        void subscribe(const parsian_msgs::parsian_playoff_clientConstPtr &msg);
 
 
 
@@ -42,6 +42,11 @@ namespace rqt_parsian_gui
         void deactivate_all_pressed();
         void demaster_pressed();
 
+        void subscribe_slot();
+
+
+    signals:
+        void subscribe_sig();
 
     protected:
 
@@ -63,6 +68,13 @@ namespace rqt_parsian_gui
         QPushButton* activate_all;
         QPushButton* deactivate_all;
         QPushButton* demaster;
+
+        std::vector<std::string> allPlan;
+        std::vector<std::string> activePlan;
+        std::vector<std::string> ignoredPlan;
+        std::string masterPlan;
+        std::string lastPlan;
+
 
 
 
