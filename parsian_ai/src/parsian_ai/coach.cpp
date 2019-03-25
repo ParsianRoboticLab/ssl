@@ -823,21 +823,17 @@ void CCoach::decideTheirIndirect(const QList<int> &_ourPlayers) {
 }
 
 void CCoach::decideOurPenalty(QList<int> &_ourPlayers) {
-    ROS_INFO_STREAM("penalty: decideourpenalty");
-    selectedPlay = ourPenalty;
-    if (0 <= playmakeId && playmakeId <= 11) {
+    if(conf.PenaltyKickerFromGUI)
+        ourPenalty->setPlaymake(agents[conf.PenaltyKicker]);
+    else if (0 <= playmakeId && playmakeId <= 11) {
         ourPenalty->setPlaymake(agents[playmakeId]);
         _ourPlayers.removeOne(playmakeId);
     }
     if(!gameState->ready())
         ourPenalty->setState(PenaltyState::Positioning);
-
     else if(gameState->ready())
-    {
-        ROS_INFO_STREAM("kian: normal start -> penalty");
         ourPenalty->setState(PenaltyState::Kicking);
-    }
-    DBUG("penalty", D_MHMMD);
+    selectedPlay = ourPenalty;
 }
 
 void CCoach::decideTheirPenalty(const QList<int> &_ourPlayers) {
@@ -938,8 +934,9 @@ QList<int> CCoach::remainingAgent() {
 }
 
 void CCoach::handlePlayMake(const QList<int> &_agentsID) {
-    if (!gameState->isStart() || _agentsID.empty()) {
-
+    bool ispenalty = gameState->ourPenaltyKick() || gameState->ourPenaltyShootout();
+    bool noPlaymakeNeeded = !gameState->isStart() && !ispenalty;
+    if (noPlaymakeNeeded || _agentsID.empty()) {
         playmakeId = -1;
         lastPlayMake = -1;
         playMakeIntention.restart();
