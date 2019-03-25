@@ -1524,6 +1524,17 @@ GKState DefensePlan::setGoalKeeperState(){
         differentialTime = 0.2;
     }
     /////////////////////////////Gamestate///////////////////////////////////////
+    if(wm->field->isInOurPenaltyArea(wm->ball->pos)) {
+        if (wm->ball->vel.length() < 0.1 &&
+            (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
+             (wm->field->ourGoalL().y >= wm->ball->pos.y
+              && wm->field->ourGoalR().y < wm->ball->pos.y
+              && wm->field->ourGoal().x < wm->ball->pos.x
+              && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))) {
+            return GKState::ballIsBesidePoles;
+        }
+    }
+    stateBallBesidepoles = -1;
     if(gameState->directKick() || gameState->indirectKick() || gameState->kickoff())
         return GKState :: playoff;
 
@@ -1554,19 +1565,8 @@ GKState DefensePlan::setGoalKeeperState(){
         return GKState :: oneTouch;
     }
 
-    if(wm->field->isInOurPenaltyArea(wm->ball->pos)){
-        if(wm->ball->vel.length() < 0.1 && (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
-                                            (wm->field->ourGoalL().y >= wm->ball->pos.y
-                                             && wm->field->ourGoalR().y < wm->ball->pos.y
-                                             && wm->field->ourGoal().x < wm->ball->pos.x
-                                             && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))){
-            return GKState :: ballIsBesidePoles;
-        }
-        //if(wm->ball->vel.length() > 0.4 && wm->ball->vel.length() < 1.3)
-        //    return GKstate ::clearSlowBall;
+    if(wm->field->isInOurPenaltyArea(wm->ball->pos))
         return GKState :: clearMode;
-
-    }
 
     return GKState :: strictFollow;
 
@@ -1646,145 +1646,33 @@ Vector2D DefensePlan::movePointToPenaltyArea(const Vector2D& point){
     return point;
 }
 
-Vector2D DefensePlan::ballIsBesidePoles(){
+Vector2D DefensePlan::ballIsBesidePoles(){//slow mode and dont move dont work fine
+
     Vector2D upBallRectanglePoint;
     Vector2D downBallRectanglePoint;
     QList<Vector2D> ballRectanglePoints;
+    ROS_INFO_STREAM("Lhum: " << stateBallBesidepoles);
+    bool isBallLeftOfPole = ((wm->ball->pos.y < 0 && wm->ball->pos.y >= wm->field->ourGoalR().y) || (wm->ball->pos.y >= 0 && wm->ball->pos.y >= wm->field->ourGoalL().y)) ? true : false;
+    ROS_INFO_STREAM("Lhum: !!!!!!!! "  << isBallLeftOfPole);
     Rect2D ballRectangle(wm->ball->pos + Vector2D(0.25 , 0.25) , wm->ball->pos + Vector2D(-0.25 , -0.25));
-    if (wm->field->isInField(ballRectangle.topLeft())) {
-        ballRectanglePoints.append(ballRectangle.topLeft());
-    }
-    if (wm->field->isInField(ballRectangle.topRight())) {
-        ballRectanglePoints.append(ballRectangle.topRight());
-    }
-    if (wm->field->isInField(ballRectangle.bottomLeft())) {
-        ballRectanglePoints.append(ballRectangle.bottomLeft());
-    }
-    if (wm->field->isInField(ballRectangle.bottomRight())) {
-        ballRectanglePoints.append(ballRectangle.bottomRight());
-    }
-    if (stateBallBesidePolles == 0) {
-        return ballRectanglePoints.at(0).dist(goalKeeperAgent->pos()) < ballRectanglePoints.at(1).dist(goalKeeperAgent->pos()) ? ballRectanglePoints.at(0) : ballRectanglePoints.at(1);
-    }
+    Vector2D Target[4][2] = {{ballRectangle.bottomRight() , ballRectangle.topRight()} , {ballRectangle.topRight() , ballRectangle.bottomRight()} , {Vector2D(ballRectangle.bottomRight().x , wm->ball->pos.y) ,
+                             Vector2D(ballRectangle.bottomLeft().x , wm->ball->pos.y)} , {wm->ball->pos  - Vector2D(0 , 0.02) , wm->ball->pos - Vector2D(0 , 0.02)}};
     if(wm->field->ourGoalL().y >= wm->ball->pos.y &&
        wm->field->ourGoalR().y < wm->ball->pos.y &&
        wm->field->ourGoal().x < wm->ball->pos.x &&
        wm->field->ourGoal().x + 0.05 > wm->ball->pos.x){
         return Vector2D(wm->field->ourGoal().x + 0.6 , 0);
     }
-    if((fabs(wm->ball->pos.x - wm->field->ourGoalR().x) < 0.1 && fabs(wm->ball->pos.y - wm->field->ourGoalR().y) < 0.1) || (fabs(wm->ball->pos.x - wm->field->ourGoalL().x) < 0.1 && fabs(wm->ball->pos.y - wm->field->ourGoalL().y) < 0.1)){
-        return ballRectanglePoints.at(0).dist(goalKeeperAgent->pos()) < ballRectanglePoints.at(1).dist(goalKeeperAgent->pos()) ? ballRectanglePoints.at(0) : ballRectanglePoints.at(1);
+    if(stateBallBesidepoles == -1 && (ballRectangle.bottomRight().dist(goalKeeperAgent->pos()) < 0.05 || ballRectangle.topRight().dist(goalKeeperAgent->pos()) < 0.05))
+        stateBallBesidepoles++;
+    if (stateBallBesidepoles == -1) {
+        drawer->draw(Circle2D(ballRectangle.topRight().dist(goalKeeperAgent->pos()) < ballRectangle.topLeft().dist(goalKeeperAgent->pos()) ? ballRectangle.topRight() : ballRectangle.topLeft(), 0.3) , "blue");
+        return ballRectangle.topRight().dist(goalKeeperAgent->pos()) < ballRectangle.topLeft().dist(goalKeeperAgent->pos()) ? ballRectangle.topRight() : ballRectangle.topLeft();
     }
-    if (goalKeeperAgent->pos().dist(goalKeeperTarget) < 0.05 && f == 0) {
-        f = 1;
-        if (wm->ball->pos.y > 0) {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            else {
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-            }
-            if(fabs(wm->ball->pos.y - wm->field->ourGoalL().y) < 0.1) {
-                goalKeeperTarget = downBallRectanglePoint - Vector2D(0.25, 0);
-            }
-            else if(wm->ball->pos.y < wm->field->ourGoalL().y)
-                goalKeeperTarget = downBallRectanglePoint;
-            else
-                goalKeeperTarget = upBallRectanglePoint;
-        }
-        else {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-            } else {
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            if (fabs(wm->ball->pos.y - wm->field->ourGoalR().y) < 0.1){
-                goalKeeperTarget = upBallRectanglePoint;
-            }
-            else if (wm->ball->pos.y < wm->field->ourGoalR().y)
-                goalKeeperTarget = downBallRectanglePoint;
-            else
-                goalKeeperTarget = upBallRectanglePoint;
-        }
-    }
-    else if (goalKeeperAgent->pos().dist(goalKeeperTarget) < 0.05 && f == 1) {
-        f = 2;
-        if (wm->ball->pos.y > 0) {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            else {
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-            }
-            if(fabs(wm->ball->pos.y - wm->field->ourGoalL().y) < 0.1)
-                return downBallRectanglePoint - Vector2D(0.25, 0);
-            else if(wm->ball->pos.y < wm->field->ourGoalL().y )
-                return downBallRectanglePoint - Vector2D(0.4 , 0);
-            else
-                return upBallRectanglePoint - Vector2D(0.4 , 0);
-        }
-        else {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-            }
-            else {
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            if(fabs(wm->ball->pos.y - wm->field->ourGoalR().y) < 0.1)
-                return upBallRectanglePoint - Vector2D(0.25 ,0);
-            else if(wm->ball->pos.y < wm->field->ourGoalR().y)
-                return downBallRectanglePoint - Vector2D(0.4 , 0);
-            else
-                return upBallRectanglePoint - Vector2D(0.4 , 0);
-        }
-    }
-    else if (goalKeeperAgent->pos().dist(goalKeeperTarget) < 0.05 && f == 2) {
-        f = 3;
-        if (wm->ball->pos.y > 0) {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            else {
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-            }
-            if(fabs(wm->ball->pos.y - wm->field->ourGoalL().y) < 0.1)
-                return downBallRectanglePoint - Vector2D(0.25, 0);
-            else if(wm->ball->pos.y < wm->field->ourGoalL().y)
-                return Vector2D(downBallRectanglePoint.x , 0) - Vector2D(0.4 , 0) + Vector2D(0 , wm->ball->pos.y);
-            else
-                return  Vector2D(upBallRectanglePoint.x , 0) - Vector2D(0.4 , 0) + Vector2D(0 , wm->ball->pos.y);
-        }
-        else {
-            if (ballRectanglePoints.at(0).y < ballRectanglePoints.at(1).y) {
-                upBallRectanglePoint = ballRectanglePoints.at(1);
-                downBallRectanglePoint = ballRectanglePoints.at(0);
-            }
-            else {
-                upBallRectanglePoint = ballRectanglePoints.at(0);
-                downBallRectanglePoint = ballRectanglePoints.at(1);
-            }
-            if(fabs(wm->ball->pos.y - wm->field->ourGoalR().y) < 0.1)
-                return upBallRectanglePoint - Vector2D(0.25 ,0);
-            else if(wm->ball->pos.y < wm->field->ourGoalR().y)
-                return Vector2D(downBallRectanglePoint.x , 0) - Vector2D(0.4 , 0) + Vector2D(0 , wm->ball->pos.y);
-            else
-                return Vector2D(upBallRectanglePoint.x , 0) - Vector2D(0.4 , 0) + Vector2D(0 , wm->ball->pos.y);
-        }
-    }
-    else if (goalKeeperAgent->pos().dist(goalKeeperTarget) < 0.05 && f >= 3) {
-        f = 4;
-        return Vector2D(wm->ball->pos - goalKeeperTarget);
-    }
+    if(goalKeeperAgent->pos().dist(Target[stateBallBesidepoles][isBallLeftOfPole]) < 0.05 && stateBallBesidepoles < 3)
+        stateBallBesidepoles++;
+    drawer->draw(Circle2D(Target[stateBallBesidepoles][isBallLeftOfPole], 0.3) , "red");
+    return Target[stateBallBesidepoles][isBallLeftOfPole];
 }
 
 Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
@@ -2104,15 +1992,10 @@ void DefensePlan::execute(){
             penaltyShootOutMode();// hamid penalty
             return;
         }
-        ROS_INFO_STREAM("Lhum: 1 ");
         GKState state = setGoalKeeperState();
-        ROS_INFO_STREAM("Lhum: 2 " << (int)state);
-        Vector2D GKTarget = setGoalKeeperTargetPoint(state);//lhum0
-        ROS_INFO_STREAM("Lhum: 3 " << GKTarget);
+        Vector2D GKTarget = setGoalKeeperTargetPoint(state);
         executeGoalKeeper(GKTarget , state);
-        ROS_INFO_STREAM("Lhum: 4 ");
         assignSkill(goalKeeperAgent , AHZSkills);
-        ROS_INFO_STREAM("Lhum: 5 ");
         //TODO: segment when force start
         // and problem to set target when ball is out of filed
         // and ball is beside poles
@@ -2511,12 +2394,9 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
             break;
         case GKState :: ballIsBesidePoles:
-            counterBallWasBesidePoles = 0;
-            if(f > 3){
+            if(stateBallBesidepoles > 3){
                 gpa[goalKeeperAgent->id()]->setSlowmode(true);
-                gpa[goalKeeperAgent->id()]->setTargetpos(wm->ball->pos);
                 gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - GKTarget);
-                goalKeeperAgent->action = gpa[goalKeeperAgent->id()];
             }
             else{
                 gpa[goalKeeperAgent->id()]->setSlowmode(true);
@@ -3439,7 +3319,6 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
         target = Line2D(wm->field->ourGoalL() + Vector2D(0.2 , 0) , wm->field->ourGoalR() + Vector2D(0.2 , 0)).intersection(Line2D(wm->field->ourGoal() , _ballPos));
         lastTargetForStrictFollow = target;
     }
-    ROS_INFO_STREAM("Lhum: 3.5 " << target);
     return target;
 }
 

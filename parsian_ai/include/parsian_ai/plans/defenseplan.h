@@ -164,7 +164,7 @@ private:
     Vector2D movePointToPenaltyArea(const Vector2D&);
     Vector2D ballIsBesidePoles();
     void executeGoalKeeper(const Vector2D& , const GKState&);
-    int stateBallBesidePolles;
+    int stateBallBesidepoles;
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
@@ -208,7 +208,6 @@ private:
     void runDefenseExeptions();
     Vector2D runDefenseOneTouch();
     bool defenseCheckBallDangerForOneTouch();
-    int f = 0;
     int counterBallWasBesidePoles = 0;
 
 };//tavabei ke vabaste be vorodi and static she
