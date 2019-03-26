@@ -1548,8 +1548,7 @@ GKState DefensePlan::setGoalKeeperState(){
 
     if(gameState->isStop())
         return GKState :: Stop;
-
-    if(wm->field->isInOppPenaltyArea(wm->ball->pos))
+    if(!wm->field->isInField(wm->ball->pos))
         return GKState :: ballIsOutOfField;
 
     if(dangerForGK())//TODO: write dangerForGK function or add another if
@@ -1686,21 +1685,30 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
     ///////////////////////////////////////////////////////////////////////////
     switch (state){
         case GKState :: GKReciveBallInTS:
+            ROS_INFO_STREAM("Lhum: GKReciveBallInTs");
             return movePointToPenaltyArea(ballPrediction(true));
         case GKState :: GKPredictInTs:
+            ROS_INFO_STREAM("Lhum: GKPredictInTs");
             return movePointToPenaltyArea(strictFollowBall(ballPrediction(true)));
         case GKState ::playoff:
+            ROS_INFO_STREAM("Lhum: playoff");
             return wm->field->ourGoal() + Vector2D(0.2 , 0.0);
         case GKState :: Stop:
+            ROS_INFO_STREAM("Lhum: stop");
         case GKState :: ballIsOutOfField:
+            ROS_INFO_STREAM("Lhum: ballIsOurOfField");
             return wm->field->ourGoal()+ Vector2D(0.2 , 0.0);
         case GKState :: ballIsBesidePoles:
+            ROS_INFO_STREAM("Lhum: BallIsBesidePoles");
             return ballIsBesidePoles();
         case GKState :: clearMode:
+            ROS_INFO_STREAM("Lhum: clearMode");
             return Vector2D(5000 , 5000);
         case GKState :: oneTouch:
+            ROS_INFO_STREAM("Lhum: oneTouch");
             return Segment2D(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100).nearestPoint(goalKeeperAgent->pos());
         case GKState :: dangerForClear:
+            ROS_INFO_STREAM("Lhum: dangerForClear");
             if (!wm->field->isInOurPenaltyArea(know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15))) {
                 solutions = wm->field->ourPAreaIntersect(Line2D(wm->ball->pos , wm->field->ourGoal()));
                 if (solutions.size() == 1) {
@@ -1712,6 +1720,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
             }
             return know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15);
         case GKState :: strictFollow:
+            ROS_INFO_STREAM("Lhum: strictFollow");
             return strictFollowBall(ballPrediction(true));
         default:
             break;
