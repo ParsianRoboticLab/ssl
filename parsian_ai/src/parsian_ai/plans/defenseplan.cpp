@@ -1658,8 +1658,8 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.85).contains(wm->our.active(i)->pos) &&
-                    Circle2D(ballPos, 0.85).contains(wm->field->ourPenalty())) {
+                if (Circle2D(ballPos, 0.5).contains(wm->our.active(i)->pos) &&
+                    Circle2D(ballPos, 0.5).contains(wm->field->ourPenalty())) {
 
                     isOurAgentsInDangerCircle = true;
 
@@ -1672,8 +1672,8 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.85).contains(wm->opp.active(i)->pos) &&
-                    Circle2D(ballPos, 0.85).contains(wm->field->ourPenalty())) {
+                if (Circle2D(ballPos, 0.5).contains(wm->opp.active(i)->pos) &&
+                    Circle2D(ballPos, 0.5).contains(wm->field->ourPenalty())) {
 
                     isOppAgentsInDangerCircle = true;
 
@@ -1724,7 +1724,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOurAgentsInDanger && isInPenaltyArea) {
@@ -1742,7 +1742,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOppAgentsInDanger && isInPenaltyArea) {
@@ -1759,7 +1759,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOurAgentsInDanger && !isInPenaltyArea) {
@@ -1776,7 +1776,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOppAgentsInDanger && !isInPenaltyArea) {
@@ -1791,7 +1791,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isOurAgentsAndOppAgentsInDanger && !isInPenaltyArea) {
@@ -1807,7 +1807,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,1),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
                // ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isOurAgentsAndOppAgentsInDanger &&isInPenaltyArea) {
