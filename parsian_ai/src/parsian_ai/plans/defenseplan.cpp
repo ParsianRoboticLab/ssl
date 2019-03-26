@@ -1647,24 +1647,21 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
    DangerByBothAgentsOutOfPenaltyArea= false;
    DangerByBothAgentsInPenaltyArea= false;
    Vector2D ballPos=wm->ball->pos;
-    isJustOurAgentsInDanger=false;
-    isJustOppAgentsInDanger=false;
+   isJustOurAgentsInDanger=false;
+   isJustOppAgentsInDanger=false;
     isOurAgentsAndOppAgentsInDanger=false;
     isInPenaltyArea=false;
+    isOurAgentsInDangerCircle = false;
+    isOppAgentsInDangerCircle = false;
 
 
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.85).contains(wm->our.active(i)->pos) && !Circle2D(ballPos, 0.85).contains(wm->opp.active(i)->pos) && Circle2D(ballPos,0.85).contains(wm->field->ourPenalty())) {
-                    isJustOurAgentsInDanger= true;
-                }
-                else if (Circle2D(ballPos, 0.85).contains(wm->opp.active(i)->pos) && !Circle2D(ballPos, 0.85).contains(wm->our.active(i)->pos) && Circle2D(ballPos,0.85).contains(wm->field->ourPenalty())) {
-                    isJustOppAgentsInDanger= true;
-                }
-                else if (Circle2D(ballPos, 0.85).contains(wm->our.active(i)->pos) && Circle2D(ballPos, 0.85).contains(wm->opp.active(i)->pos) && Circle2D(ballPos,0.85).contains(wm->field->ourPenalty())) {
-                    isOurAgentsAndOppAgentsInDanger= true;
-                    ROS_INFO_STREAM("Mahdi:BothAgents");
+                if (Circle2D(ballPos, 0.85).contains(wm->our.active(i)->pos) &&
+                    Circle2D(ballPos, 0.85).contains(wm->field->ourPenalty())) {
+
+                    isOurAgentsInDangerCircle = true;
 
                 }
 
@@ -1672,11 +1669,52 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         }
     }
 
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+                if (Circle2D(ballPos, 0.85).contains(wm->opp.active(i)->pos) &&
+                    Circle2D(ballPos, 0.85).contains(wm->field->ourPenalty())) {
+
+                    isOppAgentsInDangerCircle = true;
+
+
+                }
+            }
+        }
+    }
+
+    if(isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle) {
+        isJustOurAgentsInDanger = true;
+        isJustOppAgentsInDanger=false;
+        isOurAgentsAndOppAgentsInDanger=false;
+    }
+    else if(isOppAgentsInDangerCircle && !isOurAgentsInDangerCircle) {
+        isJustOppAgentsInDanger = true;
+        isJustOurAgentsInDanger=false;
+        isOurAgentsAndOppAgentsInDanger=false;
+    }
+    else if(isOurAgentsInDangerCircle && isOppAgentsInDangerCircle) {
+        isOurAgentsAndOppAgentsInDanger = true;
+        isJustOppAgentsInDanger = false;
+        isJustOurAgentsInDanger=false;
+        ROS_INFO_STREAM("Mahdi:BothAgents");
+    }
+    else{
+        isOurAgentsAndOppAgentsInDanger = false;
+        isJustOppAgentsInDanger = false;
+        isJustOurAgentsInDanger=false;
+
+    }
 
 
     if(fabs(ballPos.x - wm->field->ourGoal().x)<1.2 && (ballPos.y<1.2 && ballPos.y>-1.2)){
 
         isInPenaltyArea=true;
+
+    }
+    else{
+
+        isInPenaltyArea= false;
 
     }
 

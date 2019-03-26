@@ -104,6 +104,8 @@ protected:
     bool dangerForGoalKeeperClearByOppAgents;
     bool dangerForInsideOfThePenaltyArea;
     bool DangerModes;
+    bool isOurAgentsInDangerCircle;
+    bool isOppAgentsInDangerCircle;
     bool DangerByOurAgentsInPenaltyArea;
     bool DangerByOppAgentsInPenaltyArea;
     bool DangerByOurAgentsOutOfPenaltyArea;
