@@ -1088,38 +1088,89 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-
+    double angle_weight{0.5}, dist_weight{0.5};
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
 
         double max_dist{-1};
+        double chance{-1};
         Vector2D tmp_point{};
+        double tmp_angle{};
+        double tmp_chance{};
 
         for (size_t i{}; i < regions[0].points.size(); i++) {
-            double nearest_opp_robot_dist{100000};
+            chance = -1;
             for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) { // cal nearest_opp_robot
-                auto tmp = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
-                if (tmp < nearest_opp_robot_dist) {
+                auto tmp_d = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+                /*if (tmp < nearest_opp_robot_dist) {
                     nearest_opp_robot_dist = tmp;
                 }
             }
             if (nearest_opp_robot_dist > max_dist) {
                 max_dist = nearest_opp_robot_dist;
                 tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
-            }
-        }
+            }*/
 
+                CRobot *oppGoalKeaper = findOppGoalKeaper();
+                Segment2D posRobot_oppGoalK{regions[regionPriority[matchingIDs[v]]].points[i], oppGoalKeaper->pos};
+                Segment2D posRobot_oppGoalR{regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoalR()};
+                Segment2D posRobot_oppGoalL{regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoalL()};
+                double angle_R{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalR)};
+                double angle_L{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalL)};
+                double angle_max{angle_R > angle_L ? angle_R : angle_L};
+
+
+
+                auto tmp_a = angle_max;
+                //auto tmp_a = Vector2D::angleBetween(regions[regionPriority[matchingIDs[v]]].points[i]);
+                tmp_chance = tmp_d * dist_weight + tmp_a * angle_weight;
+                if (tmp_chance > chance)
+                {
+                    chance = tmp_chance;
+                    tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
+                }
+
+            }
+
+
+        }
+        regions[regionPriority[matchingIDs[v]]].chance = chance;
         regions[regionPriority[matchingIDs[v]]].theirNearestRobot = max_dist;
         semiDynamicPosition.append(tmp_point);
 
-        ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
-        ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
+        //ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
+        //ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
 
     }
+    CRobot *oppGoalKeaper = findOppGoalKeaper();
+    ROS_INFO_STREAM("amir Opp goaler x : " << oppGoalKeaper->pos.x);
+    ROS_INFO_STREAM("amir Opp goaler y : " << oppGoalKeaper->pos.y);
+
+    // TODO : adding tressold so that robot wont change positions to much
+    // TODO : triangle which our robot dont stand in front of playmake robot
+    // finding angles of pos with goal
+    /*for (int i{}; i < obstacles.size() - 1; i++) {
+        angles.push_back(angleOfTwoSegment(obstacles[i], obstacles[i + 1]));
+    }*/
+
+
 
 
 }
+
+CRobot *CDynamicAttack::findOppGoalKeaper() {
+
+    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++)
+    {
+        if (wm->field->oppPenaltyRect().contains(wm->opp.active(i)->pos))
+        {
+            return wm->opp.active(i);
+        }
+    }
+
+}
+
 
 
 

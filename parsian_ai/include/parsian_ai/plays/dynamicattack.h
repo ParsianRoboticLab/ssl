@@ -169,6 +169,8 @@ private:
     int oneTouchDoneState;
     // END NEW PASS ZONE
 
+    CRobot *findOppGoalKeaper();
+
 
     double thrshDribble = 0;
     bool lastPMInitWasDribble;
