@@ -561,7 +561,7 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
 
 
 bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
-                                 double _radius, double treshold) {
+                                 double _radius, double treshold, Vector2D point) {
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
@@ -577,13 +577,14 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
+    drawer->draw(_poly);
 
 
-    for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-        if (_poly.contains(wm->our.active(i)->pos)) {
+    //for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+        if (_poly.contains(point)) {
             return false;
         }
-    }
+    //}
 
 
     return true;
@@ -1119,13 +1120,13 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-    const double angle_weight{0.5}, dist_weight{0.5};
+    const double angle_weight{1.5}, dist_weight{0.5};   // TODO: show in controling in game
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
 
         double max_dist{-1};
-        double chance{-1};
+        double chance{-10};
         Vector2D tmp_point{};
         double tmp_angle{};
         double tmp_chance{};
@@ -1165,15 +1166,18 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 //auto tmp_a = Vector2D::angleBetween(regions[regionPriority[matchingIDs[v]]].points[i]);
                 tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
                 //ROS_INFO_STREAM("amir goal radius : " << wm->field->oppGoalR().y << " and center : "  <<  wm->field->oppGoal().y);
-
-                if (isPositionClear(playmake->pos(), wm->field->oppGoal(),
-                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1)) {
+                //ROS_INFO_STREAM("amir Goal left y : " << wm->field->oppGoalL().y);
+                //ROS_INFO_STREAM("amir Goal center y : " << wm->field->oppGoal().y);
+                if (!isPositionClear(playmake->pos(), wm->field->oppGoal(),
+                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
-                    tmp_chance = -1;
+                    tmp_chance = -10;
                 }
+                //tmp_point = regions[regionPriority[matchingIDs[v]]].points[0];
                 if (tmp_chance > chance) {
                     chance = tmp_chance;
                     tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
+                    ROS_INFO_STREAM("amir info zozanaghe ");
                 }
             }
 
