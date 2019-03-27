@@ -20,7 +20,7 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
         }
     }
     for(size_t i = 0 ; i < defendersForZJU.size() ; i++){
-        drawer->draw(Circle2D(defendersForZJU.at(i) , 0.4) , 0 , 360 , "blue");
+        drawer->draw(Circle2D(defendersForZJU.at(i) , 0.4) , 0 , 360 , "red");
     }
     return defendersForZJU;
 }
