@@ -189,7 +189,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
 
 void CCoach::assignGoalieAgent(int goalieID) {
     goalieAgent = nullptr;
-    if (wm->our.data->activeAgents.contains(goalieID)) {
+    if (goalieID != -1 && wm->our.data->activeAgents.contains(goalieID)) {
         goalieAgent = agents[goalieID];
     }
 }
@@ -725,9 +725,9 @@ void CCoach::execute()
     resetNonVisibleAgents();//[substitution]
     seperateHealthyAndDamagedRobots();//[substitution]
     int goalie = findGoalie();
-    assignGoalieAgent(goalie);
+    if(goalie != -1)
+        assignGoalieAgent(goalie);
     decidePreferredDefenseAgentsCount();
-
     // choose playmake agent
     bool defenseFirst = wm->ball->vel.length() > 1
                         && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();

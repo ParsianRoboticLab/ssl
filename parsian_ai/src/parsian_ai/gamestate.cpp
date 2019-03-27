@@ -23,13 +23,14 @@ void GameState::setRefree(ssl_refree_wrapperConstPtr ref_wrapper) {
         return;
     }
     command_ctr = ref_wrapper->command_counter;
-    ///////////////////// when we are ready any command means force start
-    if (isReady && (state != States::Start) && (ref_wrapper->command.command != ssl_refree_command::HALT)
-        && (ref_wrapper->command.command != ssl_refree_command::STOP)) {
-        state = States::Stop;
-        isReady = false;
-        return;
-    }
+    // TODO : Remove it
+//    ///////////////////// when we are ready any command means force start
+//    if (isReady && (state != States::Start) && (ref_wrapper->command.command != ssl_refree_command::HALT)
+//        && (ref_wrapper->command.command != ssl_refree_command::STOP)) {
+//        state = States::Stop;
+//        isReady = false;
+//        return;
+//    }
 
     stage = ref_wrapper->stage;
     switch (stage.stage) {
@@ -63,7 +64,7 @@ bool GameState::allowedNearBall() {
     return isStart() || ourPlayOffKick();
 }
 bool GameState::canKickBall() {
-    return isStart() || (ourPlayOffKick() && isReady);
+    return isReady && (!theirPenaltyKick() || !theirBallPlacement() || !theirPlayOffKick() || !theirPenaltyKick() || !theirPenaltyShootout());
 }
 
 bool GameState::playOffKick() {
