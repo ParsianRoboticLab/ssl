@@ -1839,7 +1839,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
     Vector2D ballPos=wm->ball->pos;
     Vector2D firstPointInEmptyAngle = Vector2D(0,wm->field->oppCornerL().y);
-    Vector2D secondPointInEmptyAngle = Vector2D(0,wm->field->oppGoalR().y);
+    Vector2D secondPointInEmptyAngle = Vector2D(0,wm->field->oppCornerR().y);
     Vector2D target;
     double emptyAngle;
     double percent;
@@ -1850,6 +1850,8 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
     Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
     Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
     Segment2D emptyAngleLine(wm->field->ourGoal(),ballPos);
+    Segment2D middleLine(Vector2D(0,wm->field->oppCornerL().y),Vector2D(0,wm->field->oppCornerR().y));
+    shouldKickOrChip=false;
 
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
@@ -1883,6 +1885,14 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
     emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);
     drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
     drawer->draw(target,QColor("Orange"));
+    ////////// Bisector of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
+    Segment2D AZBisecOpenSeg(ballPos ,ballPos + (Vector2D(cos(_PI * mostOpenAngle / 180) , sin(_PI * mostOpenAngle / 180)).norm() * 12) );
+    ////////// Top and bottom line of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
+    Segment2D AZTopOfOpenSeg(ballPos , ballPos + Vector2D(cos(_PI * (mostOpenAngle + (biggestAngle / 2)) / 180), sin(_PI * (mostOpenAngle + (biggestAngle / 2)) / 180)).norm() * 12);
+    Segment2D AZBottomOfOpenSeg(ballPos , ballPos + Vector2D(cos(_PI * (mostOpenAngle - (biggestAngle / 2)) / 180), sin(_PI * (mostOpenAngle - (biggestAngle / 2)) / 180)).norm() * 12);
+    drawer->draw(AZBisecOpenSeg,QColor("Yellow"));
+    drawer->draw(AZTopOfOpenSeg,QColor("Yellow"));
+    drawer->draw(AZBottomOfOpenSeg,QColor("Yellow"));
 
     if(DangerModes){
 
@@ -1913,6 +1923,33 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
         }
         else if(DangerByBothAgentsOutOfPenaltyArea){
+
+            target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
+
+
+        }
+        else if(DangerByOurAgentsInPenaltyArea){
+
+            shouldKickOrChip=true;
+            ROS_INFO_STREAM("Mahdi:EmptyAngle="<<emptyAngle);
+            ROS_INFO_STREAM("Mahdi:Percent="<<percent);
+            ROS_INFO_STREAM("Mahdi:MostOpenAngle="<<mostOpenAngle);
+            ROS_INFO_STREAM("Mahdi:biggestAngle="<<biggestAngle);
+            target = AZBisecOpenSeg.intersection(middleLine);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
+            drawer->draw(Vector2D(emptyAngle/360,0),QColor("Orange"));
+            AHZSkills = gpa[goalKeeperAgent->id()];
+            gpa[goalKeeperAgent->id()]->setSlowmode(true);
+            gpa[goalKeeperAgent->id()]->setDivemode(false);
+            gpa[goalKeeperAgent->id()]->setTargetpos(target);
+            gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D(emptyAngle/360,0));
+
+        }
+        else if(DangerByOurAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
             target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);

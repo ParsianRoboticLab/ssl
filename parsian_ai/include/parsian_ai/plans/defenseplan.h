@@ -117,6 +117,7 @@ protected:
     bool isJustOppAgentsInDanger;
     bool isOurAgentsAndOppAgentsInDanger;
     bool isInPenaltyArea;
+    bool shouldKickOrChip;
 
 
     bool stopMode;
