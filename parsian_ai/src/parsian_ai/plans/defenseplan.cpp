@@ -50,22 +50,12 @@ Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D o
     return goalkeeperPosition;
 }
 
-Vector2D DefensePlan::getGKPositionInTwoDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
+Vector2D DefensePlan::getGKPositionInMoreThanTwoDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
     Vector2D goalkeeperPosition;
     Vector2D sol[2];
     int numberOfAgents = 1;
     Circle2D defenseArea(wm->field->ourGoal(),findBestRadiusForGK(getBestLineWithTallesForGK(numberOfAgents , firstPoint , originPoint , secondPoint) , firstPoint , originPoint , secondPoint , downLimit , upLimit));
     drawer->draw(defenseArea , 0 , 180 , "black");
-    defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
-    goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
-    return goalkeeperPosition;
-}
-
-Vector2D DefensePlan::getGKPositionInThreeDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
-    Vector2D goalkeeperPosition;
-    Vector2D sol[2];
-    int numberOfAgents = 1;
-    Circle2D defenseArea(wm->field->ourGoal(),findBestRadiusForGK(getBestLineWithTallesForGK(numberOfAgents , firstPoint , originPoint , secondPoint) , firstPoint , originPoint , secondPoint , downLimit , upLimit));
     defenseArea.intersection(getBisectorLine(firstPoint , originPoint , secondPoint) , &sol[0] , &sol[1]);
     goalkeeperPosition = sol[0].isValid() && sol[0].dist(originPoint) < sol[1].dist(originPoint) ? sol[0] : sol[1];
     return goalkeeperPosition;
@@ -86,34 +76,19 @@ Vector2D DefensePlan::getGKPositionWithoutDefense(double downLimit , double upLi
 
 Vector2D DefensePlan::getGKPositionAccordingToTheDefense(int numberOfDefenders , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint){
     Vector2D goalKeeperPosition;
-    double downLimit , upLimit;
+    double downLimit =  wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2 , upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
 
     switch (numberOfDefenders){
-    case 0:{
-        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
+    case 0:
         goalKeeperPosition = getGKPositionWithoutDefense(downLimit , upLimit);
         break;
-    }
-    case 1:{
-        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
+    case 1:
         goalKeeperPosition = getGKPositionInOneDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
-    }
-    case 2:{
-        PDEBUG("AYA" ,2, D_AHZ);
-        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
-        goalKeeperPosition = getGKPositionInTwoDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
+    case 2:
+    case 3:
+        goalKeeperPosition = getGKPositionInMoreThanTwoDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
         break;
-    }
-    case 3:{
-        downLimit = wm->field->ourGoalL().dist(wm->field->ourGoalR()) / 2;
-        upLimit = 1.2;//RADIUS_FOR_CRITICAL_DEFENSE_AREA - Robot::robot_radius_new;
-        goalKeeperPosition = getGKPositionInThreeDefense(firstPoint , originPoint , secondPoint , downLimit , upLimit);
-        break;
-    }
     default:
         break;
     }
@@ -141,38 +116,6 @@ double DefensePlan::findBestRadiusForGK(Line2D bestLineWithTalles ,Vector2D firs
         bestRadiusForDefenseArea = upLimit;
     }
     return bestRadiusForDefenseArea;
-}
-
-Segment2D DefensePlan::getBestSegmentWithTallesForGK(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint) {
-    double robotDiameter = 2 * Robot::robot_radius_new;
-    Vector2D sol[2];
-    Vector2D suitablePoint;
-    Segment2D ourGoalLine(firstPoint, secondPoint);
-    Segment2D biggerFrontageOfTriangle;
-    Segment2D smallerFrontageOfTriangle;
-    if (getLinesOfBallTriangle().at(0).length() > getLinesOfBallTriangle().at(1).length()) {
-        biggerFrontageOfTriangle = getLinesOfBallTriangle().at(0);
-        smallerFrontageOfTriangle = getLinesOfBallTriangle().at(1);
-    } else{
-        biggerFrontageOfTriangle = getLinesOfBallTriangle().at(1);
-        smallerFrontageOfTriangle = getLinesOfBallTriangle().at(0);
-    }
-    Segment2D tempAimLessLine(ourGoalLine.intersection(smallerFrontageOfTriangle) , biggerFrontageOfTriangle.nearestPoint(ourGoalLine.intersection(smallerFrontageOfTriangle)));
-    if(tempAimLessLine.length() >= robotDiameter){
-        if(biggerFrontageOfTriangle.intersection(Line2D(Vector2D(originPoint.x - (defenseCount * robotDiameter * (6 - fabs(originPoint.x)) / tempAimLessLine.length()), -4.5),
-                                                        Vector2D(originPoint.x - (defenseCount * robotDiameter * (6 - fabs(originPoint.x)) / tempAimLessLine.length()), 4.5))).dist(wm->field->ourGoal()) <= 0.4
-                || (originPoint.x - (defenseCount * robotDiameter * (6 - fabs(originPoint.x)) / tempAimLessLine.length())) < -6){
-            Circle2D(wm->field->ourGoal() , 0.4).intersection(biggerFrontageOfTriangle , &sol[0] , &sol[1]);
-            drawer->draw("is" ,  Vector2D(-1,0) , 40);
-            suitablePoint = sol[0].isValid() && sol[0].dist(wm->ball->pos) < sol[1].dist(wm->ball->pos) ? sol[0] : sol[1];
-            tempAimLessLine = Segment2D(Vector2D(suitablePoint.x, -4.5), Vector2D(suitablePoint.x, 4.5));
-        }
-        else{
-            tempAimLessLine = Segment2D(Vector2D(originPoint.x - (defenseCount * robotDiameter * (6 - fabs(originPoint.x)) / tempAimLessLine.length()), -4.5),
-                                        Vector2D(originPoint.x - (defenseCount * robotDiameter * (6 - fabs(originPoint.x)) / tempAimLessLine.length()), 4.5));
-        }
-    }
-    return tempAimLessLine;
 }
 
 Line2D DefensePlan::getBestLineWithTallesForGK(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint) {
@@ -1644,7 +1587,7 @@ Vector2D DefensePlan::movePointToPenaltyArea(const Vector2D& point){
     return point;
 }
 
-Vector2D DefensePlan::ballIsBesidePoles(){//slow mode and dont move dont work fine
+Vector2D DefensePlan::ballIsBesidePoles(){//Lhum TODO:slow mode and dont move dont work fine
 
     Vector2D upBallRectanglePoint;
     Vector2D downBallRectanglePoint;
@@ -1653,8 +1596,14 @@ Vector2D DefensePlan::ballIsBesidePoles(){//slow mode and dont move dont work fi
     bool isBallLeftOfPole = ((wm->ball->pos.y < 0 && wm->ball->pos.y >= wm->field->ourGoalR().y) || (wm->ball->pos.y >= 0 && wm->ball->pos.y >= wm->field->ourGoalL().y)) ? true : false;
     ROS_INFO_STREAM("Lhum: !!!!!!!! "  << isBallLeftOfPole);
     Rect2D ballRectangle(wm->ball->pos + Vector2D(0.25 , 0.25) , wm->ball->pos + Vector2D(-0.25 , -0.25));
-    Vector2D Target[4][2] = {{ballRectangle.bottomRight() , ballRectangle.topRight()} , {ballRectangle.topRight() , ballRectangle.bottomRight()} , {Vector2D(ballRectangle.bottomRight().x , wm->ball->pos.y) ,
-                             Vector2D(ballRectangle.bottomLeft().x , wm->ball->pos.y)} , {wm->ball->pos  - Vector2D(0 , 0.02) , wm->ball->pos - Vector2D(0 , 0.02)}};
+    Vector2D Target[4][2] = {{ballRectangle.bottomRight() , ballRectangle.topRight()} ,
+                             {ballRectangle.bottomLeft() , ballRectangle.topLeft()} ,
+                             {Vector2D(ballRectangle.bottomLeft().x , wm->ball->pos.y) , Vector2D(ballRectangle.topLeft().x , wm->ball->pos.y)} ,
+                             {wm->ball->pos  - Vector2D(0 , 0.02) , wm->ball->pos - Vector2D(0 , 0.02)}};
+    for(int i = 0 ; i < 4 ; i++) {
+        Target[i][0] = Vector2D(max(Target[i][0].x , -6.15) , Target[i][0].y);
+        Target[i][1] = Vector2D(max(Target[i][1].x , -6.15) , Target[i][1].y);
+    }
     if(wm->field->ourGoalL().y >= wm->ball->pos.y &&
        wm->field->ourGoalR().y < wm->ball->pos.y &&
        wm->field->ourGoal().x < wm->ball->pos.x &&
@@ -1684,7 +1633,6 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
     ///////////////////////////////////////////////////////////////////////////
     switch (state){
         case GKState :: GKReciveBallInTS:
-            ROS_INFO_STREAM("Lhum: GKReciveBallInTs");
             return movePointToPenaltyArea(ballPrediction(true));
         case GKState :: GKPredictInTs:
             ROS_INFO_STREAM("Lhum: GKPredictInTs");
@@ -2376,10 +2324,10 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
     gpa[goalKeeperAgent->id()]->setSlowmode(false);
     gpa[goalKeeperAgent->id()]->setNoavoid(true);
     gpa[goalKeeperAgent->id()]->setTargetpos(GKTarget);
+    /////gpa[goalKeeperAgent->id()]->setTargetdir              Don't forget add it to your execute state.
 
     DBUG(QString("goalKeeper clear mode : %1").arg(know->variables["goalKeeperClearMode"].toBool()) , D_AHZ);
     DBUG(QString("goalKeeper oneTouch mode : %1").arg(know->variables["goalKeeperOneTouchMode"].toBool()) , D_AHZ);
-    ROS_INFO_STREAM("Lhum: " << know->variables["transientFlag"].toBool());
     //////////////////////////////////////////////////////////////////////////
     switch (state){
         case GKState :: GKReciveBallInTS:
