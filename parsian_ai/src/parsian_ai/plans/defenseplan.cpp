@@ -1653,13 +1653,20 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     isInPenaltyArea=false;
     isOurAgentsInDangerCircle = false;
     isOppAgentsInDangerCircle = false;
+    Segment2D goalLineLeft(wm->field->ourGoalL(),wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0));
+    Segment2D goalLineRight(wm->field->ourGoalR(),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0));
+    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0));
+
+
+    drawer->draw(Segment2D(wm->field->ourGoalL(),wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourGoalR(),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
 
 
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.5).contains(wm->our.active(i)->pos) &&
-                    Circle2D(ballPos, 0.5).contains(wm->field->ourPenalty())) {
+                if (Circle2D(ballPos, 0.5).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.5).intersection(goalLineLeft) || Circle2D(ballPos, 0.5).intersection(goalLineRight) || Circle2D(ballPos, 0.5).intersection(inFrontOfPenaltyAreaLine)) ) {
 
                     isOurAgentsInDangerCircle = true;
 
@@ -1672,8 +1679,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.5).contains(wm->opp.active(i)->pos) &&
-                    Circle2D(ballPos, 0.5).contains(wm->field->ourPenalty())) {
+                if (Circle2D(ballPos, 0.5).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.5).intersection(goalLineLeft) || Circle2D(ballPos, 0.5).intersection(goalLineRight) || Circle2D(ballPos, 0.5).intersection(inFrontOfPenaltyAreaLine))) {
 
                     isOppAgentsInDangerCircle = true;
 
