@@ -361,6 +361,7 @@ double Knowledge::getEmptyAngle(Vector2D p, Vector2D p1, Vector2D p2,
 
 double Knowledge::getEmptyAngle(Vector2D p, Vector2D p1, Vector2D p2, QList<Circle2D> obs, double& percent, double &mostOpenAngle, double& biggestAngle) {
     QList<emptyAngleStruct> r;
+
     emptyAngleStruct q1{}, q2{};
     q1.begin = false;
     q1.angle = (p1 - p).th().degree();
@@ -472,6 +473,7 @@ double Knowledge::getEmptyAngle(Vector2D p, Vector2D p1, Vector2D p2, QList<Circ
 
 Vector2D Knowledge::getEmptyPosOnGoal(Vector2D from, double &regionWidth, bool oppGoal, QList<int> ourRelaxedIDs, QList<int> oppRelaxedIDs, double wOpenness, bool _draw) {
     QList<Circle2D> c;
+    c.append(Circle2D(Vector2D(0 , 0) , 0.2));
     for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
         if (!ourRelaxedIDs.contains(wm->our.active(i)->id)) {
             c.append(Circle2D(wm->our.active(i)->pos, wm->our.active(i)->robotRadius()));
