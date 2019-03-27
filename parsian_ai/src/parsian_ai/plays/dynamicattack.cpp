@@ -559,6 +559,37 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
     return true;
 }
 
+
+bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
+                                 double _radius, double treshold) {
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(_pos1, _pos2);
+    Polygon2D _poly;
+    Circle2D(_pos2, _radius + treshold).
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(_pos1, Robot::robot_radius_new + treshold).
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+
+
+    for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+        if (_poly.contains(wm->our.active(i)->pos)) {
+            return false;
+        }
+    }
+
+
+    return true;
+}
+
+
 bool CDynamicAttack::isPlayMakeChanged() {
 
     if (playmake != nullptr) {
@@ -1088,7 +1119,7 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-    double angle_weight{0.5}, dist_weight{0.5};
+    const double angle_weight{0.5}, dist_weight{0.5};
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
@@ -1100,42 +1131,56 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         double tmp_chance{};
 
         for (size_t i{}; i < regions[0].points.size(); i++) {
-            chance = -1;
+            double nearest_opp_robot_dist{100000};
             for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) { // cal nearest_opp_robot
-                auto tmp_d = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
-                /*if (tmp < nearest_opp_robot_dist) {
+                //auto tmp_d = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+                auto tmp = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+                if (tmp < nearest_opp_robot_dist) {
                     nearest_opp_robot_dist = tmp;
                 }
-            }
-            if (nearest_opp_robot_dist > max_dist) {
-                max_dist = nearest_opp_robot_dist;
-                tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
-            }*/
+                }
+
+                //if (nearest_opp_robot_dist > max_dist) {
+                    //max_dist = nearest_opp_robot_dist;
+                    //tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
+                //}
+
 
                 CRobot *oppGoalKeaper = findOppGoalKeaper();
-                Segment2D posRobot_oppGoalK{regions[regionPriority[matchingIDs[v]]].points[i], oppGoalKeaper->pos};
-                Segment2D posRobot_oppGoalR{regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoalR()};
-                Segment2D posRobot_oppGoalL{regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoalL()};
-                double angle_R{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalR)};
-                double angle_L{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalL)};
-                double angle_max{angle_R > angle_L ? angle_R : angle_L};
-
+                double angle_max{};
+                if (oppGoalKeaper != nullptr) {
+                    Segment2D posRobot_oppGoalK{regions[regionPriority[matchingIDs[v]]].points[i], oppGoalKeaper->pos};
+                    Segment2D posRobot_oppGoalR{regions[regionPriority[matchingIDs[v]]].points[i],
+                                                wm->field->oppGoalR()};
+                    Segment2D posRobot_oppGoalL{regions[regionPriority[matchingIDs[v]]].points[i],
+                                                wm->field->oppGoalL()};
+                    const double &&angle_R{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalR)};
+                    const double &&angle_L{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalL)};
+                    angle_max = angle_R > angle_L ? angle_R : angle_L;
+                    //ROS_INFO_STREAM("amir angle max! : " << angle_max);
+                }
 
 
                 auto tmp_a = angle_max;
                 //auto tmp_a = Vector2D::angleBetween(regions[regionPriority[matchingIDs[v]]].points[i]);
-                tmp_chance = tmp_d * dist_weight + tmp_a * angle_weight;
-                if (tmp_chance > chance)
-                {
+                tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
+                //ROS_INFO_STREAM("amir goal radius : " << wm->field->oppGoalR().y << " and center : "  <<  wm->field->oppGoal().y);
+
+                if (isPositionClear(playmake->pos(), wm->field->oppGoal(),
+                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1)) {
+                    ROS_INFO_STREAM("amir im here and my chance is 0!");
+                    tmp_chance = -1;
+                }
+                if (tmp_chance > chance) {
                     chance = tmp_chance;
                     tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
                 }
-
             }
 
-
-        }
         regions[regionPriority[matchingIDs[v]]].chance = chance;
+        ROS_INFO_STREAM("this is v " << v << " and amir chance : " << chance);
+        ROS_INFO_STREAM("amir pos point x :" << tmp_point.x);
+        ROS_INFO_STREAM("amir pos point y :" << tmp_point.y);
         regions[regionPriority[matchingIDs[v]]].theirNearestRobot = max_dist;
         semiDynamicPosition.append(tmp_point);
 
@@ -1143,9 +1188,9 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         //ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
 
     }
-    CRobot *oppGoalKeaper = findOppGoalKeaper();
+    /*CRobot *oppGoalKeaper = findOppGoalKeaper();
     ROS_INFO_STREAM("amir Opp goaler x : " << oppGoalKeaper->pos.x);
-    ROS_INFO_STREAM("amir Opp goaler y : " << oppGoalKeaper->pos.y);
+    ROS_INFO_STREAM("amir Opp goaler y : " << oppGoalKeaper->pos.y);*/
 
     // TODO : adding tressold so that robot wont change positions to much
     // TODO : triangle which our robot dont stand in front of playmake robot
@@ -1160,15 +1205,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 }
 
 CRobot *CDynamicAttack::findOppGoalKeaper() {
-
-    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++)
-    {
-        if (wm->field->oppPenaltyRect().contains(wm->opp.active(i)->pos))
-        {
-            return wm->opp.active(i);
-        }
-    }
-
+    return(wm->opp.active(wm->opp.data->goalieID));
 }
 
 
