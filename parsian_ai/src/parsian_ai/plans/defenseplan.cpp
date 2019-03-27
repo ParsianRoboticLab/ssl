@@ -1653,14 +1653,14 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     isInPenaltyArea=false;
     isOurAgentsInDangerCircle = false;
     isOppAgentsInDangerCircle = false;
-    Segment2D goalLineLeft(wm->field->ourGoalL(),wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0));
-    Segment2D goalLineRight(wm->field->ourGoalR(),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0));
-    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0));
+    Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
+    Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
 
 
-    drawer->draw(Segment2D(wm->field->ourGoalL(),wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
-    drawer->draw(Segment2D(wm->field->ourGoalR(),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
-    drawer->draw(Segment2D(wm->field->ourGoalL()+Vector2D(wm->field->_PENALTY_DEPTH,0),wm->field->ourGoalR()+Vector2D(wm->field->_PENALTY_DEPTH,0)),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight()),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
 
 
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
