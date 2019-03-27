@@ -1713,7 +1713,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     }
 
 
-    if(fabs(ballPos.x - wm->field->ourGoal().x)<1.2 && (ballPos.y<1.2 && ballPos.y>-1.2)){
+    if(wm->field->ourPenaltyRect().contains(ballPos)){
 
         isInPenaltyArea=true;
 
