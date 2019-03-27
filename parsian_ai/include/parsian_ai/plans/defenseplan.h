@@ -40,6 +40,7 @@ protected:
     void setGoalKeeperState();
     void setGoalKeeperTargetPoint();
     void setGoalKeeperStateInDangerMode();
+    Vector2D setGoalKeeperTargetPointInDangerMode();
     bool goalKeeperOneTouch, goalKeeperClearMode, ballIsOutOfField, ballIsBesidePoles;
     double strictfollowThr;
     double differentialTime = 0;

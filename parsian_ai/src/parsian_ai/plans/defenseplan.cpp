@@ -1666,7 +1666,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.5).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.5).intersection(goalLineLeft) || Circle2D(ballPos, 0.5).intersection(goalLineRight) || Circle2D(ballPos, 0.5).intersection(inFrontOfPenaltyAreaLine)) ) {
+                if (Circle2D(ballPos, 0.4).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine)) ) {
 
                     isOurAgentsInDangerCircle = true;
 
@@ -1679,7 +1679,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-                if (Circle2D(ballPos, 0.5).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.5).intersection(goalLineLeft) || Circle2D(ballPos, 0.5).intersection(goalLineRight) || Circle2D(ballPos, 0.5).intersection(inFrontOfPenaltyAreaLine))) {
+                if (Circle2D(ballPos, 0.4).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine))) {
 
                     isOppAgentsInDangerCircle = true;
 
@@ -1730,7 +1730,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOurAgentsInDanger && isInPenaltyArea) {
@@ -1748,7 +1748,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOppAgentsInDanger && isInPenaltyArea) {
@@ -1765,7 +1765,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOurAgentsInDanger && !isInPenaltyArea) {
@@ -1782,7 +1782,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isJustOppAgentsInDanger && !isInPenaltyArea) {
@@ -1797,7 +1797,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                 //ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isOurAgentsAndOppAgentsInDanger && !isInPenaltyArea) {
@@ -1813,7 +1813,7 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
 
-                drawer->draw(Circle2D(ballPos,0.5),0,360,QColor("Red"));
+                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
                // ROS_INFO_STREAM("Mahdi"<<fabs(wm->ball->pos.x - wm->field->ourGoal().x));
 
                 if (isOurAgentsAndOppAgentsInDanger &&isInPenaltyArea) {
@@ -1834,11 +1834,106 @@ void DefensePlan::setGoalKeeperStateInDangerMode(){
     }
 
 
+}
+Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
+
+    Vector2D ballPos=wm->ball->pos;
+    Vector2D firstPointInEmptyAngle = Vector2D(0,wm->field->oppCornerL().y);
+    Vector2D secondPointInEmptyAngle = Vector2D(0,wm->field->oppGoalR().y);
+    Vector2D target;
+    double emptyAngle;
+    double percent;
+    double mostOpenAngle;
+    double biggestAngle;
+    QList<Circle2D> obstacles;
+    Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
+    Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D emptyAngleLine(wm->field->ourGoal(),ballPos);
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                if (Circle2D(ballPos, 0.4).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine)) ) {
+
+
+                    obstacles.append(Circle2D(wm->our.active(i)->pos, Robot::robot_radius_new + 0.01));
+
+                }
+            }
+        }
+
+    }
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                if (Circle2D(ballPos, 0.4).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine))) {
+
+
+                    obstacles.append(Circle2D(wm->opp.active(i)->pos, Robot::robot_radius_new + 0.01));
+
+                }
+            }
+        }
+
+    }
+    emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);
+    drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+    drawer->draw(target,QColor("Orange"));
+
+    if(DangerModes){
+
+        if(DangerByOppAgentsInPenaltyArea){
+
+            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.9);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
+
+        }
+        else if(DangerByOppAgentsOutOfPenaltyArea){
+
+            target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
+
+
+        }
+
+        else if(DangerByBothAgentsInPenaltyArea){
+
+            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.9);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
 
 
 
+        }
+        else if(DangerByBothAgentsOutOfPenaltyArea){
+
+            target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+            drawer->draw(target,QColor("Orange"));
+
+
+        }
+
+
+
+
+    }
+
+
+
+
+return target;
 
 }
+
 void DefensePlan::setGoalKeeperTargetPoint() {
     //// This function determine the target point that goalkeeper must go to it.
     //// For producing the target point, we certainly consider the states that
@@ -2563,9 +2658,11 @@ void DefensePlan::execute(){
     }
     else{
         if(goalKeeperAgent != nullptr){
+            Vector2D GoalKeeperTarget;
             setGoalKeeperState();
             setGoalKeeperStateInDangerMode();
             setGoalKeeperTargetPoint();
+            GoalKeeperTarget = setGoalKeeperTargetPointInDangerMode();
             executeGoalKeeper();
             assignSkill(goalKeeperAgent , AHZSkills);
         }
