@@ -592,6 +592,36 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
     return true;
 }
 
+bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
+                                     double _radius, double treshold, Vector2D point) {
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(_pos1, _pos2);
+    Polygon2D _poly;
+    Circle2D(_pos2, _radius + treshold).
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(_pos1, Robot::robot_radius_new + treshold).
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+    drawer->draw(_poly,QColor(120,120,120));
+
+
+    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+    if (_poly.contains(wm->opp.active(i)->pos)) {
+        return false;
+    }
+    }
+
+
+    return true;
+}
+
 
 bool CDynamicAttack::isPlayMakeChanged() {
 
@@ -1373,6 +1403,12 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                                     wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
+                }
+                if(!isPassPathOpen(playmake->pos(), regions[regionPriority[matchingIDs[v]]].points[i],
+                                   Robot::robot_radius_new, 0.1));
+                {
+                    tmp_chance = -10;
+
                 }
                 //tmp_point = regions[regionPriority[matchingIDs[v]]].points[0];
                 if (tmp_chance > chance) {
