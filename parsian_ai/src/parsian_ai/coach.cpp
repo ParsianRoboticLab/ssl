@@ -128,7 +128,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
         }
     } else if (gameState->isStart()) {
         //todo remove this
-        preferredDefenseCounts = 1;
+        //preferredDefenseCounts = 1;
         return;
         if (know->variables["transientFlag"].toBool())
         {

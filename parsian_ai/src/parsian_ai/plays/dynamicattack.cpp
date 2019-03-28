@@ -593,7 +593,7 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
 }
 
 bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
-                                     double _radius, double treshold, Vector2D point) {
+                                     double _radius, double treshold) {
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
@@ -609,16 +609,15 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    drawer->draw(_poly,QColor(120,120,120));
+    //drawer->draw(_poly,QColor(120,120,120));
 
 
-    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+    for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
     if (_poly.contains(wm->opp.active(i)->pos)) {
+        ROS_INFO_STREAM("amird there were opponent");
         return false;
     }
     }
-
-
     return true;
 }
 
@@ -1404,9 +1403,12 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
                 }
+                double passPathWeight{6};
                 if(!isPassPathOpen(playmake->pos(), regions[regionPriority[matchingIDs[v]]].points[i],
-                                   Robot::robot_radius_new, 0.1));
+                                   (Robot::robot_radius_new + playmake->pos().dist(regions[regionPriority[matchingIDs[v]]].points[i]) / passPathWeight)
+                                   , 0.1))
                 {
+                    //ROS_INFO_STREAM("amird " << v << " and i is  " << i);
                     tmp_chance = -10;
 
                 }
