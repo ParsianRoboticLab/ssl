@@ -10,47 +10,108 @@ using namespace std;
 QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
     QList<Vector2D> defendersForZJU;
     defendersForZJU.clear();
-    if(wm->ball->pos.y > 1.2 && numberOfOverDefenders == 1){
+    if(wm->ball->pos.y > 1.25 && numberOfOverDefenders == 1){
         defendersForZJU.append(Vector2D(-4.7,-1/2));
+        upper= true;
+        downer= true;
+        middle= true;
     }
 
-    else if(wm->ball->pos.y > 1.2 && numberOfOverDefenders == 2){
+    else if(wm->ball->pos.y > 1.25 && numberOfOverDefenders == 2){
         defendersForZJU.append(Vector2D(-4.7,0.4));
         defendersForZJU.append(Vector2D(-4.7,-0.4));
+        upper= true;
+        middle= true;
+        downer= false;
     }
 
-    else if(wm->ball->pos.y < -1.2 && numberOfOverDefenders == 1){
+    else if(wm->ball->pos.y < -1.15 && numberOfOverDefenders == 1){
         defendersForZJU.append(Vector2D(-4.7,1/2));
+        upper= true;
+        middle= false;
+        downer= true;
     }
 
-    else if(wm->ball->pos.y < -1.2 && numberOfOverDefenders == 2){
+    else if(wm->ball->pos.y < -1.15 && numberOfOverDefenders == 2){
         defendersForZJU.append(Vector2D(-4.7,0.4));
         defendersForZJU.append(Vector2D(-4.7,-0.4));
+        upper= true;
+        middle= false;
+        downer= false;
     }
 
-    else if(1.2 >= wm->ball->pos.y && wm->ball->pos.y > 0 && numberOfOverDefenders == 1) {
+    else if(1.15 >= wm->ball->pos.y && wm->ball->pos.y > 0.05 && numberOfOverDefenders == 1) {
         defendersForZJU.append(Vector2D(-4.7,-0.6));
-
+        upper= false;
+        middle= true;
+        downer= true;
     }
 
-    else if(0 >= wm->ball->pos.y && wm->ball->pos.y >= -1.2 && numberOfOverDefenders == 1) {
+    else if(-0.05 >= wm->ball->pos.y && wm->ball->pos.y >= -1.15 && numberOfOverDefenders == 1) {
         defendersForZJU.append(Vector2D(-4.7,0.6));
+        upper= false;
+        middle= true;
+        downer= false;
     }
 
 
-    else if(1.2 >= wm->ball->pos.y && wm->ball->pos.y > 0 && numberOfOverDefenders == 2) {
+    else if(1.15 >= wm->ball->pos.y && wm->ball->pos.y > 0.05 && numberOfOverDefenders == 2) {
         defendersForZJU.append(Vector2D(-4.7,-1.2));
         defendersForZJU.append(Vector2D(-4.7,1.2));
-
+        upper= false;
+        middle= false;
+        downer= true;
     }
 
-    else if(0 >= wm->ball->pos.y && wm->ball->pos.y >= -1.2 && numberOfOverDefenders == 2) {
+    else if(-0.05 >= wm->ball->pos.y && wm->ball->pos.y >= -1.15 && numberOfOverDefenders == 2) {
         defendersForZJU.append(Vector2D(-4.7,-1.2));
         defendersForZJU.append(Vector2D(-4.7,1.2));
-
+        upper= false;
+        middle= false;
+        downer= false;
     }
 
-    else {
+    else {////kasra:for Threshold in real launching:) ////
+        if(upper && middle && downer){
+            defendersForZJU.append(Vector2D(-4.7,-1/2));
+        }
+
+        if(upper && middle && !downer){
+            defendersForZJU.append(Vector2D(-4.7,0.4));
+            defendersForZJU.append(Vector2D(-4.7,-0.4));
+        }
+
+        if(upper && !middle && downer){
+            defendersForZJU.append(Vector2D(-4.7,1/2));
+        }
+
+        if(upper && !middle && !downer){
+            defendersForZJU.append(Vector2D(-4.7,0.4));
+            defendersForZJU.append(Vector2D(-4.7,-0.4));
+        }
+
+        if(!upper && middle && downer){
+            defendersForZJU.append(Vector2D(-4.7,-0.6));
+        }
+
+        if(!upper && middle && !downer){
+            defendersForZJU.append(Vector2D(-4.7,0.6));
+        }
+
+        if(!upper && !middle && downer){
+            defendersForZJU.append(Vector2D(-4.7,-1.2));
+            defendersForZJU.append(Vector2D(-4.7,1.2));
+        }
+
+        if(!upper && !middle && !downer){
+            defendersForZJU.append(Vector2D(-4.7,-1.2));
+            defendersForZJU.append(Vector2D(-4.7,1.2));
+        }
+
+
+
+
+
         /////kasra:just to make sure that the code don't get segment!!//////
         if(wm->ball->pos.y > 0){
             for(int i = 0 ; i < numberOfOverDefenders ; i++){
