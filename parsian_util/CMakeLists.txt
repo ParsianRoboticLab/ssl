@@ -140,7 +140,23 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_geom
+add_library(
+		${PROJECT_NAME}
+		src/geom/angle_deg.cpp
+		src/geom/circle_2d.cpp
+		src/geom/line_2d.cpp
+		src/geom/matrix_2d.cpp
+		src/geom/polygon_2d.cpp
+		src/geom/ray_2d.cpp
+		src/geom/segment_2d.cpp
+		src/geom/rect_2d.cpp
+		src/geom/sector_2d.cpp
+		src/geom/triangle_2d.cpp
+		src/geom/vector_2d.cpp
+		test/geom/utest.cpp
+)
+add_library(
+		${PROJECT_NAME}_geom
         src/geom/angle_deg.cpp
         src/geom/circle_2d.cpp
         src/geom/line_2d.cpp
@@ -152,7 +168,8 @@ add_library(${PROJECT_NAME}_geom
         src/geom/sector_2d.cpp
         src/geom/triangle_2d.cpp
         src/geom/vector_2d.cpp
-        )
+        test/geom/utest.cpp
+		)
 
 add_library(${PROJECT_NAME}_math
         src/mathtools.cpp
@@ -173,7 +190,7 @@ add_library(${PROJECT_NAME}_actions
         src/action/autogenerate/onetouchaction.cpp
         src/action/autogenerate/kickaction.cpp
         src/action/autogenerate/noaction.cpp
-        )
+        test/geom/utest.cpp test/geom/test_polygon_2d.cpp)
 
 add_library(${PROJECT_NAME}_core
         src/core/agent.cpp
@@ -275,7 +292,8 @@ target_link_libraries(${PROJECT_NAME}_actions
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS 
+install(TARGETS
+		${PROJECT_NAME}
 		${PROJECT_NAME}_geom 
 		${PROJECT_NAME}_math 
 		${PROJECT_NAME}_actions 
@@ -305,10 +323,14 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_parsian_util.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-test test/geom/utest.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+	target_link_libraries(${PROJECT_NAME}-test
+			${PROJECT_NAME}
+			${catkin_LIBRARIES}
+			${QT_LIBRARIES}
+			)
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
