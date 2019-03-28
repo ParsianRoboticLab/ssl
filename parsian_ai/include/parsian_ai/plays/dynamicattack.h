@@ -3,7 +3,7 @@
 
 #include <parsian_ai/plays/masterplay.h>
 #include <ctime>
-
+#include "algorithm"
 //#define _MAX_REGION 7
 
 // NEW PASS ZONE
@@ -32,6 +32,11 @@ class FieldRegion
         double theirNearestRobot;
         double chance;
 
+        int oppInside;
+        int ourInside;
+        int oppInNeighbor;
+        int pointPriority;
+
         FieldRegion(){};
 
         FieldRegion(Rect2D r, QList<Vector2D> p)
@@ -40,6 +45,10 @@ class FieldRegion
             for(auto& point : p)
                 points.push_back(point);
         }
+
+        bool operator< (const FieldRegion& a){
+            return this->pointPriority < a.pointPriority;
+    }
 };
 
 

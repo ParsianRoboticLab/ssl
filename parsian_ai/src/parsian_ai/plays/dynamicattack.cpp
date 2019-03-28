@@ -4,6 +4,8 @@
 const int CDynamicAttack::REGION_NUM = 7;
 
 CDynamicAttack::CDynamicAttack() {
+
+
     // NEW PASS
     attackState = DynamicAttackState::PlaymakeControl;
     createRegions();
@@ -978,11 +980,13 @@ bool CDynamicAttack::isPlanDone() {
 void CDynamicAttack::createRegions() {
     regions = new FieldRegion[REGION_NUM];
     // <make rectangles>
+
     QList<Rect2D> rectangles;
     Size2D rectSize1(wm->field->_FIELD_WIDTH / 6, (wm->field->_FIELD_HEIGHT - wm->field->_PENALTY_WIDTH) / 2);
     Size2D rectSize2((wm->field->_FIELD_WIDTH / 3 - wm->field->_PENALTY_DEPTH) / 2, wm->field->_PENALTY_WIDTH);
     Size2D rectSize3(wm->field->_FIELD_WIDTH / 6, wm->field->_FIELD_HEIGHT);
     // region 0,1,2,3
+
     rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(rectSize1.length(), 0), rectSize1));
     rectangles.append(Rect2D(wm->field->oppCornerR() - Vector2D(rectSize1.length(), -rectSize1.width()), rectSize1));
     rectangles.append(Rect2D(wm->field->oppCornerL() - Vector2D(2 * rectSize1.length(), 0), rectSize1));
@@ -1020,6 +1024,9 @@ void CDynamicAttack::createRegions() {
         } else
             ROS_INFO_STREAM("ali : region " << i << " is too small");
     }
+
+
+
     // </make eval points>
 
     // <fill the regions>
@@ -1028,7 +1035,81 @@ void CDynamicAttack::createRegions() {
         regions[i] = FieldRegion(rectangles[i], points[i]);
         regions[i].id = _id++;
     }
-}
+
+
+    /*for (size_t i{}; i < REGION_NUM; i++)
+    {
+        for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
+            if (regions[i].rectangle.contains(wm->opp.active(j)->pos)){
+                regions[i].oppInside ++;
+            }
+        }
+    }*/
+
+    for(size_t i{}; i < REGION_NUM; i++)
+    {
+        regions[i].oppInside = 0;
+        regions[i].oppInNeighbor = 0;
+    }
+    for(size_t i{}; i < wm->opp.activeAgentsCount(); i++)
+    {
+        const Vector2D position {wm->opp.active(i)->pos};
+        if (regions[0].rectangle.contains(position))
+        {
+            regions[0].oppInside++;
+            regions[2].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+        else if (regions[1].rectangle.contains(position))
+        {
+            regions[1].oppInside++;
+            regions[3].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+        else if (regions[2].rectangle.contains(position))
+        {
+            regions[2].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+        else if (regions[3].rectangle.contains(position))
+        {
+            regions[3].oppInside++;
+            regions[1].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+        else if (regions[4].rectangle.contains(position))
+        {
+            regions[4].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[1].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+        else if (regions[5].rectangle.contains(position))
+        {
+            regions[5].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[1].oppInNeighbor++;
+            regions[2].oppInNeighbor++;
+            regions[3].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+        }
+        else if (regions[6].rectangle.contains(position))
+        {
+            regions[6].oppInside++;
+            regions[2].oppInNeighbor++;
+            regions[3].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        }
+
+    }
+
+    }
+
 
 void CDynamicAttack::chooseBestPositons() {
     clearRobotsRegionsWeights();
@@ -1039,6 +1120,7 @@ void CDynamicAttack::chooseBestPositons() {
         searchRegions.append(regions[i].rectangle);
     }
     QList<Rect2D> avoidRects;
+    QList<FieldRegion> sortRegions;
     avoidRects.append(wm->field->oppPenaltyRect());
 
 
@@ -1049,32 +1131,151 @@ void CDynamicAttack::chooseBestPositons() {
         regionPriority.clear();
         switch (ballR) {
             case 0:
-                regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
+                //regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
+            {
+                regions[4].pointPriority = 6;
+                regions[2].pointPriority = 5;
+                regions[1].pointPriority = 4;
+                regions[5].pointPriority = 3;
+                regions[3].pointPriority = 2;
+                regions[6].pointPriority = 1;
+
+
                 break;
+            }
             case 1:
-                regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
+                //regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
+            {
+                regions[4].pointPriority = 6;
+                regions[3].pointPriority = 5;
+                regions[0].pointPriority = 4;
+                regions[5].pointPriority = 3;
+                regions[2].pointPriority = 2;
+                regions[6].pointPriority = 1;
+
+
                 break;
+            }
             case 2:
-                regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
+                //regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
+            {
+                regions[4].pointPriority = 6;
+                regions[0].pointPriority = 5;
+                regions[5].pointPriority = 4;
+                regions[3].pointPriority = 3;
+                regions[1].pointPriority = 2;
+                regions[6].pointPriority = 1;
+
+
                 break;
+            }
             case 3:
-                regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
+                //regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
+            {
+                regions[4].pointPriority = 6;
+                regions[1].pointPriority = 5;
+                regions[5].pointPriority = 4;
+                regions[2].pointPriority = 3;
+                regions[0].pointPriority = 2;
+                regions[6].pointPriority = 1;
+
+
                 break;
+            }
             case 4:
-                regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
+                //regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
+            {
+                regions[0].pointPriority = 6;
+                regions[1].pointPriority = 5;
+                regions[2].pointPriority = 4;
+                regions[3].pointPriority = 3;
+                regions[5].pointPriority = 2;
+                regions[6].pointPriority = 1;
+
+
                 break;
+            }
             case 5:
-                regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
+                //regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
+            {
+                regions[0].pointPriority = 6;
+                regions[1].pointPriority = 5;
+                regions[2].pointPriority = 4;
+                regions[3].pointPriority = 3;
+                regions[6].pointPriority = 2;
+                regions[4].pointPriority = 1;
+
+
                 break;
+            }
             case 6:
-                regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+                //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+            {
+                regions[0].pointPriority = 6;
+                regions[1].pointPriority = 5;
+                regions[2].pointPriority = 4;
+                regions[3].pointPriority = 3;
+                regions[4].pointPriority = 2;
+                regions[5].pointPriority = 1;
+
+
                 break;
+            }
             default:
-                regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+                //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+            {
+                regions[0].pointPriority = 6;
+                regions[1].pointPriority = 5;
+                regions[2].pointPriority = 4;
+                regions[3].pointPriority = 3;
+                regions[4].pointPriority = 2;
+                regions[5].pointPriority = 1;
+
+
                 break;
+            }
         }
+
+
+        for (size_t i{}; i < REGION_NUM; i++) {
+            regions[i].pointPriority -= (regions[i].oppInside + regions[i].oppInNeighbor);
+            sortRegions.append(regions[i]);
+        }
+
+
+        /*for(size_t j{}; j < REGION_NUM - 1; j++) {
+            for (size_t i{j}; i < REGION_NUM - 1; i++) {
+                if (sortRegions[i]->pointPriority < sortRegions[i + 1]->pointPriority) {
+                    FieldRegion* tmp = sortRegions[i];
+                    sortRegions[i] = sortRegions[i + 1];
+                    sortRegions[i + 1] = tmp;
+                }
+            }
+        }
+
+        for (size_t i{}; i < REGION_NUM; i++)
+        {
+            ROS_INFO_STREAM("amirb regions new : " << i << " and point priority is : " << regions[i].pointPriority);
+            ROS_INFO_STREAM("amirb regions : " << regions[i].id);
+        }*/
+
+
+
+        std::sort(sortRegions.begin(), sortRegions.end()); // baraks sort shode!!!
+
+        //ROS_INFO_STREAM("amirc");
+        for (int i{REGION_NUM - 1}; i >= 0; i--)
+        {
+            regionPriority.append(sortRegions[i].id);
+            //ROS_INFO_STREAM("amirc ids : " << sortRegions[i].id);
+        }
+        //ROS_INFO_STREAM("amirc 2");
+
+
     }
 }
+
+
 
 int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos) {
     for (int i{0}; i < REGION_NUM; i++) {
@@ -1211,7 +1412,6 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 CRobot *CDynamicAttack::findOppGoalKeaper() {
     return(wm->opp.active(wm->opp.data->goalieID));
 }
-
 
 
 
