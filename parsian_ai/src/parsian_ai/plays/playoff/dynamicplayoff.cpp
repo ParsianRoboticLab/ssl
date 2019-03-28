@@ -135,6 +135,51 @@ void CDynamicPlayOff::dynamicPlayKhafan() {
 }
 
 
+
+int CDynamicPlayOff ::EvalPlayKhafan(){
+Theirdist = wm->opp.active(0)->pos.dist(wm->ball->pos);
+
+for(int i=0; i< wm->opp.activeAgentsCount();i++){
+
+    if(wm->opp.active(i)->pos.dist(wm->ball->pos) < Theirdist) {
+        Theirdist=wm->opp.active(i)->pos.dist(wm->ball->pos);
+        theirpos=wm->opp.active(i)->pos;
+    }
+}
+for(int i=0; i< wm->opp.activeAgentsCount();i++){
+if(Triangle2D(theirpos,wm->field->oppGoalL(),wm->field->oppGoalR()).contains(wm->opp.active(i)->pos))
+    sum++;
+
+}
+for(int i=0;i<sum;i++){
+    if(wm->opp.active(i)->pos.dist(theirpos)< Robot::robot_radius_new*2) {
+        eval=0;
+        return eval;
+    }
+for(int i=0;i<sum;i++){
+    for(int j=0;j<=100;j+=20){
+        if(wm->opp.active(i)->pos.dist(theirpos)<=j)
+        {
+            eval=j;
+            return eval;
+        }
+
+    }
+}
+}
+
+
+
+
+
+}
+
+
+
+
+
+
+
 void CDynamicPlayOff::checkEndKhafan() {
     ROS_INFO_STREAM("TIMENS: "<< ros::Time::now().sec << " TIMES: "<< ros::Time::now().sec);
     switch (state) {
@@ -206,7 +251,6 @@ void CDynamicPlayOff::checkEndChipToGoal() {
 void CDynamicPlayOff::init(const QList<Agent *> &_agents) {
     agents.clear();
     agents.append(_agents);
-
     dummyPositions[0] = wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 3;
     dummyPositions[0].y += 0.3;
 
