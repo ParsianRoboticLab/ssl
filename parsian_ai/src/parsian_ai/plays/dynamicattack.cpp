@@ -594,6 +594,8 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
 
 bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
                                      double _radius, double treshold) {
+
+    ROS_INFO_STREAM("amirk im here");
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
@@ -609,12 +611,11 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    //drawer->draw(_poly,QColor(120,120,120));
+    drawer->draw(_poly,QColor(120,120,120));
 
 
     for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
     if (_poly.contains(wm->opp.active(i)->pos)) {
-        ROS_INFO_STREAM("amird there were opponent");
         return false;
     }
     }
@@ -1075,67 +1076,7 @@ void CDynamicAttack::createRegions() {
         }
     }*/
 
-    for(size_t i{}; i < REGION_NUM; i++)
-    {
-        regions[i].oppInside = 0;
-        regions[i].oppInNeighbor = 0;
-    }
-    for(size_t i{}; i < wm->opp.activeAgentsCount(); i++)
-    {
-        const Vector2D position {wm->opp.active(i)->pos};
-        if (regions[0].rectangle.contains(position))
-        {
-            regions[0].oppInside++;
-            regions[2].oppInNeighbor++;
-            regions[4].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
-        else if (regions[1].rectangle.contains(position))
-        {
-            regions[1].oppInside++;
-            regions[3].oppInNeighbor++;
-            regions[4].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
-        else if (regions[2].rectangle.contains(position))
-        {
-            regions[2].oppInside++;
-            regions[0].oppInNeighbor++;
-            regions[4].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
-        else if (regions[3].rectangle.contains(position))
-        {
-            regions[3].oppInside++;
-            regions[1].oppInNeighbor++;
-            regions[4].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
-        else if (regions[4].rectangle.contains(position))
-        {
-            regions[4].oppInside++;
-            regions[0].oppInNeighbor++;
-            regions[1].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
-        else if (regions[5].rectangle.contains(position))
-        {
-            regions[5].oppInside++;
-            regions[0].oppInNeighbor++;
-            regions[1].oppInNeighbor++;
-            regions[2].oppInNeighbor++;
-            regions[3].oppInNeighbor++;
-            regions[4].oppInNeighbor++;
-        }
-        else if (regions[6].rectangle.contains(position))
-        {
-            regions[6].oppInside++;
-            regions[2].oppInNeighbor++;
-            regions[3].oppInNeighbor++;
-            regions[5].oppInNeighbor++;
-        }
 
-    }
 
     }
 
@@ -1162,12 +1103,15 @@ void CDynamicAttack::chooseBestPositons() {
             case 0:
                 //regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
             {
+
                 regions[4].pointPriority = 6;
                 regions[2].pointPriority = 5;
                 regions[1].pointPriority = 4;
                 regions[5].pointPriority = 3;
                 regions[3].pointPriority = 2;
                 regions[6].pointPriority = 1;
+                regions[0].pointPriority = 0;
+
 
 
                 break;
@@ -1181,7 +1125,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[5].pointPriority = 3;
                 regions[2].pointPriority = 2;
                 regions[6].pointPriority = 1;
-
+                regions[1].pointPriority = 0;
 
                 break;
             }
@@ -1194,6 +1138,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[1].pointPriority = 2;
                 regions[6].pointPriority = 1;
+                regions[2].pointPriority = 0;
 
 
                 break;
@@ -1207,6 +1152,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[2].pointPriority = 3;
                 regions[0].pointPriority = 2;
                 regions[6].pointPriority = 1;
+                regions[3].pointPriority = 0;
 
 
                 break;
@@ -1220,6 +1166,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[5].pointPriority = 2;
                 regions[6].pointPriority = 1;
+                regions[4].pointPriority = 0;
 
 
                 break;
@@ -1233,7 +1180,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[6].pointPriority = 2;
                 regions[4].pointPriority = 1;
-
+                regions[5].pointPriority = 0;
 
                 break;
             }
@@ -1246,7 +1193,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[4].pointPriority = 2;
                 regions[5].pointPriority = 1;
-
+                regions[5].pointPriority = 0;
 
                 break;
             }
@@ -1259,12 +1206,88 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[4].pointPriority = 2;
                 regions[5].pointPriority = 1;
+                regions[6].pointPriority = 0;
 
 
                 break;
             }
         }
 
+
+
+
+
+
+
+        for(size_t i{}; i < REGION_NUM; i++)
+        {
+            regions[i].oppInside = 0;
+            regions[i].oppInNeighbor = 0;
+        }
+        for(size_t i{}; i < wm->opp.activeAgentsCount(); i++)
+        {
+            const Vector2D position {wm->opp.active(i)->pos};
+            if (regions[0].rectangle.contains(position))
+            {
+                regions[0].oppInside++;
+                regions[2].oppInNeighbor++;
+                regions[4].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+            else if (regions[1].rectangle.contains(position))
+            {
+                regions[1].oppInside++;
+                regions[3].oppInNeighbor++;
+                regions[4].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+            else if (regions[2].rectangle.contains(position))
+            {
+                regions[2].oppInside++;
+                regions[0].oppInNeighbor++;
+                regions[4].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+            else if (regions[3].rectangle.contains(position))
+            {
+                regions[3].oppInside++;
+                regions[1].oppInNeighbor++;
+                regions[4].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+            else if (regions[4].rectangle.contains(position))
+            {
+                regions[4].oppInside++;
+                regions[0].oppInNeighbor++;
+                regions[1].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+            else if (regions[5].rectangle.contains(position))
+            {
+                regions[5].oppInside++;
+                regions[0].oppInNeighbor++;
+                regions[1].oppInNeighbor++;
+                regions[2].oppInNeighbor++;
+                regions[3].oppInNeighbor++;
+                regions[4].oppInNeighbor++;
+            }
+            else if (regions[6].rectangle.contains(position))
+            {
+                regions[6].oppInside++;
+                regions[2].oppInNeighbor++;
+                regions[3].oppInNeighbor++;
+                regions[5].oppInNeighbor++;
+            }
+
+        }
+
+
+
+
+
+
+
+        ROS_INFO_STREAM("amirn region3 : " << regions[3].oppInside);
 
         for (size_t i{}; i < REGION_NUM; i++) {
             regions[i].pointPriority -= (regions[i].oppInside + regions[i].oppInNeighbor);
@@ -1296,7 +1319,7 @@ void CDynamicAttack::chooseBestPositons() {
         for (int i{REGION_NUM - 1}; i >= 0; i--)
         {
             regionPriority.append(sortRegions[i].id);
-            //ROS_INFO_STREAM("amirc ids : " << sortRegions[i].id);
+            ROS_INFO_STREAM("amirn ids : " << sortRegions[i].id << " and ballr is : " << ballR << " and i is : " << i);
         }
         //ROS_INFO_STREAM("amirc 2");
 
@@ -1350,7 +1373,7 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-    const double angle_weight{1.5}, dist_weight{0.5};   // TODO: show in controling in game
+    const double angle_weight{2}, dist_weight{0.5};   // TODO: show in controling in game
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
@@ -1394,36 +1417,39 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 
                 auto tmp_a = angle_max;
                 //auto tmp_a = Vector2D::angleBetween(regions[regionPriority[matchingIDs[v]]].points[i]);
-                tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
+
                 //ROS_INFO_STREAM("amir goal radius : " << wm->field->oppGoalR().y << " and center : "  <<  wm->field->oppGoal().y);
                 //ROS_INFO_STREAM("amir Goal left y : " << wm->field->oppGoalL().y);
                 //ROS_INFO_STREAM("amir Goal center y : " << wm->field->oppGoal().y);
-                if (!isPositionClear(playmake->pos(), wm->field->oppGoal(),
+                if (!isPositionClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
                                     wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
+                    continue;
                 }
                 double passPathWeight{6};
-                if(!isPassPathOpen(playmake->pos(), regions[regionPriority[matchingIDs[v]]].points[i],
+                if(!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[v]]].points[i],
                                    (Robot::robot_radius_new + playmake->pos().dist(regions[regionPriority[matchingIDs[v]]].points[i]) / passPathWeight)
                                    , 0.1))
                 {
                     //ROS_INFO_STREAM("amird " << v << " and i is  " << i);
                     tmp_chance = -10;
+                    continue;
 
                 }
+                tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
                 //tmp_point = regions[regionPriority[matchingIDs[v]]].points[0];
                 if (tmp_chance > chance) {
                     chance = tmp_chance;
                     tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
-                    ROS_INFO_STREAM("amir info zozanaghe ");
+                    //ROS_INFO_STREAM("amir info zozanaghe ");
                 }
             }
 
         regions[regionPriority[matchingIDs[v]]].chance = chance;
-        ROS_INFO_STREAM("this is v " << v << " and amir chance : " << chance);
-        ROS_INFO_STREAM("amir pos point x :" << tmp_point.x);
-        ROS_INFO_STREAM("amir pos point y :" << tmp_point.y);
+        //ROS_INFO_STREAM("this is v " << v << " and amir chance : " << chance);
+        //ROS_INFO_STREAM("amir pos point x :" << tmp_point.x);
+        //ROS_INFO_STREAM("amir pos point y :" << tmp_point.y);
         regions[regionPriority[matchingIDs[v]]].theirNearestRobot = max_dist;
         semiDynamicPosition.append(tmp_point);
 
@@ -1436,7 +1462,6 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
     ROS_INFO_STREAM("amir Opp goaler y : " << oppGoalKeaper->pos.y);*/
 
     // TODO : adding tressold so that robot wont change positions to much
-    // TODO : triangle which our robot dont stand in front of playmake robot
     // finding angles of pos with goal
     /*for (int i{}; i < obstacles.size() - 1; i++) {
         angles.push_back(angleOfTwoSegment(obstacles[i], obstacles[i + 1]));
