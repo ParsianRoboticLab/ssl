@@ -10,18 +10,64 @@ using namespace std;
 QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
     QList<Vector2D> defendersForZJU;
     defendersForZJU.clear();
-    if(wm->ball->pos.y > 0){
-        for(int i = 0 ; i < numberOfOverDefenders ; i++){
-            defendersForZJU.append(Vector2D(-4.7 , -(i+1)/2));
-        }
+    if(wm->ball->pos.y > 1.2 && numberOfOverDefenders == 1){
+        defendersForZJU.append(Vector2D(-4.7,-1/2));
     }
-    else{
-        for(int i = 0 ; i < numberOfOverDefenders ; i++){
-            defendersForZJU.append(Vector2D(-4.7 , (i+1)/2));
-        }
+
+    else if(wm->ball->pos.y > 1.2 && numberOfOverDefenders == 2){
+        defendersForZJU.append(Vector2D(-4.7,0.4));
+        defendersForZJU.append(Vector2D(-4.7,-0.4));
     }
+
+    else if(wm->ball->pos.y < -1.2 && numberOfOverDefenders == 1){
+        defendersForZJU.append(Vector2D(-4.7,1/2));
+    }
+
+    else if(wm->ball->pos.y < -1.2 && numberOfOverDefenders == 2){
+        defendersForZJU.append(Vector2D(-4.7,0.4));
+        defendersForZJU.append(Vector2D(-4.7,-0.4));
+    }
+
+    else if(1.2 >= wm->ball->pos.y && wm->ball->pos.y > 0 && numberOfOverDefenders == 1) {
+        defendersForZJU.append(Vector2D(-4.7,-0.6));
+
+    }
+
+    else if(0 >= wm->ball->pos.y && wm->ball->pos.y >= -1.2 && numberOfOverDefenders == 1) {
+        defendersForZJU.append(Vector2D(-4.7,0.6));
+    }
+
+
+    else if(1.2 >= wm->ball->pos.y && wm->ball->pos.y > 0 && numberOfOverDefenders == 2) {
+        defendersForZJU.append(Vector2D(-4.7,-1.2));
+        defendersForZJU.append(Vector2D(-4.7,1.2));
+
+    }
+
+    else if(0 >= wm->ball->pos.y && wm->ball->pos.y >= -1.2 && numberOfOverDefenders == 2) {
+        defendersForZJU.append(Vector2D(-4.7,-1.2));
+        defendersForZJU.append(Vector2D(-4.7,1.2));
+
+    }
+
+    else {
+        /////kasra:just to make sure that the code don't get segment!!//////
+        if(wm->ball->pos.y > 0){
+            for(int i = 0 ; i < numberOfOverDefenders ; i++){
+                defendersForZJU.append(Vector2D(-4.7 , -(i+1)/2));
+            }
+        }
+        else{
+            for(int i = 0 ; i < numberOfOverDefenders ; i++){
+                defendersForZJU.append(Vector2D(-4.7, (i+1)/2));
+            }
+        }
+
+    }
+
+
     for(size_t i = 0 ; i < defendersForZJU.size() ; i++){
-        drawer->draw(Circle2D(defendersForZJU.at(i) , 0.4) , 0 , 360 , "blue");
+        drawer->draw(Circle2D(defendersForZJU.at(i) , (i+1) * 0.4) , 0 , 360 , "black");
     }
     return defendersForZJU;
 }
@@ -264,7 +310,7 @@ QList<Vector2D> DefensePlan::defenseFormation(QList<Vector2D> circularPositions,
 
 QList<Vector2D> DefensePlan::defenseFormationForCircularPositioning(int neededDefenseAgents, int allOfDefenseAgents , double downLimit , double upLimit) {
     QList<Vector2D> defensePosiotion;
-    defensePosiotion.clear();
+    defensePosiotion.clear();//defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
     if (neededDefenseAgents == allOfDefenseAgents) {
         if (neededDefenseAgents == 1) {
             defensePosiotion.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
@@ -284,14 +330,15 @@ QList<Vector2D> DefensePlan::defenseFormationForCircularPositioning(int neededDe
         else if (neededDefenseAgents == 3){
             defensePosiotion = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
         }
-        if(wm->ball->pos.y > 0){
-            for(int i = 0 ; i < (allOfDefenseAgents - neededDefenseAgents) ; i++){
-                defensePosiotion.append(Vector2D(-4.7 , -(i+1)/2));
-            }
-        }
-        else{
-            for(int i = 0 ; i < (allOfDefenseAgents - neededDefenseAgents) ; i++){
-                defensePosiotion.append(Vector2D(-4.7 , (i+1)/2));
+        if(!conf.ThreeDefenseMode) {
+            if (wm->ball->pos.y > 0) {
+                for (int i = 0; i < (allOfDefenseAgents - neededDefenseAgents); i++) {
+                    defensePosiotion.append(Vector2D(-4.7, -(i + 1) / 2));
+                }
+            } else {
+                for (int i = 0; i < (allOfDefenseAgents - neededDefenseAgents); i++) {
+                    defensePosiotion.append(Vector2D(-4.7, (i + 1) / 2));
+                }
             }
         }
     }
@@ -2303,7 +2350,7 @@ void DefensePlan::execute(){
     int realDefSize = 0;
     stopMode = gameState->isStop();
     suitableRadius = RADIUS_FOR_CRITICAL_DEFENSE_AREA;
-    drawer->draw(Circle2D(wm->field->ourGoal() , suitableRadius) , 0 , 180 , "blue" , false);
+    drawer->draw(Circle2D(wm->field->ourGoal() , suitableRadius) , 0 , 180 , "white" , false);
     drawer->draw(getLinesOfBallTriangle().at(0));
     drawer->draw(getLinesOfBallTriangle().at(1));
     if(gameState->isStart()){
@@ -2392,7 +2439,9 @@ void DefensePlan::execute(){
                             else{
                                 AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , realDefSize , conf.DownLimit , conf.UpLimit),
                                                                 defenseFormationForRectangularPositioning(findNeededDefense() , realDefSize , 1.4 , 2.5));
+                                //ROS_INFO_STREAM("Kasra: " << AHZDefPoints.size());
                                 for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
+
                                     AHZDefPoints.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
                                 }
                             }
