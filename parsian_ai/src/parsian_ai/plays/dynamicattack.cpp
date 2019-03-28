@@ -1422,7 +1422,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 //ROS_INFO_STREAM("amir Goal left y : " << wm->field->oppGoalL().y);
                 //ROS_INFO_STREAM("amir Goal center y : " << wm->field->oppGoal().y);
                 if (!isPositionClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
-                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1, regions[regionPriority[matchingIDs[v]]].points[i])) {
+                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.5, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
                     continue;
@@ -1430,7 +1430,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 double passPathWeight{6};
                 if(!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[v]]].points[i],
                                    (Robot::robot_radius_new + playmake->pos().dist(regions[regionPriority[matchingIDs[v]]].points[i]) / passPathWeight)
-                                   , 0.1))
+                                   , 0.5))
                 {
                     //ROS_INFO_STREAM("amird " << v << " and i is  " << i);
                     tmp_chance = -10;
