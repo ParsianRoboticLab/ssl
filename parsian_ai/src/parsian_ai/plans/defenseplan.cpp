@@ -1899,7 +1899,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
         if(DangerByOppAgentsInPenaltyArea){
 
-            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.9);
+            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
@@ -1907,7 +1907,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         else if(DangerByOppAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
-            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
@@ -1916,7 +1916,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
         else if(DangerByBothAgentsInPenaltyArea){
 
-            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.9);
+            target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
@@ -1926,7 +1926,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         else if(DangerByBothAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
-            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
@@ -1953,7 +1953,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         else if(DangerByOurAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(inFrontOfPenaltyAreaLine);
-            target = know->getPointInDirection(wm->field->ourGoal(),target,0.9);
+            target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
@@ -3379,21 +3379,21 @@ void DefensePlan::executeGoalKeeper() {
                         assignSkill(goalKeeperAgent , gpa[goalKeeperAgent->id()]);
                         gpa[goalKeeperAgent->id()]->setSlowmode(true);
                         gpa[goalKeeperAgent->id()]->setTargetpos(goalKeeperTarget);
-                        gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D(1,0));
+                        gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
                         gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
                         gpa[goalKeeperAgent->id()]->setNoavoid(true);
                     }
                     else{
                         AHZSkills=kickSkill;
                         assignSkill(goalKeeperAgent, kickSkill);
-                        kickSkill->setTolerance(50);
+                        kickSkill->setTolerance(20);
                         kickSkill->setDontkick(false);
                         kickSkill->setSlow(false);
                         kickSkill->setSpin(0);
                         kickSkill->setAvoidpenaltyarea(false);
                         kickSkill->setGoaliemode(false);
                         kickSkill->setChip(true);
-                        //kickSkill->setChipdist(4.5);
+                        kickSkill->setChipdist(4.5);
                         kickSkill->setTarget(goalKeeperTarget);
                         kickSkill->setSagmode(true);
 
