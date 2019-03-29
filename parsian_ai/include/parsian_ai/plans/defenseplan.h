@@ -128,7 +128,6 @@ protected:
         exepMode exeptionMode;
         int exepAgentId;
     };
-    Vector2D ballPrediction(bool _isGoalie);
 
 public:
     DefensePlan();
@@ -162,6 +161,8 @@ private:
     Vector2D ballIsBesidePoles();
     void executeGoalKeeper(const Vector2D& , const GKState&);
     int stateBallBesidepoles;
+    Vector2D ballPrediction();
+    Vector2D GKballPrediction();
     ///////////////////////HMD///////////////
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
