@@ -228,8 +228,9 @@ private:
     ///////////////////
     bool isPathClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     bool isPathClearFromOpp(Vector2D _pos1, Vector2D _pos2, double rad, double t);
-    bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
+    bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
     bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+    bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
     inline bool chipOrNot(Vector2D target,
                           double _radius = 1, double _treshold = .5);

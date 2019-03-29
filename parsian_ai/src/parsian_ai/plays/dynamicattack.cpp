@@ -562,7 +562,7 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
 }
 
 
-bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
+bool CDynamicAttack::isPositionInOurWay(Vector2D _pos1, Vector2D _pos2,
                                  double _radius, double treshold, Vector2D point) {
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
@@ -595,7 +595,7 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2,
 bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
                                      double _radius, double treshold) {
 
-    ROS_INFO_STREAM("amirk im here");
+    //ROS_INFO_STREAM("amirk im here");
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
@@ -618,6 +618,34 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
     if (_poly.contains(wm->opp.active(i)->pos)) {
         return false;
     }
+    }
+    return true;
+}
+
+
+bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold){
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(_pos1, _pos2);
+    Polygon2D _poly;
+    Circle2D(_pos2, _radius + treshold).
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(_pos1, Robot::robot_radius_new + treshold).
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+    //drawer->draw(_poly,QColor(120,120,120));
+
+
+    for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
+        if (_poly.contains(wm->opp.active(i)->pos)) {
+            return false;
+        }
     }
     return true;
 }
@@ -1375,9 +1403,10 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-    const double angle_weight{2}, dist_weight{0.5}; // TODO: show in controling in game
-    const double treshold1{0.8};
-    const double treshold2{0.5};
+    double angle_weight{conf.PositionOpenAngle}, dist_weight{conf.PositionOppNearest}; // TODO: show in controling in game
+    double treshold1{0.8};
+    double treshold2{0.5};
+    double PassMarkChance{conf.OppPassMarkChance};
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
@@ -1425,11 +1454,17 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 //ROS_INFO_STREAM("amir goal radius : " << wm->field->oppGoalR().y << " and center : "  <<  wm->field->oppGoal().y);
                 //ROS_INFO_STREAM("amir Goal left y : " << wm->field->oppGoalL().y);
                 //ROS_INFO_STREAM("amir Goal center y : " << wm->field->oppGoal().y);
-                if (!isPositionClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
+                if (!isPositionInOurWay(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
                                     wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
                     continue;
+                }
+                if (!isPositionClear(regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoal(), wm->field->oppGoalL().y - wm->field->oppGoal().y,
+                        0.1))
+
+                {
+                    tmp_chance = -5;
                 }
                 double passPathWeight{6};
                 if(!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[v]]].points[i],
@@ -1437,7 +1472,8 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                                    , treshold1))
                 {
                     //ROS_INFO_STREAM("amird " << v << " and i is  " << i);
-                    tmp_chance = -1;
+
+                    tmp_chance = PassMarkChance;
 
 
                 }
