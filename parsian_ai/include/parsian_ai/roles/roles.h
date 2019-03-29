@@ -6,7 +6,7 @@
 //#include "position.h"
 #include "block.h"
 //#include "warmup.h"
-//#include "support.h"
+#include "support.h"
 //#include "gaurd.h"
 //#include "stop.h"
 //#include "playonrole.h"

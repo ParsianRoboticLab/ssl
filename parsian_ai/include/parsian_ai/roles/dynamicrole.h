@@ -19,6 +19,14 @@ enum class DynamicMode {
     Pass            = 0b1000000000
 };
 
+enum class Roles {
+    None        = 0b000000,
+    PlayMake    = 0b100001,
+    Positioning = 0b100010,
+    Supporter   = 0b100100,
+
+};
+
 enum class PlayMakeSkill {
     NoSkill     = 0b000000,
     Pass        = 0b100001,
@@ -31,6 +39,12 @@ enum class PlayMakeSkill {
 };
 
 enum class PositionSkill {
+    NoSkill     = 0b000000,
+    Ready       = 0b000001,
+    OneTouch    = 0b000010,
+    Move        = 0b000100
+};
+enum class SupporterSkill {
     NoSkill     = 0b000000,
     Ready       = 0b000001,
     OneTouch    = 0b000010,
@@ -76,10 +90,11 @@ private:
     SkillProperty(CRoleDynamic, Agent*, Agent, agent);
     SkillProperty(CRoleDynamic, PositionSkill, SelectedPositionSkill, positionSkill);
     SkillProperty(CRoleDynamic, PlayMakeSkill, SelectedPlayMakeSkill, playMakeSkill);
+    SkillProperty(CRoleDynamic, SupporterSkill, SelectedSupporterSkill, supporterSkill);
     SkillProperty(CRoleDynamic, bool, AvoidPenaltyArea, avoidPenaltyArea);
     SkillProperty(CRoleDynamic, Vector2D, Target, target);
     SkillProperty(CRoleDynamic, Vector2D, TargetDir, targetDir);
-    SkillProperty(CRoleDynamic, bool, IsPlayMake, isplaymake);
+    SkillProperty(CRoleDynamic, Roles , Role, role);
     SkillProperty(CRoleDynamic, double, Tolerance, tolerance);
     SkillProperty(CRoleDynamic, bool, Chip, chip);
     SkillProperty(CRoleDynamic, double, KickSpeed, kickSpeed);
