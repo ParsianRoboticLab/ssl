@@ -4059,28 +4059,39 @@ QList<Vector2D> DefensePlan::ShootBlockRatio(double ratio, Vector2D opp) {
     //// ourGoal to block the shot path. Also checks if this point is in the
     //// penalty area, produces a point that is intersection of penalty area with
     //// shot path.
+    ROS_INFO_STREAM("MAS:Not entering into PArea");
     Vector2D solutions[2];
     QList<Vector2D> tempQlist;
     tempQlist.clear();
     Segment2D tempSeg = getBisectorSegment(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
     Line2D tempLine = getBisectorLine(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
+    Segment2D tempLine2 = getBisectorSegment(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
     Vector2D intersectionWithOurGoalLine = tempSeg.intersection(Segment2D(wm->field->ourGoalL() , wm->field->ourGoalR()));
-    drawer->draw(tempSeg , "black");
+    drawer->draw(tempSeg , "Red");
+    drawer->draw(tempLine2,"Red");
+    drawer->draw(intersectionWithOurGoalLine,"Blue");
+
     Vector2D pos = know->getPointInDirection(wm->field->ourGoal() , opp , ratio);
     if(wm->field->isInOurPenaltyArea(opp)){
         wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
         tempQlist.append(solutions[0].isValid() && solutions[0].x > solutions[1].x ? solutions[0] : solutions[1]);
         tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
+        ROS_INFO_STREAM("MAS:isInOurPenaltyArea(opp)");
+
     }
     else{
         if(wm->field->isInOurPenaltyArea(pos)){
             wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempSeg, &solutions[0] , &solutions[1]);
             tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
             tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
+            drawer->draw(pos,"Brown");
+            drawer->draw(tempQlist.first(),"Orange");
+            ROS_INFO_STREAM("MAS:isInOurPenaltyArea(pos)");
         }
         else{
             tempQlist.append(pos);
             tempQlist.append(opp - intersectionWithOurGoalLine);
+            drawer->draw(pos,"Yellow");
         }
     }
     return tempQlist;
