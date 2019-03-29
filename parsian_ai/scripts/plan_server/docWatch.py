@@ -123,7 +123,9 @@ class Watcher(FileSystemEventHandler):
         last_desired_plans = self.desired_plans.copy()
         self.desired_plans = {}
         for root in self.all_desiredjsons_root:
-            self.desired_plans[root] = self.generate_parsianplan_from_json(root)
+            res = self.generate_parsianplan_from_json(root)
+            if res != None:
+                self.desired_plans[root] = res
 
         #check for plans that if they were  active or master the last time
         self.check_desired_plans_history(last_desired_plans)
@@ -135,85 +137,87 @@ class Watcher(FileSystemEventHandler):
                 plan_json = json.load(json_file)
             except:
                 return False
+        try:
+            plan_message = parsian_plan()
+            plan_message.planFile = planpath
+            plan_message.isActive = True                                #need change in client request
+            plan_message.isMaster = False                               #need change in client request
+            plan_message.symmetry = False                               #need change in ai requests
+            plan_message.chance = plan_json["plans"][0]["chance"]       #could be toggled in client or ai in future
+            plan_message.lastDist = plan_json["plans"][0]["lastDist"]
 
-        plan_message = parsian_plan()
-        plan_message.planFile = planpath
-        plan_message.isActive = True                                #need change in client request
-        plan_message.isMaster = False                               #need change in client request
-        plan_message.symmetry = False                               #need change in ai requests
-        plan_message.chance = plan_json["plans"][0]["chance"]       #could be toggled in client or ai in future
-        plan_message.lastDist = plan_json["plans"][0]["lastDist"]
+            ##start agentsize
+            #all agents that thier initPos isnt -100, except for the first kicker
+            agentSize = 0
+            agentSize += 1 #first kicker
+            for agentsPos in plan_json["plans"][0]["agentInitPos"]:
+                if agentsPos["x"] != -100:
+                    agentSize += 1
+            plan_message.agentSize = agentSize
+            ##finish agentsize
 
-        ##start agentsize
-        #all agents that thier initPos isnt -100, except for the first kicker
-        agentSize = 0
-        agentSize += 1 #first kicker
-        for agentsPos in plan_json["plans"][0]["agentInitPos"]:
-            if agentsPos["x"] != -100:
-                agentSize += 1
-        plan_message.agentSize = agentSize
-        ##finish agentsize
+            plan_message.tags = [str(tag) for tag in plan_json["plans"][0]["tags"]]
+            plan_message.planMode = str(plan_json["plans"][0]["planMode"])
 
-        plan_message.tags = [str(tag) for tag in plan_json["plans"][0]["tags"]]
-        plan_message.planMode = str(plan_json["plans"][0]["planMode"])
+            ##start ballInitPos
+            ballpos = vector2D()
+            ballpos.x = plan_json["plans"][0]["ballInitPos"]["x"]
+            ballpos.y = plan_json["plans"][0]["ballInitPos"]["y"]
+            plan_message.ballInitPos = ballpos
+            ##finish ballInitPos
 
-        ##start ballInitPos
-        ballpos = vector2D()
-        ballpos.x = plan_json["plans"][0]["ballInitPos"]["x"]
-        ballpos.y = plan_json["plans"][0]["ballInitPos"]["y"]
-        plan_message.ballInitPos = ballpos
-        ##finish ballInitPos
+            plan_message.successRate = 0                                #could be toggled in client or ai in future
+            plan_message.planRepeat = 0                                 #could be toggled here in future
 
-        plan_message.successRate = 0                                #could be toggled in client or ai in future
-        plan_message.planRepeat = 0                                 #could be toggled here in future
+            ##start agentInitPos
+            allinitpos = []
+            for initpos in plan_json["plans"][0]["agentInitPos"]:
+                initpos_tmp = vector2D()
+                initpos_tmp.x = initpos["x"]
+                initpos_tmp.y = initpos["y"]
+                allinitpos.append(initpos_tmp)
+            plan_message.agentInitPos[0:len(allinitpos)] = allinitpos
+            ##finish agentInitPos
 
-        ##start agentInitPos
-        allinitpos = []
-        for initpos in plan_json["plans"][0]["agentInitPos"]:
-            initpos_tmp = vector2D()
-            initpos_tmp.x = initpos["x"]
-            initpos_tmp.y = initpos["y"]
-            allinitpos.append(initpos_tmp)
-        plan_message.agentInitPos[0:len(allinitpos)] = allinitpos
-        ##finish agentInitPos
+            ##start agents
+            agents = []
+            for agent in plan_json["plans"][0]["agents"]:
+                agent_tmp = parsian_plan_agent()
+                agent_tmp.id = agent["ID"]
+                positions = []
+                for position in agent["positions"]:
+                    position_tmp = parsian_plan_position()
+                    position_tmp.angel = position["angel"]
+                    position_tmp.pos.x = position["pos-x"]
+                    position_tmp.pos.y = position["pos-y"]
+                    position_tmp.tolerance = position["tolerance"]
+                    skills = []
+                    for skill in position["skills"]:
+                        skill_tmp = parsian_plan_skill()
+                        skill_tmp.flag = skill["flag"]
+                        skill_tmp.name = str(skill["name"])
+                        skill_tmp.primary = skill["primary"]
+                        skill_tmp.secondry = skill["secondary"]
+                        if "target" in skill:
+                            skill_tmp.agent = skill["target"]["agent"]
+                            skill_tmp.index = skill["target"]["index"]
+                        else:
+                            skill_tmp.agent = -1
+                            skill_tmp.index = -1
+                        skills.append(skill_tmp)
 
-        ##start agents
-        agents = []
-        for agent in plan_json["plans"][0]["agents"]:
-            agent_tmp = parsian_plan_agent()
-            agent_tmp.id = agent["ID"]
-            positions = []
-            for position in agent["positions"]:
-                position_tmp = parsian_plan_position()
-                position_tmp.angel = position["angel"]
-                position_tmp.pos.x = position["pos-x"]
-                position_tmp.pos.y = position["pos-y"]
-                position_tmp.tolerance = position["tolerance"]
-                skills = []
-                for skill in position["skills"]:
-                    skill_tmp = parsian_plan_skill()
-                    skill_tmp.flag = skill["flag"]
-                    skill_tmp.name = str(skill["name"])
-                    skill_tmp.primary = skill["primary"]
-                    skill_tmp.secondry = skill["secondary"]
-                    if "target" in skill:
-                        skill_tmp.agent = skill["target"]["agent"]
-                        skill_tmp.index = skill["target"]["index"]
-                    else:
-                        skill_tmp.agent = -1
-                        skill_tmp.index = -1
-                    skills.append(skill_tmp)
+                    position_tmp.skills[0:len(skills)] = skills
+                    position_tmp.skillSize = len(skills)
+                    positions.append(position_tmp)
+                agent_tmp.positions[0:len(positions)] = positions
+                agent_tmp.posSize = len(positions)
+                agents.append(agent_tmp)
+            plan_message.agents[0:len(agents)] = agents
+            ##finish agents
 
-                position_tmp.skills[0:len(skills)] = skills
-                position_tmp.skillSize = len(skills)
-                positions.append(position_tmp)
-            agent_tmp.positions[0:len(positions)] = positions
-            agent_tmp.posSize = len(positions)
-            agents.append(agent_tmp)
-        plan_message.agents[0:len(agents)] = agents
-        ##finish agents
-
-        return plan_message
+            return plan_message
+        except:
+            return None
 
     def choose_plan(self, req):
         #check for master plan
@@ -343,17 +347,17 @@ class Watcher(FileSystemEventHandler):
     def publish_information(self):
         message = parsian_playoff_client()
         if self.last_ai_respond == None:
-            message.last_ai_response = "NO RESPONSE"
+            message.last_ai_response = ""
         else:
-            message.last_ai_response = self.last_ai_respond
+            message.last_ai_response = self.last_ai_respond[len(self.path) + 1:len(self.last_ai_respond)]
         for plan in self.desired_plans:
-            message.desired_plans.append(plan)
+            message.desired_plans.append(plan[len(self.path) + 1:len(plan)])
             if self.desired_plans[plan].isActive:
-                message.active_plans.append(plan)
+                message.active_plans.append(plan[len(self.path) + 1:len(plan)])
             if self.desired_plans[plan].isMaster:
-                message.master_plan = plan
+                message.master_plan = plan[len(self.path) + 1:len(plan)]
         for plan in self.all_ignoredjsons_root:
-            message.ignored_plans.append(plan)
+            message.ignored_plans.append(plan[len(self.path) + 1:len(plan)])
 
         if self.client_pub != None:
             self.client_pub.publish(message)

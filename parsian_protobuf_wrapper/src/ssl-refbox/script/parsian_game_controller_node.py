@@ -27,6 +27,7 @@ class GameController():
         self.registered = False
         self.goalie_id = -1
         self.isFirstGoalieAssignment = True
+        self.isgoalieassigned = False
         self.gc = GameControllerCommon()
         ##load rsa key
         is_privatekey_exist, self.privatekey = self.gc.readPrivateKey(rospkg.RosPack().get_path("parsian_protobuf_wrapper")+"/src/ssl-refbox/script/", TEAM_NAME + '.key.pem')
@@ -39,8 +40,8 @@ class GameController():
         #dynamic reconfigure
         self.IP = '127.0.0.1'
         self.PORT = 10008
-        self.client_net = dynamic_reconfigure.client.Client("/refbox", timeout=30, config_callback=self.cfg_callback_net)
-        self.client_ai = dynamic_reconfigure.client.Client("/ai_node", timeout=30, config_callback=self.cfg_callback_ai)
+        self.client_net = dynamic_reconfigure.client.Client("/refbox", timeout=None, config_callback=self.cfg_callback_net)
+        self.client_ai = dynamic_reconfigure.client.Client("/ai_node", timeout=None, config_callback=self.cfg_callback_ai)
         #self.srv_net = Server(refereeConfig, self.cfg_callback_net, "/refbox")
         #self.srv_ai = Server(aiConfig, self.cfg_callback_ai, "/ai_node")
 
@@ -84,7 +85,7 @@ class GameController():
         try:
             self.socket.connect((self.IP, self.PORT))
         except:
-            rospy.loginfo('cannot bind to the gamecontroller')
+            print('cannot bind to the gamecontroller', self.IP, self.PORT)
             return
             #sleep(0.5)
             #self.register()

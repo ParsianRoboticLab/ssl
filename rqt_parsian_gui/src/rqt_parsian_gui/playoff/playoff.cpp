@@ -15,16 +15,28 @@ namespace rqt_parsian_gui
 
         n = getNodeHandle();
         n_private = getPrivateNodeHandle();
+
+        server_update =  n.serviceClient<parsian_msgs::parsian_update_plans>("/update_plans");
+        subscriber = n.subscribe<parsian_msgs::parsian_playoff_client>("/playoff_client", 1000, boost::bind(& PlayOff::sub, this, _1));
+
+
         // create QWidget
 
         playoffWidget = new PlayOffWidget();
+        playoffWidget->setServerUpdateService(server_update);
+        playoffWidget->create_main_widget();
         context.addWidget(playoffWidget);
+
 
     }
 
     void PlayOff::shutdownPlugin() {
         n.shutdown();
         n_private.shutdown();
+    }
+
+    void PlayOff::sub(const parsian_msgs::parsian_playoff_clientConstPtr &_msg) {
+        playoffWidget->subscribe(_msg);
     }
 
 }
