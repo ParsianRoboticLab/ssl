@@ -43,6 +43,7 @@ private:
     void checkEndKhafan();
     void checkEndChipToGoal();
     int EvalPlayKhafan();
+    void Setposition();
 
     int dynamicAgentSize;
     DynamicState state;
@@ -53,6 +54,7 @@ private:
     int sum;
     int eval;
     int n;
+
 
 };
 
