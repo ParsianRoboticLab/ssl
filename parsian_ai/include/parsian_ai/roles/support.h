@@ -1,24 +1,26 @@
 #ifndef Support_H
 #define Support_H
 
-#include <role.h>
+#include <parsian_ai/roles/role.h>
 
 class CRoleSupportInfo : public CRoleInfo {
 public:
     CRoleSupportInfo(QString _roleName);
-    void findPos();
-    Vector2D supportPosition;
+
     void reset() {}
 };
 
 class CRoleSupport : public CRole {
 protected:
-    CSkillGotoPointAvoid* gotopoint;
-    CSkillKick* kick;
+    GotopointavoidAction* gotopoint;
+    KickAction* kick;
+    Vector2D supportPosition;
 public:
-    DEF_ROLE(CRoleSupport);
-    virtual void generateFromConfig(Agent *a);
-    virtual CSkillConfigWidget* generateConfigWidget(QWidget *parent);
+    //DEF_ROLE(CRoleSupport);
+    void findPos();
+    virtual void execute();
+    explicit CRoleSupport(Agent* agent);
+    ~CRoleSupport();
     virtual void parse(QStringList params);
 };
 
