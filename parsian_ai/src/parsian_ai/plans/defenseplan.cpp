@@ -1841,7 +1841,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
     Vector2D ballPos=wm->ball->pos;
     Vector2D firstPointInEmptyAngle = Vector2D(0,wm->field->oppCornerL().y);
     Vector2D secondPointInEmptyAngle = Vector2D(0,wm->field->oppCornerR().y);
-    Vector2D target;
+    Vector2D target,FirstTarget;
     double emptyAngle,emptyAngleForeOurGoal;
     double percent,percentForOurGoal;
     double mostOpenAngle,mostOpenAngleForOurGoal;
@@ -1953,12 +1953,17 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
             target = AZBisecOpenSeg.intersection(middleLine);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
-            drawer->draw(Vector2D(emptyAngle/360,0),QColor("Orange"));
-           // AHZSkills = gpa[goalKeeperAgent->id()];
-            //gpa[goalKeeperAgent->id()]->setSlowmode(true);
-            //gpa[goalKeeperAgent->id()]->setDivemode(false);
-            //gpa[goalKeeperAgent->id()]->setTargetpos(target);
-            //gpa[goalKeeperAgent->id()]->setTargetdir(Vector2D(emptyAngle/360,0));
+            FirstTarget = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
+
+            drawer->draw(FirstTarget,QColor("Blue"));
+            AHZSkills = gpa[goalKeeperAgent->id()];
+            assignSkill(goalKeeperAgent,AHZSkills);
+            gpa[goalKeeperAgent->id()]->setSlowmode(true);
+            gpa[goalKeeperAgent->id()]->setDivemode(false);
+            gpa[goalKeeperAgent->id()]->setTargetpos(FirstTarget);
+            gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+            gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
+            gpa[goalKeeperAgent->id()]->setNoavoid(true);
 
         }
         else if(DangerByOurAgentsOutOfPenaltyArea){
@@ -3396,10 +3401,11 @@ void DefensePlan::executeGoalKeeper() {
                     }
                     else{
                         AHZSkills=kickSkill;
+
                         assignSkill(goalKeeperAgent, kickSkill);
                         kickSkill->setTolerance(20);
                         kickSkill->setDontkick(false);
-                        kickSkill->setSlow(false);
+                        kickSkill->setSlow(true);
                         kickSkill->setSpin(0);
                         kickSkill->setAvoidpenaltyarea(false);
                         kickSkill->setGoaliemode(false);
