@@ -18,11 +18,24 @@ enum class DynamicAttackState {
             PositioningControl  = 2
 };
 
-struct FieldRegion
+class FieldRegion
 {
+public:
     Rect2D rectangle;
     QList<Vector2D> points;
     int id;
+
+    double angle;
+    double theirNearestRobot;
+    double chance;
+
+    int oppInside;
+    int ourInside;
+    int oppInNeighbor;
+    int pointPriority;
+
+
+
 
     FieldRegion(){};
 
@@ -31,6 +44,10 @@ struct FieldRegion
         rectangle = r;
         for(auto& point : p)
             points.push_back(point);
+    }
+
+    bool operator< (const FieldRegion& a) {
+        return this->pointPriority < a.pointPriority;
     }
 };
 
@@ -143,6 +160,10 @@ public:
 
     SDynamicPlan currentPlan;
 
+
+    CRobot *findOppGoalKeaper();
+
+
 private:
     // NEW PASS ZONE
     static const int REGION_NUM;
@@ -218,6 +239,14 @@ private:
     bool isPlayMakeChanged();
 
     QString getString(const DynamicMode& _mode) const;
+
+
+    bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
+    bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+    bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+
+    void bestPos(const QList<int>&, MWBM&);
+
 
     CRoleDynamic *roleAgents[8];
     CRoleDynamic *roleAgentPM;
