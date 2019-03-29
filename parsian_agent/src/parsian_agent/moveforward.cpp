@@ -16,14 +16,12 @@ CSkillMoveForward::~CSkillMoveForward(){
     delete recPass;
 }
 
-void CSkillMoveForward::kickforward(double &kickspeed) {
+void CSkillMoveForward::kickforward(double kickspeed) {
     setKickspeed(kickspeed);
     if(kickspeed != 0.0) {
         setSpin(static_cast<float>(0.7));
     };
     }
-    else {double vf{};}
-}
 
 void CSkillMoveForward::execute() {
     recPass->execute();

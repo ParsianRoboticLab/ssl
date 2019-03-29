@@ -13,7 +13,7 @@
 
 class CSkillMoveForward : public CSkill, public MoveforwardAction {
 private:
-    void kickforward(double& kickSpeed);
+    void kickforward(double kickSpeed);
     CSkillGotoPointAvoid *gtpAvoid;
     CSkillReceivePass *recPass;
 public:
