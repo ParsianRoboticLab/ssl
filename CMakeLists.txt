@@ -1,0 +1,374 @@
+cmake_minimum_required(VERSION 3.12)
+project(ssl)
+
+set(CMAKE_CXX_STANDARD 14)
+
+include_directories(parsian_agent/include)
+include_directories(parsian_agent/include/commonconfig)
+include_directories(parsian_agent/include/parsian_agent)
+include_directories(parsian_agent/include/planner)
+include_directories(parsian_ai/include)
+include_directories(parsian_ai/include/parsian_ai)
+include_directories(parsian_ai/include/parsian_ai/plans)
+include_directories(parsian_ai/include/parsian_ai/plays)
+include_directories(parsian_ai/include/parsian_ai/plays/playoff)
+include_directories(parsian_ai/include/parsian_ai/roles)
+include_directories(parsian_ai/include/parsian_ai/util)
+include_directories(parsian_communication/include)
+include_directories(parsian_communication/include/parsian_communication)
+include_directories(parsian_communication/include/parsian_communication/packet_generate)
+include_directories(parsian_protobuf_wrapper/include)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/common)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/common/net)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/grsim)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-refbox)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-refbox/convert)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision)
+include_directories(parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision/convert)
+include_directories(parsian_tools/include)
+include_directories(parsian_tools/include/latency)
+include_directories(parsian_util/include)
+include_directories(parsian_util/include/parsian_util)
+include_directories(parsian_util/include/parsian_util/action)
+include_directories(parsian_util/include/parsian_util/action/autogenerate)
+include_directories(parsian_util/include/parsian_util/core)
+include_directories(parsian_util/include/parsian_util/geom)
+include_directories(parsian_util/include/parsian_util/geom/triangle)
+include_directories(parsian_util/include/parsian_util/tools)
+include_directories(parsian_util/src/geom/triangle)
+include_directories(parsian_world_model/include)
+include_directories(parsian_world_model/include/parsian_world_model)
+include_directories(parsian_world_model/include/parsian_world_model/util)
+include_directories(parsian_world_model/include/parsian_world_model/wm)
+include_directories(rqt_parsian_gui/include)
+include_directories(rqt_parsian_gui/include/rqt_parsian_gui)
+include_directories(rqt_parsian_gui/include/rqt_parsian_gui/graphical)
+
+add_executable(ssl
+        parsian_agent/include/commonconfig/common_config_nodelet.h
+        parsian_agent/include/parsian_agent/agent.h
+        parsian_agent/include/parsian_agent/config.h
+        parsian_agent/include/parsian_agent/gotopoint.h
+        parsian_agent/include/parsian_agent/gotopointavoid.h
+        parsian_agent/include/parsian_agent/kick.h
+        parsian_agent/include/parsian_agent/newbangbang.h
+        parsian_agent/include/parsian_agent/onetouch.h
+        parsian_agent/include/parsian_agent/receivepass.h
+        parsian_agent/include/parsian_agent/skill.h
+        parsian_agent/include/parsian_agent/skills.h
+        parsian_agent/include/planner/c2dtree.h
+        parsian_agent/include/planner/obstacle.h
+        parsian_agent/include/planner/planner.h
+        parsian_agent/include/planner/planner_nodelet.h
+        parsian_agent/include/planner/state.h
+        parsian_agent/include/agent_nodelet.h
+        parsian_agent/src/auto_decider/auto_decider_node.cpp
+        parsian_agent/src/auto_decider/auto_decider_nodelet.cpp
+        parsian_agent/src/commonconfig/common_config_node.cpp
+        parsian_agent/src/commonconfig/common_config_nodelet.cpp
+        parsian_agent/src/parsian_agent/agent.cpp
+        parsian_agent/src/parsian_agent/gotopoint.cpp
+        parsian_agent/src/parsian_agent/gotopointavoid.cpp
+        parsian_agent/src/parsian_agent/kick.cpp
+        parsian_agent/src/parsian_agent/moveforward.cpp
+        parsian_agent/src/parsian_agent/newbangbang.cpp
+        parsian_agent/src/parsian_agent/onetouch.cpp
+        parsian_agent/src/parsian_agent/receivepass.cpp
+        parsian_agent/src/parsian_agent/skill.cpp
+        parsian_agent/src/planner/c2dtree.cpp
+        parsian_agent/src/planner/obstacle.cpp
+        parsian_agent/src/planner/planner.cpp
+        parsian_agent/src/planner/planner_node.cpp
+        parsian_agent/src/planner/planner_nodelet.cpp
+        parsian_agent/src/agent_node.cpp
+        parsian_agent/src/agent_nodelet.cpp
+        parsian_agent/src/config.cpp
+        parsian_ai/include/parsian_ai/plans/defenseplan.h
+        parsian_ai/include/parsian_ai/plans/markplan.h
+        parsian_ai/include/parsian_ai/plans/plan.h
+        parsian_ai/include/parsian_ai/plans/plans.h
+        parsian_ai/include/parsian_ai/plans/positioningplan.h
+        parsian_ai/include/parsian_ai/plays/playoff/abstractplayoff.h
+        parsian_ai/include/parsian_ai/plays/playoff/dynamicplayoff.h
+        parsian_ai/include/parsian_ai/plays/playoff/firstplayoff.h
+        parsian_ai/include/parsian_ai/plays/playoff/staticplayoff.h
+        parsian_ai/include/parsian_ai/plays/dynamicattack.h
+        parsian_ai/include/parsian_ai/plays/halftimelineup.h
+        parsian_ai/include/parsian_ai/plays/masterplay.h
+        parsian_ai/include/parsian_ai/plays/ourballplacement.h
+        parsian_ai/include/parsian_ai/plays/ourpenalty.h
+        parsian_ai/include/parsian_ai/plays/ourpenaltyshootout.h
+        parsian_ai/include/parsian_ai/plays/playoff.h
+        parsian_ai/include/parsian_ai/plays/plays.h
+        parsian_ai/include/parsian_ai/plays/stopplay.h
+        parsian_ai/include/parsian_ai/plays/substitution.h
+        parsian_ai/include/parsian_ai/plays/theirballplacement.h
+        parsian_ai/include/parsian_ai/plays/theirdirect.h
+        parsian_ai/include/parsian_ai/plays/theirindirect.h
+        parsian_ai/include/parsian_ai/plays/theirkickoff.h
+        parsian_ai/include/parsian_ai/plays/theirpenalty.h
+        parsian_ai/include/parsian_ai/plays/theirpenaltyshootout.h
+        parsian_ai/include/parsian_ai/roles/block.h
+        parsian_ai/include/parsian_ai/roles/dynamicrole.h
+        parsian_ai/include/parsian_ai/roles/fault.h
+        parsian_ai/include/parsian_ai/roles/gaurd.h
+        parsian_ai/include/parsian_ai/roles/mark.h
+        parsian_ai/include/parsian_ai/roles/playmake.h
+        parsian_ai/include/parsian_ai/roles/playoffrole.h
+        parsian_ai/include/parsian_ai/roles/playonrole.h
+        parsian_ai/include/parsian_ai/roles/position.h
+        parsian_ai/include/parsian_ai/roles/role.h
+        parsian_ai/include/parsian_ai/roles/roles.h
+        parsian_ai/include/parsian_ai/roles/stop.h
+        parsian_ai/include/parsian_ai/roles/support.h
+        parsian_ai/include/parsian_ai/roles/template.h
+        parsian_ai/include/parsian_ai/roles/warmup.h
+        parsian_ai/include/parsian_ai/util/agent.h
+        parsian_ai/include/parsian_ai/util/defpos.h
+        parsian_ai/include/parsian_ai/util/knowledge.h
+        parsian_ai/include/parsian_ai/util/worldmodel.h
+        parsian_ai/include/parsian_ai/ai.h
+        parsian_ai/include/parsian_ai/ai_nodelet.h
+        parsian_ai/include/parsian_ai/coach.h
+        parsian_ai/include/parsian_ai/config.h
+        parsian_ai/include/parsian_ai/exprimental.h
+        parsian_ai/include/parsian_ai/gamestate.h
+        parsian_ai/include/parsian_ai/soccer.h
+        parsian_ai/src/parsian_ai/plans/defenseplan.cpp
+        parsian_ai/src/parsian_ai/plans/markplan.cpp
+        parsian_ai/src/parsian_ai/plans/plan.cpp
+        parsian_ai/src/parsian_ai/plans/positioningplan.cpp
+        parsian_ai/src/parsian_ai/plays/playoff/abstractplayoff.cpp
+        parsian_ai/src/parsian_ai/plays/playoff/dynamicplayoff.cpp
+        parsian_ai/src/parsian_ai/plays/playoff/firstplayoff.cpp
+        parsian_ai/src/parsian_ai/plays/playoff/playoff.cpp
+        parsian_ai/src/parsian_ai/plays/playoff/staticplayoff.cpp
+        parsian_ai/src/parsian_ai/plays/dynamicattack.cpp
+        parsian_ai/src/parsian_ai/plays/halftimelineup.cpp
+        parsian_ai/src/parsian_ai/plays/masterplay.cpp
+        parsian_ai/src/parsian_ai/plays/ourballplacement.cpp
+        parsian_ai/src/parsian_ai/plays/ourpenalty.cpp
+        parsian_ai/src/parsian_ai/plays/ourpenaltyshootout.cpp
+        parsian_ai/src/parsian_ai/plays/stopplay.cpp
+        parsian_ai/src/parsian_ai/plays/substitution.cpp
+        parsian_ai/src/parsian_ai/plays/theirballplacement.cpp
+        parsian_ai/src/parsian_ai/plays/theirdirect.cpp
+        parsian_ai/src/parsian_ai/plays/theirindirect.cpp
+        parsian_ai/src/parsian_ai/plays/theirkickoff.cpp
+        parsian_ai/src/parsian_ai/plays/theirpenalty.cpp
+        parsian_ai/src/parsian_ai/plays/theirpenaltyshootout.cpp
+        parsian_ai/src/parsian_ai/roles/block.cpp
+        parsian_ai/src/parsian_ai/roles/dynamicrole.cpp
+        parsian_ai/src/parsian_ai/roles/fault.cpp
+        parsian_ai/src/parsian_ai/roles/gaurd.cpp
+        parsian_ai/src/parsian_ai/roles/mark.cpp
+        parsian_ai/src/parsian_ai/roles/playmake.cpp
+        parsian_ai/src/parsian_ai/roles/playoffrole.cpp
+        parsian_ai/src/parsian_ai/roles/position.cpp
+        parsian_ai/src/parsian_ai/roles/role.cpp
+        parsian_ai/src/parsian_ai/roles/stop.cpp
+        parsian_ai/src/parsian_ai/roles/support.cpp
+        parsian_ai/src/parsian_ai/roles/warmup.cpp
+        parsian_ai/src/parsian_ai/util/agent.cpp
+        parsian_ai/src/parsian_ai/util/defpos.cpp
+        parsian_ai/src/parsian_ai/util/knowledge.cpp
+        parsian_ai/src/parsian_ai/util/worldmodel.cpp
+        parsian_ai/src/parsian_ai/ai.cpp
+        parsian_ai/src/parsian_ai/ai_node.cpp
+        parsian_ai/src/parsian_ai/ai_nodelet.cpp
+        parsian_ai/src/parsian_ai/coach.cpp
+        parsian_ai/src/parsian_ai/config.cpp
+        parsian_ai/src/parsian_ai/gamestate.cpp
+        parsian_ai/src/parsian_ai/soccer.cpp
+        parsian_ai/test/parsian_ai/utest.cpp
+        parsian_communication/include/parsian_communication/packet_generate/packet.h
+        parsian_communication/include/parsian_communication/packet_generate/packet_nodelet.h
+        parsian_communication/include/parsian_communication/communication_nodelet.h
+        parsian_communication/include/parsian_communication/communicator.h
+        parsian_communication/src/packet_generate/packet.cpp
+        parsian_communication/src/packet_generate/packet_node.cpp
+        parsian_communication/src/packet_generate/packet_nodelet.cpp
+        parsian_communication/src/parsian_communication/communication_node.cpp
+        parsian_communication/src/parsian_communication/communication_nodelet.cpp
+        parsian_communication/src/parsian_communication/communicator.cpp
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/common/net/netraw.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/common/net/robocup_ssl_client.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/common/net/udpsend.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/grsim/grsim_nodelet.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-refbox/convert/convert_referee.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-refbox/parsian_referee_nodelet.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision/convert/convert_detection.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision/convert/convert_geometry.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision/convert/convert_units.h
+        parsian_protobuf_wrapper/include/parsian_protobuf_wrapper/ssl-vision/parsian_vision_nodelet.h
+        parsian_protobuf_wrapper/src/common/net/netraw.cpp
+        parsian_protobuf_wrapper/src/common/net/robocup_ssl_client.cpp
+        parsian_protobuf_wrapper/src/common/net/udpsend.cpp
+        parsian_protobuf_wrapper/src/grsim/grsim_node.cpp
+        parsian_protobuf_wrapper/src/grsim/grsim_nodelet.cpp
+        parsian_protobuf_wrapper/src/ssl-refbox/convert/convert_referee.cpp
+        parsian_protobuf_wrapper/src/ssl-refbox/parsian_referee_node.cpp
+        parsian_protobuf_wrapper/src/ssl-refbox/parsian_referee_nodelet.cpp
+        parsian_protobuf_wrapper/src/ssl-vision/convert/convert_detection.cpp
+        parsian_protobuf_wrapper/src/ssl-vision/convert/convert_geometry.cpp
+        parsian_protobuf_wrapper/src/ssl-vision/convert/convert_units.cpp
+        parsian_protobuf_wrapper/src/ssl-vision/parsian_vision_node.cpp
+        parsian_protobuf_wrapper/src/ssl-vision/parsian_vision_nodelet.cpp
+        parsian_protobuf_wrapper/test/VisionTest.cpp
+        parsian_tools/include/latency/latency_info.h
+        parsian_tools/include/latency/latency_nodelet.h
+        parsian_tools/src/latency/latency_node.cpp
+        parsian_tools/src/latency/latency_nodelet.cpp
+        parsian_util/include/parsian_util/action/autogenerate/gotopointaction.h
+        parsian_util/include/parsian_util/action/autogenerate/gotopointavoidaction.h
+        parsian_util/include/parsian_util/action/autogenerate/kickaction.h
+        parsian_util/include/parsian_util/action/autogenerate/noaction.h
+        parsian_util/include/parsian_util/action/autogenerate/onetouchaction.h
+        parsian_util/include/parsian_util/action/autogenerate/receivepassaction.h
+        parsian_util/include/parsian_util/action/action.h
+        parsian_util/include/parsian_util/core/agent.h
+        parsian_util/include/parsian_util/core/ball.h
+        parsian_util/include/parsian_util/core/field.h
+        parsian_util/include/parsian_util/core/knowledge.h
+        parsian_util/include/parsian_util/core/movingobject.h
+        parsian_util/include/parsian_util/core/robot.h
+        parsian_util/include/parsian_util/core/team.h
+        parsian_util/include/parsian_util/core/util.h
+        parsian_util/include/parsian_util/core/worldmodel.h
+        parsian_util/include/parsian_util/geom/triangle/triangle.c
+        parsian_util/include/parsian_util/geom/triangle/triangle.h
+        parsian_util/include/parsian_util/geom/angle_deg.h
+        parsian_util/include/parsian_util/geom/circle_2d.h
+        parsian_util/include/parsian_util/geom/delaunay_triangulation.h
+        parsian_util/include/parsian_util/geom/geom.h
+        parsian_util/include/parsian_util/geom/line_2d.h
+        parsian_util/include/parsian_util/geom/matrix_2d.h
+        parsian_util/include/parsian_util/geom/polygon_2d.h
+        parsian_util/include/parsian_util/geom/ray_2d.h
+        parsian_util/include/parsian_util/geom/rect_2d.h
+        parsian_util/include/parsian_util/geom/region_2d.h
+        parsian_util/include/parsian_util/geom/sector_2d.h
+        parsian_util/include/parsian_util/geom/segment_2d.h
+        parsian_util/include/parsian_util/geom/size_2d.h
+        parsian_util/include/parsian_util/geom/triangle_2d.h
+        parsian_util/include/parsian_util/geom/triangulation.h
+        parsian_util/include/parsian_util/geom/vector_2d.h
+        parsian_util/include/parsian_util/geom/voronoi_diagram.h
+        parsian_util/include/parsian_util/geom/voronoi_diagram_original.h
+        parsian_util/include/parsian_util/geom/voronoi_diagram_triangle.h
+        parsian_util/include/parsian_util/tools/blackboard.h
+        parsian_util/include/parsian_util/tools/drawer.h
+        parsian_util/include/parsian_util/tools/filewatcher.h
+        parsian_util/include/parsian_util/base.h
+        parsian_util/include/parsian_util/mathtools.h
+        parsian_util/include/parsian_util/matrix.h
+        parsian_util/src/action/autogenerate/gotopointaction.cpp
+        parsian_util/src/action/autogenerate/gotopointavoidaction.cpp
+        parsian_util/src/action/autogenerate/kickaction.cpp
+        parsian_util/src/action/autogenerate/noaction.cpp
+        parsian_util/src/action/autogenerate/onetouchaction.cpp
+        parsian_util/src/action/autogenerate/receivepassaction.cpp
+        parsian_util/src/action/action.cpp
+        parsian_util/src/core/agent.cpp
+        parsian_util/src/core/ball.cpp
+        parsian_util/src/core/field.cpp
+        parsian_util/src/core/knowledge.cpp
+        parsian_util/src/core/movingobject.cpp
+        parsian_util/src/core/robot.cpp
+        parsian_util/src/core/team.cpp
+        parsian_util/src/core/worldmodel.cpp
+        parsian_util/src/geom/triangle/triangle.c
+        parsian_util/src/geom/triangle/triangle.h
+        parsian_util/src/geom/angle_deg.cpp
+        parsian_util/src/geom/circle_2d.cpp
+        parsian_util/src/geom/delaunay_triangulation.cpp
+        parsian_util/src/geom/geom.cpp
+        parsian_util/src/geom/line_2d.cpp
+        parsian_util/src/geom/matrix_2d.cpp
+        parsian_util/src/geom/polygon_2d.cpp
+        parsian_util/src/geom/ray_2d.cpp
+        parsian_util/src/geom/rect_2d.cpp
+        parsian_util/src/geom/sector_2d.cpp
+        parsian_util/src/geom/segment_2d.cpp
+        parsian_util/src/geom/triangle_2d.cpp
+        parsian_util/src/geom/triangulation.cpp
+        parsian_util/src/geom/vector_2d.cpp
+        parsian_util/src/geom/voronoi_diagram_original.cpp
+        parsian_util/src/geom/voronoi_diagram_triangle.cpp
+        parsian_util/src/tools/drawer.cpp
+        parsian_util/src/tools/filewatcher.cpp
+        parsian_util/src/mathtools.cpp
+        parsian_util/src/matrix.cpp
+        parsian_world_model/include/parsian_world_model/util/balltracker.h
+        parsian_world_model/include/parsian_world_model/util/kalman.h
+        parsian_world_model/include/parsian_world_model/util/newkalman.h
+        parsian_world_model/include/parsian_world_model/util/robottracker.h
+        parsian_world_model/include/parsian_world_model/util/tracker.h
+        parsian_world_model/include/parsian_world_model/wm/ball.h
+        parsian_world_model/include/parsian_world_model/wm/halfworld.h
+        parsian_world_model/include/parsian_world_model/wm/movingobject.h
+        parsian_world_model/include/parsian_world_model/wm/rawobject.h
+        parsian_world_model/include/parsian_world_model/wm/robot.h
+        parsian_world_model/include/parsian_world_model/wm/visionbelief.h
+        parsian_world_model/include/parsian_world_model/wm/visionclient.h
+        parsian_world_model/include/parsian_world_model/wm/worldmodel.h
+        parsian_world_model/include/parsian_world_model/config.h
+        parsian_world_model/include/parsian_world_model/worldmodel_nodelet.h
+        parsian_world_model/src/util/balltracker.cpp
+        parsian_world_model/src/util/kalman.cpp
+        parsian_world_model/src/util/robottracker.cpp
+        parsian_world_model/src/util/tracker.cpp
+        parsian_world_model/src/wm/ball.cpp
+        parsian_world_model/src/wm/halfworld.cpp
+        parsian_world_model/src/wm/movingobject.cpp
+        parsian_world_model/src/wm/rawobject.cpp
+        parsian_world_model/src/wm/robot.cpp
+        parsian_world_model/src/wm/visionbelief.cpp
+        parsian_world_model/src/wm/visionclient.cpp
+        parsian_world_model/src/wm/worldmodel.cpp
+        parsian_world_model/src/config.cpp
+        parsian_world_model/src/worldmodel_node.cpp
+        parsian_world_model/src/worldmodel_nodelet.cpp
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/bbox.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/field.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/field_default_constants.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/geomalgo.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/geometry.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/gltext.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/graphical.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/gvector.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/logger.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/pose.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/quaternion.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/range.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/soccerview.h
+        rqt_parsian_gui/include/rqt_parsian_gui/graphical/timer.h
+        rqt_parsian_gui/include/rqt_parsian_gui/handycontroller.h
+        rqt_parsian_gui/include/rqt_parsian_gui/mode_chooser.h
+        rqt_parsian_gui/include/rqt_parsian_gui/modeChooserWidget.h
+        rqt_parsian_gui/include/rqt_parsian_gui/playoff.h
+        rqt_parsian_gui/include/rqt_parsian_gui/playoffWidget.h
+        rqt_parsian_gui/include/rqt_parsian_gui/referee.h
+        rqt_parsian_gui/include/rqt_parsian_gui/refereeWidget.h
+        rqt_parsian_gui/include/rqt_parsian_gui/robotstatus.h
+        rqt_parsian_gui/include/rqt_parsian_gui/robotstatus_widget.h
+        rqt_parsian_gui/include/rqt_parsian_gui/taskRunner.h
+        rqt_parsian_gui/include/rqt_parsian_gui/taskRunnerWidget.h
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/field.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/field_default_constants.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/gltext.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/graphical.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/logger.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/graphical/soccerview.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/handycontroller.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/mode_chooser.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/modeChooserWidget.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/playoff.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/playoffWidget.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/referee.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/refereeWidget.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/robotstatus.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/robotstatus_widget.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/taskRunner.cpp
+        rqt_parsian_gui/src/rqt_parsian_gui/taskRunnerWidget.cpp)

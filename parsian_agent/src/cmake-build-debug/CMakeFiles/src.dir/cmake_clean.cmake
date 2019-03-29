@@ -1,0 +1,29 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/src.dir/auto_decider/auto_decider_node.cpp.o"
+  "CMakeFiles/src.dir/auto_decider/auto_decider_nodelet.cpp.o"
+  "CMakeFiles/src.dir/commonconfig/common_config_node.cpp.o"
+  "CMakeFiles/src.dir/commonconfig/common_config_nodelet.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/agent.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/gotopoint.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/gotopointavoid.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/kick.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/newbangbang.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/onetouch.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/receivepass.cpp.o"
+  "CMakeFiles/src.dir/parsian_agent/skill.cpp.o"
+  "CMakeFiles/src.dir/planner/c2dtree.cpp.o"
+  "CMakeFiles/src.dir/planner/obstacle.cpp.o"
+  "CMakeFiles/src.dir/planner/planner.cpp.o"
+  "CMakeFiles/src.dir/planner/planner_node.cpp.o"
+  "CMakeFiles/src.dir/planner/planner_nodelet.cpp.o"
+  "CMakeFiles/src.dir/agent_node.cpp.o"
+  "CMakeFiles/src.dir/agent_nodelet.cpp.o"
+  "CMakeFiles/src.dir/config.cpp.o"
+  "src.pdb"
+  "src"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/src.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

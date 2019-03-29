@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="src"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="src">
+				<Option output="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/src" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 src"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="src/fast">
+				<Option output="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/src" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 src/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/agent_node.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/agent_nodelet.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/auto_decider/auto_decider_node.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/auto_decider/auto_decider_nodelet.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/commonconfig/common_config_node.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/commonconfig/common_config_nodelet.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/config.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/agent.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/gotopoint.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/gotopointavoid.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/kick.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/newbangbang.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/onetouch.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/receivepass.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/parsian_agent/skill.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/planner/c2dtree.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/planner/obstacle.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/planner/planner.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/planner/planner_node.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/planner/planner_nodelet.cpp">
+			<Option target="src"/>
+		</Unit>
+		<Unit filename="/home/atiyeh/parsian_ws/src/ssl/parsian_agent/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
