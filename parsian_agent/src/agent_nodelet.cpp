@@ -19,6 +19,7 @@ void AgentNodelet::onInit() {
     skillKick = new CSkillKick(agent.get());
     oneTouch = new CSkillKickOneTouch(agent.get());
     receivePass = new CSkillReceivePass(agent.get());
+    moveForward = new CSkillMoveForward(agent.get());
 
     common_config_sub = nh.subscribe("/commonconfig/parameter_updates", 10, &AgentNodelet::commonConfigCb, this);
     world_model_sub   = nh.subscribe("world_model", 10, &AgentNodelet::wmCb, this);

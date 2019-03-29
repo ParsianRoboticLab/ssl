@@ -85,11 +85,11 @@ add_library(${PROJECT_NAME}
         src/${PROJECT_NAME}/gotopointavoid.cpp
         src/${PROJECT_NAME}/kick.cpp
         src/${PROJECT_NAME}/newbangbang.cpp
+		src/${PROJECT_NAME}/moveforward.cpp
         src/${PROJECT_NAME}/onetouch.cpp
         src/${PROJECT_NAME}/receivepass.cpp
         src/${PROJECT_NAME}/skill.cpp
-        src/config.cpp
-        )
+        src/config.cpp include/parsian_agent/moveforward.h)
 
 add_library(${PROJECT_NAME}_planner
         src/planner/planner.cpp

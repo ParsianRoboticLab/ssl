@@ -5,6 +5,7 @@ parsian_msgs/parsian_skill_gotoPointAvoid gotoPointAvoidTask
 parsian_msgs/parsian_skill_kick kickTask
 parsian_msgs/parsian_skill_oneTouch oneTouchTask
 parsian_msgs/parsian_skill_receivePass receivePassTask
+parsian_msgs/parsian_skill_moveForward moveForwardTask
 parsian_msgs/parsian_skill_no noTask
 
 uint8 GOTOPOINT = 0

@@ -5,5 +5,6 @@
 #include <parsian_agent/kick.h>
 #include <parsian_agent/receivepass.h>
 #include <parsian_agent/onetouch.h>
+#include <parsian_agent/moveforward.h>
 
 #endif // SKILLS_H
