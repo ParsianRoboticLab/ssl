@@ -42,11 +42,17 @@ private:
 
     void checkEndKhafan();
     void checkEndChipToGoal();
+    int EvalPlayKhafan();
 
     int dynamicAgentSize;
     DynamicState state;
     unsigned int dynamicStartTime;
     Vector2D dummyPositions[_NUM_PLAYERS];
+    Vector2D theirpos;
+    float theirdist;
+    int sum;
+    int eval;
+    int n;
 
 };
 

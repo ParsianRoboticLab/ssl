@@ -133,6 +133,52 @@ void CDynamicPlayOff::dynamicPlayKhafan() {
     }
 
 }
+int CDynamicPlayOff:: EvalPlayKhafan(){
+    if(agents.size()<2)
+        eval=0;
+
+theirdist=100;
+n=0;
+for(int i=0;i< wm->opp.activeAgentsCount();i++)
+{
+    if(wm->opp.active(i)->pos.dist(wm->ball->pos)<theirdist){
+        theirdist=wm->opp.active(i)->pos.dist(wm->ball->pos);
+        theirpos= wm->opp.active(i)->pos;
+        n=i;
+    }
+}
+for (int i=0;i< wm->opp.activeAgentsCount();i++){
+    if(Triangle2D(theirpos,wm->field->oppGoalL(),wm->field->oppGoalR()).contains(wm->opp.active(i)->pos))
+        sum++;
+}
+if(sum==0){
+    eval=100;
+}
+for(int i=0 ;i< wm->opp.activeAgentsCount();i++)
+{
+    if(Triangle2D(theirpos,wm->field->oppGoalR(),wm->field->oppGoalL()).contains(wm->opp.active(i)->pos))
+    {
+        if(wm->opp.active(i)->pos.dist(theirpos)<Robot::robot_radius_new*3)
+            eval=0;
+        else if(wm->opp.active(i)->pos.dist(theirpos)<0.2)
+            eval=20;
+        else if(wm->opp.active(i)->pos.dist(theirpos)<0.4)
+            eval=40;
+        else if(wm->opp.active(i)->pos.dist(theirpos)<0.6)
+            eval=60;
+        else if(wm->opp.active(i)->pos.dist(theirpos)<0.8)
+            eval=80;
+        else if(wm->opp.active(i)->pos.dist(theirpos)<1)
+            eval=100;
+
+        return eval;
+
+    }
+}
+
+
+return eval;
+}
 
 
 void CDynamicPlayOff::checkEndKhafan() {
@@ -209,11 +255,12 @@ void CDynamicPlayOff::init(const QList<Agent *> &_agents) {
 
     dummyPositions[0] = wm->ball->pos + (wm->field->oppGoal() - wm->ball->pos).norm() * 3;
     dummyPositions[0].y += 0.3;
-
-    if (_agents.size() < 2) {
-        dynamicSelect = DynamicSelect::Chip;
-    } else {
+EvalPlayKhafan();
+ROS_INFO_STREAM("maral:eval " <<eval);
+    if (eval>40) {
         dynamicSelect = DynamicSelect::Khafan;
+    } else {
+        dynamicSelect = DynamicSelect::Chip;
     }
     state = DynamicState::Ready;
 }
