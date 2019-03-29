@@ -1,35 +1,36 @@
 #include <parsian_util/geom/polygon_2d.h>
 #include <parsian_util/geom/vector_2d.h>
 #include <parsian_util/geom/rect_2d.h>
+#include "test_polygon_2d.h"
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
 
-using namespace rcsc;
+#include <vector>
+#include <cstdlib>
 
+using namespace rcsc;
 
 // Declare a test
 TEST(Polygon2DTest, polygon2DTest) {
-
-    ///
-    const Polygon2D empty_polygon;
-    EXPECT_TRUE( !empty_polygon.contains( rcsc::Vector2D( 0.0, 0.0 ) ));
-
-    //
-    const Vector2D p( +100.0, +100.0 );
-
-    std::vector< rcsc::Vector2D > v;
-    v.push_back( p );
-
-    const rcsc::Polygon2D point_polygon( v );
-
-    EXPECT_TRUE( !point_polygon.contains( rcsc::Vector2D( 0.0, 0.0 ) ) );
-
-    // strict checks
-    EXPECT_TRUE(  point_polygon.contains( p ) );
-    EXPECT_TRUE( !point_polygon.contains( p, false ) );
-
+    testEmpty();
+    testPointPolygon();
+    testGetBoundingBox();
+    testContains1();
+    testContains2();
+    testContains3();
+    testContains4();
+    testContains5();
+    testContains6();
+    testContains7();
+    testContains8();
+    testEmptyArea();
+    testScissoring();
+    testGetDistance();
+    testXYCenter();
+    testSignedArea2();
 }
+
 TEST(TestMatrix2D, testMatrix2D){
 
 }
