@@ -309,7 +309,7 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
     }
     for (int i = 0; i < REGION_NUM; i++)
         for (int i = 0; i < REGION_NUM; i++)
-            drawer->draw(regions[i].rectangle);
+            //drawer->draw(regions[i].rectangle);
     updateAttackState();
     makePlan(agentSize);
 
@@ -611,7 +611,7 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    drawer->draw(_poly,QColor(120,120,120));
+    //drawer->draw(_poly,QColor(120,120,120));
 
 
     for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
@@ -1110,7 +1110,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[5].pointPriority = 3;
                 regions[3].pointPriority = 2;
                 regions[6].pointPriority = 1;
-                regions[0].pointPriority = 0;
+                regions[0].pointPriority = 2;
 
 
 
@@ -1125,7 +1125,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[5].pointPriority = 3;
                 regions[2].pointPriority = 2;
                 regions[6].pointPriority = 1;
-                regions[1].pointPriority = 0;
+                regions[1].pointPriority = 2;
 
                 break;
             }
@@ -1138,7 +1138,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[1].pointPriority = 2;
                 regions[6].pointPriority = 1;
-                regions[2].pointPriority = 0;
+                regions[2].pointPriority = 2;
 
 
                 break;
@@ -1152,7 +1152,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[2].pointPriority = 3;
                 regions[0].pointPriority = 2;
                 regions[6].pointPriority = 1;
-                regions[3].pointPriority = 0;
+                regions[3].pointPriority = 2;
 
 
                 break;
@@ -1166,7 +1166,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[5].pointPriority = 2;
                 regions[6].pointPriority = 1;
-                regions[4].pointPriority = 0;
+                regions[4].pointPriority = 2;
 
 
                 break;
@@ -1180,7 +1180,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[6].pointPriority = 2;
                 regions[4].pointPriority = 1;
-                regions[5].pointPriority = 0;
+                regions[5].pointPriority = 2;
 
                 break;
             }
@@ -1193,7 +1193,7 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 3;
                 regions[4].pointPriority = 2;
                 regions[5].pointPriority = 1;
-                regions[5].pointPriority = 0;
+                regions[6].pointPriority = 2;
 
                 break;
             }
@@ -1319,9 +1319,11 @@ void CDynamicAttack::chooseBestPositons() {
         for (int i{REGION_NUM - 1}; i >= 0; i--)
         {
             regionPriority.append(sortRegions[i].id);
-            ROS_INFO_STREAM("amirn ids : " << sortRegions[i].id << " and ballr is : " << ballR << " and i is : " << i);
+            ROS_INFO_STREAM("amirm ids : " << sortRegions[i].id << " and ballr is : " << ballR << " and i is : " << i);
         }
         //ROS_INFO_STREAM("amirc 2");
+
+
 
 
     }
@@ -1373,7 +1375,9 @@ void CDynamicAttack::assignId() {
 
 
 void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
-    const double angle_weight{2}, dist_weight{0.5};   // TODO: show in controling in game
+    const double angle_weight{2}, dist_weight{0.5}; // TODO: show in controling in game
+    const double treshold1{0.8};
+    const double treshold2{0.5};
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
@@ -1422,7 +1426,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 //ROS_INFO_STREAM("amir Goal left y : " << wm->field->oppGoalL().y);
                 //ROS_INFO_STREAM("amir Goal center y : " << wm->field->oppGoal().y);
                 if (!isPositionClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
-                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.5, regions[regionPriority[matchingIDs[v]]].points[i])) {
+                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2, regions[regionPriority[matchingIDs[v]]].points[i])) {
                     ROS_INFO_STREAM("amir im here and my chance is 0!");
                     tmp_chance = -10;
                     continue;
@@ -1430,11 +1434,11 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 double passPathWeight{6};
                 if(!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[v]]].points[i],
                                    (Robot::robot_radius_new + playmake->pos().dist(regions[regionPriority[matchingIDs[v]]].points[i]) / passPathWeight)
-                                   , 0.5))
+                                   , treshold1))
                 {
                     //ROS_INFO_STREAM("amird " << v << " and i is  " << i);
-                    tmp_chance = -10;
-                    continue;
+                    tmp_chance = -1;
+
 
                 }
                 tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
@@ -1447,7 +1451,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
             }
 
         regions[regionPriority[matchingIDs[v]]].chance = chance;
-        //ROS_INFO_STREAM("this is v " << v << " and amir chance : " << chance);
+        ROS_INFO_STREAM("amirm is v " << v << " and amir chance : " << chance);
         //ROS_INFO_STREAM("amir pos point x :" << tmp_point.x);
         //ROS_INFO_STREAM("amir pos point y :" << tmp_point.y);
         regions[regionPriority[matchingIDs[v]]].theirNearestRobot = max_dist;
