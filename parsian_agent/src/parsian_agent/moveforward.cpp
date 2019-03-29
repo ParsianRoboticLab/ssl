@@ -2,31 +2,45 @@
 // Created by atiyeh on 3/27/19.
 //
 
-#include <parsian_agent/moveforward.h>
 #include "parsian_agent/moveforward.h"
-#include <parsian_agent/gotopointavoid.h>
+#include "parsian_agent/kick.h"
 
 CSkillMoveForward::CSkillMoveForward(Agent *_agent) : CSkill(_agent) {
     gtpAvoid = new CSkillGotoPointAvoid(_agent);
     recPass = new CSkillReceivePass(_agent);
-      }
+    kick = new CSkillKick(_agent);}
 
 CSkillMoveForward::~CSkillMoveForward(){
     delete gtpAvoid;
-    delete recPass;
-}
+    delete recPass; }
 
-void CSkillMoveForward::kickforward(double kickspeed) {
+void CSkillMoveForward::kickForward(double kickspeed) {
     setKickspeed(kickspeed);
+    bool kickerOn;
+
     if(kickspeed != 0.0) {
         setSpin(static_cast<float>(0.7));
     };
-    }
+}
+
+MFMode CSkillMoveForward::decideMode() {
+
+}
+
 
 void CSkillMoveForward::execute() {
-    recPass->execute();
-    kickforward(0.1);
-    }
+    MFMode moveForwardMode = decideMode();
+    switch (moveForwardMode){
+        case MFMode::RECEIVE:
+            recPass->execute();
+            break;
+        case MFMode::KICKFORWARD:
+            kickForward(1.0); //checkout
+            break;
+        case MFMode::KICK:
+            kick->execute();
+            break;
+    };}
 
 
 
