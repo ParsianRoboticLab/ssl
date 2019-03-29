@@ -565,6 +565,12 @@ void CCoach::decidePlayOn(QList<int>& ourPlayers, QList<int>& lastPlayers) {
             shotToGoalthr = conf.DirectTrsh;
         }
     }
+    // set supporter
+    supporterId = chooseSupporter(ourPlayers);
+    if (0 <= supporterId && supporterId <= 11) {
+        dynamicAttack->setSupporter(agents[supporterId]);
+        ourPlayers.removeOne(supporterId);
+    }
 
     dynamicAttack->setWeHaveBall(ballPState   == BallPossesion::WEHAVETHEBALL);
     dynamicAttack->setFast(ourAttackState     == FAST);
@@ -923,4 +929,25 @@ void CCoach::handlePlayMake(const QList<int> &_agentsID) {
     }
 
     lastPlayMake = playmakeId;
+}
+
+int CCoach::chooseSupporter(const QList<int> &_agentsID) {
+    double maxD = -10000000.1;
+    int playmake = -1;
+    for (const auto& player : _agentsID) {
+        double value;
+        if (wm->ball->vel.length() < 0.4) value = agents[player]->pos().dist(wm->ball->pos);
+        else value = kickTimeEstimation(agents[player], wm->field->oppGoal());
+        value *= -1;
+
+        if (player == lastPlayMake) {
+            value += conf.playMakeStopThr;
+        }
+
+        if (value > maxD) {
+            maxD = value;
+            playmake = player;
+        }
+    }
+    return playmake;
 }

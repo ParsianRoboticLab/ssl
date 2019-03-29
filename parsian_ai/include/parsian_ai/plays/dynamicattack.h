@@ -186,6 +186,7 @@ public:
     void setNoPlanException(bool _noPlanException);
     void setFast(bool _fast);
     void setPlayMake(Agent* _playMake);
+    void setSupporter(Agent* _supporter);
     void setCritical(bool _critical);
     void setBallInOppJaw(bool _ballInOppJaw);
     void swapPlaymakeInPass();
@@ -306,6 +307,7 @@ private:
 
     CRoleDynamic *roleAgents[8];
     CRoleDynamic *roleAgentPM;
+    CRoleDynamic *roleAgentS;
 
     ////////Plan Making
     bool isDefenseClearing, isWeHaveBall, noPlanException;
@@ -351,6 +353,7 @@ protected:
     void reset() override;
 
     double calcRegionProperties(int robot_id,int region_index);
+    void support();
 };
 
 #endif // DYNAMICATTACK_H

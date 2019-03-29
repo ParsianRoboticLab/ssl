@@ -48,6 +48,7 @@ protected:
 
     QList <Agent *> stopAgents;
     Agent *playMakeAgent;
+    Agent *supportAgent;
     Agent *blockAgent;
 
 

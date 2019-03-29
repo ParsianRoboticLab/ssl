@@ -19,6 +19,7 @@ CMasterPlay::~CMasterPlay() = default;
 void CMasterPlay::initMaster() {
     blockAgent = nullptr;
     playMakeAgent = nullptr;
+    supportAgent = nullptr;
     positionAgents.clear();
     stopAgents.clear();
     masterStaticPoints.clear();
@@ -99,8 +100,6 @@ void CMasterPlay::choosePlayMaker() {
     for (auto i : agents) {
         playAgents.append(i);
     }
-
-
 //    for( int i=0 ; i<knowledge->agentsWithIntention.size() ; i++ ){
 //        int id = knowledge->agentsWithIntention.at(i);
 //        if( agents.contains(id) ){

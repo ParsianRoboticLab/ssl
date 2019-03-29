@@ -164,7 +164,12 @@ private:
     int playmakeId;
     int lastPlayMake;
 
+    int supporterId;
+    int lastSupporter;
+
+
     int choosePlayMake(const QList<int> &_agentsID);
+    int chooseSupporter(const QList<int> &_agentsID);
     void handlePlayMake(const QList<int> &_agentsID);
 
     ///////////////////////////////////////////////

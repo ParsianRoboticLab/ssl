@@ -18,11 +18,15 @@ CDynamicAttack::CDynamicAttack() {
     positioningIntentionInterval = 500;
     shotInPass = false;
 
-    for (int i = 0; i < 8; i++) {
-        roleAgents[i] = new CRoleDynamic();
+    for (auto &roleAgent : roleAgents) {
+        roleAgent = new CRoleDynamic();
+        roleAgent->setRole(Roles::Positioning);
     }
     roleAgentPM = new CRoleDynamic();
-    roleAgentPM->setIsPlayMake(true);
+    roleAgentPM->setRole(Roles::PlayMake);
+
+    roleAgentS = new CRoleDynamic();
+    roleAgentS->setRole(Roles::Supporter);
 
     passFlag = false;
     repeatFlag = false;
@@ -274,6 +278,10 @@ void CDynamicAttack::assignTasks() {
     if (playmake != nullptr) {
         playMake();
     }
+
+    if (supporter != nullptr){
+        support();
+    }
     if (currentPlan.agentSize > 0) {
         ROS_INFO_STREAM("kian: too if positioning : currentPlan.agentSize:" << currentPlan.agentSize);
         positioning(passPoints);//semiDynamicPosition);
@@ -307,6 +315,8 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
 //    }
 
     assignTasks();
+
+    // execute roles
     for (size_t i = 0; i < currentPlan.agentSize; i++) {
         if (matchingIDs[i] >= 0) {
             roleAgents[i]->execute();
@@ -314,12 +324,13 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
             DBUG(QString("[dynamicAttack - %1] mahiAgentID buged").arg(__LINE__), D_MAHI);
         }
     }
-    ROS_INFO("MAHI : 8");
 
     if (playmake != nullptr && playmake->id() != -1) {
         roleAgentPM->execute();
-        ROS_INFO("MAHI : 9");
+    }
 
+    if (supporter != nullptr && supporter->id() != -1){
+        roleAgentS->execute();
     }
     lastAgentCount = agentSize;
 
@@ -622,31 +633,18 @@ int CDynamicAttack::appropriatePassSpeed() {
     if (playmake != nullptr) {
         tempDistance = playmake->pos().dist(currentPlan.passPos);
 
-        if (false) { // dynamic pass Speed // FALSED IN ROS
-            //            if (tempDistance < 2) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_LowSpeedPass();
-            //
-            //            } else if(tempDistance > 4) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_HighSpeedPass();
-            //
-            //            } else {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance) + policy()->DynamicPlay_MediumSpeedPass();
-            //
-            //            }
+        if (tempDistance < 2) {
+            speed = conf.LowSpeedPass;
+
+        } else if (tempDistance > 4) {
+            speed = conf.HighSpeedPass;
 
         } else {
-            if (tempDistance < 2) {
-                speed = conf.LowSpeedPass;
-
-            } else if (tempDistance > 4) {
-                speed = conf.HighSpeedPass;
-
-            } else {
-                speed = conf.MediumSpeedPass;
-
-            }
+            speed = conf.MediumSpeedPass;
 
         }
+
+
     } else {
         speed = conf.MediumSpeedPass;
     }
@@ -769,29 +767,15 @@ int CDynamicAttack::appropriateChipSpeed() {
     if (playmake != nullptr) {
         tempDistance = playmake->pos().dist(currentPlan.passPos);
 
-        if (false) { // dynamic chip Speed
-            //            if (tempDistance < 2) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_LowSpeedChip();
-            //
-            //            } else if(tempDistance > 4) {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_HighSpeedChip();
-            //
-            //            } else {
-            //                speed = knowledge->getProfile(mahiPlayMaker->id(), tempDistance, false) + policy()->DynamicPlay_MediumSpeedChip();
-            //
-            //            }
+
+        if (tempDistance < 2) {
+            speed = conf.LowDistChip;
+
+        } else if (tempDistance > 4) {
+            speed = conf.HighDistChip;
 
         } else {
-            if (tempDistance < 2) {
-                speed = conf.LowDistChip;
-
-            } else if (tempDistance > 4) {
-                speed = conf.HighDistChip;
-
-            } else {
-                speed = conf.MediumDistChip;
-
-            }
+            speed = conf.MediumDistChip;
 
         }
     } else {
@@ -2256,3 +2240,16 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
     return tmp_chance;
 }
 
+void CDynamicAttack::support() {
+
+    roleAgentS->setAgent(supporter);
+    roleAgentS->setAvoidPenaltyArea(true);
+    roleAgentS->setSelectedSupporterSkill(SupporterSkill::Move);d s
+//    switch (supporter.) {
+//    }
+}
+
+
+void CDynamicAttack::setSupporter(Agent* _supporter){
+    supporter = _supporter;
+}
