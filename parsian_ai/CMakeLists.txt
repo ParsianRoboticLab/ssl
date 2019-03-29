@@ -115,6 +115,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/plans/positioningplan.cpp
 		src/${PROJECT_NAME}/roles/role.cpp
 		src/${PROJECT_NAME}/roles/block.cpp
+		src/${PROJECT_NAME}/roles/support.cpp
 		src/${PROJECT_NAME}/roles/playoffrole.cpp
 		src/${PROJECT_NAME}/roles/stop.cpp
 		src/${PROJECT_NAME}/roles/fault.cpp
