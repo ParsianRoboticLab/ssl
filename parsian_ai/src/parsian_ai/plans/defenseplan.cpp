@@ -1114,6 +1114,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
 
 
     ////////////////////////// Variables of this function //////////////////////
+    ROS_INFO_STREAM("manToManMarkBlockPassInPlayOff");
     int i;
     int j;
     Vector2D sol1 , sol2;
@@ -1156,6 +1157,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
     //    sortdangerpassplayoff(opponentAgentsToBeMarkPossition);
     ///////////////// Block Pass Plan ////////////////////////////////////
     if (opponentAgentsToBeMarkPossition.size() == ourMarkAgentsSize) {
+        ROS_INFO_STREAM("MAS:opponentAgentsToBeMarkPossition.size() == ourMarkAgentsSize");
         for (i = 0 ; i < ourMarkAgentsSize ; i++) {
             markRoles.append(QString("passBlocker"));
             //////////// Don't Enter penalty area, mark agents!!! :) ///////////
@@ -1181,6 +1183,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
             DBUG(QString("Man To Man Mark In PlayOff Mode / BlockPass / our = opp") , D_SEPEHR);
         }
     } else if (opponentAgentsToBeMarkPossition.size() < ourMarkAgentsSize) {
+        ROS_INFO_STREAM("MAS:opponentAgentsToBeMarkPossition.size() == 1");
         if (opponentAgentsToBeMarkPossition.empty()) {
             for (i = 0 ; i < ourMarkAgentsSize ; i++) {
                 if (i % 2) {
@@ -1194,6 +1197,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                 }
             }
         } else if (opponentAgentsToBeMarkPossition.size() == 1) {
+            ROS_INFO_STREAM("MAS:opponentAgentsToBeMarkPossition.size() == 1");
             for (i = 0 ; i < opponentAgentsToBeMarkPossition.size() ; i++) {
                 markRoles.append(QString("passBlocker"));
                 //////////// Don't Enter penalty area, mark agents!!! :) ///////////
@@ -1242,6 +1246,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
             DBUG(QString("mark pos : %1").arg(markPoses.size()) , D_AHZ);
             DBUG(QString("our mark : %1").arg(ourMarkAgentsSize) , D_AHZ);
         } else {
+            ROS_INFO_STREAM("MAS:ourMarkAgentsSize - markPoses.size() == opponentAgentsToBeMarkPossition.size()0000000000");
             for (i = 0 ; i < opponentAgentsToBeMarkPossition.size() ; i++) {
                 markRoles.append(QString("passBlocker"));
                 //////////// Don't Enter penalty area, mark agents!!! :) ///////////
@@ -1267,6 +1272,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
             }
             ////////////// With Extra mark agents ch ghalati bokonim ? :) //////////
             if (ourMarkAgentsSize - markPoses.size() == opponentAgentsToBeMarkPossition.size()) {
+                ROS_INFO_STREAM("MAS:ourMarkAgentsSize - markPoses.size() == opponentAgentsToBeMarkPossition.size()");
                 for (i = 0 ; i < opponentAgentsToBeMarkPossition.size() ; i++) {
                     drawer->draw(opponentAgentsToBeMarkCircle.at(i), QColor(Qt::cyan));
                 }
@@ -1283,6 +1289,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     markRoles.append(QString("shotBlocker"));
                 }
             } else if (ourMarkAgentsSize - markPoses.size() < opponentAgentsToBeMarkPossition.size()) {
+                ROS_INFO_STREAM("MAS:ourMarkAgentsSize - markPoses.size() < opponentAgentsToBeMarkPossition.size()");
                 tempSortDangerAgentsToBeBlockPassPlayOff = sortdangerpassplayoff(opponentAgentsToBeMarkPossition);
                 for (i = 0 ; i < tempSortDangerAgentsToBeBlockPassPlayOff.size() ; i++) {
                     tempOpponentAgentsToBeMarkedCircle.append(Circle2D(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first , opponentAgentsCircleR));
@@ -1301,6 +1308,9 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     markRoles.append(QString("shotBlocker"));
                 }
             } else if (ourMarkAgentsSize - markPoses.size() > opponentAgentsToBeMarkPossition.size()) {
+
+                ROS_INFO_STREAM("MAS:ourMarkAgentsSize - markPoses.size() > opponentAgentsToBeMarkPossition.size()");
+
                 for (i = 0 ; i < opponentAgentsToBeMarkPossition.size() ; i++) {
                     drawer->draw(opponentAgentsToBeMarkCircle.at(i), QColor(Qt::cyan));
                 }
@@ -1375,10 +1385,14 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
         }
     } else if (opponentAgentsToBeMarkPossition.size() > ourMarkAgentsSize) {
         sortDangerAgentsToBeMarkBlockPassPlayOff = sortdangerpassplayoff(opponentAgentsToBeMarkPossition);
+
         for (i = 0 ; i < ourMarkAgentsSize; i++) {
             //////////// Don't Enter penalty area, mark agents!!! :) ///////////
             if (wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(Segment2D(wm->ball->pos , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first) , &sol7,  &sol8)) {
                 if (!wm->field->isInOurPenaltyArea(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first)) {
+                    drawer->draw(Segment2D(wm->ball->pos,sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first),QColor("Pink"));//Mahdi
+                    ROS_INFO_STREAM("MAS:sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first");//Mahdi
+
                     Circle2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , opponentAgentsCircleR).intersection(Segment2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , wm->ball->pos) , &sol1 , &sol2);
                     Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , wm->ball->pos) , &sol3 , &sol4);
                     wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(Segment2D(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2, Segment2D(sol3 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() < Segment2D(sol4 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() ? sol3 : sol4) , &sol5 , &sol6);
@@ -1387,11 +1401,16 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , wm->ball->pos) , &sol1 , &sol2);
                     wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(Segment2D(wm->ball->pos , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first) , &sol5 , &sol6);
                     markPoses.append(know->getPointInDirection(Segment2D(sol1 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() < Segment2D(sol2 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() ? sol1 : sol2 , Segment2D(sol5 , wm->ball->pos).length() < Segment2D(sol6 , wm->ball->pos).length() ? sol5 : sol6 , proportionOfDistance));
+                    drawer->draw(Segment2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first,wm->ball->pos),QColor("Pink"));//Mahdi
+                    ROS_INFO_STREAM("MAS:sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first<<else state for the second if");//Mahdi
+
                 }
             } else {
                 Circle2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , opponentAgentsCircleR).intersection(Segment2D(sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first , wm->ball->pos) , &sol1 , &sol2);
                 Circle2D(wm->ball->pos , ballCircleR).intersection(Segment2D(wm->ball->pos , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first), &sol3 , &sol4);
                 markPoses.append(know->getPointInDirection(Segment2D(sol1 , wm->ball->pos).length() < Segment2D(sol2 , wm->ball->pos).length() ? sol1 : sol2, Segment2D(sol3 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() < Segment2D(sol4 , sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first).length() ? sol3 : sol4, proportionOfDistance));
+                drawer->draw(Segment2D(wm->ball->pos,sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first),QColor("Pink"));//Mahdi
+                ROS_INFO_STREAM("MAS:sortDangerAgentsToBeMarkBlockPassPlayOff.at(i).first<<else state for the first if");//Mahdi
             }
             markAngs.append(wm->ball->pos - markPoses.at(i));
             markRoles.append(QString("passBlocker"));
@@ -1426,6 +1445,7 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
     //    PDEBUGV2D("ALi's prediction mode",getMarkPlayoffPredictWaitPos(),D_ALI);
     //////////////////////////////////////////////////////
     if(_markAgentSize == oppAgentsToMarkPos.count()){
+        ROS_INFO_STREAM("MAS:_markAgentSize == oppAgentsToMarkPos.count()");
         for (int i = 0; i < oppAgentsToMarkPos.count(); i++) {
             markRoles.append(QString("shotBlocker"));
             if (!isInTheIndirectAreaShoot(oppAgentsToMarkPos[i])) {
@@ -1437,7 +1457,9 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
             }
         }
     }
+    //////Should check by Mahdi for not entering to the Penalty area//////////
     else if(_markAgentSize > oppAgentsToMarkPos.count()){
+        ROS_INFO_STREAM("MAS:_markAgentSize > oppAgentsToMarkPos.count()");
         for(int i = 0; i < oppAgentsToMarkPos.count(); i++){
             markRoles.append(QString("shotBlocker"));
             if(!isInTheIndirectAreaShoot(oppAgentsToMarkPos[i])){
@@ -1452,7 +1474,9 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
         QList<QPair<Vector2D, double> > tempsorted = sortdangerpassplayoff(oppAgentsToMarkPos);
         for(int i = 0; i < min(_markAgentSize - oppAgentsToMarkPos.count(), oppAgentsToMarkPos.count()); i++) {
             markRoles.append(QString("passBlocker"));
+            //////should check by Mahdi For not entering into PenaltyArea/////
             if (!isInTheIndirectAreaPass(tempsorted[i].first)) {
+                ROS_INFO_STREAM("MAS:_markAgentSize > oppAgentsToMarkPos.count() && !isInTheIndirectAreaPass(tempsorted[i].first");
                 markPoses.append(PassBlockRatio(segmentperpass, tempsorted[i].first).first());
                 markAngs.append(PassBlockRatio(segmentperpass, tempsorted[i].first).last());
             } else {
@@ -1462,6 +1486,7 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
         }
         //extra robot we have
         if (_markAgentSize > markPoses.count()) {
+            ROS_INFO_STREAM("MAS:_markAgentSize > markPoses.count()");
             count = 0;
             for (int i = markPoses.count() ; i < _markAgentSize; i++) {
                 if (markPoses.count() < _markAgentSize) {
@@ -1473,8 +1498,10 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
             }
         }
     }
+    //Should check by Mahdi//For not entering into penalty area
     else if(_markAgentSize < oppAgentsToMarkPos.count()){
         if (playOff || know->variables["transientFlag"].toBool() || gameState->isStop()) {
+            ROS_INFO_STREAM("MAS:playOff || know->variables[transientFlag].toBool() || gameState->isStop()");
             QList<QPair<Vector2D, double> > tempsorted = sortdangerpassplayoff(oppAgentsToMarkPos);
             for (int i = 0; i < _markAgentSize; i++) {
                 markRoles.append(QString("shotBlocker"));
@@ -2540,6 +2567,7 @@ void DefensePlan::matchingDefPos(int _defenseNum){
         matchPoints.append(AHZDefPoints.at(i));
     }
     findOppAgentsToMark();
+    ROS_INFO_STREAM("MAS:findOppAgentsToMark()");
     findPos(decideNumOfMarks());
     matchPoints.append(markPoses);
     /////////////// Stucking agents ///////////////////////////////////////////
@@ -2712,7 +2740,7 @@ void DefensePlan::execute(){
 
             setGoalKeeperTargetPoint();
             setGoalKeeperStateInDangerMode();
-          
+
             executeGoalKeeper();
             assignSkill(goalKeeperAgent , AHZSkills);
         }
@@ -2761,6 +2789,7 @@ void DefensePlan::execute(){
                         AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
                                                         defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
                     }
+                    ROS_INFO_STREAM("MAS:matchingDefPos(realDefSize)");
                     matchingDefPos(realDefSize);
                 }
             }
@@ -3984,6 +4013,7 @@ void DefensePlan::findPos(int _markAgentSize){
     }
     //////////////// Determine the plan of mark from GUI ////////////////////
     if(manToManMarkBlockPassFlag || wm->ball->pos.x > xLimitForblockingPass){
+        ROS_INFO_STREAM("MAS:manToManMarkBlockPassFlag");
         if(playOff || stopMode){
             know->variables["stateForMark"] = QString("BlockPass");
             manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
@@ -4000,17 +4030,23 @@ void DefensePlan::findPos(int _markAgentSize){
         }
     }
     else {
+        ROS_INFO_STREAM("MAS:manToManMarkBlockPassFlag else");
         if (playOff || stopMode) {
             know->variables["stateForMark"] = QString("BlockShot");;
+            ROS_INFO_STREAM("MAS:manToManMarkBlockShotInPlayOff if");
             manToManMarkBlockShotInPlayOff(_markAgentSize);
+            ROS_INFO_STREAM("MAS:manToManMarkBlockShotInPlayOff if done");
+
         }
         else {
             if (know->variables["lastStateForMark"].toString() == QString("BlockShot")) {
                 know->variables["stateForMark"] = QString("BlockShot");;
+                ROS_INFO_STREAM("MAS:manToManMarkBlockShotInPlayOff else if");
                 manToManMarkBlockShotInPlayOff(_markAgentSize);
             }
             else {
                 know->variables["stateForMark"] = QString("BlockPass");
+                ROS_INFO_STREAM("MAS:manToManMarkBlockPassInPlayOff");
                 manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
             }
         }
