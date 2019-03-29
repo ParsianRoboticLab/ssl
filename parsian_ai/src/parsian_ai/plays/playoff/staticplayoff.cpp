@@ -84,8 +84,9 @@ bool CStaticPlayOff::isTimeOver() {
     if (!Circle2D(lastBallPos, 0.06).contains(wm->ball->pos)) {
         setTimer = false;
         ROS_INFO_STREAM("MAHI: Time That Left: " << ros::Time::now().sec - startTime);
-        if(ros::Time::now().sec - startTime >= 3*masterPlan->execution.passCount) { // 3 Second TODO: ADD TO CFG
+        if(ros::Time::now().sec - startTime >= conf.StaticTimeOver*masterPlan->execution.passCount) { // 3 Second TODO: ADD TO CFG
             setTimer = true;
+            drawer->draw("TIME OVER");
             return true;
         }
     }
@@ -103,10 +104,16 @@ bool CStaticPlayOff::isBallDirChanged() {
     const int& receiver = masterPlan->execution.receiver.at(0).id;
     const int receiverID = masterPlan->matchedID.value(receiver);
     if (wm->ball->pos.dist(lastBallPos) > 0.5 && !roleAgents[passer]->getChip()) {
-        Circle2D  c(roleAgents[receiverID]->getWaitPos(), 1); // TODO : CHECK radius
+        Circle2D  c(roleAgents[receiverID]->getWaitPos(), conf.StaticBallDirChanged); // TODO : CHECK radius
         drawer->draw(wm->ball->seg(), QColor(Qt::blue));
         drawer->draw(c, QColor(Qt::red));
-        return !c.intersection(wm->ball->seg());
+        bool res = !c.intersection(wm->ball->seg());
+        if(res)
+        {
+            drawer->draw("BALL DIR CHANGED");
+            return true;
+        }
+        return false;
     }
     return false;
 
@@ -645,7 +652,17 @@ void CStaticPlayOff::init(const QList<Agent*>& _agents) {
 }
 
 bool CStaticPlayOff::firstKickFailed() {
-    return (lastBallPos.dist(wm->ball->pos) > 0.25 && wm->ball->vel.length() < 0.1);
+    bool ballNearRobot = false;
+    for(int i{}; i < wm->our.activeAgentsCount(); i++)
+        if(wm->our.active(i)->pos.dist(wm->ball->pos) < conf.StaticFirstKickFailed)
+            ballNearRobot = true;
+    bool res = (lastBallPos.dist(wm->ball->pos) > conf.StaticFirstKickFailed && wm->ball->vel.length() < 0.1 && !ballNearRobot);
+    if(res)
+    {
+        drawer->draw("First Kick Failed");
+        return true;
+    }
+    return false;
 }
 
 /*!
