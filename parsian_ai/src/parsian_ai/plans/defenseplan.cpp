@@ -2671,18 +2671,8 @@ Vector2D DefensePlan::GKballPrediction() {
     //// of field with ballLine.(algorithm is just like when ballLine isn't in the
     //// field).Also , If the ballLine has intersection with opponent agent, we
     //// consider the intersection point for the locaiton of the ball.
-    Vector2D BallVel;
-    if (wm->ball->vel.length() < 1) {
-        BallVel = wm->ball->vel * 0.7;
-    } else {
-        BallVel = wm->ball->vel.norm();
-    }
-    Segment2D ballPosVel(wm->ball->pos, wm->ball->pos + (BallVel));
     Vector2D predictedBall = wm->ball->pos;
     Vector2D solu[6];
-    Rect2D fieldRect(
-            Vector2D(-wm->field->_FIELD_WIDTH / 2.0, -wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(-0.005, -0.005),
-            Vector2D(wm->field->_FIELD_WIDTH / 2.0, wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(+0.005, +0.005));
     double dist2Ball = 1000;
     //    predictedBall = wm->ball->pos;
     //    return predictedBall;
@@ -2751,18 +2741,8 @@ Vector2D DefensePlan::GKballPrediction() {
 }
 
 Vector2D DefensePlan::ballPrediction() {
-    Vector2D BallVel;
-    if (wm->ball->vel.length() < 1) {
-        BallVel = wm->ball->vel * 0.7;
-    } else {
-        BallVel = wm->ball->vel.norm();
-    }
-    Segment2D ballPosVel(wm->ball->pos, wm->ball->pos + (BallVel));
     Vector2D predictedBall = wm->ball->pos;
     Vector2D solu[6];
-    Rect2D fieldRect(
-            Vector2D(-wm->field->_FIELD_WIDTH / 2.0, -wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(-0.005, -0.005),
-            Vector2D(wm->field->_FIELD_WIDTH / 2.0, wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(+0.005, +0.005));
     if(wm->field->ourBigPenaltyArea(1, 0.2, 0).contains(wm->ball->pos)){
         drawer->draw(QString("1"), Vector2D(2, 2), "red");
         wm->field->ourBigPenaltyArea(1, 0.4, 0).intersection(Line2D(wm->field->ourGoal() , wm->ball->pos) , &solu[2] , &solu[3]);
