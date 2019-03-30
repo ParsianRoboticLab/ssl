@@ -227,7 +227,6 @@ private:
     int faultDetectionCounter[_MAX_NUM_PLAYERS];
 
     double kickTimeEstimation(Agent * _agent, const Vector2D& target);
-    double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
 
     NoAction* haltAction;
 
