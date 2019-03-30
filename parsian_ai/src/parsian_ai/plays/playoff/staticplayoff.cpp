@@ -298,6 +298,7 @@ void CStaticPlayOff::fillRoleProperties() {
 
             roleAgents[i]->setFirstMove(positionAgent[i].stateNumber == 0);
             roleAgents[i]->setAgent(getAgent(i));
+            roleAgents[i]->setAgentID(getAgent(i)->id());
 
             //// Handle OneTouch Faster
             if (positionAgent[i].stateNumber + 1 < positionAgent[i].positionArg.size()) {
