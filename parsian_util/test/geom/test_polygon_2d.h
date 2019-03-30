@@ -8,6 +8,7 @@
 #include <parsian_util/geom/polygon_2d.h>
 #include <parsian_util/geom/vector_2d.h>
 #include <parsian_util/geom/rect_2d.h>
+#include "config.h"
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
@@ -16,6 +17,7 @@
 #include <cstdlib>
 
 using namespace rcsc;
+
 void testEmpty()
 {
     Polygon2D empty_polygon;
@@ -52,10 +54,10 @@ void testGetBoundingBox(){
     //
     const rcsc::Rect2D r = rectangle.getBoundingBox();
 
-    ASSERT_DOUBLE_EQ(-200.0 - r.minX(), 0.0);
-    ASSERT_DOUBLE_EQ(+200.0 - r.maxX(), 0.0);
-    ASSERT_DOUBLE_EQ(-100.0 - r.minY(), 0.0);
-    ASSERT_DOUBLE_EQ(+100.0 - r.maxY(), 0.0);
+    EXPECT_NEAR( -200.0 - r.minX(), 0.0, EPS );
+    EXPECT_NEAR( +200.0 - r.maxX(), 0.0, EPS );
+    EXPECT_NEAR( -100.0 - r.minY(), 0.0, EPS );
+    EXPECT_NEAR( +100.0 - r.maxY(), 0.0, EPS );
 }
 
 void testContains1(){
@@ -332,14 +334,14 @@ void testScissoring(){
 
     const rcsc::Polygon2D result = polygon.getScissoredConnectedPolygon( rectangle );
 
-    ASSERT_DOUBLE_EQ( 10000.0 - result.area(), 0.0);
+    EXPECT_NEAR( 10000.0 - result.area(), 0.0, EPS );
 
     const rcsc::Rect2D bbox = result.getBoundingBox();
 
-    ASSERT_DOUBLE_EQ(   0.0 - bbox.minX(), 0.0 );
-    ASSERT_DOUBLE_EQ( 100.0 - bbox.maxX(), 0.0 );
-    ASSERT_DOUBLE_EQ(   0.0 - bbox.minY(), 0.0 );
-    ASSERT_DOUBLE_EQ( 100.0 - bbox.maxY(), 0.0 );
+    EXPECT_NEAR(   0.0 - bbox.minX(), 0.0, EPS );
+    EXPECT_NEAR( 100.0 - bbox.maxX(), 0.0, EPS );
+    EXPECT_NEAR(   0.0 - bbox.minY(), 0.0, EPS );
+    EXPECT_NEAR( 100.0 - bbox.maxY(), 0.0, EPS );
 }
 
 void testGetDistance(){
@@ -355,13 +357,13 @@ void testGetDistance(){
     const rcsc::Polygon2D r( rect );
 
     // out of polygon
-    ASSERT_DOUBLE_EQ( 1.0 - r.dist( rcsc::Vector2D( 11.0, 10.0 ) ), 0.0 );
+    EXPECT_NEAR( 1.0 - r.dist( rcsc::Vector2D( 11.0, 10.0 ) ), 0.0, EPS );
 
     // in polygon, check as plane
-    ASSERT_DOUBLE_EQ( 0.0 - r.dist( rcsc::Vector2D( 5.0, 5.0 ) ), 0.0 );
+    EXPECT_NEAR( 0.0 - r.dist( rcsc::Vector2D( 5.0, 5.0 ) ), 0.0, EPS );
 
     // in polygon, check as polyline
-    ASSERT_DOUBLE_EQ( 5.0 - r.dist( rcsc::Vector2D( 5.0, 5.0 ), false ), 0.0 );
+    EXPECT_NEAR( 5.0 - r.dist( rcsc::Vector2D( 5.0, 5.0 ), false ), 0.0, EPS );
 }
 
 void testXYCenter(){
@@ -376,9 +378,9 @@ void testXYCenter(){
 
     const rcsc::Polygon2D r( rect );
 
-    ASSERT_DOUBLE_EQ( +100.0 - r.area(), 0.0 );
+    EXPECT_NEAR( +100.0 - r.area(), 0.0, EPS );
 
-    ASSERT_DOUBLE_EQ( rcsc::Vector2D( 15.0, 15.0 ).dist( r.xyCenter() ), 0.0 );
+    EXPECT_NEAR( rcsc::Vector2D( 15.0, 15.0 ).dist( r.xyCenter() ), 0.0, EPS );
 }
 
 void testSignedArea2(){

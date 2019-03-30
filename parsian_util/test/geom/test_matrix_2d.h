@@ -6,6 +6,7 @@
 #define PARSIAN_UTIL_TEST_MATRIX_2D_CPP_H
 
 #include <parsian_util/geom/matrix_2d.h>
+#include "config.h"
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
@@ -21,7 +22,7 @@ void testTranslate()
         rcsc::Vector2D v( 0.0, 0.0 );
         m.transform( &v );
 
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 2.0, 4.0 ).dist( v ), 0.0);
+        EXPECT_NEAR( rcsc::Vector2D( 2.0, 4.0 ).dist( v ), 0.0, EPS );
     }
 
     {
@@ -30,7 +31,7 @@ void testTranslate()
         rcsc::Vector2D v( 0.0, 0.0 );
         m.transform( &v );
 
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 3.0, 4.0 ).dist( v ), 0.0 );
+        EXPECT_NEAR( rcsc::Vector2D( 3.0, 4.0 ).dist( v ), 0.0, EPS );
     }
 }
 
@@ -48,9 +49,9 @@ void testScale()
         m.transform( &v2 );
         m.transform( &v3 );
 
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0 );
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 2.0, 4.0 ).dist( v2 ), 0.0 );
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 4.0, 12.0 ).dist( v3 ), 0.0 );
+        EXPECT_NEAR( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0, EPS );
+        EXPECT_NEAR( rcsc::Vector2D( 2.0, 4.0 ).dist( v2 ), 0.0, EPS );
+        EXPECT_NEAR( rcsc::Vector2D( 4.0, 12.0 ).dist( v3 ), 0.0, EPS );
     }
 
     {
@@ -64,9 +65,9 @@ void testScale()
         m.transform( &v2 );
         m.transform( &v3 );
 
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0 );
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( 3.0, 1.0 ).dist( v2 ), 0.0 );
-        ASSERT_DOUBLE_EQ( rcsc::Vector2D( -6.0, -3.0 ).dist( v3 ), 0.0 );
+        EXPECT_NEAR( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0, EPS );
+        EXPECT_NEAR( rcsc::Vector2D( 3.0, 1.0 ).dist( v2 ), 0.0, EPS );
+        EXPECT_NEAR( rcsc::Vector2D( -6.0, -3.0 ).dist( v3 ), 0.0, EPS );
     }
 }
 
@@ -92,15 +93,15 @@ void testRotate()
     m.transform( &v3 );
     m.transform( &v4 );
 
-    ASSERT_DOUBLE_EQ( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rcsc::Vector2D( 0.0, 1.0 ).dist( v2 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rcsc::Vector2D( -1.0, 0.0 ).dist( v3 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rcsc::Vector2D( -3.0, 2.0 ).dist( v4 ), 0.0 );
+    EXPECT_NEAR( rcsc::Vector2D( 0.0, 0.0 ).dist( v1 ), 0.0, EPS );
+    EXPECT_NEAR( rcsc::Vector2D( 0.0, 1.0 ).dist( v2 ), 0.0, EPS );
+    EXPECT_NEAR( rcsc::Vector2D( -1.0, 0.0 ).dist( v3 ), 0.0, EPS );
+    EXPECT_NEAR( rcsc::Vector2D( -3.0, 2.0 ).dist( v4 ), 0.0, EPS );
 
-    ASSERT_DOUBLE_EQ( rv1.dist( v1 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rv2.dist( v2 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rv3.dist( v3 ), 0.0 );
-    ASSERT_DOUBLE_EQ( rv4.dist( v4 ), 0.0 );
+    EXPECT_NEAR( rv1.dist( v1 ), 0.0, EPS );
+    EXPECT_NEAR( rv2.dist( v2 ), 0.0, EPS );
+    EXPECT_NEAR( rv3.dist( v3 ), 0.0, EPS );
+    EXPECT_NEAR( rv4.dist( v4 ), 0.0, EPS );
 }
 
 void testMultiplication()
@@ -120,7 +121,7 @@ void testMultiplication()
               * rcsc::Matrix2D::make_translation( translate.x, translate.y )
               * rcsc::Matrix2D::make_rotation( rotate );
 
-    ASSERT_DOUBLE_EQ( m1.transform( v ).dist( m2.transform( v ) ), 0.0 );
+    EXPECT_NEAR( m1.transform( v ).dist( m2.transform( v ) ), 0.0, EPS );
 }
 
 #endif //PARSIAN_UTIL_TEST_MATRIX_2D_CPP_H
