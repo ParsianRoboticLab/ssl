@@ -66,7 +66,6 @@ protected:
     Vector2D pointForKick, oneToucherDir;
     Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
-    GKState setGoalKeeperStateInDangerMode();
     Vector2D setGoalKeeperTargetPointInDangerMode();
     GKState setGoalKeeperState();
     Vector2D setGoalKeeperTargetPoint(GKState);

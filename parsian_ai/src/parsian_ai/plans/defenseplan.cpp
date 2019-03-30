@@ -1435,80 +1435,6 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
 }
 
 bool DefensePlan::dangerForGK(){
-    return 0;
-}
-
-GKState DefensePlan::setGoalKeeperState() {
-    //// In this function,we determine the specific states that goalkeeper must
-    //// have a logical behavior by good conditions.In other word we have some
-    //// exceptions mode for goalkeeper.These modes are :
-    //// 1- ball is behind the goalkeeper,
-    //// 2- One touch mode(goalkeeper diving mode) ,
-    //// 3- Throwing out the ball from penalty area (Clear mode) ,
-    //// 4- Ball is out of the field.
-
-    ////////////////// Variables of this function //////////////////////////////
-
-    QList<int> empty;
-    empty.clear();
-    Rect2D ourLeftPole(wm->field->ourGoalL() + Vector2D(0.2, 0.3), wm->field->ourGoalL() - Vector2D(0, 0.3));
-    Rect2D ourRightPole(wm->field->ourGoalR() + Vector2D(0.2, 0.3), wm->field->ourGoalR() - Vector2D(0, 0.3));
-    Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, 1), wm->field->ourGoal() - Vector2D(0, 1));
-    Segment2D ballLine(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
-    if (goalKeeperTarget.dist(wm->ball->pos) < 2 * Robot::robot_radius_new) {
-        differentialTime = 0;
-    } else {
-        differentialTime = 0.2;
-    }
-    /////////////////////////////Gamestate///////////////////////////////////////
-
-    if(gameState->isStop())
-        return GKState :: Stop;
-
-    if(wm->field->isInOurPenaltyArea(wm->ball->pos)) {
-        if (wm->ball->vel.length() < 0.1 &&
-            (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
-             (wm->field->ourGoalL().y >= wm->ball->pos.y
-              && wm->field->ourGoalR().y < wm->ball->pos.y
-              && wm->field->ourGoal().x < wm->ball->pos.x
-              && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))) {
-            return GKState::ballIsBesidePoles;
-        }
-    }
-    if (gameState->directKick() || gameState->indirectKick() || gameState->kickoff()){
-        return GKState::playoff;
-    }
-    if(know->variables["transientFlag"].toBool()) {
-        stateBallBesidepoles = -1;
-        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4, empty, empty, false, 0, false) + differentialTime)))
-            return GKState :: GKReciveBallInTS;
-        else
-            return GKState :: GKPredictInTs;
-    }
-    if(!wm->field->isInField(wm->ball->pos))
-        return GKState :: ballIsOutOfField;
-
-    if(dangerForGK())//TODO: write dangerForGK function or add another if
-        return GKState :: dangerForClear;
-
-    if (wm->ball->vel.length() > 1.3 && (goalLine.intersection(ballLine).valid())){
-        oneTouchCnt = 0;
-        return GKState :: oneTouch;
-    }
-
-    if(oneTouchCnt < 5){
-        oneTouchCnt++;
-        return GKState :: oneTouch;
-    }
-
-    if(wm->field->isInOurPenaltyArea(wm->ball->pos))
-        return GKState :: clearMode;
-
-    return GKState :: strictFollow;
-}
-
-GKState DefensePlan::setGoalKeeperStateInDangerMode(){
-
     Vector2D ballPos=wm->ball->pos;
     GKState DangerCircleStateForOurAgents,DangerCircleStateForOppAgents;
     Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
@@ -1647,13 +1573,89 @@ GKState DefensePlan::setGoalKeeperStateInDangerMode(){
 
     if(DangerByOurAgentsInPenaltyAreaByMahdi==GKState::DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyAreaByMahdi==GKState::DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyAreaByMahdi==GKState::DangerByBothAgentsInPenaltyArea){
 
-        return GKState ::dangerForClear;
+        return true;
 
 
     }
+    else{
+
+        return false;
+    }
+
 
 
 }
+
+GKState DefensePlan::setGoalKeeperState() {
+    //// In this function,we determine the specific states that goalkeeper must
+    //// have a logical behavior by good conditions.In other word we have some
+    //// exceptions mode for goalkeeper.These modes are :
+    //// 1- ball is behind the goalkeeper,
+    //// 2- One touch mode(goalkeeper diving mode) ,
+    //// 3- Throwing out the ball from penalty area (Clear mode) ,
+    //// 4- Ball is out of the field.
+
+    ////////////////// Variables of this function //////////////////////////////
+
+    QList<int> empty;
+    empty.clear();
+    Rect2D ourLeftPole(wm->field->ourGoalL() + Vector2D(0.2, 0.3), wm->field->ourGoalL() - Vector2D(0, 0.3));
+    Rect2D ourRightPole(wm->field->ourGoalR() + Vector2D(0.2, 0.3), wm->field->ourGoalR() - Vector2D(0, 0.3));
+    Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, 1), wm->field->ourGoal() - Vector2D(0, 1));
+    Segment2D ballLine(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100);
+    if (goalKeeperTarget.dist(wm->ball->pos) < 2 * Robot::robot_radius_new) {
+        differentialTime = 0;
+    } else {
+        differentialTime = 0.2;
+    }
+    /////////////////////////////Gamestate///////////////////////////////////////
+
+    if(gameState->isStop())
+        return GKState :: Stop;
+
+    if(wm->field->isInOurPenaltyArea(wm->ball->pos)) {
+        if (wm->ball->vel.length() < 0.1 &&
+            (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
+             (wm->field->ourGoalL().y >= wm->ball->pos.y
+              && wm->field->ourGoalR().y < wm->ball->pos.y
+              && wm->field->ourGoal().x < wm->ball->pos.x
+              && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))) {
+            return GKState::ballIsBesidePoles;
+        }
+    }
+    if (gameState->directKick() || gameState->indirectKick() || gameState->kickoff()){
+        return GKState::playoff;
+    }
+    if(know->variables["transientFlag"].toBool()) {
+        stateBallBesidepoles = -1;
+        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4, empty, empty, false, 0, false) + differentialTime)))
+            return GKState :: GKReciveBallInTS;
+        else
+            return GKState :: GKPredictInTs;
+    }
+    if(!wm->field->isInField(wm->ball->pos))
+        return GKState :: ballIsOutOfField;
+
+    if(dangerForGK())//TODO: write dangerForGK function or add another if
+        return GKState :: dangerForClear;
+
+    if (wm->ball->vel.length() > 1.3 && (goalLine.intersection(ballLine).valid())){
+        oneTouchCnt = 0;
+        return GKState :: oneTouch;
+    }
+
+    if(oneTouchCnt < 5){
+        oneTouchCnt++;
+        return GKState :: oneTouch;
+    }
+
+    if(wm->field->isInOurPenaltyArea(wm->ball->pos))
+        return GKState :: clearMode;
+
+    return GKState :: strictFollow;
+}
+
+
 Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
 
@@ -1873,7 +1875,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
         case GKState :: oneTouch:
             return Segment2D(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100).nearestPoint(goalKeeperAgent->pos());
         case GKState :: dangerForClear:
-            if (!wm->field->isInOurPenaltyArea(know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15))) {
+           /* if (!wm->field->isInOurPenaltyArea(know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15))) {
                 solutions = wm->field->ourPAreaIntersect(Line2D(wm->ball->pos , wm->field->ourGoal()));
                 if (solutions.size() == 1) {
                     return solutions.at(0);
@@ -1882,7 +1884,8 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
                     return solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1);
                 }
             }
-            return know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15);
+            return know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15);*/
+           return setGoalKeeperTargetPointInDangerMode();
         case GKState :: strictFollow:
             return strictFollowBall(ballPrediction(true));
         default:
@@ -2616,8 +2619,42 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             gpa[goalKeeperAgent->id()]->setKickspeed(0);
             break;
         case GKState :: dangerForClear:
-            gpa[goalKeeperAgent->id()]->setTargetpos(strictFollowBall(ballPrediction(true)));
-            gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+            ///////////////////////////
+            //gpa[goalKeeperAgent->id()]->setTargetpos(strictFollowBall(ballPrediction(true)));
+            //gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+            //////////////////////////
+            ROS_INFO_STREAM("Mahdi:DangerModes");
+            know->variables["goalKeeperClearMode"] = false;
+            know->variables["goalKeeperOneTouchMode"] = false;
+            AHZSkills = gpa[goalKeeperAgent->id()];
+            gpa[goalKeeperAgent->id()]->setSlowmode(false);
+            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
+            gpa[goalKeeperAgent->id()]->setDivemode(false);
+            if(!shouldKickOrChip) {
+                assignSkill(goalKeeperAgent, gpa[goalKeeperAgent->id()]);
+                gpa[goalKeeperAgent->id()]->setSlowmode(false);
+                gpa[goalKeeperAgent->id()]->setTargetpos(GKTarget);
+                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
+                gpa[goalKeeperAgent->id()]->setNoavoid(true);
+            }
+            else{
+                AHZSkills = kickSkill;
+                assignSkill(goalKeeperAgent, AHZSkills);
+                kickSkill->setTarget(GKTarget);
+                kickSkill->setTolerance(4);
+                kickSkill->setDontkick(false);
+                kickSkill->setSpin(0);
+                kickSkill->setAvoidpenaltyarea(false);
+                kickSkill->setGoaliemode(true);
+                kickSkill->setChip(true);
+                kickSkill->setChipdist(4.5);
+                kickSkill->setIskickchargetime(true);
+                kickSkill->setKickchargetime(1023);
+
+
+
+            }
             break;
         case GKState :: strictFollow:
             gpa[goalKeeperAgent->id()]->setTargetdir(ballPrediction(true) - wm->field->ourGoal());
