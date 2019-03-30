@@ -2667,17 +2667,8 @@ Vector2D DefensePlan::ballPrediction(const bool _isGoalie) {
     //// of field with ballLine.(algorithm is just like when ballLine isn't in the
     //// field).Also , If the ballLine has intersection with opponent agent, we
     //// consider the intersection point for the locaiton of the ball.
-    Vector2D BallPos = wm->ball->pos;
-    Vector2D BallVel;
-    if(wm->ball->vel.length() < 1){
-        BallVel = wm->ball->vel * 0.7;
-    } else{
-        BallVel = wm->ball->vel.norm();
-    }
-    Segment2D ballPosVel(BallPos, BallPos + (BallVel));
-    Vector2D predictedBall = BallPos;
+    Vector2D predictedBall = wm->ball->pos;
     Vector2D solu[6];
-    Rect2D fieldRect(Vector2D(- wm->field->_FIELD_WIDTH / 2.0 , - wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(-0.005, -0.005), Vector2D(wm->field->_FIELD_WIDTH / 2.0 , wm->field->_FIELD_HEIGHT / 2.0) + Vector2D(+0.005, +0.005));
     double dist2Ball = 1000;
     //    predictedBall = wm->ball->pos;
     //    return predictedBall;
@@ -2689,7 +2680,7 @@ Vector2D DefensePlan::ballPrediction(const bool _isGoalie) {
     if (_isGoalie && know->variables["transientFlag"].toBool()){
         wm->field->ourBigPenaltyArea(1, -0.1 , 0).intersection(Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 100 ), &solu[0], &solu[1]);/////////////////Lhum
         if((solu[0].isValid() && solu[1].isValid()) && ((solu[0].y > 0.6 && solu[1].y < -0.6) || (solu[1].y > 0.6 && solu[0].y < -0.6))){
-            predictedBall = (BallPos.dist(solu[0]) < BallPos.dist(solu[1])) ? (solu[1]) : (solu[0]);
+            predictedBall = (wm->ball->pos.dist(solu[0]) < wm->ball->pos.dist(solu[1])) ? (solu[1]) : (solu[0]);
             drawer->draw(Circle2D(predictedBall , 0.2) , "blue");
             return predictedBall;
         }
