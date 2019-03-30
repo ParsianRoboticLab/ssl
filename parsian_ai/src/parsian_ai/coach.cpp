@@ -152,7 +152,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
 //                preferredDefenseCounts += agentsCount - 1 - preferredDefenseCounts - selectedPlay->markPlan.findNeededMark();
             }
         }
-    } else if (gameState->ourPlayOffKick()) {
+    } else if (gameState->ourIndirectKick() || gameState->ourDirectKick() || gameState->ourFreeKick() || gameState->ourKickoff()) {
         if (wm->ball->pos.x < 1) {
             preferredDefenseCounts = (selectedPlay->defensePlan.findNeededDefense() == 1) ? 1 : 2;
 
