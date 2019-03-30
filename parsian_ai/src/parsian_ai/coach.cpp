@@ -189,8 +189,10 @@ void CCoach::decidePreferredDefenseAgentsCount() {
 
 void CCoach::assignGoalieAgent(int goalieID) {
     goalieAgent = nullptr;
-    if (goalieID != -1 && wm->our.data->activeAgents.contains(goalieID)) {
-        goalieAgent = agents[goalieID];
+    if (goalieID != -1){
+        if (wm->our.data->activeAgents.contains(goalieID)) {
+            goalieAgent = agents[goalieID];
+        }
     }
 }
 
@@ -222,38 +224,6 @@ BallPossesion CCoach::isBallOurs() {
     return decidePState;
 }
 
-double CCoach::timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax) {
-
-    double acc;
-    double dec = 3.5;
-    Vector2D tAgentVel = _agentT->vel();
-    Vector2D tAgentDir = _agentT->dir();
-    double dist = 0;
-    QList <Vector2D> _result;
-    Vector2D _target;
-    double tAgentVelTanjent =  tAgentVel.length() * cos(Vector2D::angleBetween(posT - _agentT->pos() , _agentT->vel().norm()).radian());
-
-    double vXvirtual = (posT - _agentT->pos()).x;
-    double vYvirtual = (posT - _agentT->pos()).y;
-    double veltanV = (vXvirtual) * cos(tAgentDir.th().radian()) + (vYvirtual) * sin(tAgentDir.th().radian());
-    double velnormV = -1 * (vXvirtual) * sin(tAgentDir.th().radian()) + (vYvirtual) * cos(tAgentDir.th().radian());
-    double accCoef;
-
-    accCoef = atan(std::fabs(veltanV) / std::fabs(velnormV)) / _PI * 2;
-    acc = accCoef * 4.5 + (1 - accCoef) * 3.5;
-    double tDec = vMax / dec;
-    double tAcc = (vMax - tAgentVelTanjent) / acc;
-    dist = posT.dist(_agentT->pos());
-    double dB = tDec * vMax / 2 + tAcc * (vMax + tAgentVelTanjent) / 2;
-
-    if (dist > dB) {
-        return tAcc + tDec + (dist - dB) / vMax;
-    } else {
-        return ((1 / dec) + (1 / acc)) * sqrt(dist * (2 * dec * acc / (acc + dec)) + (tAgentVelTanjent * tAgentVelTanjent / (2 * acc))) - (tAgentVelTanjent) / acc;
-    }
-
-}
-
 double CCoach::kickTimeEstimation(Agent * _agent, const Vector2D& target) {
     Vector2D agentPos = _agent->pos();
     Vector2D agentDir = _agent->dir();
@@ -265,16 +235,16 @@ double CCoach::kickTimeEstimation(Agent * _agent, const Vector2D& target) {
 
     if(wm->ball->vel.length() < 0.1)
     {
-        return timeNeeded(_agent, ballPos + (ballPos - target).norm()*0.1, 4.5);
+        return know->timeNeeded(_agent, ballPos + (ballPos - target).norm()*0.1, 4.5);
     }
 
     if (Circle2D(agentPos, 0.1).intersection(Segment2D(ballPos, wm->ball->getPosInFuture(0.5)), &s1, &s2)) {
         finalPos = ballPath.nearestPoint(agentPos);
-        return timeNeeded(_agent, finalPos, 4.5);
+        return know->timeNeeded(_agent, finalPos, 4.5);
     } else {
         for (double i = 0.5; i < 5; i += 0.1) {
             finalPos = wm->ball->getPosInFuture(i);
-            agentTime = timeNeeded(_agent, finalPos - (finalPos-target).norm()*0.1, 4.5);
+            agentTime = know->timeNeeded(_agent, finalPos - (finalPos-target).norm()*0.1, 4.5);
             if (agentTime < (i - (0.5))) {
                 return i;
             }
@@ -924,8 +894,10 @@ bool CCoach::useGoalieInPlayOff() {
 
 QList<int> CCoach::remainingAgent() {
     QList<int> ourPlayers = wm->our.data->activeAgents;
-    if(ourPlayers.contains(goalieAgent->id())) {
-        ourPlayers.removeOne(goalieAgent->id());
+    if(goalieAgent != nullptr) {
+        if (ourPlayers.contains(goalieAgent->id())) {
+            ourPlayers.removeOne(goalieAgent->id());
+        }
     }
     for (auto& d : defenseAgents) {
         if (ourPlayers.contains(d->id())) ourPlayers.removeOne(d->id());
