@@ -727,9 +727,9 @@ void CCoach::execute()
     resetNonVisibleAgents();//[substitution]
     seperateHealthyAndDamagedRobots();//[substitution]
     int goalie = findGoalie();
-    assignGoalieAgent(goalie);
+    if(goalie != -1)
+        assignGoalieAgent(goalie);
     decidePreferredDefenseAgentsCount();
-
     // choose playmake agent
     bool defenseFirst = wm->ball->vel.length() > 1
                         && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();
