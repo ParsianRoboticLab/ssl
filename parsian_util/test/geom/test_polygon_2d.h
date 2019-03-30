@@ -8,8 +8,6 @@
 #include <parsian_util/geom/polygon_2d.h>
 #include <parsian_util/geom/vector_2d.h>
 #include <parsian_util/geom/rect_2d.h>
-#include "test_polygon_2d.h"
-
 
 #include <gtest/gtest.h>
 #include <ros/ros.h>
