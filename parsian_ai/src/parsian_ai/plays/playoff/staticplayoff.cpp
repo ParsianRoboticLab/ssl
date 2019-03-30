@@ -86,7 +86,7 @@ bool CStaticPlayOff::isTimeOver() {
         ROS_INFO_STREAM("MAHI: Time That Left: " << ros::Time::now().sec - startTime);
         if(ros::Time::now().sec - startTime >= conf.StaticTimeOver*masterPlan->execution.passCount) { // 3 Second TODO: ADD TO CFG
             setTimer = true;
-            drawer->draw("TIME OVER");
+            ROS_INFO_STREAM("kianoff TIME OVER");
             return true;
         }
     }
@@ -103,6 +103,8 @@ bool CStaticPlayOff::isBallDirChanged() {
     const int& passer = masterPlan->execution.passer.at(0).id;
     const int& receiver = masterPlan->execution.receiver.at(0).id;
     const int receiverID = masterPlan->matchedID.value(receiver);
+    if(roleAgents[receiverID]->getWaitPos().x == 5000)
+        return false;
     if (wm->ball->pos.dist(lastBallPos) > 0.5 && !roleAgents[passer]->getChip()) {
         Circle2D  c(roleAgents[receiverID]->getWaitPos(), conf.StaticBallDirChanged); // TODO : CHECK radius
         drawer->draw(wm->ball->seg(), QColor(Qt::blue));
@@ -110,7 +112,7 @@ bool CStaticPlayOff::isBallDirChanged() {
         bool res = !c.intersection(wm->ball->seg());
         if(res)
         {
-            drawer->draw("BALL DIR CHANGED");
+            ROS_INFO_STREAM("kianoff BALL DIR CHANGED");
             return true;
         }
         return false;
@@ -659,7 +661,7 @@ bool CStaticPlayOff::firstKickFailed() {
     bool res = (lastBallPos.dist(wm->ball->pos) > conf.StaticFirstKickFailed && wm->ball->vel.length() < 0.1 && !ballNearRobot);
     if(res)
     {
-        drawer->draw("First Kick Failed");
+        ROS_INFO_STREAM("kianoff First Kick Failed");
         return true;
     }
     return false;
