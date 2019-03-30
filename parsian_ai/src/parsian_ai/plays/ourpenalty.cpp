@@ -44,56 +44,15 @@ void COurPenalty::setPlaymake(Agent* _playmakeAgent)
 
 void COurPenalty::executeNormalPositioning()
 {
-<<<<<<< HEAD
-    ROS_INFO_STREAM("Mahdi_penalty: normal positioning");
-=======
->>>>>>> b4f9cf8cdc8c12c96ab7d3c1be1875fadd25c96d
     if(agents.isEmpty())
         return;
     generatePositions();
     assignSkills();
 }
 
-<<<<<<< HEAD
-void COurPenalty::execute_x() {
-    ROS_INFO_STREAM("penalty: execute_x");
-    if (playMakeAgent == nullptr || (playMakeAgent->id() == -1)) {
-        ROS_INFO_STREAM("penalty: playmakeagent is null");
-        return;
-    }
-    isPenaltyShootOut = gameState->ourPenaltyShootout();
-    //playmakeRole->execute();
-    if(penaltyState == PenaltyState::Positioning)
-    {
-        if(isPenaltyShootOut)
-        {
-            ROS_INFO_STREAM("penalty: shootout");
-            executeShootoutPositioning();
-        }
-        else
-        {
-            ROS_INFO_STREAM("penalty: normal");
-            executeNormalPositioning();
-            DBUG("Penalty",D_Mahdi);
-        }
-
-        playmakePositioning();
-    }
-    if(penaltyState == PenaltyState::Kicking)
-    {
-        ROS_INFO_STREAM("penalty: in kicking state");
-        playmakeKick();
-    }
-}
 
 void COurPenalty::generatePositions()
 {
-    ROS_INFO_STREAM("penalty: generate positions");
-
-=======
-void COurPenalty::generatePositions()
-{
->>>>>>> b4f9cf8cdc8c12c96ab7d3c1be1875fadd25c96d
     positions.clear();
     double penaltyPositioningOffset = 0.4;
     double penaltyRuleOffset = 0.4;
@@ -142,13 +101,8 @@ Vector2D COurPenalty::getEmptyTarget(Vector2D _position, double _radius)
     return finalTarget;
 }
 
-<<<<<<< HEAD
-void COurPenalty::assignSkills() {
-    ROS_INFO_STREAM("Mahdi_penalty: assign skills");
-=======
 void COurPenalty::assignSkills()
 {
->>>>>>> b4f9cf8cdc8c12c96ab7d3c1be1875fadd25c96d
     moveSkills.clear();
     for (int i{0}; i < agents.count(); i++) {
         moveSkills.append(new GotopointavoidAction());

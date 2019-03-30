@@ -40,18 +40,8 @@ enum class GKState{
     oneTouch,
     dangerForClear,
     strictFollow,
-    DangerModes,
-    DangerByOurAgentsInPenaltyArea,
-    DangerByOppAgentsInPenaltyArea,
-    DangerByOurAgentsOutOfPenaltyArea,
-    DangerByOppAgentsOutOfPenaltyArea,
-    DangerByBothAgentsOutOfPenaltyArea,
-    DangerByBothAgentsInPenaltyArea,
-    isOurAgentsInDangerCircle,
-    isOppAgentsInDangerCircle,
-    isOurAgentsAndOppAgentsInDanger,
-    isJustOppAgentsInDanger ,
-    isJustOurAgentsInDanger
+    DangerModes
+
 };
 
 
@@ -69,6 +59,7 @@ protected:
     Vector2D setGoalKeeperTargetPointInDangerMode();
     GKState setGoalKeeperState();
     Vector2D setGoalKeeperTargetPoint(GKState);
+    Line2D changeLine(double angVel,Vector2D Point1,Vector2D Point2);
     double differentialTime = 0;
     int oneTouchCnt;
     ////////////////////////////// AHZ ///////////////////
@@ -155,17 +146,23 @@ public:
     QList<Vector2D> markAngs;
     double segmentpershoot;
     double segmentperpass;
+    Vector2D movingTarget;
     Vector2D dir;
     /// ALI GAVAHI
     bool ballIsBounced;
     Vector2D ballBouncePos, playOffStartBallPos, playOffPassDir,beforeTransientPassDir;
-    GKState DangerByOurAgentsInPenaltyAreaByMahdi,
-            DangerByOppAgentsInPenaltyAreaByMahdi,
-            DangerByOurAgentsOutOfPenaltyAreaByMahdi,
-            DangerByOppAgentsOutOfPenaltyAreaByMahdi,
-            DangerByBothAgentsOutOfPenaltyAreaByMahdi,
-            DangerByBothAgentsInPenaltyAreaByMahdi;
-    bool shouldKickOrChip;
+
+    bool shouldKickOrChip,DangerByOurAgentsInPenaltyArea,
+            DangerByOppAgentsInPenaltyArea,
+            DangerByOurAgentsOutOfPenaltyArea,
+            DangerByOppAgentsOutOfPenaltyArea,
+            DangerByBothAgentsOutOfPenaltyArea,
+            DangerByBothAgentsInPenaltyArea,
+            isOurAgentsInDangerCircle,
+            isOppAgentsInDangerCircle,
+            isOurAgentsAndOppAgentsInDanger,
+            isJustOppAgentsInDanger ,
+            isJustOurAgentsInDanger;
     ///////////////////////////////////
 private:
     ///////////////////////Lhum checked them//////////////

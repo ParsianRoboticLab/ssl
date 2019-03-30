@@ -1436,7 +1436,6 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
 
 bool DefensePlan::dangerForGK(){
     Vector2D ballPos=wm->ball->pos;
-    GKState DangerCircleStateForOurAgents,DangerCircleStateForOppAgents;
     Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
     Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
     Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
@@ -1449,7 +1448,7 @@ bool DefensePlan::dangerForGK(){
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
                 if (Circle2D(ballPos, 0.4).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine)) ) {
 
-                    DangerCircleStateForOurAgents=GKState::isOurAgentsInDangerCircle;
+                    isOurAgentsInDangerCircle= true;
 
                 }
 
@@ -1462,7 +1461,7 @@ bool DefensePlan::dangerForGK(){
             if (wm->our.active(i)->id != goalKeeperAgent->id()) {
                 if (Circle2D(ballPos, 0.4).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine))) {
 
-                    DangerCircleStateForOppAgents=GKState::isOppAgentsInDangerCircle ;
+                    isOppAgentsInDangerCircle= true ;
 
 
                 }
@@ -1471,107 +1470,44 @@ bool DefensePlan::dangerForGK(){
     }
 
     ////////////////////////////////////////////
-
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
                 drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
 
-
-                if (DangerCircleStateForOurAgents==GKState::isOurAgentsInDangerCircle && DangerCircleStateForOppAgents!=GKState::isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByOurAgentsInPenaltyAreaByMahdi=GKState::DangerByOurAgentsInPenaltyArea;
+                if (isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+                    DangerByOurAgentsInPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByOurAgentsInPenaltyArea");
 
                 }
-            }
-        }
 
-    }
-
-
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
-                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
-
-                if (DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && DangerCircleStateForOppAgents!=GKState::isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByOppAgentsInPenaltyAreaByMahdi=GKState::DangerByOppAgentsInPenaltyArea;
+                if (isOppAgentsInDangerCircle && !isOurAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+                    DangerByOppAgentsInPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByOppAgentsInPenaltyArea");
 
                 }
-            }
-        }
-
-    }
-
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
-                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
 
 
-                if (DangerCircleStateForOurAgents==GKState::isOurAgentsInDangerCircle && DangerCircleStateForOppAgents!=GKState::isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByOurAgentsOutOfPenaltyAreaByMahdi=GKState::DangerByOurAgentsOutOfPenaltyArea;
+                if (isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+                    DangerByOurAgentsOutOfPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByOurAgentsOutOfPenaltyArea");
 
                 }
-            }
-        }
 
-    }
-
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
-                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
-
-
-                if (DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && DangerCircleStateForOppAgents!=GKState::isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByOppAgentsOutOfPenaltyAreaByMahdi=GKState::DangerByOppAgentsOutOfPenaltyArea;
+                if (isOppAgentsInDangerCircle && !isOurAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+                    DangerByOppAgentsOutOfPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByOppAgentsOutOfPenaltyArea");
                 }
-            }
-        }
 
-    }
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
-                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
-
-
-                if (DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByBothAgentsOutOfPenaltyAreaByMahdi=GKState::DangerByBothAgentsOutOfPenaltyArea;
+                if (isOurAgentsInDangerCircle && isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+                   DangerByBothAgentsOutOfPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByBothAgentsOutOfPenaltyArea");
                 }
-            }
-        }
 
-    }
-
-    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
-        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
-            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
-
-                drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
-
-
-                if (DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && DangerCircleStateForOppAgents==GKState::isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
-                    DangerByBothAgentsInPenaltyAreaByMahdi=GKState::DangerByBothAgentsInPenaltyArea;
+                if (isOurAgentsInDangerCircle && isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+                   DangerByBothAgentsInPenaltyArea= true;
                     ROS_INFO_STREAM("Mahdi:DangerByBothAgentsInPenaltyArea");
 
                 }
-            }
-        }
 
-    }
-
-    if(DangerByOurAgentsInPenaltyAreaByMahdi==GKState::DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyAreaByMahdi==GKState::DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyAreaByMahdi==GKState::DangerByBothAgentsInPenaltyArea){
+    if(DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyArea){
 
         return true;
 
@@ -1636,7 +1572,7 @@ GKState DefensePlan::setGoalKeeperState() {
     if(!wm->field->isInField(wm->ball->pos))
         return GKState :: ballIsOutOfField;
 
-    if(dangerForGK())//TODO: write dangerForGK function or add another if
+    if(dangerForGK())//TODO: write dangerForGK function or add another if//Done by Mahdi(Vardi)
         return GKState :: dangerForClear;
 
     if (wm->ball->vel.length() > 1.3 && (goalLine.intersection(ballLine).valid())){
