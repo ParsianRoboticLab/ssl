@@ -189,8 +189,10 @@ void CCoach::decidePreferredDefenseAgentsCount() {
 
 void CCoach::assignGoalieAgent(int goalieID) {
     goalieAgent = nullptr;
-    if (wm->our.data->activeAgents.contains(goalieID)) {
-        goalieAgent = agents[goalieID];
+    if (goalieID != -1){
+        if (wm->our.data->activeAgents.contains(goalieID)) {
+            goalieAgent = agents[goalieID];
+        }
     }
 }
 
@@ -924,8 +926,10 @@ bool CCoach::useGoalieInPlayOff() {
 
 QList<int> CCoach::remainingAgent() {
     QList<int> ourPlayers = wm->our.data->activeAgents;
-    if(ourPlayers.contains(goalieAgent->id())) {
-        ourPlayers.removeOne(goalieAgent->id());
+    if(goalieAgent != nullptr) {
+        if (ourPlayers.contains(goalieAgent->id())) {
+            ourPlayers.removeOne(goalieAgent->id());
+        }
     }
     for (auto& d : defenseAgents) {
         if (ourPlayers.contains(d->id())) ourPlayers.removeOne(d->id());
