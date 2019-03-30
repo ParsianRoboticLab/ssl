@@ -84,7 +84,7 @@ void CDynamicPlayOff ::Setposition(){
 
 void CDynamicPlayOff::execute() {
    EvalPlayKhafan();
-   if(eval>70 ){
+   if(eval>70 && conf.UseKhafan){
        if(lastselect!=DynamicSelect ::Khafan)
            state = DynamicState::Ready;
 
