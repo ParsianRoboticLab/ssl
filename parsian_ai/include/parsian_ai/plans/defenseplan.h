@@ -161,9 +161,8 @@ private:
     Vector2D ballIsBesidePoles();
     void executeGoalKeeper(const Vector2D& , const GKState&);
     int stateBallBesidepoles;
-    Vector2D ballPrediction();
-    Vector2D GKballPrediction();
     ///////////////////////HMD///////////////
+    Vector2D ballPrediction(const bool);
     void findPos(int _markAgentSize);
     void findOppAgentsToMark();
     bool isInTheIndirectAreaShoot(Vector2D);
