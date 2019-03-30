@@ -15,7 +15,8 @@ void MoveforwardAction::setMessage(const void* _msg) {
         spin = msg.spin;
         iskickchargetime = msg.iskickchargetime;
         kickchargetime = msg.kickchargetime;
-        targetPos = msg.targetPos;
+        target = msg.target;
+        waitReceivePos = msg.waitReceivePos;
 
 }
 
@@ -25,7 +26,8 @@ void* MoveforwardAction::getMessage() {
     _msg->spin = spin;
     _msg->iskickchargetime = iskickchargetime;
     _msg->kickchargetime = kickchargetime;
-    _msg->targetPos = targetPos.toParsianMessage();
+    _msg->target = target.toParsianMessage();
+    _msg->waitReceivePos = waitReceivePos.toParsianMessage();
     return _msg;
 
 }

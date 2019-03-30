@@ -8,22 +8,20 @@
 #include <parsian_agent/skill.h>
 #include <parsian_agent/agent.h>
 #include <parsian_util/action/autogenerate/moveforwardaction.h>
-#include <parsian_agent/gotopointavoid.h>
 #include "receivepass.h"
+#include <parsian_agent/kick.h>
 
 enum class MFMode {
-    MFNONE = 0,
     RECEIVE = 1,
     KICKFORWARD = 2,
-    KICK = 3 };
+    WAITHERE = 3 };
 
 class CSkillMoveForward : public CSkill, public MoveforwardAction {
 private:
     MFMode decideMode();
-    void kickForward(double kickSpeed);
-    CSkillGotoPointAvoid *gtpAvoid;
+    void kickForward();
     CSkillReceivePass *recPass;
-    CSkillKick *kick;
+    CSkillKick *Kick;
 public:
     explicit CSkillMoveForward(Agent* _agent);
     ~CSkillMoveForward();

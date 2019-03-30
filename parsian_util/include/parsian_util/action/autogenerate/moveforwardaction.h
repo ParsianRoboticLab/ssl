@@ -26,7 +26,8 @@ public:
     SkillProperty(MoveforwardAction, int, Spin, spin);
     SkillProperty(MoveforwardAction, bool, Iskickchargetime, iskickchargetime);
     SkillProperty(MoveforwardAction, double, Kickchargetime, kickchargetime);
-    SkillProperty(MoveforwardAction, Vector2D, Targetpos, targetPos);
+    SkillProperty(MoveforwardAction, Vector2D, Target, target);
+    SkillProperty(MoveforwardAction, Vector2D, Waitreceivepos, waitReceivePos);
 
 
 };
