@@ -78,8 +78,9 @@ public:
     static int findGoalie();
     static bool useGoalieInPlayOff();
 
-    void generateWorkingRobotIds();
-    QList<int> workingIDs;
+    void seperateHealthyAndDamagedRobots();
+    QList<int> healthyIDs;
+    QList<int> damagedIDs;
     void replaceFaultedRobots();
     CRoleFault *faultRoles[_MAX_NUM_PLAYERS];
     void resetNonVisibleAgents();
@@ -115,6 +116,7 @@ private:
     CDynamicAttack *dynamicAttack;
     CStopPlay *stopPlay;
     CHalftimeLineup *halftimeLineup;
+    CSubstitution *substitution;
 
 public:
     CRoleStop *stopRoles[_MAX_NUM_PLAYERS];
@@ -129,6 +131,7 @@ private:
     QList<int> robotsIdHist;
     bool first;
     QList<int> missMatchIds;
+    bool firsttime_forsubstitution;
 
     ///////////////////////////////////////
     int cyclesWaitAfterballMoved;

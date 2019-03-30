@@ -18,8 +18,6 @@ enum class KMode {
     DONTKICK        = 4,
     JTurn           = 5,
     TurnForKick     = 6
-
-
 };
 
 class CSkillKick : public CSkill, public KickAction {

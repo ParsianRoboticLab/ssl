@@ -6,6 +6,7 @@
 #include <parsian_ai/gamestate.h>
 #include <parsian_util/geom/geom.h>
 #include <parsian_ai/util/knowledge.h>
+#include <QTime>
 
 enum class PenaltyState{
     Positioning,
@@ -24,9 +25,9 @@ public:
     void execute_x();
     void init(QList<Agent*>& _agents);
     void setPlaymake(Agent* _playmakeAgent);
-    void setState(PenaltyState _state){penaltyState = _state;};
-    void executeShootoutPositioning();
+    void setState(PenaltyState _state){penaltyState = _state;}
     void executeNormalPositioning();
+    void generatePositions();
     Vector2D getEmptyTarget(Vector2D _position, double _radius);
     void assignSkills();
     void playmakePositioning();
@@ -38,12 +39,9 @@ public:
 
 private:
     void reset();
-    bool isPenaltyShootOut;
-    CRolePlayMake* playmakeRole;
     QList<GotopointavoidAction*> moveSkills;
     GotopointavoidAction* PMgotopoint;
     KickAction* PMkick;
-    void generatePositions();
     QList<Vector2D> positions;
     PenaltyState penaltyState;
     KickState kickState;

@@ -52,6 +52,8 @@ namespace rqt_parsian_gui {
         ros::Subscriber draw_sub;
         ros::Subscriber log_draw_sub;
         ros::Subscriber color_sub;
+        ros::Publisher mouse_evetPub;
+
 
         ros::Timer timer;
 

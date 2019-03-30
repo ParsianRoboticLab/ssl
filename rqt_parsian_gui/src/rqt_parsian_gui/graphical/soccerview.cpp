@@ -83,6 +83,7 @@ GLSoccerView::GLSoccerView(QWidget* parent) :
     debugs.reset(new parsian_msgs::parsian_draws());
     debugs2.reset(new parsian_msgs::parsian_draws());
     grayColor = false;
+
 }
 
 void GLSoccerView::redraw()
@@ -102,6 +103,21 @@ void GLSoccerView::mousePressEvent(QMouseEvent* event)
 
     QPointF mp = mouseToFieldPos(event->pos());
 
+    //publish mouseevent
+    if(leftButton)
+    {
+        parsian_msgs::mouse_event msg;
+        msg.pos.x = mp.x(); msg.pos.y = mp.y();
+        msg.isLeftClicked = true;
+        mouse_evetPub->publish(msg);
+    }
+    if(rightButton)
+    {
+        parsian_msgs::mouse_event msg;
+        msg.pos.x = mp.x(); msg.pos.y = mp.y();
+        msg.isLeftClicked = false;
+        mouse_evetPub->publish(msg);
+    }
     if(leftButton)
         setCursor(Qt::ClosedHandCursor);
     if(midButton) {
@@ -588,6 +604,10 @@ void GLSoccerView::setRobotsReplceService(ros::ServiceClient &_client) {
 
 void GLSoccerView::setBallReplceService(ros::ServiceClient& _client) {
     ballClinet = &_client;
+}
+
+void GLSoccerView::setmousePublisher(ros::Publisher &_publisher) {
+    mouse_evetPub = &_publisher;
 }
 
 double GLSoccerView::distVec(double x1, double y1, double x2, double y2) {
