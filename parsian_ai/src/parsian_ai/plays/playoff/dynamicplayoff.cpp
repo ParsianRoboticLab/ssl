@@ -2,15 +2,11 @@
 #include <parsian_ai/plays/playoff/dynamicplayoff.h>
 
 CDynamicPlayOff::CDynamicPlayOff() {
-//    dummyPositions[1] = Vector2D{3.2, 0.7};
-//    dummyPositions[2] = Vector2D{3.2, -0.7};
-//    dummyPositions[3] = Vector2D{3, 1.5};
-//    dummyPositions[4] = Vector2D{3, -2.5};
-//    dummyPositions[5] = Vector2D{3, 2.5};
-//    dummyPositions[6] = Vector2D{3, 3.5};
-//    dummyPositions[7] = Vector2D{3, -3.5};
 
-    reset();
+
+dynamicSelect = DynamicSelect::Chip;
+lastselect =DynamicSelect :: Chip;
+  reset();
 }
 
 CDynamicPlayOff::~CDynamicPlayOff(){
@@ -31,7 +27,7 @@ void CDynamicPlayOff ::Setposition(){
          {
               theirdist=wm->opp.active(i)->pos.dist(wm->ball->pos);
               theirpos=wm->opp.active(i)->pos;
-              n=i;
+
          }
     }
     ROS_INFO_STREAM("maral: blocker"<<wm->opp.active(n)->id);
@@ -52,39 +48,32 @@ void CDynamicPlayOff ::Setposition(){
     drawer->draw(dummyPositions[0],QColor("red"), 20);
 
 
-        dummyPositions[1] = Vector2D{0, 0};
-        dummyPositions[2] = Vector2D{0, 0};
-        dummyPositions[3] = Vector2D{0, 0};
-        dummyPositions[4] = Vector2D{0, 0};
-        dummyPositions[5] = Vector2D{0, 0};
-        dummyPositions[6] = Vector2D{0, 0};
-        dummyPositions[7] = Vector2D{0, 0};
+
+    if(wm->field->isInOppPenaltyArea(dummyPositions[0]))
+        dynamicSelect = DynamicSelect::Chip;
 
 
-//    dummyPositions[1]=vector+theirpos;
-//    drawer->draw(dummyPositions[0], QColor("black"), 2);
+    if(agents.size()>4){
+        dummyPositions[1] = Vector2D{3.2, 0.7};
+        dummyPositions[2] = Vector2D{3, -0.7};
+        dummyPositions[3] = Vector2D{3, 1.5};
+        dummyPositions[4] = Vector2D{-3, -2.5};
+        dummyPositions[5] = Vector2D{-3, 2.5};
+        dummyPositions[6] = Vector2D{-3, 3.5};
+        dummyPositions[7] = Vector2D{-3, -3.5};
 
-//    if(agents.size()>4){
-//        dummyPositions[1] = Vector2D{3.2, 0.7};
-//        dummyPositions[2] = Vector2D{3, -0.7};
-//        dummyPositions[3] = Vector2D{3, 1.5};
-//        dummyPositions[4] = Vector2D{-3, -2.5};
-//        dummyPositions[5] = Vector2D{-3, 2.5};
-//        dummyPositions[6] = Vector2D{-3, 3.5};
-//        dummyPositions[7] = Vector2D{-3, -3.5};
+    }
+    else
+    {
+        dummyPositions[1] = Vector2D{3, 0.7};
+        dummyPositions[2] = Vector2D{3, -0.7};
+        dummyPositions[3] = Vector2D{2.5, 1.5};
+        dummyPositions[4] = Vector2D{2.5, -2.5};
+        dummyPositions[5] = Vector2D{2.5, 2.5};
+        dummyPositions[6] = Vector2D{2.5, 3.5};
+        dummyPositions[7] = Vector2D{2.5, -3.5};
 
-//    }
-//    else
-//    {
-//        dummyPositions[1] = Vector2D{3, 0.7};
-//        dummyPositions[2] = Vector2D{3, -0.7};
-//        dummyPositions[3] = Vector2D{2.5, 1.5};
-//        dummyPositions[4] = Vector2D{2.5, -2.5};
-//        dummyPositions[5] = Vector2D{2.5, 2.5};
-//        dummyPositions[6] = Vector2D{2.5, 3.5};
-//        dummyPositions[7] = Vector2D{2.5, -3.5};
-
-//    }
+    }
 
 
 
@@ -94,6 +83,20 @@ void CDynamicPlayOff ::Setposition(){
 }
 
 void CDynamicPlayOff::execute() {
+   EvalPlayKhafan();
+   if(eval>70 ){
+       if(lastselect!=DynamicSelect ::Khafan)
+           state = DynamicState::Ready;
+
+       dynamicSelect = DynamicSelect::Khafan;
+       lastselect=DynamicSelect ::Khafan;
+   }
+   else if(eval<30){
+       if(lastselect!= DynamicSelect::Chip)
+           state=DynamicState::Ready;
+       dynamicSelect = DynamicSelect::Chip;
+       lastselect=DynamicSelect::Chip;
+   }
 
     switch (dynamicSelect) {
         case DynamicSelect::NoSelect:
@@ -216,43 +219,29 @@ int CDynamicPlayOff:: EvalPlayKhafan(){
         eval=100;
 
 theirdist=100;
-n=0;
+
+sum=0;
 for(int i=0;i< wm->opp.activeAgentsCount();i++)
 {
     if(wm->opp.active(i)->pos.dist(wm->ball->pos)<theirdist){
         theirdist=wm->opp.active(i)->pos.dist(wm->ball->pos);
         theirpos= wm->opp.active(i)->pos;
-        n=i;
+
     }
 }
+
+ POLYGON.addVertex(theirpos);
+POLYGON.addVertex(wm->field->oppGoalL());
+POLYGON.addVertex(wm->field->oppGoalR());
+ROS_INFO_STREAM("DRAW");
+drawer->draw(POLYGON,QColor("red"));
 for (int i=0;i< wm->opp.activeAgentsCount();i++){
-    if(Triangle2D(theirpos,wm->field->oppGoalL(),wm->field->oppGoalR()).contains(wm->opp.active(i)->pos))
+
+     if(POLYGON.contains(wm->opp.active(i)->pos))
+
         sum++;
 }
-if(sum==0){
-    eval=100;
-}
-for(int i=0 ;i< wm->opp.activeAgentsCount();i++)
-{
-    if(Triangle2D(theirpos,wm->field->oppGoalR(),wm->field->oppGoalL()).contains(wm->opp.active(i)->pos))
-    {
-        if(wm->opp.active(i)->pos.dist(theirpos)<Robot::robot_radius_new*3)
-            eval=0;
-        else if(wm->opp.active(i)->pos.dist(theirpos)<0.2)
-            eval=20;
-        else if(wm->opp.active(i)->pos.dist(theirpos)<0.4)
-            eval=40;
-        else if(wm->opp.active(i)->pos.dist(theirpos)<0.6)
-            eval=60;
-        else if(wm->opp.active(i)->pos.dist(theirpos)<0.8)
-            eval=80;
-        else if(wm->opp.active(i)->pos.dist(theirpos)<1)
-            eval=100;
-
-        return eval;
-
-    }
-}
+eval=100-sum*10;
 
 
 return eval;
@@ -331,10 +320,5 @@ void CDynamicPlayOff::init(const QList<Agent *> &_agents) {
     agents.clear();
     agents.append(_agents);
 
-    if(agents.size()>2)
-        dynamicSelect = DynamicSelect::Khafan;
-    else
-        dynamicSelect = DynamicSelect::Chip;
 
-        state = DynamicState::Ready;
 }
