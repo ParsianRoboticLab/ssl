@@ -43,7 +43,7 @@ void CDynamicPlayOff ::Setposition(){
     Segment2D segment2=Segment2D(vect,theirpos);
     drawer->draw(vect,QColor("red"), 20);
     drawer->draw(segment2,QColor("black"));
-    Vector2D VECTOR=(wm->field->oppGoal()-vect).norm()*0.4;
+    Vector2D VECTOR=(wm->field->oppGoal()-vect).norm()*conf.khafandist;
     dummyPositions[0]=VECTOR+vect;
     drawer->draw(dummyPositions[0],QColor("red"), 20);
 
@@ -84,7 +84,9 @@ void CDynamicPlayOff ::Setposition(){
 
 void CDynamicPlayOff::execute() {
    EvalPlayKhafan();
-   if(eval>70 && conf.UseKhafan){
+   ROS_INFO_STREAM("EVAL "<<eval);
+   ROS_INFO_STREAM("DYNAMICSELECT DYNAMICSTATE"<<(int) dynamicSelect<<(int) state);
+   if(eval>60 && conf.UseKhafan){
        if(lastselect!=DynamicSelect ::Khafan)
            state = DynamicState::Ready;
 
@@ -145,13 +147,13 @@ void CDynamicPlayOff::dynamicPlayChipToGoal(bool isChip) {
                     roleAgents[i] -> setTimeBased(false);
                     roleAgents[i] -> setTarget(dummyPositions[i + 1]);
                     roleAgents[i] -> setLookAt(-wm->field->oppGoal());
-                    roleAgents[i] -> setEventDist(0.3);
+                    roleAgents[i] -> setEventDist(0.05);
                     roleAgents[i] -> setSlow(false);
                     roleAgents[i] -> setSelectedSkill(RoleSkill::GotopointAvoid);
                 }
             }
             break;
-        case DynamicState::None:break;
+        case DynamicState::None: state=DynamicState ::Ready;
         case DynamicState::Pass:break;
         case DynamicState::Shot:
             roleAgents[0]->setDoPass(true);
@@ -208,7 +210,7 @@ void CDynamicPlayOff::dynamicPlayKhafan() {
             roleAgents[0] -> setSlow(false);
             roleAgents[0] -> setSelectedSkill(RoleSkill::GotopointAvoid);
             break;
-        case DynamicState::None:break;
+        case DynamicState::None: state=DynamicState ::Ready;
     }
 
 }
@@ -253,12 +255,12 @@ void CDynamicPlayOff::checkEndKhafan() {
     switch (state) {
         case DynamicState ::Ready:
             if (roleAgents[1] -> getAgent() -> pos().dist(roleAgents[1] -> getTarget())
-                < roleAgents[1] -> getEventDist()) {
+                < roleAgents[1] -> getEventDist() && roleAgents[1]->getAgent()->vel().length()<0.2) {
                 state = DynamicState::Pass;
             }
             break;
         case DynamicState::None:
-            break;
+            state=DynamicState ::Ready;
         case DynamicState::Pass:
 
             DBUG(QString("ENDKHAFAN : %1").arg(ros::Time::now().sec - dynamicStartTime), D_MAHI);
@@ -309,7 +311,7 @@ void CDynamicPlayOff::checkEndChipToGoal() {
             }
 
             break;
-        case DynamicState::None:break;
+        case DynamicState::None: state=DynamicState ::Ready;
         case DynamicState::Pass:break;
     }
 
