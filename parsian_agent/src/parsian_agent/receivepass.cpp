@@ -1,5 +1,6 @@
 
 #include "parsian_agent/receivepass.h"
+#include <parsian_agent/receivepass.h>
 
 
 CSkillReceivePass::CSkillReceivePass(Agent *_agent) : CSkill(_agent) {

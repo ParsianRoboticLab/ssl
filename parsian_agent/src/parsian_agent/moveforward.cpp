@@ -31,6 +31,8 @@ MFMode CSkillMoveForward::decideMode() {
 void CSkillMoveForward::execute() {
     MFMode moveForwardMode = decideMode();
     switch (moveForwardMode){
+        case MFMode::MFNONE:
+            break;
         case MFMode::RECEIVE:
             recPass->execute();
             break;

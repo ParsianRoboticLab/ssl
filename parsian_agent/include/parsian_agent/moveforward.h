@@ -12,10 +12,10 @@
 #include "receivepass.h"
 
 enum class MFMode {
-    RECEIVE = 0,
-    KICKFORWARD = 1,
-    KICK = 2
-};
+    MFNONE = 0,
+    RECEIVE = 1,
+    KICKFORWARD = 2,
+    KICK = 3 };
 
 class CSkillMoveForward : public CSkill, public MoveforwardAction {
 private:
