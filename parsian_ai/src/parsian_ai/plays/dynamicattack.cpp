@@ -2244,7 +2244,7 @@ void CDynamicAttack::support() {
 
     roleAgentS->setAgent(supporter);
     roleAgentS->setAvoidPenaltyArea(true);
-    roleAgentS->setSelectedSupporterSkill(SupporterSkill::Move);d s
+    roleAgentS->setSelectedSupporterSkill(SupporterSkill::Move);
 //    switch (supporter.) {
 //    }
 }
