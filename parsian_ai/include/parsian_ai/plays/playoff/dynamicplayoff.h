@@ -17,6 +17,7 @@ enum class DynamicSelect {
     Khafan = 1,
     Chip = 2,
     Kick = 3
+
 };
 
 enum class DynamicState {
@@ -37,6 +38,8 @@ public:
 private:
     int dynamicMatch[_NUM_PLAYERS];
     DynamicSelect dynamicSelect;
+    DynamicSelect lastselect;
+
     void dynamicPlayKhafan();
     void dynamicPlayChipToGoal(bool isChip);
 
@@ -50,10 +53,12 @@ private:
     unsigned int dynamicStartTime;
     Vector2D dummyPositions[_NUM_PLAYERS];
     Vector2D theirpos;
+    Polygon2D POLYGON;
     float theirdist;
     int sum;
     int eval;
     int n;
+
 
 
 };
