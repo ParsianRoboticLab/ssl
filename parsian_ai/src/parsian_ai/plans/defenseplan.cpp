@@ -1659,14 +1659,14 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
 
 
-        if(DangerByOppAgentsInPenaltyAreaByMahdi==GKState::DangerByOppAgentsInPenaltyArea){
+        if(DangerByOppAgentsInPenaltyArea){
 
             target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
 
         }
-        else if(DangerByOppAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOppAgentsOutOfPenaltyArea){
+        else if(DangerByOppAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(LineForLimitingTarget);
             target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
@@ -1676,7 +1676,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
         }
 
-        else if(DangerByBothAgentsInPenaltyAreaByMahdi==GKState::DangerByBothAgentsInPenaltyArea){
+        else if(DangerByBothAgentsInPenaltyArea){
 
             target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
@@ -1685,7 +1685,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
 
         }
-        else if(DangerByBothAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByBothAgentsOutOfPenaltyArea){
+        else if(DangerByBothAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(LineForLimitingTarget);
             target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
@@ -1694,7 +1694,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
 
         }
-        else if(DangerByOurAgentsInPenaltyAreaByMahdi==GKState::DangerByOurAgentsInPenaltyArea){
+        else if(DangerByOurAgentsInPenaltyArea){
 
             shouldKickOrChip=true;
             ROS_INFO_STREAM("Mahdi:EmptyAngle="<<emptyAngle);
@@ -1717,7 +1717,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
             gpa[goalKeeperAgent->id()]->setNoavoid(true);
 
         }
-        else if(DangerByOurAgentsOutOfPenaltyAreaByMahdi==GKState::DangerByOurAgentsOutOfPenaltyArea){
+        else if(DangerByOurAgentsOutOfPenaltyArea){
 
             target=emptyAngleLine.intersection(LineForLimitingTarget);
             target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
