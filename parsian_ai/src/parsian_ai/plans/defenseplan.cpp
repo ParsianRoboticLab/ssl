@@ -2663,7 +2663,9 @@ void DefensePlan::matchingDefPos(int _defenseNum){
         }
         ///////// Go To Point Avoid for mark agents ////////////////////
         else{
-            gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
+            //////Lhum should check and solve it////////////
+            ROS_INFO_STREAM("MAS:gpa changed by Mahdi");
+            gpa[ourAgents[i]->id()]->setTargetpos(markPoses.at(i - _defenseNum));//matchPoints.at(matchResult.at(i)
             gpa[ourAgents[i]->id()]->setTargetdir(markAngs.at(i - _defenseNum));
 
         }
@@ -3910,6 +3912,8 @@ Vector2D DefensePlan::ballPrediction(bool _isGoalie) {
 }
 
 void DefensePlan::findOppAgentsToMark(){
+
+    ROS_INFO_STREAM("MAS:findOppAgentsToMarkFunc");
     oppAgentsToMark.clear();
     oppAgentsToMarkPos.clear();
     for(int i = 0 ; i < wm->opp.activeAgentsCount() ; i++){
@@ -4063,37 +4067,60 @@ QList<Vector2D> DefensePlan::ShootBlockRatio(double ratio, Vector2D opp) {
     Vector2D solutions[2];
     QList<Vector2D> tempQlist;
     tempQlist.clear();
-    Segment2D tempSeg = getBisectorSegment(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
-    Line2D tempLine = getBisectorLine(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
-    Segment2D tempLine2 = getBisectorSegment(wm->field->ourGoalL() , opp , wm->field->ourGoalR());
-    Vector2D intersectionWithOurGoalLine = tempSeg.intersection(Segment2D(wm->field->ourGoalL() , wm->field->ourGoalR()));
-    drawer->draw(tempSeg , "Red");
-    drawer->draw(tempLine2,"Red");
-    drawer->draw(intersectionWithOurGoalLine,"Blue");
+    Segment2D tempSeg = getBisectorSegment(wm->field->ourGoalL(), opp, wm->field->ourGoalR());
+    Line2D tempLine = getBisectorLine(wm->field->ourGoalL(), opp, wm->field->ourGoalR());
+    Segment2D tempLine2 = getBisectorSegment(wm->field->ourGoalL(), opp, wm->field->ourGoalR());
+    Vector2D intersectionWithOurGoalLine = tempSeg.intersection(
+            Segment2D(wm->field->ourGoalL(), wm->field->ourGoalR()));
+    drawer->draw(tempSeg, "Red");
+    drawer->draw(tempLine2, "Red");
+    drawer->draw(intersectionWithOurGoalLine, "Blue");
 
-    Vector2D pos = know->getPointInDirection(wm->field->ourGoal() , opp , ratio);
-    if(wm->field->isInOurPenaltyArea(opp)){
-        wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
+    Vector2D pos = know->getPointInDirection(wm->field->ourGoal(), opp, ratio);
+    if (wm->field->isInOurPenaltyArea(opp)) {
+        wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0],
+                                                                                 &solutions[1]);
         tempQlist.append(solutions[0].isValid() && solutions[0].x > solutions[1].x ? solutions[0] : solutions[1]);
         tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
         ROS_INFO_STREAM("MAS:isInOurPenaltyArea(opp)");
 
-    }
-    else{
-        if(wm->field->isInOurPenaltyArea(pos)){
-            wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempSeg, &solutions[0] , &solutions[1]);
-            tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+    } else {
+        if (wm->field->isInOurPenaltyArea(pos)) {
+            wm->field->ourBigPenaltyArea(1.5, Robot::robot_radius_new, 0).intersection(tempLine, &solutions[0],&solutions[1]);///Mahdi changed temSeg to templine
+            tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0]: solutions[1]);
             tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
-            drawer->draw(pos,"Brown");
-            drawer->draw(tempQlist.first(),"Orange");
-            ROS_INFO_STREAM("MAS:isInOurPenaltyArea(pos)");
-        }
-        else{
+            drawer->draw(pos, "Brown");
+            drawer->draw(tempQlist.first(), "Orange");
+            ROS_INFO_STREAM("MAS:isInOurPenaltyArea(pos)"<<tempQlist.size());
+        } else {
             tempQlist.append(pos);
             tempQlist.append(opp - intersectionWithOurGoalLine);
-            drawer->draw(pos,"Yellow");
+            drawer->draw(pos, "Yellow");
         }
     }
+
+        ROS_INFO_STREAM("MAS:"<<tempQlist.size());
+
+    //////////Added by Mahdi for not entering into PArea///////////
+    /*for(size_t j{0};j<tempQlist.size();j++){
+        if(wm->field->isInOurPenaltyArea(tempQlist.at(j))){
+            wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0.1).intersection(tempLine, &solutions[0] , &solutions[1]);///Mahdi changed temSeg to templine
+            tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
+            tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
+            drawer->draw(tempQlist.at(j),"Blue");
+            drawer->draw(tempQlist.first(),"Orange");
+            ROS_INFO_STREAM("MAS:isInOurPenaltyArea(pos) added by Mahdi");
+
+        }
+
+
+        }*/
+
+
+
+
+
+
     return tempQlist;
 }
 
