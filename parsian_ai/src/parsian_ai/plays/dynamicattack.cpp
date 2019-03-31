@@ -663,12 +663,12 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _rad
         //    return false;
         //}
     }
-    for (int i{}; i < wm->our.activeAgentsCount(); i++)
+    for (int i{}; i < passPoints.size(); i++)
     {
-        if (_poly.contains(wm->our.active(i)->pos))
+        if (_poly.contains(passPoints[i].point)) //it shouldnt be ouractive. it should be position.
         {
             //ROS_INFO_STREAM("amirq im here!");
-            //return false;     //TODO: make it right
+            return false;     //TODO: make it right
         }
     }
     return true;
@@ -1377,12 +1377,16 @@ void CDynamicAttack::findOneTouch()
 
             Segment2D posGoal(passPoints[i].point, wm->field->oppGoal());
             Segment2D playMakePos(wm->ball->pos, passPoints[i].point);
-            double angle{angleOfTwoSegment(posGoal, playMakePos)};
+            //double angle{angleOfTwoSegment(posGoal, playMakePos)};
+            double angle {std::fabs(Vector2D::angleBetween(wm->field->oppGoal() - passPoints[i].point , wm->ball->pos - passPoints[i].point).degree())};
             ROS_INFO_STREAM("amirp angle : " << angle);
-            if (angle < 4 && (passPoints[i].region == 4 || passPoints[i].region == 5 || passPoints[i].region == 2 || passPoints[i].region == 3))
+            ROS_INFO_STREAM("amirp point.x : " << passPoints[i].point.x);
+            ROS_INFO_STREAM("amirp point.y : " << passPoints[i].point.y);
+            if (angle < conf.MaxOnetouchAngle && (passPoints[i].region == 4 || passPoints[i].region == 5 || passPoints[i].region == 2 || passPoints[i].region == 3 || passPoints[i].region == 1
+            || passPoints[i].region == 0))
             {
-                //ROS_INFO_STREAM("amirw here 1");
-                if(isPositionClear(passPoints[i].point, wm->field->oppGoal(), wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1))
+                ROS_INFO_STREAM("amirw here 1");
+                if(isPositionClear(passPoints[i].point, wm->field->oppGoal(), wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.05))
                 {
                     passPoints[i].oneTouch = true;
                     ROS_INFO_STREAM("amirw point for onetouch.x = " << passPoints[i].point.x);
