@@ -17,8 +17,8 @@ enum class KMode {
     AvoidOppPenalty = 3,
     DONTKICK        = 4,
     JTurn           = 5,
-    TurnForKick     = 6
-
+    TurnForKick     = 6,
+    moveForwardKick = 7
 
 };
 
@@ -33,6 +33,7 @@ private:
     void doNotKick();
     void validateKickerState();
     bool isOppPenaltyMode();
+    void moveFrowardKick();
 
 
     CSkillGotoPointAvoid *gpa;

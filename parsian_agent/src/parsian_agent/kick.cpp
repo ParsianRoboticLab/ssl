@@ -384,6 +384,9 @@ void CSkillKick::execute() {
         case KMode::TurnForKick:
             turnForKick();
             break;
+        case KMode::moveForwardKick:
+            moveFrowardKick();
+            break;
         case KMode::NOMODE:break;
     }
 }
@@ -433,4 +436,10 @@ bool CSkillKick::isOppPenaltyMode() {
         robotArea.assign(agent->pos(), std::max(agent->pos().dist(wm->ball->pos) - robotAreaOffset, 0.01));
     }
     return robotArea.intersection(wm->ball->seg()) != 2 || wm->ball->vel.length() < 1;
+}
+
+void CSkillKick::moveFrowardKick() {
+    agent->setKick(0.5);
+    agent->setRoller(1);
+    gpa->execute();
 }

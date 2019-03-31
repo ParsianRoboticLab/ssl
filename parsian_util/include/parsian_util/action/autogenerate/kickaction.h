@@ -45,6 +45,7 @@ public:
     SkillProperty(KickAction, bool, Playmakemode, playMakeMode);
     SkillProperty(KickAction, bool, Isplayoff, isPlayoff);
     SkillProperty(KickAction, bool, Iskhafan, isKhafan);
+    SkillProperty(KickAction, bool, Ismoveforward, isMoveForward);
     SkillProperty(KickAction, Vector2D, Target, target);
 
 

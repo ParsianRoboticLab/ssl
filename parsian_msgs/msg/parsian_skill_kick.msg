@@ -22,3 +22,4 @@ bool kickWithCenterOfDribbler
 bool playMakeMode
 bool isPlayoff
 bool isKhafan
+bool isMoveForward

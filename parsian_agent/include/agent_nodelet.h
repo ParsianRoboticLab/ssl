@@ -54,7 +54,6 @@ private:
     CSkillKick* skillKick;
     CSkillKickOneTouch* oneTouch;
     CSkillReceivePass* receivePass;
-    CSkillMoveForward* moveForward;
     bool finished = true;
     int watchdog;
 
