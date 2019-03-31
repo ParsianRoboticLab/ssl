@@ -21,11 +21,11 @@ void testSet()
 
     r1.setTopLeft( -5.0, -5.0 );
     EXPECT_NEAR( -5.0, r1.left(), EPS );
-    EXPECT_NEAR( 10.0, r1.right(), EPS );
+    EXPECT_NEAR( 5.0, r1.right(), EPS );
     EXPECT_NEAR( -5.0, r1.top(), EPS );
-    EXPECT_NEAR( 10.0, r1.bottom(), EPS );
-    EXPECT_NEAR( 15.0, r1.size().length(), EPS );
-    EXPECT_NEAR( 15.0, r1.size().width(), EPS );
+    EXPECT_NEAR( -15.0, r1.bottom(), EPS );
+    EXPECT_NEAR( 10.0, r1.size().length(), EPS );
+    EXPECT_NEAR( 10.0, r1.size().width(), EPS );
 
 }
 

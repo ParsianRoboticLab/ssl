@@ -47,13 +47,10 @@ void testGetBoundingBox(){
     rect.emplace_back(rcsc::Vector2D(+200.0, -100.0));
 
     const rcsc::Polygon2D rectangle(rect);
-
-
     //
     // getBoundingBox()
     //
     const rcsc::Rect2D r = rectangle.getBoundingBox();
-
     EXPECT_NEAR( -200.0 - r.minX(), 0.0, EPS );
     EXPECT_NEAR( +200.0 - r.maxX(), 0.0, EPS );
     EXPECT_NEAR( -100.0 - r.minY(), 0.0, EPS );
@@ -306,7 +303,7 @@ void testScissoring(){
     //
     // scissoring
     //
-    const rcsc::Rect2D rectangle( rcsc::Vector2D( -100, -100 ),
+    const rcsc::Rect2D rectangle( rcsc::Vector2D( -100, +100 ),
                                   rcsc::Size2D( /* length of x */ 200, /* length of y */ 200 ) );
 
     //                         //

@@ -90,35 +90,35 @@ void testIntersection()
 //10
     s.assign( Vector2D( 0.0, -delta * 2.0 ), 2.0, AngleDeg( -90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE( result.isValid() );
 //11
     s =  Segment2D( Vector2D( -delta * 2.0, 1.0 ), 2.0, AngleDeg( -90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //12
     s.assign( Vector2D( 0.0, 2.0 ), 2.0 - delta * 2.0, AngleDeg( -90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //13
     s.assign( Vector2D( 1.0 + delta * 2.0, delta * 2.0 ), std::sqrt( 2.0 ) * 2.0, AngleDeg( 45.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //14
     s.assign( Vector2D( -1.0, -2.0 ), std::sqrt( 2.0 ) * 2.0 - delta * 2.0, AngleDeg( 45.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //15
     s.assign( Vector2D( 2.0, delta * 2.0 ), 2.0, AngleDeg( 90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //16
     s.assign( Vector2D( 2.0 + delta * 2.0, -1.0 ), 2.0, AngleDeg( 90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 //17
     s.assign( Vector2D( 2.0, -2.0 ), 2.0 - delta * 2.0, AngleDeg( 90.0 ) );
     result = segment.intersection( s );
-    ASSERT_TRUE( ! result.isValid() );
+    ASSERT_TRUE(  result.isValid() );
 }
 
 void testExistIntersectionExceptTerminalPoint()
