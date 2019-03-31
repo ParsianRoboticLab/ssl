@@ -1634,16 +1634,77 @@ DefensePlan::DefensePlan(){
     AHZSkills = nullptr;
 
 }
+void DefensePlan::setMarkTarget(){
+    findOppAgentsToMark();
+    findPos(decideNumOfMarks());
+}
 
-void DefensePlan::matchingDefPos(const QList<Vector2D> &Points){
+void DefensePlan::executeMarkAndDef(const QList<Vector2D>& defPoints){
+    QList <Vector2D> stuckPositions;
+    QList <int> stuckIndexs;
+    QList <int> matchResult;
+    Vector2D tempPoint;
+
+    QList <Agent*> ourAgents;
+    ourAgents.clear();
+    ourAgents.append(defenseAgents);
+
+    setMarkTarget();
+
+    QList <Vector2D> allPoints;
+    allPoints.clear();
+    allPoints.append(defPoints);
+    allPoints.append(markPoses);
+
+    /////////////// Stucking agents ///////////////////////////////////////////
+    for (int i = 0; i < 4; i++) {
+        if (areAgentsStuckTogether(allPoints)) {
+            agentsStuckTogether(allPoints, stuckPositions, stuckIndexs);
+            correctingTheAgentsAreStuckTogether(allPoints, stuckPositions, stuckIndexs);
+        }
+    }
+}
+
+QList<Vector2D> DefensePlan::setDefTarget(){
+    defPoses.clear();
+    int realDefSize = 0;
+    if(conf.ThreeDefenseMode){
+        realDefSize = min(3 , defenseCount);
+        if(defenseCount >= 3){
+            if(findNeededDefense() == 3){
+                defPoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
+                                                defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseCount) , 1.4 , 2.5));
+            }
+            else{
+                defPoses = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
+                                                defenseFormationForRectangularPositioning(findNeededDefense() , min(3 , defenseCount) , 1.4 , 2.5));
+                for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
+                    defPoses.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
+                }
+            }
+        }
+        else if(realDefSize < 3){
+            defPoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
+                                            defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseCount) , 1.4 , 2.5));
+        }
+    }
+    else{
+        defPoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , defenseCount - decideNumOfMarks() , conf.DownLimit , conf.UpLimit),
+                                        defenseFormationForRectangularPositioning(defenseNumber() , defenseCount - decideNumOfMarks() , 1.4 , 2.5));
+    }
+}
+
+void DefensePlan::setTargetMarkAndDef(){
+    setDefTarget();
+}
+
+void DefensePlan::matchingDefPos(){
     //// This Function matches the points that is produced by other functions to
     //// our agents we have in defense plan. Then we run the "GotoPointAvoid"
     //// skill on the agents.
 
     QList <Agent*> ourAgents;
     QList <Vector2D> matchPoints;
-    QList <Vector2D> ahzMatchPoints;
-    QList <Vector2D> ahzMatchDirections;
     QList <Vector2D> stuckPositions;
     QList <int> stuckIndexs;
     QList <int> matchResult;
@@ -1651,21 +1712,14 @@ void DefensePlan::matchingDefPos(const QList<Vector2D> &Points){
     Vector2D sol[2];
     ourAgents.clear();
     matchPoints.clear();
-    ahzMatchDirections.clear();
-    ahzMatchPoints.clear();
     ourAgents.append(defenseAgents);
-    ///////////////// Added By AHZ for segment (before MRL game) ///////////////
-    if(gameState->isStop()){
-        ourAgents.clear();
-        ourAgents.append(defenseAgents);
-    }
     //////////////////////////////////////////////////////////////////////
     for (int i = 0 ; i < Points.size() ; i++) {
-        matchPoints.append(Points.at(i));
+        matchPoints.append(Points.at(i));//faghat defae shod
     }
-    findOppAgentsToMark();
-    findPos(decideNumOfMarks());
-    matchPoints.append(markPoses);
+//    findOppAgentsToMark();
+//    findPos(decideNumOfMarks());
+//    matchPoints.append(markPoses);
     /////////////// Stucking agents ///////////////////////////////////////////
     for (int i = 0; i < 4; i++) {
         if (areAgentsStuckTogether(matchPoints)) {
@@ -1764,6 +1818,11 @@ void DefensePlan::matchingDefPos(const QList<Vector2D> &Points){
     }
 }
 
+void DefensePlan::setMarkTarget(){
+    findOppAgentsToMark();
+    findPos(decideNumOfMarks());
+}
+
 void DefensePlan::drawGameState(){
     if(gameState->isStart()){
         drawer->draw("START" , Vector2D(-6.2 , 3) , 30);
@@ -1805,7 +1864,6 @@ void DefensePlan::execute(){
     ///// Now,we identify the number of defense agents && then this number is
     ///// sent to "matchingDefPos()" function to match between the produced
     ///// points && our agents in defense plan.
-    int realDefSize = 0;
     drawer->draw(Circle2D(wm->field->ourGoal() , RADIUS_FOR_CRITICAL_DEFENSE_AREA) , 0 , 180 , "blue" , false);
     drawer->draw(getLinesOfBallTriangle().at(0));
     drawer->draw(getLinesOfBallTriangle().at(1));
@@ -1827,35 +1885,10 @@ void DefensePlan::execute(){
     }
     if(!defenseAgents.empty()){
         if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
-            defenseCount = defenseAgents.size();
-            if(defenseCount > 0){
-                QList<Vector2D> AHZDefPoints;
-                if(conf.ThreeDefenseMode){
-                    realDefSize = min(3 , defenseCount);
-                    if(realDefSize == 3){
-                        if(findNeededDefense() == 3){
-                            AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                            defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
-                        }
-                        else{
-                            AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                            defenseFormationForRectangularPositioning(findNeededDefense() , realDefSize , 1.4 , 2.5));
-                            for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
-                                AHZDefPoints.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
-                            }
-                        }
-                    }
-                    else if(realDefSize < 3){
-                        AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                        defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
-                    }
-                }
-                else{
-                    realDefSize = defenseCount - decideNumOfMarks();
-                    AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
-                                                    defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
-                }
-                matchingDefPos(AHZDefPoints);
+            if(defenseAgents.size() > 0){
+                setTargetMarkAndDef();
+                matchingDefPos();
+                executeMarkAndDef();
             }
         }
         else{

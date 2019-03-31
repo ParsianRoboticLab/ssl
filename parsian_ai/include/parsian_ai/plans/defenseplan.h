@@ -59,8 +59,8 @@ protected:
     ////////////////////////////// AHZ ///////////////////
     Line2D getBisectorLine(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     Segment2D getBisectorSegment(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
-    void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
-    void manToManMarkBlockShotInPlayOff(int _markAgentSize);
+    QList<Vector2D> manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
+    QList<Vector2D> manToManMarkBlockShotInPlayOff(int _markAgentSize);
 
     bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
     void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
@@ -105,7 +105,6 @@ protected:
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
-    void matchingDefPos(const QList <Vector2D>&);
     bool shootOutClearModeSelected = false;
     bool agentEffectOnBallProbabilityRes;
     double shootOutDiam = 2.5;
@@ -118,8 +117,6 @@ public:
     ////////////////////// AHZ ////////////////
     int findNeededDefense();
     //////////////////HMD/////////////////
-    QList<Vector2D> markPoses;
-    QList<Vector2D> markAngs;
     double segmentpershoot;
     double segmentperpass;
     Vector2D dir;
@@ -141,6 +138,14 @@ private:
     Vector2D ballIsBesidePoles();
     void executeGoalKeeper(const Vector2D& , const GKState&);
     int stateBallBesidepoles;
+    QList<Vector2D> markPoses;//
+    QList<Vector2D> markAngs;//
+    QList<Vector2D> defPoses;//
+    void setMarkTarget();
+    void executeMarkAndDef();
+    void setTargetMarkAndDef();
+    QList<Vector2D> setDefTarget();
+    void matchingDefPos();
     ///////////////////////HMD///////////////
     Vector2D ballPrediction(const bool);
     void findPos(int _markAgentSize);
