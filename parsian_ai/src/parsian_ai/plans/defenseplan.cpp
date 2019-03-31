@@ -1676,8 +1676,9 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         }
         else if(DangerByOurAgentsInPenaltyArea){
 
-
-                shouldKickOrChip = true;
+                if(emptyAngle>=40) {
+                    shouldKickOrChip = true;
+                }
 
             ROS_INFO_STREAM("Mahdi:EmptyAngle="<<emptyAngle);
             ROS_INFO_STREAM("Mahdi:Percent="<<percent);
@@ -1687,9 +1688,10 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
             FirstTarget = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
-
-            drawer->draw(FirstTarget,QColor("Blue"));
-
+                if(!shouldKickOrChip) {
+                    drawer->draw(FirstTarget, QColor("Blue"));
+                    target=FirstTarget;
+                }
 
         }
         else if(DangerByOurAgentsOutOfPenaltyArea){
