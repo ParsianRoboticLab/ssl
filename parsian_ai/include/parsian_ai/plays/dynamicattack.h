@@ -34,6 +34,10 @@ public:
     int oppInNeighbor;
     int pointPriority;
 
+    bool goodForOneTouch;
+    //bool chipOrPass; // 1 for pass and 0 for chip
+    bool passIsForMe; //when the point is getting pass
+    //Vector2D passReciever;
 
 
 
@@ -49,6 +53,22 @@ public:
     bool operator< (const FieldRegion& a) {
         return this->pointPriority < a.pointPriority;
     }
+};
+
+
+class passPoint
+{
+public:
+    passPoint(vector2D);
+    passPoint();
+    vector2D point;
+    bool amIReciever;
+    bool stay;
+    bool inPostion;
+    bool oneTouch;
+    bool chipOrPass;    //0 for pass. 1 for chip.
+    int region;
+
 };
 
 
@@ -215,6 +235,7 @@ private:
     double angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp);
     double findmax(const QList<double> &list);
 
+    QList<passPoint> passPoints;
     QList<Vector2D> semiDynamicPosition;
     QList<Vector2D> markPositions;
 
@@ -246,6 +267,10 @@ private:
     bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
     void bestPos(const QList<int>&, MWBM&);
+    void checkPositions();
+    void isChipOrPass(passPoint& );
+    void findOneTouch();
+
 
 
     CRoleDynamic *roleAgents[8];
