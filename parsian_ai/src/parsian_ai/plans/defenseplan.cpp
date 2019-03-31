@@ -1615,7 +1615,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
 
     }
 
-    emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);//TODO:Mahdi think that first point and second point in empty angle finder have problems and should be solved
+    emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);//TODO:Mahdi think that first point and second point in empty angle finder have problems and should be solved and also some segmentation faults in real test should be solved to
     drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
     drawer->draw(target,QColor("Orange"));
     ////////// Bisector of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
