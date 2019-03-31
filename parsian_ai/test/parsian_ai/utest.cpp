@@ -21,7 +21,7 @@ TEST(GameState, ForceCommand) {
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Halt);
 
-    // STOP
+    /// STOP
     c.command = parsian_msgs::ssl_refree_command::STOP;
     r->command = c;
     r->command_number++;

@@ -55,11 +55,13 @@ public:
 
 
     GameState();
-    bool ready();
     void setRefree(ssl_refree_wrapperConstPtr ref_wrapper);
     void setForceRefree(ssl_force_refereeConstPtr command);
     void updateCommand(ssl_refree_command command);
+
+
     bool isStart();
+    bool ready();
     bool isStop();
     bool playOffKick();
     bool ourPlayOffKick();
