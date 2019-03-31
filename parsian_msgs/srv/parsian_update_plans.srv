@@ -1,9 +1,11 @@
-string[] newPlans
-uint32[] index
-bool isActive
-bool isMaster
+uint8 ACTIVATE   = 1
+uint8 DEACTIVATE = 2
+uint8 MASTER  = 3
+uint8 DEMASTER  = 4
+uint8 ACTIVATE_ALL   = 5
+uint8 DEACTIVATE_ALL = 6
 
+uint8 Mode
+string[] Plans
 ---
-
-parsian_plan_GUI[] allPlans
 

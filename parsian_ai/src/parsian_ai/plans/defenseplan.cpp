@@ -153,39 +153,6 @@ Line2D DefensePlan::getBestLineWithTallesForGK(int defenseCount , Vector2D first
     return aimLessLine;
 }
 
-double DefensePlan::timeNeeded(Agent *_agentT, Vector2D posT, double vMax, QList <int> _ourRelax, QList <int> _oppRelax , bool avoidPenalty, double ballObstacleReduce, bool _noAvoid){
-    double acc;
-    double dec = 3.5;
-    Vector2D tAgentVel = _agentT->vel();
-    Vector2D tAgentDir = _agentT->dir();
-    double dist = 0;
-    QList <Vector2D> _result;
-    Vector2D _target;
-
-    double tAgentVelTanjent =  tAgentVel.length() * cos(Vector2D::angleBetween(posT - _agentT->pos() , _agentT->vel().norm()).radian());
-
-    double vXvirtual = (posT - _agentT->pos()).x;
-    double vYvirtual = (posT - _agentT->pos()).y;
-    double veltanV = (vXvirtual) * cos(tAgentDir.th().radian()) + (vYvirtual) * sin(tAgentDir.th().radian());
-    double velnormV = -1 * (vXvirtual) * sin(tAgentDir.th().radian()) + (vYvirtual) * cos(tAgentDir.th().radian());
-    double accCoef = 1, realAcc = 4;
-
-    accCoef = atan(fabs(veltanV) / fabs(velnormV)) / _PI * 2;
-    acc = accCoef * 4.5 + (1 - accCoef) * 3.5;
-
-    double tDec = vMax / dec;
-    double tAcc = (vMax - tAgentVelTanjent) / acc;
-    dist = posT.dist(_agentT->pos());
-    double dB = tDec * vMax / 2 + tAcc * (vMax + tAgentVelTanjent) / 2;
-
-    if (dist > dB) {
-        return tAcc + tDec + (dist - dB) / vMax;
-    } else {
-        return ((1 / dec) + (1 / acc)) * sqrt(dist * (2 * dec * acc / (acc + dec)) + (tAgentVelTanjent * tAgentVelTanjent / (2 * acc))) - (tAgentVelTanjent) / acc;
-    }
-
-}
-
 QList<Vector2D> DefensePlan::defenseFormation(QList<Vector2D> circularPositions, QList<Vector2D> rectangularPositions){
     suitableRadius = RADIUS_FOR_CRITICAL_DEFENSE_AREA;
     Circle2D defenseArea(wm->field->ourGoal() , suitableRadius);
@@ -1576,7 +1543,7 @@ GKState DefensePlan::setGoalKeeperState() {
     }
     if(know->variables["transientFlag"].toBool()) {
         stateBallBesidepoles = -1;
-        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4, empty, empty, false, 0, false) + differentialTime)))
+        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(know->timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4) + differentialTime)))
             return GKState :: GKReciveBallInTS;
         else
             return GKState :: GKPredictInTs;
