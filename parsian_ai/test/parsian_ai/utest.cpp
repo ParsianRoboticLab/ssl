@@ -17,18 +17,21 @@ TEST(GameState, ForceCommand) {
     /// HALT
     c.command = parsian_msgs::ssl_refree_command::HALT;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Halt);
 
     // STOP
     c.command = parsian_msgs::ssl_refree_command::STOP;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Stop);
 
     /// Start after Stop
     c.command = parsian_msgs::ssl_refree_command::FORCE_START;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Start);
 
@@ -37,6 +40,7 @@ TEST(GameState, ForceCommand) {
     for (int i = parsian_msgs::ssl_refree_command::FORCE_START; i < parsian_msgs::ssl_refree_command::INDIRECT_FREE_THEM; i++) {
         c.command = static_cast<unsigned char>(i);
         r->command = c;
+        r->command_number++;
         ai.forceUpdateReferee(r);
         ROS_INFO_STREAM(static_cast<int>(gameState->getState()));
         start &= (gameState->getState() == States::Start);
@@ -46,23 +50,27 @@ TEST(GameState, ForceCommand) {
     /// Stop During Start
     c.command = parsian_msgs::ssl_refree_command::STOP;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::Stop);
 
     /// Direct Free-Kick after Stop
     c.command = parsian_msgs::ssl_refree_command::DIRECT_FREE_US;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::OurDirectKick);
 
     /// Ball Placement Position and Command
     c.command = parsian_msgs::ssl_refree_command::STOP;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     c.command = parsian_msgs::ssl_refree_command::BALL_PLACEMENT_US;
     parsian_msgs::vector2D bp_pos; bp_pos.x = 3000; bp_pos.y = 3000;
     r->ballPlacementPos = bp_pos;
     r->command = c;
+    r->command_number++;
     ai.forceUpdateReferee(r);
     EXPECT_EQ(gameState->getState(), States::OurBallPlacement);
     EXPECT_EQ(wm->ballplacementPoint().x, bp_pos.x);

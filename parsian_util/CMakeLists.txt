@@ -154,7 +154,8 @@ add_library(
 		src/geom/triangle_2d.cpp
 		src/geom/vector_2d.cpp
 		test/geom/utest.cpp
-)
+        test/geom/test_polygon_2d.h test/geom/test_matrix_2d.h test/geom/test_rect_2d.h test/geom/test_segment_2d.h
+		test/geom/test_triangle_2d.h test/geom/test_vector_2d.h test/geom/test_voronoi_diagram.h test/geom/config.h)
 add_library(
 		${PROJECT_NAME}_geom
         src/geom/angle_deg.cpp
@@ -190,7 +191,7 @@ add_library(${PROJECT_NAME}_actions
         src/action/autogenerate/onetouchaction.cpp
         src/action/autogenerate/kickaction.cpp
         src/action/autogenerate/noaction.cpp
-        test/geom/utest.cpp test/geom/test_polygon_2d.cpp)
+        test/geom/utest.cpp)
 
 add_library(${PROJECT_NAME}_core
         src/core/agent.cpp
