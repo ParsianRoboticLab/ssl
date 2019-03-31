@@ -27,8 +27,9 @@ public:
 
     explicit CRoleFault(Agent *_agent);
     ~CRoleFault();
-    void assign(Agent* _agent) override;
     void execute();
+    void update(){}
+    void setAgent(Agent *_agent);
     static CRoleFaultInfo* info();
     double progress();
 

@@ -116,25 +116,21 @@ namespace AttackAgent{
 
 struct SDynamicPlan {
     int agentSize;
-    DynamicMode mode;
     AttackAgent::SPositioningAgent positionAgents[_NUM_PLAYERS];
     AttackAgent::SPlayMakeAgent playmake;
     Vector2D passPos;
     int passID;
     void reset() {
         agentSize = -1;
-        mode = DynamicMode::NoMode;
         passID = -1;
         passPos.invalidate();
     }
     void set(const int& _agentSize,
-             const DynamicMode& _mode,
              const PlayMakeSkill& _pm,
              const DynamicRegion& _pmreg,
              const PositionSkill& _ps,
              const DynamicRegion& _reg) {
         agentSize = _agentSize;
-        mode = _mode;
         for (auto& p : positionAgents) {p.region = _reg, p.skill = _ps;}
         playmake.region = _pmreg; playmake.skill = _pm;
         passPos.invalidate();
@@ -285,9 +281,6 @@ private:
 
     bool isPlayMakeChanged();
 
-    QString getString(const DynamicMode& _mode) const;
-
-
     //bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
     //bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     //bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
@@ -304,10 +297,6 @@ private:
     void stayPassReciever(QList<passPoint>& );
     void finalPassReciever();
 
-
-    CRoleDynamic *roleAgents[8];
-    CRoleDynamic *roleAgentPM;
-    CRoleDynamic *roleAgentS;
 
     ////////Plan Making
     bool isDefenseClearing, isWeHaveBall, noPlanException;

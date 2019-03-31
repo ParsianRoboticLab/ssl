@@ -19,7 +19,8 @@ protected:
 public:
     explicit CRoleBlock(Agent *_agent);
     ~CRoleBlock();
-    void execute();
+    void execute() override;
+    virtual void update(){}
     double progress();
     virtual void parse(QStringList params = QStringList());
     CRoleBlockInfo* info();

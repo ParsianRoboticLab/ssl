@@ -721,15 +721,15 @@ void CCoach::execute() {
     CRoleFault::info()->reset();
 
     for (auto &stopRole : stopRoles) {
-        stopRole->assign(nullptr);
+        stopRole->setAgent(nullptr);
     }
     for (auto &faultRole : faultRoles) {
-        faultRole->assign(nullptr);
+        faultRole->setAgent(nullptr);
     }
 
     decideAttack();
     for (auto &stopRole : stopRoles) {
-        if (stopRole->agent != nullptr) {
+        if (stopRole->getAgent() != nullptr) {
             stopRole->execute();
         }
     }
@@ -771,7 +771,7 @@ void CCoach::decideStop(const QList<int> &_ourPlayers) {
 
     for (int i = 0; i < _ourPlayers.size(); i++) {
         if (!damagedIDs.contains(_ourPlayers[i]))//[substitution]
-            stopRoles[i]->assign(agents[_ourPlayers.at(i)]);
+            stopRoles[i]->setAgent(agents[_ourPlayers.at(i)]);
     }
 //    _ourPlayers.clear(); TODO: CHECK THIS
 }

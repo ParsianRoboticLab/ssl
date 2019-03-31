@@ -1,30 +1,27 @@
 #ifndef POSITION_H
 #define POSITION_H
 
-#include <role.h>
-#include "roles/playmake.h"
-#include <formation/edit_data.h>
-#include <formation/formation_ssl.h>
+#include "parsian_ai/roles/role.h"
 #include <QTimer>
 #include <QObject>
 
-class CRolePositionInfo : public CRoleInfo {
-    int playMakerID;
-    int lastFrameCalculated;
-public:
-    QList<int> posAgents;
-    CRolePositionInfo(QString _roleName);
-    double lastError;
-    QList<int> lastAgents;
-
-    int indices[_MAX_NUM_PLAYERS];
-    bool matched;
-    void matchPositions();
-    int findPlayMaker();
-    void reset();
-    QList<int> oneToucher;
-    double oneToucherDist2Ball;
-};
+//class CRolePositionInfo : public CRoleInfo {
+//    int playMakerID;
+//    int lastFrameCalculated;
+//public:
+//    QList<int> posAgents;
+//    CRolePositionInfo(QString _roleName);
+//    double lastError;
+//    QList<int> lastAgents;
+//
+//    int indices[_MAX_NUM_PLAYERS];
+//    bool matched;
+//    void matchPositions();
+//    int findPlayMaker();
+//    void reset();
+//    QList<int> oneToucher;
+//    double oneToucherDist2Ball;
+//};
 
 struct PositionRegion {
     QString name;
@@ -35,14 +32,13 @@ class CRolePosition : public CRole {
 private:
     Vector2D targets[_MAX_NUM_PLAYERS];//not by agent id (just some points)
 
-private:
-    CSkillGotoPointAvoid *gotopoint;
-    CBehaviourKick* shoot;
 public:
-    DEF_ROLE(CRolePosition);
+//    DEF_ROLE(CRolePosition);
     QList<PositionRegion> regions;
-    virtual void generateFromConfig(Agent *a);
-    virtual CSkillConfigWidget* generateConfigWidget(QWidget *parent);
+    CRolePosition(Agent *_agent);
+    void execute() override;
+    void update() override;
+    SkillProperty(CRole, PositionSkill, SelectedPositionSkill, positionSkill);
     SkillProperty(CRolePosition, QList<Rect2D>, SearchRects, searchRects);
     SkillProperty(CRolePosition, QList<Rect2D>, AvoidRects,  avoidRects);
     SkillProperty(CRolePosition, Vector2D, Position, position);
@@ -74,8 +70,6 @@ public:
     SkillProperty(CRolePosition, bool, Centre, centre);
     SkillProperty(CRolePosition, bool, Stop, stop);
 
-public:
-    static QMap<QString, EditData*> editData; //Contains Formations
 };
 
 #endif // Position_H

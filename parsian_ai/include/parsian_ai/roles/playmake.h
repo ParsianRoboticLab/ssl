@@ -22,13 +22,9 @@ public:
 
 class CRolePlayMake : public CRole {
 public:
-    KickAction* kick;
-    OnetouchAction* onetouch;
-    GotopointavoidAction* gotopoint;
-    NoAction* wait;
+
     Vector2D penaltyTarget;
     bool firstKick = true;
-    Vector2D target;
     void stopBehindBall(bool penalty = false);
     Vector2D initialPoint;
     QTime changeDirPenaltyStrikerTime;
@@ -37,22 +33,10 @@ public:
 public:
     explicit CRolePlayMake(Agent *_agent);
     ~CRolePlayMake();
-    void executeOurKickOff();
-    void executeOurPenalty();
-    void executeOurPenaltyShootout();
-    void theirPenaltyPositioning();
-    int choosePenaltyStrategy();
-    void ShootoutSwitching(bool isChip);
-    void firstKickInShootout(bool isChip);
-    void kickInitialShootout();
-    int getPenaltychipSpeed();
-    double lastBounce();
-    bool ShootPenalty();
-    void parse(QStringList params);
-    void resetOffPlays();
-    void resetPlayMake();
-    void execute();
 
+    void parse(QStringList params);
+    void execute() override;
+    void update() override;
     void kickPass(double kickSpeed);
     enum KickPassMode {KickPassFirst , KickPassSecond};
     enum penaltyStrategy {pgoaheadShoot , pchipShoot , pshootDirect};
@@ -64,7 +48,7 @@ public:
     QTextStream out;
     QFile lastBounceDataFile;
 
-
+    SkillProperty(CRole, PlayMakeSkill, SelectedPlayMakeSkill, playMakeSkill);
     SkillProperty(CRolePlayMake, Vector2D, PointToPass, pointToPass);
     SkillProperty(CRolePlayMake, Vector2D, PointToShoot, pointToShoot);
     SkillProperty(CRolePlayMake, int, KickMode , kickMode);
@@ -72,7 +56,6 @@ public:
     SkillPropertyNoSet(CRolePlayMake, int, CyclesExecuted, cyclesExecuted);
     SkillProperty(CRolePlayMake, bool, Slow, slow);
     SkillProperty(CRolePlayMake, bool, ChipInPenaltyArea, chipPenaltyArea);
-    SkillProperty(CRolePlayMake, bool, Chip, chip);
     SkillProperty(CRolePlayMake, bool, Through, through);
     SkillProperty(CRolePlayMake, bool, IndirectGoogooli, indirectGoogooli);
     SkillProperty(CRolePlayMake, bool, IndirectTiny, indirectTiny);
@@ -81,7 +64,6 @@ public:
     SkillProperty(CRolePlayMake, bool, Kickoffmode, kickoffmode);
     SkillProperty(CRolePlayMake, bool, NoStop, nostop);
     SkillProperty(CRolePlayMake, bool, ChipIndirect, chipIndirect);
-    SkillProperty(CRolePlayMake, bool, NoKick, noKick);
     SkillProperty(CRolePlayMake, int, PassReceiver, passReceiver);
     SkillProperty(CRolePlayMake, bool, ManualPassReceive, manualPassReceive);
     SkillProperty(CRolePlayMake, bool, AllowOneTouch, allowonetouch);

@@ -3,22 +3,33 @@
 
 #include <utility>
 
-CRole::CRole() = default;
-
-CRole::CRole(Agent* _agent) {
-    assign(_agent);
+CRole::CRole() {
+    shotSkill = new KickAction;
+    receiveSkill = new ReceivepassAction;
+    moveSkill = new GotopointavoidAction;
+    oneTouchSkill = new OnetouchAction;
 }
 
+CRole::CRole(Agent *_agent) {
+    setAgent(_agent);
+    shotSkill = new KickAction;
+    receiveSkill = new ReceivepassAction;
+    moveSkill = new GotopointavoidAction;
+    oneTouchSkill = new OnetouchAction;
+}
 
-void CRole::assign(Agent* _agent) {
-    agent = _agent;
+CRole::~CRole() {
+    delete shotSkill;
+    delete receiveSkill;
+    delete moveSkill;
+    delete oneTouchSkill;
 }
 
 CRoleInfo::CRoleInfo(QString _roleName) {
     roleName = std::move(_roleName);
 }
 
-Agent* CRoleInfo::robot(int i) {
+Agent *CRoleInfo::robot(int i) {
     return agents[i];
 
 }
@@ -27,11 +38,7 @@ int CRoleInfo::count() {
     return agents.size();
 }
 
-int CRoleInfo::index(CRole *me) {
-    return agents.indexOf(me->agent);
-}
-
-void CRoleInfo::addAgent(Agent* agent) {
+void CRoleInfo::addAgent(Agent *agent) {
     if (!agents.contains(agent)) {
         agents.append(agent);
     }

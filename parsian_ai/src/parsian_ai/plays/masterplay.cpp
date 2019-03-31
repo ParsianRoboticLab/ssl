@@ -8,6 +8,9 @@
 //CRoleBlock CMasterPlay::blockRole{nullptr};
 
 CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr),supportRole(nullptr) {
+    for (int i = 0; i < 8; ++i) {
+        positionRoles.append(CRolePosition(nullptr));
+    }
     markAgents.clear();
     executedCycles = 0;
     lockAgents = false;
@@ -55,11 +58,11 @@ void CMasterPlay::setStaticPoints(QList< holdingPoints > _staticPoints) {
 }
 
 void CMasterPlay::resetPositioning() {
-    positioningPlan.reset();
+//    positioningPlan.reset();
 }
 
 void CMasterPlay::resetPlayMaker() {
-    playMakeRole.resetPlayMake();
+//    playMakeRole.resetPlayMake();
 }
 
 
@@ -274,20 +277,20 @@ void CMasterPlay::execPlay() {
 
     if (blockAgent) {
         blockRole.parse();
-        blockRole.assign(blockAgent);
+        blockRole.setAgent(blockAgent);
         blockRole.setStop(true);
     }
 
     if (playMakeAgent) {
         if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()) {
-            playMakeRole.assign(playMakeAgent);
+            playMakeRole.setAgent(playMakeAgent);
 //            playMakeRole.execute();
         }
     }
 
     if (supportAgent){
         if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()){
-            supportRole.assign(supportAgent);
+            supportRole.setAgent(supportAgent);
 //            supportRole.execute();
         }
     }

@@ -29,8 +29,9 @@ public:
 
     explicit CRoleStop(Agent *_agent);
     ~CRoleStop();
-    void assign(Agent* _agent) override;
     void execute();
+    void update(){};
+    void setAgent(Agent *_agent);
     static CRoleStopInfo* info();
     double progress();
 

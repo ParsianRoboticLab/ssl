@@ -53,6 +53,7 @@ protected:
 
 
     /*static*/ CRolePlayMake playMakeRole;
+    /*static*/ QList<CRolePosition> positionRoles;
     /*static*/ CRoleBlock blockRole;
     /*static*/ CRoleSupport supportRole;
 

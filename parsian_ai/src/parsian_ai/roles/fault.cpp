@@ -141,8 +141,8 @@ CRoleFaultInfo* CRoleFault::info()
     return m_info;
 }
 
-void CRoleFault::assign(Agent *_agent) {
-    CRole::assign(_agent);
+void CRoleFault::setAgent(Agent *_agent) {
+    CRole::setAgent(_agent);
     if(agent != nullptr)
     {
         //ROS_INFO_STREAM("kian: " << agent->id());//oke
