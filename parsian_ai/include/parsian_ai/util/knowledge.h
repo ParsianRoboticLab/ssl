@@ -86,7 +86,7 @@ public:
     QVariantMap variables;
     NewFastestToBall newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList, const CWorldModel*& wm);
     FastestToBall findFastestToBall(QList<int> ourList, QList<int> oppList, const CWorldModel*& wm);
-
+    double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
 
     NewFastestToBall newFastestToBall(double timeStep = 0.1, QList<int> ourList = wm->our.data->activeAgents, QList<int> oppList = wm->opp.data->activeAgents);
     int Matching(QList <Agent*> robots, QList <Vector2D> pointsToMatch, QList <int> &matchPoints);
