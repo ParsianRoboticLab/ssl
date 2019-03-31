@@ -1442,6 +1442,17 @@ bool DefensePlan::dangerForGK(){
     drawer->draw(Segment2D(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight()),QColor("Red"));
     drawer->draw(Segment2D(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
     drawer->draw(Segment2D(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
+    DangerByOurAgentsInPenaltyArea=false;
+    DangerByOppAgentsInPenaltyArea=false;
+    DangerByOurAgentsOutOfPenaltyArea=false;
+    DangerByOppAgentsOutOfPenaltyArea=false;
+    DangerByBothAgentsOutOfPenaltyArea=false;
+    DangerByBothAgentsInPenaltyArea=false;
+    isOurAgentsInDangerCircle=false;
+    isOppAgentsInDangerCircle=false;
+    isOurAgentsAndOppAgentsInDanger=false;
+    isJustOppAgentsInDanger=false;
+    isJustOurAgentsInDanger=false;
 
     if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
         for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
@@ -1508,13 +1519,14 @@ bool DefensePlan::dangerForGK(){
                 }
 
     if(DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyArea){
-
+        ROS_INFO_STREAM("Lhum: 1");
         return true;
 
 
     }
     else{
-
+        ROS_INFO_STREAM("Mahdi:No Danger!");
+        ROS_INFO_STREAM("Lhum: 0");
         return false;
     }
 
@@ -1635,6 +1647,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         }
 
     }
+
     emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);
     drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
     drawer->draw(target,QColor("Orange"));
@@ -1707,14 +1720,14 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
             FirstTarget = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
 
             drawer->draw(FirstTarget,QColor("Blue"));
-            AHZSkills = gpa[goalKeeperAgent->id()];
+            /*AHZSkills = gpa[goalKeeperAgent->id()];
             assignSkill(goalKeeperAgent,AHZSkills);
             gpa[goalKeeperAgent->id()]->setSlowmode(true);
             gpa[goalKeeperAgent->id()]->setDivemode(false);
             gpa[goalKeeperAgent->id()]->setTargetpos(FirstTarget);
             gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
             gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
-            gpa[goalKeeperAgent->id()]->setNoavoid(true);
+            gpa[goalKeeperAgent->id()]->setNoavoid(true);*/
 
         }
         else if(DangerByOurAgentsOutOfPenaltyArea){
