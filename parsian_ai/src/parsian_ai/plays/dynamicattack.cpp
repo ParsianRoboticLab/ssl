@@ -586,7 +586,7 @@ bool CDynamicAttack::isPositionInOurWay(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    //drawer->draw(_poly);
+    drawer->draw(_poly);
 
 
     //for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
@@ -646,13 +646,22 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _rad
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    //drawer->draw(_poly,QColor(120,120,120));
+    drawer->draw(_poly,QColor(200,200,200));
 
 
     for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
-        if (_poly.contains(wm->opp.active(i)->pos)) {
-            return false;
+
+        if(wm->opp.active(i)->id != wm->opp.data->goalieID)
+        {
+            if (_poly.contains(wm->opp.active(i)->pos))
+            {
+                ROS_INFO_STREAM("amirq im here!");
+                return false;
+            }
         }
+        //if (_poly.contains(wm->opp.active(i)->pos) && wm->opp.active(i)->id != wm->opp.data->goalieID) {
+        //    return false;
+        //}
     }
     return true;
 }
@@ -1291,14 +1300,14 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 
     double dist_weight1{0.05};
     double angle_weight1{45};
-    double treshold1{0.8};
+    double treshold1{0.3};
     double treshold2{0.5};
 
     double PassMarkChance{-5};//conf.OppPassMarkChance};
     for (int v{}; v < robotIDs.count(); v++) {
         matchingIDs[v] = matcher.getMatch(v);
         // finding nearest opp
-        double chance{-1};
+        double chance{0};
         double max_dist{-1};
 
         Vector2D tmp_point{};
@@ -1361,13 +1370,13 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
                 tmp_chance = 0;
                 //continue;
             }
-            /*if (!isPositionClear(regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoal(),
+            if (!isPositionClear(regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoal(),
                                  wm->field->oppGoalL().y - wm->field->oppGoal().y,
                                  0.2)) {
                 tmp_chance = 0;
                 //continue;
-            }*/
-            double passPathWeight{6};
+            }
+            double passPathWeight{15};
             if (!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[v]]].points[i],
                                                     (Robot::robot_radius_new + playmake->pos().dist(
                                                             regions[regionPriority[matchingIDs[v]]].points[i]) /
@@ -1381,7 +1390,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 
             }
 
-            ROS_INFO_STREAM("amirt tmp_chamce is : " << tmp_chance << " , v is : " << v << " and i is : " << i);
+            ROS_INFO_STREAM("amirv tmp_chamce is : "  << chance << " , v is : " << v << " and i is : " << i);
 
             //tmp_point = regions[regionPriority[matchingIDs[v]]].points[0];
             if (tmp_chance > chance) {
