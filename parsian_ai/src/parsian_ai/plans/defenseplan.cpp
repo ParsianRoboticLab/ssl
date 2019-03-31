@@ -1601,18 +1601,10 @@ DefensePlan::DefensePlan(){
     thr = 0;
     defenseCount = defenseAgents.size();
 
-    defExceptions.active = false;
-    defExceptions.exeptionMode = NoneExep;
-    defExceptions.exepAgentId = -1;
-
     oneTouchCnt = 5;
     segmentpershoot = conf.ShootRatioBlock / 100.0;
     segmentperpass = conf.PassRatioBlock / 100.0;
     dir  = Vector2D(1, 0);
-    isInOneTouch = false;
-    oneTouchCycleTest = 0;
-    cycleCounter = 0;
-    oneToucher = 0;
     /////////// AHZ //////////////
     lastMarkRoles.append(markRoles);
     goalKeeperTarget = Vector2D(0, 0);
@@ -1643,7 +1635,7 @@ DefensePlan::DefensePlan(){
 
 }
 
-void DefensePlan::matchingDefPos(int _defenseNum){
+void DefensePlan::matchingDefPos(const QList<Vector2D> &Points){
     //// This Function matches the points that is produced by other functions to
     //// our agents we have in defense plan. Then we run the "GotoPointAvoid"
     //// skill on the agents.
@@ -1662,23 +1654,14 @@ void DefensePlan::matchingDefPos(int _defenseNum){
     ahzMatchDirections.clear();
     ahzMatchPoints.clear();
     ourAgents.append(defenseAgents);
-//    if (defExceptions.active) {
-//        if (defExceptions.exepAgentId != -1) {
-//            for (int i = 0; i < ourAgents.size(); i++) {
-//                if (i == defExceptions.exepAgentId) {
-//                    ourAgents.removeAt(i);
-//                }
-//            }
-//        }
-//    }
     ///////////////// Added By AHZ for segment (before MRL game) ///////////////
     if(gameState->isStop()){
         ourAgents.clear();
         ourAgents.append(defenseAgents);
     }
     //////////////////////////////////////////////////////////////////////
-    for (int i = 0 ; i < AHZDefPoints.size() ; i++) {
-        matchPoints.append(AHZDefPoints.at(i));
+    for (int i = 0 ; i < Points.size() ; i++) {
+        matchPoints.append(Points.at(i));
     }
     findOppAgentsToMark();
     findPos(decideNumOfMarks());
@@ -1720,9 +1703,7 @@ void DefensePlan::matchingDefPos(int _defenseNum){
     know->MatchingMinTheMax(ourAgents, matchPoints, matchResult);
     DBUG(QString("mark: %1").arg(decideNumOfMarks()) , D_AHZ);
     DBUG(QString("defense: %1").arg(defenseCount) , D_AHZ);
-    for (int i = 0 ; i < defenseCount && i < matchPoints.size(); i++) {
-        defensePoints[i] = matchPoints[i];
-    }
+
     for(int i = 0 ; i < matchPoints.count() && i < matchResult.count() ; i++){
         gpa[ourAgents[i]->id()]->clearOurrelax();
         gpa[ourAgents[i]->id()]->clearTheirrelax();
@@ -1770,14 +1751,14 @@ void DefensePlan::matchingDefPos(int _defenseNum){
             gpa[ourAgents[i]->id()]->setBallobstacleradius(0);
         }
         //////////// Go To Point Avoid for defense agents //////////////////
-        if(i < _defenseNum){
+        if(i < Points.size()){
             gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
             gpa[ourAgents[i]->id()]->setTargetdir(matchPoints.at(matchResult.at(i)) - wm->field->ourGoal());
         }
         ///////// Go To Point Avoid for mark agents ////////////////////
         else{
             gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
-            gpa[ourAgents[i]->id()]->setTargetdir(markAngs.at(i - _defenseNum));
+            gpa[ourAgents[i]->id()]->setTargetdir(markAngs.at(i - Points.size()));
 
         }
     }
@@ -1825,8 +1806,7 @@ void DefensePlan::execute(){
     ///// sent to "matchingDefPos()" function to match between the produced
     ///// points && our agents in defense plan.
     int realDefSize = 0;
-    suitableRadius = RADIUS_FOR_CRITICAL_DEFENSE_AREA;
-    drawer->draw(Circle2D(wm->field->ourGoal() , suitableRadius) , 0 , 180 , "blue" , false);
+    drawer->draw(Circle2D(wm->field->ourGoal() , RADIUS_FOR_CRITICAL_DEFENSE_AREA) , 0 , 180 , "blue" , false);
     drawer->draw(getLinesOfBallTriangle().at(0));
     drawer->draw(getLinesOfBallTriangle().at(1));
     drawGameState();
@@ -1847,24 +1827,9 @@ void DefensePlan::execute(){
     }
     if(!defenseAgents.empty()){
         if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
-            if(gameState->isStart() || gameState->isStop()){
-//                    checkDefenseExeptions();
-//                    if (defExceptions.active && !know->variables["transientFlag"].toBool()) {
-//                        runDefenseExeptions();
-//                        defenseCount = defenseAgents.size() - 1;
-//                    }
-//                    else {
-                    defExceptions.exepAgentId = -1;
-                    defExceptions.exeptionMode = NoneExep;
-                    defenseCount = defenseAgents.size();
-                    know->variables["defenseOneTouchMode"] = false;
-//                    }
-            }
-            else{
-                know->variables["defenseOneTouchMode"] = false;
-                defenseCount = defenseAgents.size();
-            }
+            defenseCount = defenseAgents.size();
             if(defenseCount > 0){
+                QList<Vector2D> AHZDefPoints;
                 if(conf.ThreeDefenseMode){
                     realDefSize = min(3 , defenseCount);
                     if(realDefSize == 3){
@@ -1890,7 +1855,7 @@ void DefensePlan::execute(){
                     AHZDefPoints = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , realDefSize , conf.DownLimit , conf.UpLimit),
                                                     defenseFormationForRectangularPositioning(defenseNumber() , realDefSize , 1.4 , 2.5));
                 }
-                matchingDefPos(realDefSize);
+                matchingDefPos(AHZDefPoints);
             }
         }
         else{
@@ -2252,7 +2217,7 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             }
             else{
                 AHZSkills = kickSkill;
-                if(lastStateForGoalKeeper == QString("BesidePoleMode") || counterBallWasBesidePoles < 100){
+                if(counterBallWasBesidePoles < 100){
                     counterBallWasBesidePoles++;
                     kickSkill->setTarget(Vector2D(0 , wm->ball->pos.y));
                     kickSkill->setSlow(true);
@@ -2291,126 +2256,6 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             break;
     }
     drawer->draw(Circle2D(GKTarget , 0.05) , 0 , 360 , "black" , true);
-}
-
-bool DefensePlan:: defenseOneTouchOrNot() {
-    //// First of All this function checks if other defense agents (that isn't
-    //// one toucher) can be one toucher , those role changes to it. Then we
-    //// check that if ball is shot to the our goal, we active the one touch flag.
-    Vector2D sol[2];
-    bool isIntersect = false;
-    if(!defenseAgents.empty()){
-        QList<int> otherAgents;
-        otherAgents.clear();
-        if (oneToucher < 0 || oneToucher > defenseAgents.size() - 1) {
-            oneToucher = 0;
-        }
-        for (int i = 0; i < defenseAgents.size(); i++) {
-            if (i != oneToucher) {
-                otherAgents.append(i);
-            }
-        }
-        for(int i = 0 ; i < otherAgents.size() ; i++) {
-            Segment2D otherAgentIntersect(wm->ball->pos , pointForKick);
-            Vector2D sol1 , sol2;
-            Circle2D circ(defenseAgents.at(otherAgents.at(i))->pos() , Robot::robot_radius_new);
-            int num = circ.intersection(otherAgentIntersect , &sol1 , &sol2);
-            Segment2D oneToucherToOther(defensePoints[oneToucher], defensePoints[otherAgents.at(i)]);
-            Line2D ballWay(wm->ball->pos , wm->ball->vel + wm->ball->pos);
-            Segment2D ballWay1(wm->ball->pos , wm->ball->vel + wm->ball->pos);
-            //////// danger for defense one touch ///////
-            for(int j = 0 ; j < defenseAgents.size() ; j++) {
-                if(Circle2D(defenseAgents.at(j)->pos() , Robot::robot_radius_new).intersection(ballWay1 , &sol[0] , &sol[1])) {
-                    isIntersect = true;
-                    break;
-                }
-            }
-            if (oneToucherToOther.intersection(ballWay).valid() && oneToucherToOther.length() < 2*Robot::robot_radius_new && isIntersect) { /// must be test
-                return false;
-            }
-            //////////////////////
-            if (pointForKick.valid() && (pointForKick.dist(defenseAgents.at(oneToucher)->pos()) - pointForKick.dist(defenseAgents.at(otherAgents.at(i))->pos()) > 0.2
-                                         || (num && defenseAgents.at(oneToucher)->pos().dist(defenseAgents.at(otherAgents.at(i))->pos()) > 2*Robot::robot_radius_new))){ //// ?????
-                int temp = oneToucher;
-                oneToucher = otherAgents.at(i);
-                otherAgents[i] = temp;
-                setPointToKick();
-            } else if (!pointForKick.valid()) {
-                int temp = oneToucher;
-                oneToucher = otherAgents.at(i);
-                otherAgents[i] = temp;
-                setPointToKick();
-                if (!pointForKick.valid()) {
-                    return false;
-                }
-            }
-        }
-    }
-    bool oneTouchFlag = false;
-    Segment2D ballLine = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 10);
-    Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, 1) , wm->field->ourGoal() + Vector2D(0, -1));
-    Vector2D goalLineIntersect = goalLine.intersection(ballLine);
-    bool ballDistVelFlag = defenseCheckBallDangerForOneTouch();
-    bool isItClearInFrontOfBall = know->isPointClear(pointForKick , wm->ball->pos , 0.025);
-    if (ballDistVelFlag && isItClearInFrontOfBall) {
-        if (goalLineIntersect.valid()) {
-            oneTouchFlag = true;
-        }
-    }
-    if (oneTouchFlag) {
-        if (!isInOneTouch) {
-            isInOneTouch = true;
-            double ballDist = wm->ball->pos.dist(pointForKick);
-            double cycle =  ballDist / wm->ball->vel.length();
-            oneTouchCycleTest = cycle / LOOP_TIME_BYKK;
-        }
-    }
-    return oneTouchFlag;
-}
-
-void DefensePlan::setPointToKick() {
-    //// This function produce a point that one toucher agent must be place on it.
-    //// This point is the intersection of the ball line && a line that is
-    //// perpendicular on the ball line && is drawn from kicker pos of the agent.
-
-    if (oneToucher < 0 || oneToucher >= defenseAgents.size()) {
-        oneToucher = 0;
-    }
-    Vector2D ballPos = wm->ball->pos;
-    Line2D ballLine(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm());
-    if (!defenseAgents.empty()) {
-        Line2D perpBallLine(defenseAgents.at(oneToucher)->self.getKickerPos() , defenseAgents.at(oneToucher)->self.getKickerPos() + wm->ball->vel.norm());
-        perpBallLine = perpBallLine.perpendicular(defenseAgents.at(oneToucher)->self.getKickerPos());
-        Vector2D intersect = perpBallLine.intersection(ballLine);
-        if (intersect.valid()) {
-            if (wm->field->isInField(intersect) && !wm->field->isInOurPenaltyArea(intersect)) {
-                pointForKick = intersect;
-            } else {
-                Vector2D* inter1 = getIntersectWithDefenseArea(ballLine, ballPos);
-                if (inter1 != nullptr && inter1->valid()) {
-                    pointForKick = *inter1;
-                } else {
-                    pointForKick.invalidate();
-                    return;
-                }
-            }
-        }
-        else {
-            Vector2D *inter = getIntersectWithDefenseArea(Line2D(ballPos, wm->field->ourGoal()), ballPos);
-            if (inter == nullptr || !inter->valid()) {
-                pointForKick.invalidate();
-                return;
-            }
-            pointForKick = *inter;
-            delete inter;
-        }
-        oneToucherDir = (Vector2D::unitVector(CKnowledge::oneTouchAngle(pointForKick, Vector2D(0, 0), wm->ball->vel, //TODO: add action property
-                                                                        (pointForKick - ballPos).norm()
-                                                                        , wm->field->oppGoal()
-                                                                        , 0.2
-                                                                        , 0.9)));
-        pointForKick -= oneToucherDir * (Robot::center_from_kicker_new + CBall::radius);
-    }
 }
 
 Vector2D* DefensePlan::getIntersectWithDefenseArea(const Circle2D& circle, bool upperPoint) {
@@ -2469,27 +2314,7 @@ Vector2D* DefensePlan::getIntersectWithDefenseArea(const Circle2D& circle, bool 
     return retPoint;
 }
 
-void DefensePlan::checkDefenseExeptions() {
-    if (!defenseAgents.empty()) {
-        setPointToKick();
-        doOneTouch = defenseOneTouchOrNot();
-        bool forceBeingInOneTouch = checkStillBeingInOneTouch();
-        if (forceBeingInOneTouch) {
-            oneTouchPointFlag = false;
-        }
-        if (doOneTouch || forceBeingInOneTouch) {
-            drawer->draw("OneTouch", Vector2D(0, 0), "White" , 20);
-            defExceptions.active = true;
-            defExceptions.exeptionMode = defOneTouch;
-        }
-        else {
-            defExceptions.active = false;
-            defExceptions.exeptionMode = NoneExep;
-        }
-    }
-}
-
-Vector2D DefensePlan::avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point) {
+Vector2D DefensePlan::avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point) {//TODO: it has problem
     Vector2D agentPos = agent->pos();
     Vector2D sol[2];
     Circle2D defenseArea(wm->field->ourGoal() , RADIUS_FOR_CRITICAL_DEFENSE_AREA + Robot::robot_radius_new);
@@ -2535,69 +2360,6 @@ Vector2D DefensePlan::avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vecto
     }
     drawer->draw(Circle2D(retPoint , 0.02) , 0 , 360 , "blue" , true);
     return retPoint;
-}
-
-Vector2D DefensePlan::runDefenseOneTouch(){
-    if (!defenseAgents.empty()) {
-        if (!oneTouchPointFlag) {
-            defensePoints[oneToucher] = pointForKick;
-            defenseDirs[oneToucher] = oneToucherDir;
-            oneTouchPointFlag = true;
-            calcPointForOneTouch();
-            defenseTargets[oneToucher] = defensePoints[oneToucher];
-            defenseTargets[oneToucher] = avoidCircularPenaltyAreaByMasoud(defenseAgents[oneToucher], defenseTargets[oneToucher]);
-            return defenseTargets[oneToucher];
-        }
-        return Vector2D(-100, 100);
-    }
-}
-
-bool DefensePlan::checkStillBeingInOneTouch(){
-    Segment2D ballLine = Segment2D(wm->ball->pos , wm->ball->pos + wm->ball->vel.norm() * 10);
-    Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, 1.1) , wm->field->ourGoal() + Vector2D(0, -1.1));
-    Vector2D goalLineIntersect = goalLine.intersection(ballLine);
-    ////////////////////////////Commented by Arash.Z/////////////////////////
-    ////check oneTouch timer so it wont switch state machine
-    if (!isInOneTouch) {
-        cycleCounter = 0;
-        return false;
-    }
-    if (!goalLineIntersect.valid()) {
-        cycleCounter = 0;
-        isInOneTouch = false;
-        return false;
-    }
-    drawer->draw(QString("cyclePredict %1").arg(oneTouchCycleTest - cycleCounter) , Vector2D(1, 1.4) , "white");
-    cycleCounter++;
-    if (cycleCounter < oneTouchCycleTest + 5) {
-        return true;
-    } else {
-        cycleCounter = 0;
-        isInOneTouch = false;
-        return false;
-    }
-}
-
-void DefensePlan::runDefenseExeptions() {
-    if (!defenseAgents.empty()) {
-        Vector2D agentTarget;
-        if (defExceptions.exeptionMode == defOneTouch) {
-            know->variables["defenseOneTouchMode"] = true;
-            agentTarget = runDefenseOneTouch();
-            drawer->draw(QString("Defense OneTouch"), Vector2D(0, 2), "red");
-            if (agentTarget.x != -100) {
-                drawer->draw(QString("Defense OneTouch"), Vector2D(0, 2), "red");
-                assignSkill(defenseAgents.at(oneToucher) , gpa[defenseAgents.at(oneToucher)->id()]);
-                gpa[defenseAgents.at(oneToucher)->id()]->setTargetpos(defenseTargets[oneToucher]); //HINT : gpa->init
-                gpa[defenseAgents.at(oneToucher)->id()]->setTargetdir(defenseDirs[oneToucher]);
-                drawer->draw(Circle2D(defenseTargets[0] , 0.05) , 0 , 360 , "black" , true);
-                defExceptions.exepAgentId = defenseAgents.at(oneToucher)->id();
-            }
-        }
-        else {
-            know->variables["defenseOneTouchMode"] = false;
-        }
-    }
 }
 
 int DefensePlan::decideNumOfMarks(){
@@ -3128,46 +2890,6 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
         lastTargetForStrictFollow = target;
     }
     return target;
-}
-
-bool DefensePlan::defenseCheckBallDangerForOneTouch() {
-    //// This function checks that the ball is shot to the our goal, is danger to
-    //// intercept its line or not (according the distance of ball from our goal
-    //// && ball velocity)
-
-    double defCircleRad = 0;
-    Circle2D defCircle;
-    if (defenseAgents.count() > 0) {
-        for (int i = 0; i < defenseAgents.count(); i++) {
-            if (defenseAgents[i]->pos().dist(wm->ball->pos) > defCircleRad) { //// ??????
-                defCircleRad = defenseAgents[i]->pos().dist(wm->field->ourGoal());
-            }
-        }
-    }
-    if (defCircleRad > 0) {
-        defCircle = Circle2D(wm->field->ourGoal(), defCircleRad);
-    } else {
-        defCircle = Circle2D((wm->field->ourGoal() - Vector2D(0.2, 0)), 1.50);
-    }
-    double ballVel = wm->ball->vel.length();
-    double ballDist = wm->ball->pos.dist(wm->field->ourGoal());
-    return ((ballDist < 7.5 && ballVel > 3)
-            || (ballDist < 5 && ballVel > 2.5)
-            || (ballDist < 4 && ballVel > 2)
-            || (ballDist < 3 && ballVel > 1.5)
-            || (ballDist < 2 && ballVel > 0.5)) && !defCircle.contains(wm->ball->pos);
-}
-
-void DefensePlan::calcPointForOneTouch() {
-    if (wm->field->isInOurPenaltyArea(defensePoints[0]) || !wm->field->fieldRect().contains(defensePoints[0])) { ////// ?????
-        Vector2D* inter2 = getIntersectWithDefenseArea(Line2D(wm->ball->pos , defensePoints[0]) , wm->ball->pos);
-        if (inter2 != nullptr && inter2->valid()) {
-            defensePoints[0] = *inter2;
-            delete inter2;
-        } else {
-            drawer->draw("oneDefenseAndGoalie! ERROR1" , Vector2D(-0.1, 2.2) , "red");
-        }
-    }
 }
 
 QList<QPair<Vector2D, double> > DefensePlan::sortdangerpassplayoff(QList<Vector2D> oppposdanger) {

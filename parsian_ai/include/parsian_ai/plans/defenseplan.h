@@ -51,9 +51,7 @@ protected:
     GotopointavoidAction *gpa[_MAX_NUM_PLAYERS];
     KickAction* kickSkill;
     Action* AHZSkills;
-    Vector2D pointForKick, oneToucherDir;
-    Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
-    void setPointToKick();
+    Vector2D goalKeeperTarget , defensePoints[12];
     GKState setGoalKeeperState();
     Vector2D setGoalKeeperTargetPoint(GKState);
     double differentialTime = 0;
@@ -103,31 +101,14 @@ protected:
     bool manToManMarkBlockPassFlag;
     QList <QString> markRoles;
     QList <QString> lastMarkRoles;
-    QString lastStateForGoalKeeper;
-    QList<Vector2D> AHZDefPoints;
     ///////////////////////////////////////////////////
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
-    void matchingDefPos(int _defenseNum);
-    bool defenseOneTouchOrNot();
-    enum exepMode {
-        defOneTouch = 1,
-        defClear = 2,
-        NoneExep = 3
-    };
-
-
+    void matchingDefPos(const QList <Vector2D>&);
     bool shootOutClearModeSelected = false;
     bool agentEffectOnBallProbabilityRes;
     double shootOutDiam = 2.5;
-
-    struct defenseExeptions {
-        bool active;
-        exepMode exeptionMode;
-        int exepAgentId;
-    };
-
 public:
     DefensePlan();
     void execute() override;
@@ -187,23 +168,9 @@ private:
     Agent *goalKeeperAgent;
     QList <Agent *> defenseAgents;
     int lastMarker[10];
-    int oneToucher;
-    Vector2D defenseDirs[_MAX_NUM_PLAYERS];
-    bool doOneTouch;
     double thr;
-    void calcPointForOneTouch();
-    bool isInOneTouch;
-    int oneTouchCycleTest;
-    bool checkStillBeingInOneTouch();
-    int cycleCounter;
-    bool oneTouchPointFlag;
     int predictMostDangrousOppToBall();
     Vector2D NearestDistanceToBallSegment(Vector2D point);
-    defenseExeptions defExceptions;
-    void checkDefenseExeptions();
-    void runDefenseExeptions();
-    Vector2D runDefenseOneTouch();
-    bool defenseCheckBallDangerForOneTouch();
     int counterBallWasBesidePoles = 0;
 
 };//tavabei ke vabaste be vorodi and static she
