@@ -646,7 +646,7 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _rad
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
-    drawer->draw(_poly,QColor(200,200,200));
+    //drawer->draw(_poly,QColor(200,200,200));
 
 
     for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
@@ -1373,7 +1373,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
             if (!isPositionClear(regions[regionPriority[matchingIDs[v]]].points[i], wm->field->oppGoal(),
                                  wm->field->oppGoalL().y - wm->field->oppGoal().y,
                                  0.2)) {
-                tmp_chance = 0;
+                tmp_chance = 1;
                 //continue;
             }
             double passPathWeight{15};
@@ -1390,10 +1390,10 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
 
             }
 
-            ROS_INFO_STREAM("amirv tmp_chamce is : "  << chance << " , v is : " << v << " and i is : " << i);
+            //ROS_INFO_STREAM("amirv tmp_chamce is : "  << chance << " , v is : " << v << " and i is : " << i);
 
             //tmp_point = regions[regionPriority[matchingIDs[v]]].points[0];
-            if (tmp_chance > chance) {
+            if (tmp_chance >= chance) {
                 chance = tmp_chance;
                 //ROS_INFO_STREAM("amirm if done once " << chance);
                 tmp_point = regions[regionPriority[matchingIDs[v]]].points[i];
@@ -1402,6 +1402,10 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
             //chance = chance1;
         }
         //chance = chance1;
+
+
+
+
 
         regions[regionPriority[matchingIDs[v]]].chance = chance;
         ROS_INFO_STREAM("amirm is v " << v << " and amir chance : " << chance);
@@ -1413,6 +1417,14 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         //ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.x);
         //ROS_INFO_STREAM("amir_best_positions.x : " << tmp_point.y);
 
+    }
+
+    if(robotIDs.size() > semiDynamicPosition.size())
+    {
+        for (int i{semiDynamicPosition.size()}; i < robotIDs.size(); i++)
+        {
+            semiDynamicPosition.append(regions[regionPriority[matchingIDs[i]]].rectangle.center());
+        }
     }
 }
 
