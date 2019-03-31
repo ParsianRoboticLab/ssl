@@ -16,7 +16,6 @@ add_executable(src
         parsian_agent/onetouch.cpp
         parsian_agent/receivepass.cpp
         parsian_agent/skill.cpp
-        parsian_agent/moveforward.cpp
         planner/c2dtree.cpp
         planner/obstacle.cpp
         planner/planner.cpp
