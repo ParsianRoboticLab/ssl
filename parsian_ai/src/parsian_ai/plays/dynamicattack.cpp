@@ -275,11 +275,11 @@ void CDynamicAttack::makePlan(int agentSize) {
 }
 
 void CDynamicAttack::assignTasks() {
-    if (playmake != nullptr) {
+    if (playMakeAgent != nullptr) {
         playMake();
     }
 
-    if (supporter != nullptr){
+    if (supportAgent != nullptr){
         support();
     }
     if (currentPlan.agentSize > 0) {
@@ -325,11 +325,11 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
         }
     }
 
-    if (playmake != nullptr && playmake->id() != -1) {
+    if (playMakeAgent != nullptr && playMakeAgent->id() != -1) {
         roleAgentPM->execute();
     }
-
-    if (supporter != nullptr && supporter->id() != -1){
+    if (supportAgent != nullptr && supportAgent->id() != -1){
+        ROS_INFO_STREAM("supportAgent id ::"<<supportAgent->id());
         roleAgentS->execute();
     }
     lastAgentCount = agentSize;
@@ -338,14 +338,14 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
 
 void CDynamicAttack::playMake() {
 
-    drawer->draw(Circle2D(playmake->pos(), 0.1), QColor(Qt::red), true);
+    drawer->draw(Circle2D(playMakeAgent->pos(), 0.1), QColor(Qt::red), true);
     if (teamConfig.color == teamConfig.BLUE) {
-        drawer->draw(Circle2D(playmake->pos() + playmake->dir() * 0.08, 0.06), QColor(Qt::blue), true);
+        drawer->draw(Circle2D(playMakeAgent->pos() + playMakeAgent->dir() * 0.08, 0.06), QColor(Qt::blue), true);
     } else {
-        drawer->draw(Circle2D(playmake->pos() + playmake->dir() * 0.08, 0.06), QColor(Qt::yellow), true);
+        drawer->draw(Circle2D(playMakeAgent->pos() + playMakeAgent->dir() * 0.08, 0.06), QColor(Qt::yellow), true);
     }
 
-    roleAgentPM->setAgent(playmake);
+    roleAgentPM->setAgent(playMakeAgent);
     roleAgentPM->setAvoidPenaltyArea(true);
 
     Vector2D og = wm->ball->pos - wm->field->ourGoal();
@@ -617,9 +617,9 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
 
 bool CDynamicAttack::isPlayMakeChanged() {
 
-    if (playmake != nullptr) {
-        if (playmake->id() != lastPlayMakerId) {
-            lastPlayMakerId = playmake->id();
+    if (playMakeAgent != nullptr) {
+        if (playMakeAgent->id() != lastPlayMakerId) {
+            lastPlayMakerId = playMakeAgent->id();
             return true;
         }
     }
@@ -630,8 +630,8 @@ int CDynamicAttack::appropriatePassSpeed() {
 
     double tempDistance = 0;
     double speed = 0;
-    if (playmake != nullptr) {
-        tempDistance = playmake->pos().dist(currentPlan.passPos);
+    if (playMakeAgent != nullptr) {
+        tempDistance = playMakeAgent->pos().dist(currentPlan.passPos);
 
         if (tempDistance < 2) {
             speed = conf.LowSpeedPass;
@@ -764,8 +764,8 @@ int CDynamicAttack::appropriateChipSpeed() {
 
     double tempDistance = 0;
     double speed = 0;
-    if (playmake != nullptr) {
-        tempDistance = playmake->pos().dist(currentPlan.passPos);
+    if (playMakeAgent != nullptr) {
+        tempDistance = playMakeAgent->pos().dist(currentPlan.passPos);
 
 
         if (tempDistance < 2) {
@@ -798,7 +798,7 @@ bool CDynamicAttack::isInpass() {
     Circle2D receiverRegion(currentPlan.passPos, 1.3);
     Vector2D sol1;
     Vector2D sol2;
-    if (playmake->pos().dist(wm->ball->pos) > 0.7) {
+    if (playMakeAgent->pos().dist(wm->ball->pos) > 0.7) {
         if (receiverRegion.intersection(ballpath, &sol1, &sol2) != 0 && wm->ball->vel.length() > 1.2)
             return true;
     }
@@ -997,7 +997,7 @@ void CDynamicAttack::setPositions(QList<int> _positioningRegion) {
 }
 
 void CDynamicAttack::setPlayMake(Agent *_playMake) {
-    playmake = _playMake;
+    playMakeAgent = _playMake;
 }
 
 void CDynamicAttack::setWeHaveBall(bool _ballPoss) {
@@ -1339,12 +1339,15 @@ int CDynamicAttack::getNearestRegionToRobot(Vector2D agentPos) {
 }
 
 void CDynamicAttack::assignId() {
-    if (regionPriority.isEmpty() || playmake == nullptr) return;
+    if (regionPriority.isEmpty() || playMakeAgent == nullptr) return;
     QList<int> robotIDs;
     MWBM matcher;
-    for (int i = 0; i < matchingIDs.size(); i++) { matchingIDs[i] = -1; }
+    auto supporterID = -1;
+    if(supportAgent)
+        supporterID = supportAgent->id();
+    for (int i = 0; i < 8; i++) { matchingIDs[i] = -1; }
     for (const auto &a : agents) {
-        if (a->id() != playmake->id()) robotIDs.append(a->id());
+        if (a->id() != playMakeAgent->id() && a->id() != supporterID) robotIDs.append(a->id());
     }
 
     matcher.create(robotIDs.count(), robotIDs.count());
@@ -1834,7 +1837,7 @@ double CDynamicAttack::caclClearPathFactor(Vector2D point, Vector2D passSenderPo
 double CDynamicAttack::calcOneTouchAngleFactor(Vector2D robotPos) {
     double fieldWidth = wm->field->_FIELD_WIDTH;
     double penaltyWidth = wm->field->_PENALTY_WIDTH;
-    Vector2D robotBallDir = (playmake->pos() - robotPos).norm();
+    Vector2D robotBallDir = (playMakeAgent->pos() - robotPos).norm();
     double oneTouchAngle = 60;
 
     if (robotBallDir.x <= 0)
@@ -2021,8 +2024,8 @@ void CDynamicAttack::validateSegment(Segment2D &seg) {
 }
 
 bool CDynamicAttack::inTimePlan() {
-    if (playmake != nullptr) {
-        if (wm->ball->pos.dist(playmake->pos()) < 1.0) {
+    if (playMakeAgent != nullptr) {
+        if (wm->ball->pos.dist(playMakeAgent->pos()) < 1.0) {
             return true;
         }
 
@@ -2112,7 +2115,7 @@ void CDynamicAttack::updateAttackState() {
 
 bool CDynamicAttack::passDone() {
     double ballDistanceToTarget = currentPlan.passPos.dist(wm->ball->pos);
-    double ballDistanceToPlaymake = playmake->pos().dist(wm->ball->pos);
+    double ballDistanceToPlaymake = playMakeAgent->pos().dist(wm->ball->pos);
     if (ballDistanceToTarget < .3)
         return true;
     if (ballDistanceToPlaymake > 1.5 * ballDistanceToTarget) {
@@ -2153,7 +2156,7 @@ bool CDynamicAttack::positionTaskDone() {
 
 bool CDynamicAttack::passFailed() {
     double ballDistanceToTarget = currentPlan.passPos.dist(wm->ball->pos);
-    double ballDistanceToPlaymake = playmake->pos().dist(wm->ball->pos);
+    double ballDistanceToPlaymake = playMakeAgent->pos().dist(wm->ball->pos);
     if (ballDistanceToTarget > 3 && ballDistanceToPlaymake > 2)
         return true;
     return false;
@@ -2242,14 +2245,15 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
 
 void CDynamicAttack::support() {
 
-    roleAgentS->setAgent(supporter);
+    roleAgentS->setAgent(supportAgent);
     roleAgentS->setAvoidPenaltyArea(true);
     roleAgentS->setSelectedSupporterSkill(SupporterSkill::Move);
+    roleAgentS->setTarget(wm->ball->pos + wm->ball->vel / 2  + rcsc::Vector2D(-1, 0));
 //    switch (supporter.) {
 //    }
 }
 
 
 void CDynamicAttack::setSupporter(Agent* _supporter){
-    supporter = _supporter;
+    supportAgent = _supporter;
 }

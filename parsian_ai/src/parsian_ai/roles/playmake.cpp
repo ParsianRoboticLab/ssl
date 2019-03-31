@@ -381,6 +381,8 @@ void CRolePlayMake::theirPenaltyPositioning() {
 
 void CRolePlayMake::kickPass(double kickSpeed) {
     Vector2D behindTheBall = wm->ball->pos + Vector2D(wm->ball->pos - pointToPass).norm() * 0.2;
+    drawer->draw(behindTheBall,QColor(100,0,0),1);
+    DEBUG("ooooooooooomadddd",D_ALI);
     if (kickPassMode == KickPassFirst && agent->pos().dist(behindTheBall) > 0.01) {
         finalTarget = wm->ball->pos;
         gotopoint->setTargetpos(behindTheBall);
@@ -471,6 +473,7 @@ void CRolePlayMake::execute() {
         kickSpeed = agent->pos().dist(target);
         kick->setSlow(false);
         kick->setChip(chip);
+        kick->setTarget(target);
         kickPass(kickSpeed);
         return;
     } else if (kickMode == FixedShoot) {

@@ -176,7 +176,10 @@ void CRoleDynamic::update() {
         }
             break;
         case Roles::Supporter: {
+            moveSkill->setTargetpos(target);
+
         }
+            break;
     }
 
 }
@@ -239,9 +242,14 @@ void CRoleDynamic::execute() {
                     break;
                 case SupporterSkill::Move:
                     agent->action = moveSkill;
+                    ROS_INFO_STREAM("supporter is ok");
                     break;
             }
         }
+            break;
+        case Roles::None:
+            ROS_INFO_STREAM("NOOOOO NO NO NO ROLE TYPE ERROR in dynamic role execute");
+            break;
     }
 //    if(playMakeSkill == PlayMakeSkill::NoSkill && positionSkill == PositionSkill::NoSkill)
 //        agent->action = nullptr;

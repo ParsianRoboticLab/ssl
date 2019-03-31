@@ -322,11 +322,7 @@ private:
     QList<int> regionsList;
     bool isBallInOurField;
 
-    Agent* playmake;
-
     int supporterID = -1;
-    Agent* supporter;
-
     bool goToDynamic[5];
     int lastPlayMakerId;
 

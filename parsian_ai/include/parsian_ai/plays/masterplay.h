@@ -54,6 +54,7 @@ protected:
 
     /*static*/ CRolePlayMake playMakeRole;
     /*static*/ CRoleBlock blockRole;
+    /*static*/ CRoleSupport supportRole;
 
     void initMaster();
     void setAgents(const QList<Agent *> &_agentsID);

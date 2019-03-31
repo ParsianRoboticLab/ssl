@@ -7,7 +7,7 @@
 //CRolePlayMake CMasterPlay::playMakeRole{nullptr};
 //CRoleBlock CMasterPlay::blockRole{nullptr};
 
-CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr) {
+CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr),supportRole(nullptr) {
     markAgents.clear();
     executedCycles = 0;
     lockAgents = false;
@@ -281,9 +281,16 @@ void CMasterPlay::execPlay() {
     if (playMakeAgent) {
         if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()) {
             playMakeRole.assign(playMakeAgent);
+//            playMakeRole.execute();
         }
     }
 
+    if (supportAgent){
+        if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()){
+            supportRole.assign(supportAgent);
+//            supportRole.execute();
+        }
+    }
 
     if (!markAgents.empty()) {
         markPlan.init(markAgents);
