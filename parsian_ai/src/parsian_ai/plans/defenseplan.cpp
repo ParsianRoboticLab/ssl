@@ -1047,12 +1047,15 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
     for (i = 0 ; i < opponentAgentsToBeMarkPossition.size(); i++) {
         opponentAgentsToBeMarkCircle.append(Circle2D(opponentAgentsToBeMarkPossition.at(i) , opponentAgentsCircleR));
         drawer->draw(opponentAgentsToBeMarkCircle.at(i) , "Cyan");
+        ROS_INFO_STREAM("MAS:passBlocker1");
+        ROS_INFO_STREAM("MAS:passBlocker2");
     }
     DBUG(QString("Opponent Agents to be mark count : %1").arg(opponentAgentsToBeMarkPossition.size()) , D_SEPEHR);
     //    sortdangerpassplayoff(opponentAgentsToBeMarkPossition);
     ///////////////// Block Pass Plan ////////////////////////////////////
     if (opponentAgentsToBeMarkPossition.size() == ourMarkAgentsSize) {
         for (i = 0 ; i < ourMarkAgentsSize ; i++) {
+            ROS_INFO_STREAM("MAS:passBlocker3 is equality");
             markRoles.append(QString("passBlocker"));
             //////////// Don't Enter penalty area, mark agents!!! :) ///////////
             if (wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(Segment2D(wm->ball->pos , opponentAgentsToBeMarkPossition.at(i)) , &sol7,  &sol8)) {
@@ -1077,6 +1080,7 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
             DBUG(QString("Man To Man Mark In PlayOff Mode / BlockPass / our = opp") , D_SEPEHR);
         }
     } else if (opponentAgentsToBeMarkPossition.size() < ourMarkAgentsSize) {
+        ROS_INFO_STREAM("MAS:passBlocker3 is not equality 1111");
         if (opponentAgentsToBeMarkPossition.empty()) {
             for (i = 0 ; i < ourMarkAgentsSize ; i++) {
                 if (i % 2) {
@@ -1257,19 +1261,23 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
             }
         }
         if (ourMarkAgentsSize > markPoses.size()) {
+            ROS_INFO_STREAM("MAS:passBlocker3 is not equality22222222222222");
             for (i = 0 ; i < ourMarkAgentsSize - markPoses.size() ; i++) {
                 if (i % 2) {
                     markPoses.append(Vector2D(-3 , (i + 1) / 0.75));
                     markAngs.append(Vector2D(0, 0));
                     markRoles.append(QString("shotBlocker"));
+                    ROS_INFO_STREAM("MAS:i is Fard!!!");
                 } else {
                     markPoses.append(Vector2D(-3, (-i - 1)  / 0.75));
                     markAngs.append(Vector2D(0, 0));
                     markRoles.append(QString("shotBlocker"));
+                    ROS_INFO_STREAM("MAS:i is Zoj!!!");
                 }
             }
         }
     } else if (opponentAgentsToBeMarkPossition.size() > ourMarkAgentsSize) {
+        ROS_INFO_STREAM("MAS:passBlocker3 is not equality33333333333");
         sortDangerAgentsToBeMarkBlockPassPlayOff = sortdangerpassplayoff(opponentAgentsToBeMarkPossition);
         for (i = 0 ; i < ourMarkAgentsSize; i++) {
             //////////// Don't Enter penalty area, mark agents!!! :) ///////////
