@@ -1,0 +1,20 @@
+<launch>
+<rosparam command="load" file="$(find parsian_world_model)/param/field.yaml" />
+
+<node name="commonconfig" 	pkg="parsian_agent"            	type="parsian_agent_commonconfig_node"  respawn="true" />
+<node name="drawbuffer"         pkg="rqt_parsian_gui"           type="drawbuffer_node.py"       respawn="true" />
+
+<node name="agent_0"            pkg="parsian_agent"             type="parsian_agent_node"  respawn="true" />
+<node name="agent_1"            pkg="parsian_agent"             type="parsian_agent_node"  respawn="true" />
+<node name="agent_2"            pkg="parsian_agent"             type="parsian_agent_node"  respawn="true" />
+
+<node name="planner_0"          pkg="parsian_agent"             type="parsian_agent_planner_node"  respawn="true" />
+<node name="planner_1"          pkg="parsian_agent"             type="parsian_agent_planner_node"  respawn="true" />
+<node name="planner_2"          pkg="parsian_agent"             type="parsian_agent_planner_node"  respawn="true" />
+
+<node name="worldmodel" 	pkg="parsian_world_model"      	type="parsian_world_model_node"  respawn="true" />
+<node name="vision"		pkg="parsian_protobuf_wrapper" 	type="vision"  respawn="true" />
+<node name="grsim"		pkg="parsian_protobuf_wrapper" 	type="grsim"  respawn="true" />
+
+
+</launch>
