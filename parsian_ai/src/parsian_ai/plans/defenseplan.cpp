@@ -363,7 +363,7 @@ double DefensePlan::timeNeeded(Agent *_agentT, Vector2D posT, double vMax, QList
 QList<Vector2D> DefensePlan::defenseFormation(QList<Vector2D> circularPositions, QList<Vector2D> rectangularPositions){
     suitableRadius = RADIUS_FOR_CRITICAL_DEFENSE_AREA;
     Circle2D defenseArea(wm->field->ourGoal() , suitableRadius);
-    Circle2D defenseAreaPrime(wm->field->ourGoal(),suitableRadius+0.14);
+    Circle2D defenseAreaPrime(wm->field->ourGoal(),suitableRadius+0.08);
     if(/*(wm->field->ourBigPenaltyArea(1,0.2,0).contains(wm->ball->pos) && defenseArea.contains(wm->ball->pos)) ||*/ defenseArea.contains(wm->ball->pos)){
         cirRec= true;
         return rectangularPositions;
