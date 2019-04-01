@@ -33,6 +33,7 @@ private:
     Agent* nearID ;
     Vector2D lastBallPos;
     Vector2D ballPosBeforKick;
+    Vector2D kickTarget;
     GotopointavoidAction *gpaP, *gpaK;
     GotopointavoidAction *gpaH, *gpaR;
     GotopointavoidAction *sag;
@@ -40,10 +41,9 @@ private:
     ReceivepassAction *recivePass;
     KickAction *pass;
 
+    bool divari(const Vector2D &ballPos);
     bool isAgentsOnThePosition(Agent* kickerAgent, Agent* reciverAgent);
     static bool isBallHaseMoved(const Vector2D &, const Vector2D &, const double &);
-    static bool isBallDidntKickedWell(const Vector2D &ballPos, const Vector2D &ballPosBeforKick, const double dist);
-    bool isAgentOnThePosition(Agent* agent, const Vector2D &targetPos, const double diist);
     static bool isBallNearToTarget(const Vector2D &ballPos, const Vector2D &targetPos, const double &dist);
     bool isBallSpeedLow(const double &speed, const Vector2D &velocity);
     bool isPassReceived(const Vector2D &ballPos, const Vector2D &desiredPos);

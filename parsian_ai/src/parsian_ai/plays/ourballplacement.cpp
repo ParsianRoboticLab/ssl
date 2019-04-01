@@ -18,6 +18,7 @@ COurBallPlacement::COurBallPlacement() {
     shotFlag = true;  ///// near agent kick the ball or not
     updateFlag = false;   /////
     lastBallPos =  Vector2D(); lastBallPos.invalidate();
+    kickTarget = Vector2D();
     ballPosBeforKick = Vector2D(); ballPosBeforKick.invalidate();
 }
 
@@ -45,14 +46,17 @@ void COurBallPlacement::init(QList<Agent*>& _agents) {
  * @return kick speed
  */
 double COurBallPlacement::kickSpeedCalculator(const Vector2D &ballPos ,const Vector2D &targetPos) {
-    if(ballPos.dist(targetPos) > 8 ) {
-        return conf.ballPlacementLongKick+2;
-    }
-    else if(ballPos.dist(targetPos) > 3 ) {
-        return conf.ballPlacementMedimKick+2;
+    if(divari(ballPos)){
+        return 6;
     }
     else {
-        return conf.ballPlacementSlowKick+2;
+        if (ballPos.dist(targetPos) > 8) {
+            return conf.ballPlacementLongKick + 2;
+        } else if (ballPos.dist(targetPos) > 3) {
+            return conf.ballPlacementMedimKick + 2;
+        } else {
+            return conf.ballPlacementSlowKick + 1;
+        }
     }
 }
 
@@ -66,24 +70,6 @@ bool COurBallPlacement::isBallHaseMoved(const Vector2D &currentBallPos, const Ve
     return currentBallPos.dist(lastBallPos) > dist;
 }
 
-/**
- *
- * @param ballPos
- * @param ballPosBeforKick
- * @return ball kicked well or not
- */
-bool COurBallPlacement::isBallDidntKickedWell(const Vector2D &ballPos, const Vector2D &ballPosBeforKick, const double dist) {
-    return ballPosBeforKick.dist(ballPos) < dist;
-}
-
-/**
- * @param agent that going to receive the ball
- * @param targetPos
- * @return is receiver agent near to the position or not
- */
-bool COurBallPlacement::isAgentOnThePosition(Agent* agent, const Vector2D &targetPos, const double dist) {
-    return agent->pos().dist(targetPos) < dist;
-}
 
 /**
  *
@@ -246,6 +232,33 @@ bool COurBallPlacement::isAgentsOnThePosition(Agent* kickerAgent, Agent* reciver
 }
 
 
+bool COurBallPlacement::divari(const Vector2D &ballPos) {
+    Rect2D topLeft = Rect2D(Vector2D(-6, 4.8), 6, 0.3);
+    Rect2D topRight = Rect2D(Vector2D(0, 4.8), 6, 0.3);
+    Rect2D downLeft = Rect2D(Vector2D(-6, 0), 6, 0.3);
+    Rect2D downRight = Rect2D(Vector2D(0, 0), 6, 0.3);
+    if(topLeft.contains(ballPos)){
+        kickTarget = Vector2D(ballPos.x + 0.1, 4.8);
+    }
+    else if(topRight.contains(ballPos)){
+        kickTarget = Vector2D(ballPos.x - 0.1, 4.8);
+    }
+    else if(downLeft.contains(ballPos)){
+        kickTarget = Vector2D(ballPos.x + 0.1, -4.8);
+    }
+    else if(downRight.contains(ballPos)){
+        kickTarget = Vector2D(ballPos.x - 0.1, -4.8);
+    }
+    else{
+        kickTarget =  Vector2D(-4, -1);
+    }
+    ROS_INFO_STREAM("divari topleft : "<<topLeft.contains(ballPos));
+    ROS_INFO_STREAM("divari topRight : "<<topRight.contains(ballPos));
+    ROS_INFO_STREAM("divari downleft : "<<downLeft.contains(ballPos));
+    ROS_INFO_STREAM("divari downRight : "<<downLeft.contains(ballPos));
+    return topLeft.contains(ballPos) || topRight.contains(ballPos) || downLeft.contains(ballPos) || downRight.contains(ballPos);
+}
+
 /**
  * this func will execute in execute function of masterPlay class
  */
@@ -272,8 +285,15 @@ void COurBallPlacement::execute_x(){
     gpaR->setTargetpos(targetedPoint);
     gpaR->setTargetdir(targetedPoint);
     ///set pass action for nearAgent
-    pass->setTarget(targetedPoint);
+    //TODO in ghesmate codo badan az mahi beporsam bebinam memarish khobe ya raveshe behtari vase neveshtanesh hast
+    if( divari(wm->ball->pos) )
+        pass->setTarget(kickTarget);
+    else
+        pass->setTarget(targetedPoint);
+    //TODO ta inja
     pass->setKickspeed(kickSpeedCalculator(wm->ball->pos, targetedPoint));
+    pass->setAvoidopppenaltyarea(false);
+    pass->setAvoidpenaltyarea(false);
     pass->setSlow(true);
     pass->setDontkick(true);
     pass->setIsplayoff(true);
@@ -310,4 +330,5 @@ void COurBallPlacement::execute_x(){
             receiverAgent->action = gpaR;
     }
 }
+
 
