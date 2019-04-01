@@ -434,6 +434,9 @@ QList<Vector2D> DefensePlan::defenseFormationForCircularPositioning(int neededDe
 }
 
 Vector2D DefensePlan::oneDefenseFormationForCircularPositioning(double downLimit , double upLimit){
+    drawer->draw(Circle2D(wm->field->ourGoal(),downLimit) , 0 , 360 , "magenta");
+    drawer->draw(Circle2D(wm->field->ourGoal(),upLimit), 0 , 360 , "yellow");
+    drawer->draw(Segment2D(wm->ball->pos,wm->field->ourGoal()),"red");
     Vector2D defensePosition;
     Vector2D sol[2];
     Vector2D ourGoalLeft = wm->field->ourGoalL();
@@ -449,13 +452,13 @@ Vector2D DefensePlan::oneDefenseFormationForCircularPositioning(double downLimit
     /////////////////// Az bi chizi bar sikhaki malideh im :) ///////////////////////////////
     biggestLineOfBallTriangle = getLinesOfBallTriangle().at(0).length() > getLinesOfBallTriangle().at(1).length() ? getLinesOfBallTriangle().at(0) : getLinesOfBallTriangle().at(1);
     double distanceFromYalForFirstPosition = biggestLineOfBallTriangle.dist(defensePosition);
+    drawer->draw(Circle2D(defensePosition,distanceFromYalForFirstPosition), 0 , 360 , "black");
+    drawer->draw(Circle2D(defensePosition,robotRadius), 0 , 360 , "red");
+    //drawer->draw(Segment2D(sol[0],sol[1]),"blue");
+    drawer->draw(biggestLineOfBallTriangle,"blue");
     if(distanceFromYalForFirstPosition > robotRadius){
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(defensePosition);
         defensePosition += Vector2D(anotherIntesection - defensePosition).norm()*(distanceFromYalForFirstPosition - robotRadius);
-    }
-    else if(distanceFromYalForFirstPosition <= robotRadius){
-        anotherIntesection = biggestLineOfBallTriangle.nearestPoint(defensePosition);
-        defensePosition += Vector2D(defensePosition - anotherIntesection).norm()*(robotRadius - distanceFromYalForFirstPosition);
     }
 
     return defensePosition;
