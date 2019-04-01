@@ -49,7 +49,6 @@ void CDynamicPlayOff ::Setposition(){
     drawer->draw(dummyPositions[0],QColor("red"), 20);
 
 
-
     if(wm->field->isInOppPenaltyArea(dummyPositions[0]))
         dynamicSelect = DynamicSelect::Chip;
 
@@ -209,6 +208,16 @@ void CDynamicPlayOff::dynamicPlayKhafan() {
 
 }
 int CDynamicPlayOff:: EvalPlayKhafan(){
+    Setposition();
+    for(int i=0;i<wm->opp.activeAgentsCount();i++)
+    {
+        ROS_INFO_STREAM("EVAL:DIST"<<dummyPositions[0].dist((wm->opp.active(i)->pos)));
+      if(dummyPositions[0].dist(wm->opp.active(i)->pos)<0.3 && theirpos!=wm->opp.active(i)->pos){
+       dynamicSelect=DynamicSelect ::Chip;
+       eval=0;
+       return eval;
+      }
+    }
     if(agents.size()<2)
         eval=0;
     if(wm->opp.activeAgentsCount()==0)
@@ -225,18 +234,22 @@ for(int i=0;i< wm->opp.activeAgentsCount();i++)
 
     }
 }
+if(theirpos.dist(wm->ball->pos)>0.9)
+    eval=0;
 
- POLYGON.addVertex(theirpos);
-POLYGON.addVertex(wm->field->oppGoalL());
-POLYGON.addVertex(wm->field->oppGoalR());
-ROS_INFO_STREAM("DRAW");
-drawer->draw(POLYGON,QColor("red"));
+         POLYGON.addVertex(theirpos);
+        POLYGON.addVertex(wm->field->oppGoalL());
+        POLYGON.addVertex(wm->field->oppGoalR());
+        ROS_INFO_STREAM("DRAW");
+     drawer->draw(POLYGON,QColor("red"));
+
 for (int i=0;i< wm->opp.activeAgentsCount();i++){
 
      if(POLYGON.contains(wm->opp.active(i)->pos))
 
         sum++;
 }
+
 eval=100-sum*10;
 
 
