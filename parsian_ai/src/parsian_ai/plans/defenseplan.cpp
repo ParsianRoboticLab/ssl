@@ -3122,6 +3122,7 @@ void DefensePlan::findPos(int _markAgentSize){
         if(playOff || gameState->isStop()){
             know->variables["stateForMark"] = QString("BlockPass");
             manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
+            ROS_INFO_STREAM("MAS:FindPos_First if");
         }
         else if(know->variables["transientFlag"].toBool()){
             if(know->variables["lastStateForMark"] == QString("BlockPass")){
@@ -3135,9 +3136,12 @@ void DefensePlan::findPos(int _markAgentSize){
         }
     }
     else {
+        ROS_INFO_STREAM("MAS:FindPos_else");
         if (playOff || gameState->isStop()) {
-            know->variables["stateForMark"] = QString("BlockShot");;
-            manToManMarkBlockShotInPlayOff(_markAgentSize);
+            know->variables["stateForMark"] = QString("BlockShot");
+            ROS_INFO_STREAM("MAS:FindPos_second if");
+            manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
+            //manToManMarkBlockShotInPlayOff(_markAgentSize);
         }
         else {
             if (know->variables["lastStateForMark"].toString() == QString("BlockShot")) {
@@ -3146,7 +3150,8 @@ void DefensePlan::findPos(int _markAgentSize){
             }
             else {
                 know->variables["stateForMark"] = QString("BlockPass");
-                manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
+               //manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
+                manToManMarkBlockShotInPlayOff(_markAgentSize);
             }
         }
     }
