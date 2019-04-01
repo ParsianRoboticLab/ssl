@@ -1092,6 +1092,8 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     markAngs.append(Vector2D(0, 0));
                     markRoles.append(QString("shotBlocker"));
                 }
+                drawer->draw(markPoses.at(i),"Red");
+                ROS_INFO_STREAM("MAS:Drawing!!!!!!!!!!!!!!!!!!!!!!!!!!");
             }
         } else if (opponentAgentsToBeMarkPossition.size() == 1) {
             for (i = 0 ; i < opponentAgentsToBeMarkPossition.size() ; i++) {
@@ -1133,10 +1135,14 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     markPoses.append(Vector2D(-3 , i / 1.5));
                     markAngs.append(Vector2D(0, 0));
                     markRoles.append(QString("shotBlocker"));
+                    drawer->draw(markPoses.at(i),"Red");
+                    ROS_INFO_STREAM("MAS:Drawing!!!!!!!!!!!!!!!!!!!!!!!!!!Fard");
                 } else {
                     markPoses.append(Vector2D(-3, -i  / 1.5));
                     markAngs.append(Vector2D(0, 0));
                     markRoles.append(QString("shotBlocker"));
+                    drawer->draw(markPoses.at(i),"Red");
+                    ROS_INFO_STREAM("MAS:Drawing!!!!!!!!!!!!!!!!!!!!!!!!!!Zoj");
                 }
             }
             DBUG(QString("mark pos : %1").arg(markPoses.size()) , D_AHZ);
@@ -1322,6 +1328,7 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
     bool playOn = gameState->isStart();
     bool playOff = gameState->theirDirectKick() || gameState->theirIndirectKick();
     int count;
+    Vector2D solution1,solution2;
     oppmarkedpos.clear();
     markPoses.clear();
     markRoles.clear();
@@ -1406,7 +1413,35 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
     }
     for(int i = 0 ; i < markPoses.size() ; i++){
         drawer->draw(markRoles.at(i) , markPoses.at(i) - Vector2D(0, 0.4) , "white");
+        ROS_INFO_STREAM("MAS:drawing!!!!");
     }
+
+    for(int i=0;i<markPoses.size();i++){
+        Segment2D ShootPathLine(wm->field->ourGoalL(),markPoses.at(i));
+        ROS_INFO_STREAM("MAS:correct drawing!!!!");
+        if(wm->field->isInOurPenaltyArea(markPoses.at(i))){
+
+            wm->field->ourBigPenaltyArea(1.1,0,1).intersection(ShootPathLine,&solution1,&solution2);
+            if(solution1.isValid()){
+                if(solution1.dist(wm->field->oppGoal())<=solution2.dist(wm->field->oppGoal())){
+
+                    markPoses.insert(i,solution1);
+
+
+                }
+                else{
+                    markPoses.insert(i,solution2);
+
+                }
+                drawer->draw(markPoses.at(i),"Red");
+
+            }
+
+        }
+
+    }
+
+
 }
 
 bool DefensePlan::dangerForGK(){
@@ -3130,6 +3165,7 @@ void DefensePlan::findPos(int _markAgentSize){
                 manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
             }
             else {
+                ROS_INFO_STREAM("MAS:BlockShot");
                 know->variables["stateForMark"] = QString("BlockShot");
                 manToManMarkBlockShotInPlayOff(_markAgentSize);
             }
@@ -3137,11 +3173,18 @@ void DefensePlan::findPos(int _markAgentSize){
     }
     else {
         ROS_INFO_STREAM("MAS:FindPos_else");
+
         if (playOff || gameState->isStop()) {
+
+            if(conf.PlayOffManToMan){
+
             know->variables["stateForMark"] = QString("BlockShot");
             ROS_INFO_STREAM("MAS:FindPos_second if");
             manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
-            //manToManMarkBlockShotInPlayOff(_markAgentSize);
+                }
+            else {
+                manToManMarkBlockShotInPlayOff(_markAgentSize);
+            }
         }
         else {
             if (know->variables["lastStateForMark"].toString() == QString("BlockShot")) {
@@ -3172,12 +3215,14 @@ QList<Vector2D> DefensePlan::ShootBlockRatio(double ratio, Vector2D opp) {
     drawer->draw(tempSeg , "black");
     Vector2D pos = know->getPointInDirection(wm->field->ourGoal() , opp , ratio);
     if(wm->field->isInOurPenaltyArea(opp)){
+        ROS_INFO_STREAM("MAS:isInOurPenaltyArea(opp))");
         wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).intersection(tempLine, &solutions[0] , &solutions[1]);
         tempQlist.append(solutions[0].isValid() && solutions[0].x > solutions[1].x ? solutions[0] : solutions[1]);
         tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
     }
     else{
         if(wm->field->isInOurPenaltyArea(pos)){
+            ROS_INFO_STREAM("MAS:isInOurPenaltyArea(pos))");
             wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new, 0).intersection(tempSeg, &solutions[0] , &solutions[1]);
             tempQlist.append(solutions[0].isValid() && solutions[0].dist(opp) < solutions[1].dist(opp) ? solutions[0] : solutions[1]);
             tempQlist.append(tempQlist.first() - intersectionWithOurGoalLine);
