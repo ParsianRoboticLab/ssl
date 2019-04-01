@@ -1415,8 +1415,8 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
         drawer->draw(markRoles.at(i) , markPoses.at(i) - Vector2D(0, 0.4) , "white");
         ROS_INFO_STREAM("MAS:drawing!!!!");
     }
-
-    for(int i=0;i<markPoses.size();i++){
+//////////////////////////Aded by Mahdi for not entering into PArea////////////
+    /*for(int i=0;i<markPoses.size();i++){
         Segment2D ShootPathLine(wm->field->ourGoalL(),markPoses.at(i));
         ROS_INFO_STREAM("MAS:correct drawing!!!!");
         if(wm->field->isInOurPenaltyArea(markPoses.at(i))){
@@ -1439,8 +1439,8 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
 
         }
 
-    }
-
+    }*/
+/////////////////////////////////////////////////////////////////////////////////////
 
 }
 
@@ -3193,8 +3193,8 @@ void DefensePlan::findPos(int _markAgentSize){
             }
             else {
                 know->variables["stateForMark"] = QString("BlockPass");
-               //manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
-                manToManMarkBlockShotInPlayOff(_markAgentSize);
+               manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
+
             }
         }
     }
