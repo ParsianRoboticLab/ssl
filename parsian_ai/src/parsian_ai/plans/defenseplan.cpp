@@ -2844,8 +2844,12 @@ void DefensePlan::findPos(int _markAgentSize){
     }
     else {
         if (playOff || gameState->isStop()) {
-            know->variables["stateForMark"] = QString("BlockShot");;
-            manToManMarkBlockShotInPlayOff(_markAgentSize);
+            if(conf.PlayOffManToMan){
+            know->variables["stateForMark"] = QString("BlockShot");
+                }
+            else {
+                manToManMarkBlockShotInPlayOff(_markAgentSize);
+            }
         }
         else {
             if (know->variables["lastStateForMark"].toString() == QString("BlockShot")) {
