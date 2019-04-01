@@ -1,6 +1,7 @@
 #ifndef DYNAMICATTACK_H
 #define DYNAMICATTACK_H
 
+#include "algorithm"
 #include <parsian_ai/plays/masterplay.h>
 #include <ctime>
 
@@ -68,6 +69,9 @@ public:
     bool oneTouch;
     bool chipOrPass;    //0 for pass. 1 for chip.
     int region;
+    bool finalPassReciever;
+    int chance;
+    bool operator< (passPoint& a){ return (this->chance < a.chance);}
 
 };
 
@@ -236,7 +240,9 @@ private:
     double findmax(const QList<double> &list);
 
     QList<passPoint> passPoints;
+    QList<passPoint> finalPassPoints;
     QList<Vector2D> semiDynamicPosition;
+    QList<Vector2D> amirSemiDynamicPosition;
     QList<Vector2D> markPositions;
 
     bool isRightTimeToPass();
@@ -270,7 +276,13 @@ private:
     void checkPositions();
     void isChipOrPass(passPoint& );
     void findOneTouch();
-
+    void isInPosition();
+    void toPassOrNotToPass();
+    void passPriority();
+    void showPasser();
+    //void stayPassReciever(const QList<int>&, MWBM&);
+    void stayPassReciever(const QList<int>&, MWBM&);
+    void finalPassReciever();
 
 
     CRoleDynamic *roleAgents[8];
