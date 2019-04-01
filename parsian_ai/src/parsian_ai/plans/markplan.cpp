@@ -911,7 +911,7 @@ void CMarkPlan::execute(){
         for(int i = 0 ; i < markPoses.size() ; i++){
             matchPoints.append(i);
         }
-        know->Matching(agents, markPoses, matchPoints); // todo : knowledge
+        know->Matching(agents, markPoses, matchPoints);
         for(int i = 0; i < markPoses.count(); i++){
             if (i < matchPoints.size()) {
                 agents[i]->action = markGPA[i];
