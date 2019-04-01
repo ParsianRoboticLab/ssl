@@ -110,7 +110,7 @@ void CSkillKick::avoidOppPenalty() {
         ballSeg.assign(wm->ball->pos,wm->ball->pos + wm->ball->vel.norm()*10);
     }
     penalty.intersection(ballSeg,&dummyPos,&dummyPos1);
-    if(dummyPos.x == wm->field->oppGoal().x) {
+    if(std::fabs(dummyPos.x - wm->field->oppGoal().x) < 0.001) {
         finalPos = dummyPos1 + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
     } else {
         finalPos = dummyPos + (wm->ball->pos - wm->field->oppGoal()).norm()* 0.1;
