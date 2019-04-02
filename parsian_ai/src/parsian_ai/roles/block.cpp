@@ -4,6 +4,7 @@ CRoleBlockInfo* CRoleBlock::roleInfo{};
 
 CRoleBlock::CRoleBlock(Agent *_agent) : CRole(_agent) {
     gotopoint = new GotopointavoidAction();
+    roleInfo = new CRoleBlockInfo("block");
 }
 
 CRoleBlock::~CRoleBlock() {
