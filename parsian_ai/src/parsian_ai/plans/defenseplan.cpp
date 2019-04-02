@@ -838,7 +838,7 @@ bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition) 
     //// If defense agents stuck together , this function
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
         for (int j = i+1 ; j < agentsPosition.size() ; j++) {
-            if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new) {//Lhum will add const to it
+            if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new - 0.02) {//Lhum add 0.02
                 return true;
             }
         }
@@ -868,12 +868,11 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
     for (int i = 0 ; i < stuckPositions.size() ; i++) {
         if (i % 2 == 0) {
             centerToCenter.append(Segment2D(stuckPositions.at(i) , stuckPositions.at(i + 1)));
-            drawer->draw(Segment2D(stuckPositions.at(i) , stuckPositions.at(i + 1)) , "red");
         } else {
             centerToCenter.append(Segment2D(stuckPositions.at(i) , stuckPositions.at(i - 1)));
         }
     }
-    int desire_robot_dist = -0.2;
+    int desire_robot_dist = - 0.06;
     for (int i = 0 ; i < stuckPositions.size() ; i++)
         deltaStuckPositions.append((Robot::robot_radius_new - (centerToCenter.at(i).length() / 2) + desire_robot_dist) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
 
@@ -893,7 +892,7 @@ void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPos
     for (int i = 0 ; i < agentsPosition.size() ; i++) {//solvedPosition
         if (wm->field->ourBigPenaltyArea(1 , Robot::robot_radius_new , 0).contains(agentsPosition.at(i))) {
             DBUG(QString("stuck position is penalty area") , D_AHZ);
-            wm->field->ourBigPAreaIntersect(1 , Robot::robot_radius_new , 0).intersection(Segment2D(wm->field->ourGoal() , agentsPosition.at(i)) , &sol1 , &sol2);
+            wm->field->ourBigPenaltyArea(1 , Robot::robot_radius_new , 0).intersection(Line2D(wm->field->ourGoal() , agentsPosition.at(i)) , &sol1 , &sol2);
             if (sol1.valid() && sol2.valid())
                 agentsPosition[i] = sol1.dist(agentsPosition.at(i)) < sol2.dist(agentsPosition.at(i)) ? sol1 : sol2;
             else if(sol1.valid())
@@ -1607,7 +1606,8 @@ void DefensePlan::stuck(QList <Vector2D>& Points) {
     QList <int> stuckIndexes;
     stuckPositions.clear();
     stuckIndexes.clear();
-    for (int i = 0; i < 4 && areAgentsStuckTogether(Points); i++) {
+    for (int i = 0; areAgentsStuckTogether(Points); i++) {
+        ROS_INFO_STREAM("Lhumm: " << i);
         agentsStuckTogether(Points, stuckPositions);
         correctingTheAgentsAreStuckTogether(Points, stuckPositions);
     }
@@ -1757,7 +1757,7 @@ void DefensePlan::execute(){
                 QList <Vector2D> matchPoints;
                 QList <int> matchResult;
                 matchingPoses(matchPoints , matchResult);
-                //executeMarkAndDef(matchPoints , matchResult);
+                executeMarkAndDef(matchPoints , matchResult);
             }
         }
         else{
