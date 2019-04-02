@@ -120,6 +120,7 @@ private:
 
 public:
     CRoleStop *stopRoles[_MAX_NUM_PLAYERS];
+    CRoleBlock *blockerRole;
 private:
     QTime goalieTimer;
 
@@ -163,9 +164,11 @@ private:
     ///////////////////////new play make and supporter chooser
     int playmakeId;
     int lastPlayMake;
+    int blockerId;
 
     int choosePlayMake(const QList<int> &_agentsID);
     void handlePlayMake(const QList<int> &_agentsID);
+    void handleBlocker(const QList<int> &_agentsID);
 
     ///////////////////////////////////////////////
 

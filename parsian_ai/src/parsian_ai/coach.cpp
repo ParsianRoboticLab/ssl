@@ -42,6 +42,7 @@ CCoach::CCoach(Agent**_agents)
     for (auto &stopRole : stopRoles) {
         stopRole = new CRoleStop(nullptr);
     }
+    blockerRole = new CRoleBlock(nullptr);
     //fault
     for (auto &faultRole : faultRoles) {
         faultRole = new CRoleFault(nullptr);
@@ -272,6 +273,8 @@ void CCoach::assignDefenseAgents(int defenseCount) {
     if (playmakeId != -1) {
         ids.removeOne(playmakeId);
     }
+    if(blockerId != -1 && ids.contains(blockerId))
+        ids.removeOne(blockerId);
     //remove damaged robots in stop for substitution[substitution]
     if(gameState->isStop())
         for(auto id: ids)
@@ -467,6 +470,8 @@ void CCoach::decideAttack() {
             ourPlayersID.removeOne(defenseAgent->id());
         }
     }
+    if(blockerId != -1 && ourPlayersID.contains(blockerId))
+        ourPlayersID.removeOne(blockerId);
 
     switch (gameState->getState()) { // GAMESTATE
 
@@ -702,7 +707,15 @@ void CCoach::execute()
     bool defenseFirst = wm->ball->vel.length() > 1
                         && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();
     playmakeId = -1;
+    blockerId = -1;
     defenseAgents.clear();
+
+    //blocker
+    blockerRole->assign(nullptr);
+    handleBlocker(remainingAgent());
+    if(blockerRole->agent != nullptr)
+        blockerRole->execute();
+
     if (defenseFirst) {
         decideDefense();
         handlePlayMake(remainingAgent());
@@ -899,10 +912,35 @@ QList<int> CCoach::remainingAgent() {
             ourPlayers.removeOne(goalieAgent->id());
         }
     }
+    if(blockerId != -1 && ourPlayers.contains(blockerId))
+        ourPlayers.removeOne(blockerId);
     for (auto& d : defenseAgents) {
         if (ourPlayers.contains(d->id())) ourPlayers.removeOne(d->id());
     }
     return ourPlayers;
+}
+
+void CCoach::handleBlocker(const QList<int> &_agentsID) {
+    bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick();
+    if (!isthierplayoff) {
+        blockerId = -1;
+    } else {
+        double maxD = 100000;
+        int blocker = -1;
+        for (const auto& player : _agentsID) {
+            double value;
+            value = agents[player]->pos().dist(wm->ball->pos);
+
+            if (value < maxD - 0.25) {
+                maxD = value;
+                blocker = player;
+            }
+        }
+        blockerId = blocker;
+    }
+    if(blockerId != -1 && wm->our.data->activeAgents.contains(blockerId))
+        blockerRole->assign(agents[blockerId]);
+
 }
 
 void CCoach::handlePlayMake(const QList<int> &_agentsID) {
