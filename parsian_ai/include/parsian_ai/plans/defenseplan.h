@@ -62,9 +62,6 @@ protected:
     void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
     void manToManMarkBlockShotInPlayOff(int _markAgentSize);
 
-    bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
-    void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
-    void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
 
     bool isInIndirectArea(Vector2D);
     int defenseNumber();
@@ -144,9 +141,12 @@ private:
     void setMarkTarget();
     void executeMarkAndDef(QList <Vector2D>& , QList <int>&);
     void setTargetMarkAndDef();
-    QList<Vector2D> setDefTarget();
+    void setDefTarget();
     void matchingPoses(QList <Vector2D>& , QList <int>&);
     void stuck(QList <Vector2D>& Points);
+    bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
+    void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions);
+    void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions);
     ///////////////////////HMD///////////////
     Vector2D ballPrediction(const bool);
     void findPos(int _markAgentSize);

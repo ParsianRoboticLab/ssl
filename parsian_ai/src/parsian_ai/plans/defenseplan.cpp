@@ -419,7 +419,7 @@ int DefensePlan::defenseNumber(){
         }
     } else {
         if(conf.ThreeDefenseMode){
-            return min(3,defenseCount);
+            return min(3,defenseAgents.size());
         }
         else{
             return findNeededDefense();
@@ -838,7 +838,7 @@ bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition) 
     //// If defense agents stuck together , this function
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
         for (int j = i+1 ; j < agentsPosition.size() ; j++) {
-            if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new - 0.02) {//Lhum test
+            if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new) {//Lhum will add const to it
                 return true;
             }
         }
@@ -846,128 +846,72 @@ bool DefensePlan::areAgentsStuckTogether(const QList<Vector2D> &agentsPosition) 
     return false;
 }
 
-void DefensePlan::agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexes) {
+void DefensePlan::agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions) {
     //// If defense agents stuck together , this function
     for (int i = 0 ; i < agentsPosition.size() ; i++) {
-        for (int j = 0 ; j < i ; j++) {//Lhum it can append one position twice in stuckpositions
+        for (int j = 0 ; j < i ; j++) {
             if (agentsPosition.at(i).dist(agentsPosition.at(j)) <= 2 * Robot::robot_radius_new + MIN_TWO_ROBOTS_DIST) {//why use min two robots dist
                 stuckPositions.append(agentsPosition.at(i));
                 stuckPositions.append(agentsPosition.at(j));
             }
         }
     }
-
-    for (auto stuckPosition : stuckPositions) {
-        for (int j = 0 ; j < agentsPosition.size() ; j++) {
-            if (stuckPosition == agentsPosition.at(j)) {
-                stuckIndexes.append(j);
-            }
-        }
-    }
 }
 
-void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexes) {
-
+void DefensePlan::correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions) {
     QList<Segment2D> centerToCenter;
-    QList<Vector2D> solvedPosition;
-    QList<Vector2D> temp;
     QList<Vector2D> tempSol;
-    QList<int> tempIndexs;
-    QList<Vector2D> tempAgentsPosition;
-    QList<Vector2D> finalSolvedPosition;
-    QList<Vector2D> solvedPositionsAreNotInThePenaltyArea;
-    QList<Vector2D> nonRepetitiveFinalSolvedPosition;
-    Vector2D tempPoint;
-    QList<Vector2D> tempVectors;
+    QList<Vector2D> deltaStuckPositions;
     ///////////////////// Update the state /////////////////////////////////////
-    solvedPosition.clear();
-    tempAgentsPosition.clear();
-    nonRepetitiveFinalSolvedPosition.clear();
-    solvedPositionsAreNotInThePenaltyArea.clear();
+    deltaStuckPositions.clear();
     ///////////////////////////////////////////////////////////////////////////
     for (int i = 0 ; i < stuckPositions.size() ; i++) {
         if (i % 2 == 0) {
             centerToCenter.append(Segment2D(stuckPositions.at(i) , stuckPositions.at(i + 1)));
+            drawer->draw(Segment2D(stuckPositions.at(i) , stuckPositions.at(i + 1)) , "red");
         } else {
             centerToCenter.append(Segment2D(stuckPositions.at(i) , stuckPositions.at(i - 1)));
         }
     }
     DBUG(QString("center : %1").arg(centerToCenter.size()) , D_AHZ);
-    int desire_robot_dist = stuckPositions.size() == 2 ? MIN_TWO_ROBOTS_DIST:MIN_MORE_ROBOTS_DIST;
+
+    int desire_robot_dist = -0.2;// = stuckPositions.size() == 2 ? MIN_TWO_ROBOTS_DIST:MIN_MORE_ROBOTS_DIST;
     for (int i = 0 ; i < stuckPositions.size() ; i++)
-        solvedPosition.append(stuckPositions.at(i) + (1.1 * (Robot::robot_radius_new - centerToCenter.at(i).length() / 2) + desire_robot_dist) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
+        deltaStuckPositions.append((Robot::robot_radius_new - (centerToCenter.at(i).length() / 2) + desire_robot_dist) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
+        //solvedPosition.append(stuckPositions.at(i) + (1.1 * (Robot::robot_radius_new - centerToCenter.at(i).length() / 2) + desire_robot_dist) * ((centerToCenter.at(i).a() - centerToCenter.at(i).b()).norm()));
+
+
+    ///////////// make one list for stuckPositions//////
+    ROS_INFO_STREAM("Lhum:________________");
+    ROS_INFO_STREAM("Lhum: " << agentsPosition.size());
+    ROS_INFO_STREAM("Lhum: " << stuckPositions.size());
+    for (int i = 0 ; i < agentsPosition.size() ; i++) {
+        Vector2D delta = Vector2D(0 , 0);
+        for (int j = 0 ; j < stuckPositions.size() ; j++) {
+            if(agentsPosition.at(i) == stuckPositions.at(j)){
+                ROS_INFO_STREAM("Lhum:   " << i << " " << j);
+                delta += deltaStuckPositions.at(j);
+            }
+        }
+        agentsPosition[i] += delta;
+    }
+
     ///////////// Check the resulted points, don't be in the PArea /////////////
-    for (int i = 0 ; i < solvedPosition.size() ; i++) {
-        if (wm->field->isInOurPenaltyArea(solvedPosition.at(i))) {
+    for (int i = 0 ; i < agentsPosition.size() ; i++) {//solvedPosition
+        if (wm->field->isInOurPenaltyArea(agentsPosition.at(i))) {
+            ROS_INFO_STREAM("Lhum: raft");
             DBUG(QString("stuck position is penalty area") , D_AHZ);
-            solvedPosition.removeAt(i);
-            tempSol = wm->field->ourPAreaIntersect(Segment2D(wm->field->ourGoal() , stuckPositions.at(i)));
+            tempSol = wm->field->ourPAreaIntersect(Segment2D(wm->field->ourGoal() , agentsPosition.at(i)));
             if (tempSol.size()) {
                 if (tempSol.size() == 2) {
-                    solvedPositionsAreNotInThePenaltyArea.append(tempSol.at(0).dist(stuckPositions.at(i)) < tempSol.at(1).dist(stuckPositions.at(i)) ? tempSol.at(0) : tempSol.at(1));
+                    agentsPosition[i] = tempSol.at(0).dist(agentsPosition.at(i)) < tempSol.at(1).dist(agentsPosition.at(i)) ? tempSol.at(0) : tempSol.at(1);
                 } else if (tempSol.size() == 1) {
-                    solvedPositionsAreNotInThePenaltyArea.append(tempSol.at(0));
+                    agentsPosition[i] = tempSol.at(0);
                 }
             }
-        } else {
-            solvedPositionsAreNotInThePenaltyArea.append(solvedPosition.at(i));
         }
     }
-    //////////////////////////////////////////////////////////////////////////////TODO: Lhum will change it.
-    for (int i = 0 ; i < stuckPositions.size() && i < stuckIndexes.size() && i < solvedPositionsAreNotInThePenaltyArea.size() ; i++) {
-        for (int j = 0 ; j < stuckIndexes.size() ; j++) {
-            if (stuckIndexes.at(i) == stuckIndexes.at(j) && i != j) {
-                tempIndexs.append(j);
-                DBUG(QString("temp Index : %1").arg(j) , D_AHZ);
-            }
-        }
-        tempIndexs.append(i);
-        if (tempIndexs.size() > 1) {
-            tempPoint = stuckPositions.at(i);
-            for (int k = 0 ; k < solvedPositionsAreNotInThePenaltyArea.size() ; k++) {
-                for (int tempIndex : tempIndexs) {
-                    if (tempIndex == k) {
-                        temp.append(solvedPositionsAreNotInThePenaltyArea.at(k));
-                    }
-                }
-            }
-            for (auto n : temp) {
-                tempVectors.append(n - tempPoint);
-            }
-            for (auto tempVector : tempVectors) {
-                tempPoint += tempVector;
-            }
-            finalSolvedPosition.append(tempPoint);
-        } else{
-            finalSolvedPosition.append(solvedPositionsAreNotInThePenaltyArea.at(i));
-        }
-        tempIndexs.clear();
-        tempVectors.clear();
-        temp.clear();
-    }
-    //// Tnx for Mahi && Parsa && Mhmmd :) ////////////////////////////////////
-    for (auto i : finalSolvedPosition) {
-        if (!nonRepetitiveFinalSolvedPosition.contains(i)) {
-            ROS_INFO_STREAM("Lhum: !!!!!!!!!!!");
-            nonRepetitiveFinalSolvedPosition.append(i);
-        }
-    }
-    ///////////////////////////////////////////////////////////////////////////
-    for (auto stuckPosition : stuckPositions) {
-        for (int j = 0 ; j < agentsPosition.size() ; j++) {
-            if (agentsPosition.at(j) == stuckPosition) {
-                ROS_INFO_STREAM("Lhum: @@@@@@@@@@@@");
-                agentsPosition.removeAt(j);
-            }
-        }
-    }
-
-    for (auto i : nonRepetitiveFinalSolvedPosition) {
-        agentsPosition.append(i);
-    }
-
-    DBUG(QString("solved : %1").arg(finalSolvedPosition.size()), D_AHZ);
-    DBUG(QString("match : %1").arg(agentsPosition.size()), D_AHZ);
+    ROS_INFO_STREAM("Lhum: " << agentsPosition.size());
 }
 
 float getDegree(Vector2D pos1, Vector2D origin, Vector2D pos3) {
@@ -1027,8 +971,6 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
     //////////////////// Clear QLists for update the states ////////////////////
     ourMarkAgentsPossition.clear();
     tempOpponentAgentsToBeMarkedPosition.clear();
-    markPoses.clear();
-    markAngs.clear();
     markRoles.clear();
     /////////////////// Intelligent mark plan ///////////////////////////////
     ///
@@ -1314,9 +1256,7 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
     bool playOff = gameState->theirDirectKick() || gameState->theirIndirectKick();
     int count;
     oppmarkedpos.clear();
-    markPoses.clear();
     markRoles.clear();
-    markAngs.clear();
     /////////////////// Intelligent mark plan ///////////////////////////////
     //    PDEBUGV2D("ALi's prediction mode",getMarkPlayoffPredictWaitPos(),D_ALI);
     //////////////////////////////////////////////////////
@@ -1639,42 +1579,38 @@ void DefensePlan::setMarkTarget(){
     findPos(decideNumOfMarks());
 }
 
-QList<Vector2D> DefensePlan::setDefTarget(){
+void DefensePlan::setDefTarget(){
     defensePoses.clear();
     int realDefSize = 0;
     if(conf.ThreeDefenseMode){
-        realDefSize = min(3 , defenseCount);
-        if(defenseCount >= 3){
+        realDefSize = min(3 , defenseAgents.size());
+        if(defenseAgents.size() >= 3){
             if(findNeededDefense() == 3){
-                defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
-                                                defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseCount) , 1.4 , 2.5));
+                defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
+                                                defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
             }
             else{
-                defensePoses = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
-                                                defenseFormationForRectangularPositioning(findNeededDefense() , min(3 , defenseCount) , 1.4 , 2.5));
+                defensePoses = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
+                                                defenseFormationForRectangularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
                 for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
                     defensePoses.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
                 }
             }
         }
         else if(realDefSize < 3){
-            defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseCount) , conf.DownLimit , conf.UpLimit),
-                                            defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseCount) , 1.4 , 2.5));
+            defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
+                                            defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
         }
     }
     else{
-        defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , defenseCount - decideNumOfMarks() , conf.DownLimit , conf.UpLimit),
-                                        defenseFormationForRectangularPositioning(defenseNumber() , defenseCount - decideNumOfMarks() , 1.4 , 2.5));
+        defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , conf.DownLimit , conf.UpLimit),
+                                        defenseFormationForRectangularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , 1.4 , 2.5));
     }
 }
 
 void DefensePlan::setTargetMarkAndDef(){
-    ROS_INFO_STREAM("Lhum: raft3");
     setDefTarget();
-    ROS_INFO_STREAM("Lhum: raft2");
-    return;
     setMarkTarget();
-    ROS_INFO_STREAM("Lhum: raft1");
 }
 
 void DefensePlan::stuck(QList <Vector2D>& Points) {
@@ -1682,24 +1618,31 @@ void DefensePlan::stuck(QList <Vector2D>& Points) {
     QList <int> stuckIndexes;
     stuckPositions.clear();
     stuckIndexes.clear();
-    for (int i = 0; i < 4 && areAgentsStuckTogether(Points); i++) {
-        agentsStuckTogether(Points, stuckPositions, stuckIndexes);
-        correctingTheAgentsAreStuckTogether(Points, stuckPositions, stuckIndexes);
-    }
+    //for (int i = 0; i < 4 && areAgentsStuckTogether(Points); i++) {
+        agentsStuckTogether(Points, stuckPositions);
+        correctingTheAgentsAreStuckTogether(Points, stuckPositions);
+    //}
 }
 
 void DefensePlan::matchingPoses(QList <Vector2D>& matchPoints , QList <int>& matchResult){
     //// This Function matches the points that is produced by other functions to
     matchPoints.clear();
     matchResult.clear();
-    ROS_INFO_STREAM("Lhum: raft");
     matchPoints.append(defensePoses);
     matchPoints.append(markPoses);
-    return;
+    for(int i = 0 ; i < matchPoints.size() ; i++)
+        drawer->draw(Circle2D(matchPoints[i] , 0.01) , 0 , 360 , "red" , true);
     stuck(matchPoints);
-    ///////Lhum thinks all of this can delete
-    if (defenseAgents.size() > matchPoints.size() || defenseAgents.size() < matchPoints.size())
+    if (defenseAgents.size() > matchPoints.size() || defenseAgents.size() < matchPoints.size()) {
+        ROS_INFO_STREAM("Lhum: match " << matchPoints.size());
+        ///////Lhum thinks all of this can delete
+        ROS_INFO_STREAM("Lhum: def " << defensePoses.size());
+        ROS_INFO_STREAM("Lhum: mark " << markPoses.size());
+        ROS_INFO_STREAM("Lhum: match " << matchPoints.size());
         ROS_INFO_STREAM("Lhum: ############");
+    }
+    for(int i = 0 ; i < matchPoints.size() ; i++)
+        drawer->draw(Circle2D(matchPoints[i] , 0.02) , 0 , 360 , "cyan" , true);
     /*Vector2D tempPoint;
     Vector2D tempMatchPoints[matchPoints.size()];
     if (ourAgents.size() > matchPoints.size()) {
@@ -1741,7 +1684,7 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
     Vector2D sol[2];
     ////////////////////////////////////////////////////////////////////////////
     DBUG(QString("mark: %1").arg(decideNumOfMarks()) , D_AHZ);
-    DBUG(QString("defense: %1").arg(defenseCount) , D_AHZ);
+    DBUG(QString("defense: %1").arg(defenseAgents.size()) , D_AHZ);
     for(int i = 0 ; i < matchResult.count() ; i++){
         gpa[ourAgents[i]->id()]->clearOurrelax();
         gpa[ourAgents[i]->id()]->clearTheirrelax();
@@ -1756,7 +1699,6 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
             matchPoints[matchResult[i]] = avoidCircularPenaltyAreaByMasoud(ourAgents[i], matchPoints[matchResult[i]]);
         }
         ////////////////////////////////////////////////////////////
-        drawer->draw(Circle2D(matchPoints[matchResult[i]] , 0.05) , 0 , 360 , "black" , true);
         gpa[ourAgents[i]->id()]->setNoavoid(true);
         gpa[ourAgents[i]->id()]->setSlowmode(false);
         gpa[ourAgents[i]->id()]->setDivemode(false);
@@ -1847,11 +1789,9 @@ void DefensePlan::execute(){
         if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
             if(defenseAgents.size() > 0){
                 setTargetMarkAndDef();
-                return;
                 QList <Vector2D> matchPoints;
                 QList <int> matchResult;
                 matchingPoses(matchPoints , matchResult);
-                return;
                 executeMarkAndDef(matchPoints , matchResult);
             }
         }
@@ -2363,19 +2303,19 @@ int DefensePlan::decideNumOfMarks(){
     //// This function returns the "defenseCount" in all states, except when ball
     //// is near the corners , returns the 1.
 
-    if (defenseCount > 0){
+    if (defenseAgents.size() > 0){
         if(conf.ThreeDefenseMode){
-            return defenseCount - defenseNumber();
+            return defenseAgents.size() - defenseNumber();
         }
         else{
             if (gameState->isStop()){
-                return defenseCount - defenseNumber();
+                return defenseAgents.size() - defenseNumber();
             }
             if (gameState->theirDirectKick() || gameState->theirIndirectKick()) {
-                return defenseCount;
+                return defenseAgents.size();
             }
             else if (know->variables["transientFlag"].toBool()) {
-                return defenseCount;
+                return defenseAgents.size();
             }
             else if (gameState->isStart()) {
                 return 0;
