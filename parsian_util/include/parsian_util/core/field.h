@@ -191,7 +191,7 @@ public:
 
     Rect2D getCircleRegion(int n , int i) const;
 
-    QList<Vector2D> ourBigPAreaIntersect(Line2D line , double scale = - 1 , float bias = 0) const;
+    //QList<Vector2D> ourBigPAreaIntersect(Line2D line , double scale = - 1 , float bias = 0) const;
 
     QList<Vector2D> ourPAreaIntersect(Line2D line) const;
 
