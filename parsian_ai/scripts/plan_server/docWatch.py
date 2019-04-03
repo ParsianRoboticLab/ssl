@@ -1,481 +1,364 @@
-import time
+#!/usr/bin/env python
+
+import rospy
 import os
-import signal
-import sys
-
-import re
 import json
-import random
 import math
-
-from parsian_msgs.msg import parsian_plan
-from parsian_msgs.msg import parsian_plan_GUI
-
-from watchdog.observers import Observer
+from random import randint
 from watchdog.events import FileSystemEventHandler
-import rospkg
+from parsian_msgs.msg import parsian_plan
+from parsian_msgs.msg import vector2D
+from parsian_msgs.msg import parsian_plan_agent
+from parsian_msgs.msg import parsian_plan_position
+from parsian_msgs.msg import parsian_plan_skill
+from parsian_msgs.srv import plan_service
+from parsian_msgs.srv import plan_serviceResponse
+from parsian_msgs.srv import plan_serviceRequest
+from parsian_msgs.srv import parsian_update_plansRequest
+from parsian_msgs.msg import parsian_playoff_client
 
 
-class Watcher:
-    DIRECTORY_TO_WATCH = ""
-
-    def __init__(self):
-        signal.signal(signal.SIGINT, self.signal_handler)
-        self.path = rospkg.RosPack().get_path("parsian_ai")
-        print ("pack path: " + self.path)
-        self.path += "/plans/"
-        self.__observer = Observer()
-        # DIRECTORY_TO_WATCH = DIRECTORY_TO_WATCH + self.__p
-        self.__event_handler = Handler(self.path)
-        # l=[]
-        # l.append("/home/fateme/Workspace/parsian_ws/src/parsian_ssl/parsian_ai/plans/2Pass/pass.json")
-        # self.__event_handler.update_master_active(l, True, True)
-
-    def run(self):
-        self.__observer.schedule(self.__event_handler, self.path, recursive=True)
-        self.__observer.start()
-        try:
-            while True:
-                time.sleep(5)
-        except:
-            self.__observer.stop()
-            # print("Error")
-            self.__observer.join()
-            sys.exit(0)
-
-    def get_all_plans(self):
-        return self.__event_handler.get_all_plans_gui_msgs()
-
-    def update_master_active(self, name_list, plan_index, is_master, is_active):
-        if len(name_list) != len(plan_index):
-            print("not all plans are indexed")
-            return None
-        return self.__event_handler.update_master_active(name_list, plan_index, is_master, is_active)
-
-    def choose_plan(self, player_num, game_mode, ball_x, ball_y):
-        return self.__event_handler.choose_plan(player_num, game_mode, ball_x, ball_y)
-
-    def signal_handler(self, signal, frame):
-        print("\nctrl+C pressed!")
-        sys.exit(0)
 
 
-class Handler(FileSystemEventHandler):
-    def __init__(self, p):
-        self.__final_list = []
-        self.__ignore = []
-        self.__shuffleCount = 0
-        self.__final_dict = []
-        self.__all_master_plans = {}
-        self.__all_active_plans = {}
 
-        global final_list, shuffleCount, path
-        path = p
 
-        # read_plan(f[5])
-        self.__final_list = self.list_valid_plans(p)
 
-        self.plans_to_dict()
+class Watcher(FileSystemEventHandler):
+    patterns = ['*.json']
+    def __init__(self, path):
+        #initiate
+        self.path = path
+        rospy.Timer(rospy.Duration(0.5), self.my_callback)
+        self.is_newEvent_happend = True
+        self.client_pub = None
 
-        self.shuffle_indexing(self.__final_list)  # call once
+        #update_plans
+        self.all_jsons_root = []        #all files with json extension
+        self.all_ignoredjsons_root = [] #all ignored files with json extension
+        self.all_desiredjsons_root = [] #all json files that are not in ignore file
+        self.all_badjsons_root = []     #all json files that cant be opend
+        self.desired_plans = {}         #all desired plans -> filepath: [parsian_plan]
+        self.last_ai_respond = None
 
-        # self.choose_plan(4, 3)
-        # print (self.message_generator(self.__final_dict[0]))
 
-        # @staticmethod
     def on_any_event(self, event):
-        if event.is_directory:
-            return None
+        self.is_newEvent_happend = True
 
-        elif event.event_type == 'modified':
-            # print("Received modified event - %s" % event.src_path)
-            # self.add_plan(event.src_path)
-            self.refresh()
+    ##update all plans every 0.5 sec if a new event happend in directory
+    def my_callback(self, event):
+        if not self.is_newEvent_happend:
+            return
 
-        elif event.event_type == 'deleted':
-            # print("Received deleted event - %s" % event.src_path)
-            # self.remove_plan(event.src_path)
-            self.refresh()
+        self.is_newEvent_happend = False
 
-        elif event.event_type == 'created':
-            self.refresh()
-            # print("Received created event - %s." % event.src_path)
+        self.get_all_jsons_root()
 
-    def list_valid_plans(self, path):
-        file_list = []
-        for path, dirs, files in os.walk(path):
-            for filename in files:
-                fname = os.path.join(path, filename)
-                #         printfname.rsplit('/', 1)[1]   # just file name
-                file_list.append(fname)
+        self.get_all_ignoredjsons_root()
 
-        ignore_lst = []
-        for f in file_list:  # find ignore list
-            if f != None:
-                if f.endswith('.ignore'):
-                    ignore_lst = open(str(f)).read().split("\n")
-                    file_list.remove(f)
-                    break
+        self.get_all_desiredjsons_root()
 
-        if '' in ignore_lst:
-            ignore_lst.remove('')
+        self.get_desired_plans()
 
-        no_cmnt_ignr_lst = [li for li in ignore_lst if not li.startswith('#')]
-        print(no_cmnt_ignr_lst)
-        self.__ignore = no_cmnt_ignr_lst
+        self.publish_information()
 
-        bad_files = []
-        for f in file_list:
-            if f != None:
-                if f.endswith('.json'):
-                    # if os.stat(str(f)).st_size != 0:
-                    # print("adding " + str(f).rsplit('/', 1)[1]
-                    # with open(str(f)) as json_data:
-                    #     plan_data.append(json.load(json_data))
-                    if os.stat(str(f)).st_size == 0:
-                        bad_files.append(f)
-                        print("empty: " + str(f) + " --> removed!")
-                else:
-                    bad_files.append(f)
-                    # print("not json: " + str(f) + " --> removed!")
+    def get_all_jsons_root(self):
+        self.all_jsons_root = []
+        for root, dirs, files in os.walk(self.path, topdown=False):
+            for name in files:
+                if name.lower().endswith(".json"):
+                    self.all_jsons_root.append(os.path.join(root, name))
 
-        file_list2 = [f for f in file_list if f not in bad_files]
-        # printfile_list2
+    def get_all_ignoredjsons_root(self):
+        os.chdir(self.path)
+        self.all_ignoredjsons_root = []
+        if not os.path.exists("plans.ignore") and not os.path.isfile("plans.ignore"):
+            rospy.loginfo("plans.ignore not found")
+            return
+        clear_comment_lines = []#ignore all commented parts
+        with open("plans.ignore") as file:
+            for line in file:
+                if line.find('#') == 0:
+                    continue
+                elif line.find('#') > 0:
+                    clear_comment_lines.append(line[0: line.find('#')].rstrip())
+                elif not len(line.strip()) == 0:#not a blank line
+                    clear_comment_lines.append(line.rstrip())
 
-        self.__final_list = self.ignore_plans(file_list2, ignore_lst)
-        return self.__final_list
+        for i in range(len(clear_comment_lines)):
+            if clear_comment_lines[i].startswith('/'):
+                clear_comment_lines[i] = clear_comment_lines[i][1:]
 
-    def add_plan(self, path_to_plan):
-        flag = 0
-        print ("adding plan...")
-        if str(path_to_plan).endswith(".json"):
-            if not (str(path_to_plan).split("/plans")[1]) in self.__ignore:
-                for pattern in self.__ignore:
-                    if pattern != '':
-                        try:
-                            if (re.search(pattern, str(path_to_plan).split("/plans")[1]) and
-                                        re.search(pattern, str(path_to_plan).split("/plans")[1]).start() == 0):
-                                flag = 1
-                        except:
-                            print("Invalid Expression: " + pattern)
-            else:
-                flag = 1
 
-        if flag == 0:
-            self.__final_list.append(path_to_plan)
-            print(str(path_to_plan).split("/plans")[1] + " added.")
+        for line in clear_comment_lines:
+            os.chdir(self.path)
+            if os.path.isfile(line) and line.lower().endswith(".json"):
+                self.all_ignoredjsons_root.append(os.path.join(self.path, line))
+            elif os.path.isdir(os.path.join(self.path, line)):
+                for root, dirs, files in os.walk(os.path.join(self.path, line), topdown=False):
+                    for name in files:
+                        if name.lower().endswith(".json"):
+                            self.all_ignoredjsons_root.append(os.path.join(root, name))
 
-        return self.__final_list
+    def get_all_desiredjsons_root(self):
+        self.all_desiredjsons_root = []
+        self.all_badjsons_root = []
+        not_commented = []
+        for line in self.all_jsons_root:
+            if not line in self.all_ignoredjsons_root:
+                not_commented.append(line)
 
-    def remove_plan(self, path_to_plan):
-        if path_to_plan in self.__final_list:
-            print(str(path_to_plan).split("/plans")[1] + " removed.")
-            self.__final_list.remove(path_to_plan)
-
-    def refresh(self):
-        global path
-        self.__final_list = self.list_valid_plans(path)
-        self.shuffle_indexing(self.__final_list)
-        self.plans_to_dict()
-
-    def ignore_plans(self, file_list, ignore_list):
-        # files:
-        new_file_list = [fi for fi in file_list if (str(fi).split("/plans")[1] not in ignore_list)]
-        new_file_list2 = [fi for fi in file_list if fi not in new_file_list]
-        for pattern in ignore_list:
-            if pattern != '':
+        for line in not_commented:
+            is_correct = True
+            with open(line) as json_file:
                 try:
-                    for f in new_file_list:
-                        if re.search(pattern, str(f).split("/plans")[1]) and re.search(pattern, str(f).split("/plans")[1]).start() == 0:
-                            new_file_list2.append(f)
+                    json.load(json_file)
                 except:
-                    print("Invalid Expression: " + pattern)
+                    is_correct = False
+                if is_correct:
+                    self.all_desiredjsons_root.append(line)
+                else:
+                    self.all_badjsons_root.append(line)
 
-        print("ignored plans:")
-        for fil in new_file_list2:
-            str_list = str(fil).split("/plans")
-            if len(str_list) > 0:
-                print("\t" + str(fil).split("/plans")[1])
+    def get_desired_plans(self):
+        last_desired_plans = self.desired_plans.copy()
+        self.desired_plans = {}
+        for root in self.all_desiredjsons_root:
+            res = self.generate_parsianplan_from_json(root)
+            if res != None:
+                self.desired_plans[root] = res
 
-        last = [term for term in new_file_list if not term in new_file_list2]
+        #check for plans that if they were  active or master the last time
+        self.check_desired_plans_history(last_desired_plans)
 
-        print("FINAL LIST:")
-        for i in last:
-            print("\t" + str(i).split("/plans")[1])
+    def generate_parsianplan_from_json(self, planpath):
+        plan_json = None
+        with open(planpath) as json_file:
+            try:
+                plan_json = json.load(json_file)
+            except:
+                return False
+        try:
+            plan_message = parsian_plan()
+            plan_message.planFile = planpath
+            plan_message.isActive = True                                #need change in client request
+            plan_message.isMaster = False                               #need change in client request
+            plan_message.symmetry = False                               #need change in ai requests
+            plan_message.chance = plan_json["plans"][0]["chance"]       #could be toggled in client or ai in future
+            plan_message.lastDist = plan_json["plans"][0]["lastDist"]
 
-        return last
+            ##start agentsize
+            #all agents that thier initPos isnt -100, except for the first kicker
+            agentSize = 0
+            agentSize += 1 #first kicker
+            for agentsPos in plan_json["plans"][0]["agentInitPos"]:
+                if agentsPos["x"] != -100:
+                    agentSize += 1
+            plan_message.agentSize = agentSize
+            ##finish agentsize
 
-    def shuffle_indexing(self, alist):
-        random.shuffle(alist)
+            plan_message.tags = [str(tag) for tag in plan_json["plans"][0]["tags"]]
+            plan_message.planMode = str(plan_json["plans"][0]["planMode"])
 
-    def choose_plan(self, player_num, game_mode, ball_x, ball_y):
-        # DIRECT   = 1  INDIRECT = 2  KICKOFF  = 3
-        plan_mode = ""
-        if game_mode == 1:
-            plan_mode = "DIRECT"
-        elif game_mode == 2:
-            plan_mode = "INDIRECT"
-        elif game_mode == 3:
-            plan_mode = "KICKOFF"
+            ##start ballInitPos
+            ballpos = vector2D()
+            ballpos.x = plan_json["plans"][0]["ballInitPos"]["x"]
+            ballpos.y = plan_json["plans"][0]["ballInitPos"]["y"]
+            plan_message.ballInitPos = ballpos
+            ##finish ballInitPos
 
-        sublist = []
-        rad = 1
+            plan_message.successRate = 0                                #could be toggled in client or ai in future
+            plan_message.planRepeat = 0                                 #could be toggled here in future
 
-        active_list = self.get_master_active_plans(self.__final_dict)
+            ##start agentInitPos
+            allinitpos = []
+            for initpos in plan_json["plans"][0]["agentInitPos"]:
+                initpos_tmp = vector2D()
+                initpos_tmp.x = initpos["x"]
+                initpos_tmp.y = initpos["y"]
+                allinitpos.append(initpos_tmp)
+            plan_message.agentInitPos[0:len(allinitpos)] = allinitpos
+            ##finish agentInitPos
 
-        for plan in active_list:
-            if self.check_plan(plan, ball_x, ball_y, rad, player_num, plan_mode):
-                sublist.append(plan)
+            ##start agents
+            agents = []
+            for agent in plan_json["plans"][0]["agents"]:
+                agent_tmp = parsian_plan_agent()
+                agent_tmp.id = agent["ID"]
+                positions = []
+                for position in agent["positions"]:
+                    position_tmp = parsian_plan_position()
+                    position_tmp.angel = position["angel"]
+                    position_tmp.pos.x = position["pos-x"]
+                    position_tmp.pos.y = position["pos-y"]
+                    position_tmp.tolerance = position["tolerance"]
+                    skills = []
+                    for skill in position["skills"]:
+                        skill_tmp = parsian_plan_skill()
+                        skill_tmp.flag = skill["flag"]
+                        skill_tmp.name = str(skill["name"])
+                        skill_tmp.primary = skill["primary"]
+                        skill_tmp.secondry = skill["secondary"]
+                        if "target" in skill:
+                            skill_tmp.agent = skill["target"]["agent"]
+                            skill_tmp.index = skill["target"]["index"]
+                        else:
+                            skill_tmp.agent = -1
+                            skill_tmp.index = -1
+                        skills.append(skill_tmp)
 
-        if len(sublist) > 0:
-            print("# active and valid plans: "+str(len(sublist))+"\n")
-            i = self.__shuffleCount % len(sublist)
-            self.__shuffleCount += 1
-            print ("\n" + sublist[i]["filename"].split("plans/")[1] +
-                   ": "+str(sublist[i]["index"]) + "   " + str(sublist[i]["planMode"]))
-            return self.ai_message_generator(sublist[i])
-        else:
-            print ("of invalid plans ...")
-            return self.nearest_plan(player_num, ball_x, ball_y, plan_mode)
+                    position_tmp.skills[0:len(skills)] = skills
+                    position_tmp.skillSize = len(skills)
+                    positions.append(position_tmp)
+                agent_tmp.positions[0:len(positions)] = positions
+                agent_tmp.posSize = len(positions)
+                agents.append(agent_tmp)
+            plan_message.agents[0:len(agents)] = agents
+            ##finish agents
 
-    def get_master_active_plans(self, plan_list):
-        master_list = []
-        active_list = []
-
-        for plan in plan_list:
-            if plan["isMaster"]:
-                master_list.append(plan)
-
-        if len(master_list) > 0:
-            active_list = master_list
-        else:
-            for plan in plan_list:
-                if plan["isActive"]:
-                    active_list.append(plan)
-
-        return active_list
-
-    def check_plan(self, plan, ball_x, ball_y, rad, player_num, plan_mode):
-        DIRECT = 1
-        INDIRECT = 2
-        KICKOFF = 3
-
-        planSize = self.plan_size(plan)
-
-        if self.circle_contains(ball_x, ball_y, rad, plan["ballInitPos"]["x"], plan["ballInitPos"]["y"]):
-            # print("Ball Pos Matched")
-            if planSize >= player_num and plan["chance"] > 0 and plan["lastDist"] >= 0:
-                if plan_mode == KICKOFF:
-                    if plan["planMode"] == KICKOFF:
-                        plan["symmetry"] = False
-                        return True
-                elif plan["planMode"] != KICKOFF:
-                    plan["symmetry"] = False
-                    return True
-
-        if self.circle_contains(ball_x, -ball_y, rad, plan["ballInitPos"]["x"], plan["ballInitPos"]["y"]):
-            # print("Ball Symm Pos Matched")
-            if planSize >= player_num and plan["chance"] > 0 and plan["lastDist"] >= 0:
-                if plan_mode == KICKOFF:
-                    if plan["planMode"] == KICKOFF:
-                        plan["symmetry"] = True
-                        return True
-                elif plan["planMode"] != KICKOFF:
-                    plan["symmetry"] = True
-                    return True
-        return False
-
-    def plan_size(self, plan):
-        i = 0
-        for pos in plan["agentInitPos"]:
-            if pos["x"] != -100:
-                i += 1
-        return i+1
-
-    def nearest_plan(self, player_num, ball_x, ball_y, plan_mode):
-        DIRECT = 1
-        INDIRECT = 2
-        KICKOFF = 3
-
-        player_num_filter = []
-
-        for plan in self.__final_dict:
-            planAgentSize = self.plan_size(plan)
-            if planAgentSize >= player_num:
-                player_num_filter.append(plan)
-
-        active_list = self.get_master_active_plans(player_num_filter)
-
-        sublist = sorted(active_list, key=lambda x: self.ball_dist(
-            x, x["ballInitPos"]["x"], x["ballInitPos"]["y"], ball_x, ball_y))
-
-        subsublist = []
-        if len(sublist) > 0:
-            for plan in sublist:
-                if plan_mode == KICKOFF:
-                    if plan["planMode"] == KICKOFF:
-                        subsublist.append(plan)
-                elif plan["planMode"] != KICKOFF:
-                    subsublist.append(plan)
-
-        print("# active and valid plans after mode check: " + str(len(subsublist)) + "\n")
-
-        if len(subsublist) > 0:
-            print("# active and valid plans: " + str(len(subsublist)) + "\n")
-
-            print ("\n" + subsublist[0]["filename"].split("plans/")[1] +
-                   ": " + str(subsublist[0]["index"]) + "   " + str(subsublist[0]["planMode"]))
-            return self.ai_message_generator(subsublist[0])
-        else:
-            print ("There is No master or active plan with proper number of players :/")
+            return plan_message
+        except:
             return None
 
-    @staticmethod
-    def circle_contains(x, y, r, point_x, point_y):
-        if (x - point_x) * (x - point_x) + (y - point_y) * (y - point_y) > r * r:
-            return False
+    def choose_plan(self, req):
+        #check for master plan
+        for plan in self.desired_plans:
+            if self.desired_plans[plan].isMaster:
+                response = plan_serviceResponse()
+                response.the_plan = self.desired_plans[plan]
+                isMatched, isSymmetry = self.check_ballPos(plan, req.plan_req.ballPos.x, req.plan_req.ballPos.y)
+                response.the_plan.symmetry = isSymmetry
+                response.time_us = 0
+                self.last_ai_respond = plan
+                self.publish_information()
+                return response
+
+        #no master plans
+        all_matched_plans = self.get_all_matched_plans(req.plan_req.gameMode, req.plan_req.playersNum, req.plan_req.ballPos.x, req.plan_req.ballPos.y)#{planpath: isSymmetric}
+
+        if len(all_matched_plans.keys()) == 0:
+            self.last_ai_respond = None
+            return
+        shuffle = randint(0, len(all_matched_plans.keys()) - 1)
+
+        response = plan_serviceResponse()
+        response.the_plan = self.desired_plans[all_matched_plans.keys()[shuffle]]
+        response.the_plan.symmetry = all_matched_plans[all_matched_plans.keys()[shuffle]]
+        response.time_us = 0
+        self.last_ai_respond = all_matched_plans.keys()[shuffle]
+        self.publish_information()
+        return response
+
+    def get_all_matched_plans(self, gameMode, playersNum, ballPosX, ballPosY):
+        matched = {}
+        if gameMode == 3:#KICKOFF
+            for plan in self.desired_plans:
+                if self.desired_plans[plan].planMode == "KICKOFF":
+                    if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0 and self.desired_plans[plan].isActive:
+                        matched[plan] = False#not symmetric
+
         else:
-            return True
+            for plan in self.desired_plans:
+                if self.desired_plans[plan].agentSize >= playersNum and self.desired_plans[plan].chance > 0 and self.desired_plans[plan].lastDist >= 0 and self.desired_plans[plan].isActive:
+                    isMatched, isSymmetry = self.check_ballPos(plan, ballPosX, ballPosY)
+                    if isMatched:
+                        matched[plan] = isSymmetry
+        return matched
 
-    @staticmethod
-    def ball_dist(plan, x1, y1, x2, y2):
-        a = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
-        b = (x1 - x2) * (x1 - x2) + (y1 + y2) * (y1 + y2)
-        if a < b:
-            plan["symmetry"] = False
-            return math.sqrt(a)
+    def check_ballPos(self, plan, ballPosX, ballPosY):
+        actual_distX = self.desired_plans[plan].ballInitPos.x - ballPosX
+        actual_distY = self.desired_plans[plan].ballInitPos.y - ballPosY
+        actual_dist = math.sqrt(math.pow(actual_distX, 2) + math.pow(actual_distY, 2))
+
+        symm_distX = self.desired_plans[plan].ballInitPos.x - ballPosX
+        symm_distY = -self.desired_plans[plan].ballInitPos.y - ballPosY
+        symm_dist = math.sqrt(math.pow(symm_distX, 2) + math.pow(symm_distY, 2))
+
+        if actual_dist <= symm_dist and actual_dist < 2:
+            return (True, False) #isMatched - isSymmetry
+        if actual_dist > symm_dist and symm_dist < 2:
+            return (True, True) #isMatched - isSymmetry
         else:
-            plan["symmetry"] = True
-            return math.sqrt(b)
+            return (False, False)
 
-    def get_all_plans_gui_msgs(self):
-        self.refresh();
-        plans_msg = []
-        for plan in self.__final_dict:
-            plans_msg.append(self.gui_message_generator(plan))
-        return plans_msg
+    def gui_request(self, req):
+        os.chdir(self.path)
+        if req.Mode == 1:#ACTIVATE
+            for path in req.Plans:
+                path = os.path.join(self.path, path)
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    self.desired_plans[path].isActive = True
+                elif os.path.isdir(path):
+                    for root, dirs, files in os.walk(path, topdown=False):
+                        for name in files:
+                            name = os.path.join(root, name)
+                            if name in self.desired_plans.keys():
+                                self.desired_plans[name].isActive = True
 
-    def update_master_active(self, name_list, plan_index_list, is_master, is_active):
-        for plan in self.__final_dict:
-            for i in range(0, len(name_list)):
-                if plan["filename"] == name_list[i] and plan["index"] == plan_index_list[i]:
-                    plan["isMaster"] = is_master
-                    plan["isActive"] = is_active
-                    self.__all_active_plans[(plan["filename"], plan_index_list[i])] = is_active
-                    self.__all_master_plans[(plan["filename"], plan_index_list[i])] = is_master
+        elif req.Mode == 2:#DEACTIVATE
+            for path in req.Plans:
+                path = os.path.join(self.path, path)
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    self.desired_plans[path].isActive = False
+                elif os.path.isdir(path):
+                    for root, dirs, files in os.walk(path, topdown=False):
+                        for name in files:
+                            name = os.path.join(root, name)
+                            if name in self.desired_plans.keys():
+                                self.desired_plans[name].isActive = False
 
-        for plan in self.__final_dict:
-            print(plan["filename"] + ": " + "master: " + str(plan["isMaster"]) + " , " + "active: " + str(plan["isActive"]))
-        return self.get_all_plans_gui_msgs()
+        elif req.Mode == 3:#MASTER
+            if req.Plans[0] != '' or req.Plans[0] != None:
+                path = os.path.join(self.path, req.Plans[0])
+                if os.path.isfile(path) and path in self.desired_plans.keys():
+                    for plan in self.desired_plans:
+                        self.desired_plans[plan].isMaster = False
+                    self.desired_plans[path].isMaster = True
 
-    def plans_to_dict(self):
-        self.__final_dict = []
-        # print ("plans_to_dict")
-        # print (len(self.__final_list))
-        for plan in self.__final_list:
-            with open(str(plan)) as json_data:
-                tmp = json.load(json_data)
-                for i in range(0, len(tmp["plans"])):
-                    dict1 = tmp["plans"][i]
-                    dict1.update({"index": i})
-                    dict1.update({"filename": str(plan)})
-                    dict1.update({"successRate": 0})
-                    dict1.update({"planRepeat": 0})
-                    dict1.update({"symmetry": False})
+        elif req.Mode == 4:#DEMASTER
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isMaster = False
 
-                    if (dict1["filename"], dict1["index"]) in self.__all_active_plans:
-                        dict1.update({"isActive": self.__all_active_plans[dict1["filename"], dict1["index"]]})
-                    else:
-                        dict1.update({"isActive": True})
+        elif req.Mode == 5:#ACTIVATE_ALL
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isActive = True
 
-                    if (dict1["filename"], dict1["index"]) in self.__all_master_plans:
-                        dict1.update({"isMaster": self.__all_master_plans[dict1["filename"], dict1["index"]]})
-                    else:
-                        dict1.update({"isMaster": False})
+        elif req.Mode == 6:#DEACTIVATE_ALL
+            for plan in self.desired_plans:
+                self.desired_plans[plan].isActive = False
 
-                    self.__final_dict.append(dict1)
+        self.publish_information()
 
-        return self.__final_dict
+        # print("active")
+        # for plan in self.desired_plans:
+        #     if self.desired_plans[plan].isActive:
+        #         print(plan)
+        # print("master")
+        # for plan in self.desired_plans:
+        #     if self.desired_plans[plan].isMaster:
+        #         print(plan)
+        # print("--------------------------------------")
 
-    def gui_message_generator(self, plan_dict):
-        plan_gui_msg = parsian_plan_GUI()
-        plan_gui_msg.isActive = plan_dict["isActive"]
-        plan_gui_msg.isMaster = plan_dict["isMaster"]
-        plan_gui_msg.planFile = plan_dict["filename"]
-        plan_gui_msg.agentSize = self.plan_size(plan_dict)
-        plan_gui_msg.chance = plan_dict["chance"]
-        plan_gui_msg.lastDist = plan_dict["lastDist"]
-        plan_gui_msg.tags = plan_dict["tags"]
-        plan_gui_msg.planMode = plan_dict["planMode"]
-        plan_gui_msg.ballInitPos.x = plan_dict["ballInitPos"]["x"]
-        plan_gui_msg.ballInitPos.y = plan_dict["ballInitPos"]["y"]
-        plan_gui_msg.planRepeat = plan_dict["planRepeat"]
-        plan_gui_msg.successRate = plan_dict["successRate"]
+    def check_desired_plans_history(self, last_desired_plans):
+        for plan in self.desired_plans:
+            if plan in last_desired_plans.keys():
+                self.desired_plans[plan].isActive = last_desired_plans[plan].isActive
+                self.desired_plans[plan].isMaster = last_desired_plans[plan].isMaster
 
-        return plan_gui_msg
+    def publish_information(self):
+        message = parsian_playoff_client()
+        if self.last_ai_respond == None:
+            message.last_ai_response = ""
+        else:
+            message.last_ai_response = self.last_ai_respond[len(self.path) + 1:len(self.last_ai_respond)]
+        for plan in self.desired_plans:
+            message.desired_plans.append(plan[len(self.path) + 1:len(plan)])
+            if self.desired_plans[plan].isActive:
+                message.active_plans.append(plan[len(self.path) + 1:len(plan)])
+            if self.desired_plans[plan].isMaster:
+                message.master_plan = plan[len(self.path) + 1:len(plan)]
+        for plan in self.all_ignoredjsons_root:
+            message.ignored_plans.append(plan[len(self.path) + 1:len(plan)])
 
-    def ai_message_generator(self, plan_dict):
-        plan_msg = parsian_plan()
-        plan_msg.isActive = plan_dict["isActive"]
-        plan_msg.isMaster = plan_dict["isMaster"]
-        plan_msg.planFile = plan_dict["filename"]
-        plan_msg.agentSize = self.plan_size(plan_dict)
-        plan_msg.chance = plan_dict["chance"]
-        plan_msg.lastDist = plan_dict["lastDist"]
-        plan_msg.tags = plan_dict["tags"]
-        plan_msg.planMode = plan_dict["planMode"]
-        plan_msg.ballInitPos.x = plan_dict["ballInitPos"]["x"]
-        plan_msg.ballInitPos.y = plan_dict["ballInitPos"]["y"]
-        plan_msg.planRepeat = plan_dict["planRepeat"]
-        plan_msg.successRate = plan_dict["successRate"]
-        plan_msg.symmetry = plan_dict["symmetry"]
+        if self.client_pub != None:
+            self.client_pub.publish(message)
 
-        i = 0
-        j = 0
-        k = 0
-        for agent in plan_dict["agents"]:
-            plan_msg.agents[i].id = agent["ID"]
-            plan_msg.agents[i].posSize = len(agent["positions"])
-            j = 0
-            for pos in agent["positions"]:
-                # print ("---------------------------------------------pos "+str(i))
-                plan_msg.agents[i].positions[j].angel = pos["angel"]
-                plan_msg.agents[i].positions[j].pos.x = pos["pos-x"]
-                plan_msg.agents[i].positions[j].pos.y = pos["pos-y"]
-                plan_msg.agents[i].positions[j].tolerance = pos["tolerance"]
-                plan_msg.agents[i].positions[j].skillSize = len(pos["skills"])
-                k = 0
-                for skill in pos["skills"]:
-                    plan_msg.agents[i].positions[j].skills[k].flag = skill["flag"]
-                    plan_msg.agents[i].positions[j].skills[k].name = skill["name"]
-                    plan_msg.agents[i].positions[j].skills[k].primary = skill["primary"]
-                    plan_msg.agents[i].positions[j].skills[k].secondry = skill["secondary"]
-                    if "target" in skill:
-                        plan_msg.agents[i].positions[j].skills[k].agent = skill["target"]["agent"]
-                        plan_msg.agents[i].positions[j].skills[k].index = skill["target"]["index"]
-                    else:
-                        plan_msg.agents[i].positions[j].skills[k].agent = -1
-                        plan_msg.agents[i].positions[j].skills[k].index = -1
-                    k += 1
-                j += 1
-            i += 1
-
-        i = 0
-        for pos in plan_dict["agentInitPos"]:
-            plan_msg.agentInitPos[i].x = pos["x"]
-            plan_msg.agentInitPos[i].y = pos["y"]
-            i += 1
-
-        return plan_msg
-
-
-if __name__ == '__main__':
-    # w = Watcher()
-    # w.run()
-    path = rospkg.RosPack().get_path("parsian_ai")
-    print ("pack path: " + path)
-    path += "/plans/"
-
-    event_handler = Handler(path)
-    event_handler.nearest_plan(2, 2, 2, 1)
-    event_handler.get_all_plans_gui_msgs()
