@@ -330,6 +330,8 @@ private:
     bool inTimePlan();
 protected:
     void reset() override;
+
+    double calcRegionProperties(int robot_id,int region_index);
 };
 
 #endif // DYNAMICATTACK_H
