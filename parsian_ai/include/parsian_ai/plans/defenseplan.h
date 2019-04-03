@@ -55,7 +55,7 @@ protected:
     void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
 
     bool isInIndirectArea(Vector2D);
-    bool upper,downer,middle;
+    int condWhere;
     bool cirRec;
     int defenseNumber();
     QList<Vector2D> getPositionJustForZJU(int numberOfOverDefenders);

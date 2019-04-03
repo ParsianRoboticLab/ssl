@@ -12,103 +12,62 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
     defendersForZJU.clear();
     if(wm->ball->pos.y > 1.25 && numberOfOverDefenders == 1){
         defendersForZJU.append(Vector2D(-4.7,-1/2));
-        upper= true;
-        downer= true;
-        middle= true;
+        condWhere = 0;
     }
 
-    else if(wm->ball->pos.y > 1.25 && numberOfOverDefenders == 2){
+    else if((wm->ball->pos.y > 1.25 || wm->ball->pos.y < -1.25) && numberOfOverDefenders == 2){
         defendersForZJU.append(Vector2D(-4.7,0.4));
         defendersForZJU.append(Vector2D(-4.7,-0.4));
-        upper= true;
-        middle= true;
-        downer= false;
+        condWhere = 1;
     }
 
     else if(wm->ball->pos.y < -1.25 && numberOfOverDefenders == 1){
         defendersForZJU.append(Vector2D(-4.7,1/2));
-        upper= true;
-        middle= false;
-        downer= true;
-    }
-
-    else if(wm->ball->pos.y < -1.25 && numberOfOverDefenders == 2){
-        defendersForZJU.append(Vector2D(-4.7,0.4));
-        defendersForZJU.append(Vector2D(-4.7,-0.4));
-        upper= true;
-        middle= false;
-        downer= false;
+        condWhere = 2;
     }
 
     else if(1.15 >= wm->ball->pos.y && wm->ball->pos.y > 0.05 && numberOfOverDefenders == 1) {
         defendersForZJU.append(Vector2D(-4.7,-0.6));
-        upper= false;
-        middle= true;
-        downer= true;
+        condWhere = 3;
     }
 
     else if(-0.05 >= wm->ball->pos.y && wm->ball->pos.y >= -1.15 && numberOfOverDefenders == 1) {
         defendersForZJU.append(Vector2D(-4.7,0.6));
-        upper= false;
-        middle= true;
-        downer= false;
+        condWhere = 4;
     }
 
-
-    else if(1.15 >= wm->ball->pos.y && wm->ball->pos.y > 0.05 && numberOfOverDefenders == 2) {
+    else if((1.15 >= wm->ball->pos.y && wm->ball->pos.y > 0.05 && numberOfOverDefenders == 2) || (-0.05 >= wm->ball->pos.y && wm->ball->pos.y >= -1.15 && numberOfOverDefenders == 2)) {
         defendersForZJU.append(Vector2D(-4.7,-1.2));
         defendersForZJU.append(Vector2D(-4.7,1.2));
-        upper= false;
-        middle= false;
-        downer= true;
-    }
-
-    else if(-0.05 >= wm->ball->pos.y && wm->ball->pos.y >= -1.15 && numberOfOverDefenders == 2) {
-        defendersForZJU.append(Vector2D(-4.7,-1.2));
-        defendersForZJU.append(Vector2D(-4.7,1.2));
-        upper= false;
-        middle= false;
-        downer= false;
+        condWhere = 5;
     }
 
     else {////kasra:for Threshold in real launching:) ////
-        if(upper && middle && downer){
+        if(condWhere == 0){
             defendersForZJU.append(Vector2D(-4.7,-1/2));
         }
 
-        if(upper && middle && !downer){
+        else if(condWhere == 1){
             defendersForZJU.append(Vector2D(-4.7,0.4));
             defendersForZJU.append(Vector2D(-4.7,-0.4));
         }
 
-        if(upper && !middle && downer){
+        else if(condWhere == 2){
             defendersForZJU.append(Vector2D(-4.7,1/2));
         }
 
-        if(upper && !middle && !downer){
-            defendersForZJU.append(Vector2D(-4.7,0.4));
-            defendersForZJU.append(Vector2D(-4.7,-0.4));
-        }
-
-        if(!upper && middle && downer){
+        else if(condWhere == 3){
             defendersForZJU.append(Vector2D(-4.7,-0.6));
         }
 
-        if(!upper && middle && !downer){
+        else if(condWhere == 4){
             defendersForZJU.append(Vector2D(-4.7,0.6));
         }
 
-        if(!upper && !middle && downer){
+        else if(condWhere == 5){
             defendersForZJU.append(Vector2D(-4.7,-1.2));
             defendersForZJU.append(Vector2D(-4.7,1.2));
         }
-
-        if(!upper && !middle && !downer){
-            defendersForZJU.append(Vector2D(-4.7,-1.2));
-            defendersForZJU.append(Vector2D(-4.7,1.2));
-        }
-
-
 
         else{
 
