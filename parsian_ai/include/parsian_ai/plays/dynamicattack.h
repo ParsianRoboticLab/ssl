@@ -225,6 +225,8 @@ private:
 
     void makePlan(int agentSize);
     void assignId();
+    void passPositions(const QList<int>&, MWBM&);
+    void passDecision();
     void assignTasks();
     void updateAttackState();
     bool passDone();
@@ -274,12 +276,12 @@ private:
 
     void bestPos(const QList<int>&, MWBM&);
     void checkPositions();
-    void isChipOrPass(passPoint& );
-    void findOneTouch();
-    void isInPosition();
-    void toPassOrNotToPass();
-    void passPriority();
-    void showPasser();
+    void isChipOrPass(QList<passPoint>&);
+    void findOneTouch(QList<passPoint>&);
+    void isInPosition(QList<passPoint>& );
+    void toPassOrNotToPass(QList<passPoint>&);
+    void passPriority(QList<passPoint>&);
+    void showPasser(QList<passPoint>&);
     //void stayPassReciever(const QList<int>&, MWBM&);
     void stayPassReciever(const QList<int>&, MWBM&);
     void finalPassReciever();

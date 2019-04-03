@@ -1095,7 +1095,6 @@ void CDynamicAttack::chooseBestPositons() {
             case 0:
                 //regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
             {
-
                 regions[4].pointPriority = 6;
                 regions[2].pointPriority = 5;
                 regions[1].pointPriority = 4;
@@ -1103,8 +1102,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[3].pointPriority = 2;
                 regions[6].pointPriority = 1;
                 regions[0].pointPriority = 1;
-
-
                 break;
             }
             case 1:
@@ -1117,7 +1114,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[2].pointPriority = 2;
                 regions[6].pointPriority = 1;
                 regions[1].pointPriority = 1;
-
                 break;
             }
             case 2:
@@ -1130,8 +1126,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[1].pointPriority = 2;
                 regions[6].pointPriority = 1;
                 regions[2].pointPriority = 1;
-
-
                 break;
             }
             case 3:
@@ -1144,8 +1138,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[0].pointPriority = 2;
                 regions[6].pointPriority = 1;
                 regions[3].pointPriority = 1;
-
-
                 break;
             }
             case 4:
@@ -1158,8 +1150,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[5].pointPriority = 2;
                 regions[6].pointPriority = 1;
                 regions[4].pointPriority = 1;
-
-
                 break;
             }
             case 5:
@@ -1172,7 +1162,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[6].pointPriority = 2;
                 regions[4].pointPriority = 1;
                 regions[5].pointPriority = 1;
-
                 break;
             }
             case 6:
@@ -1185,7 +1174,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[4].pointPriority = 2;
                 regions[5].pointPriority = 6; //if it is in corner it is good.
                 regions[6].pointPriority = 1;
-
                 break;
             }
             default:
@@ -1198,8 +1186,6 @@ void CDynamicAttack::chooseBestPositons() {
                 regions[4].pointPriority = 2;
                 regions[5].pointPriority = 1;
                 regions[6].pointPriority = 0;
-
-
                 break;
             }
         }
@@ -1251,8 +1237,6 @@ void CDynamicAttack::chooseBestPositons() {
             }
 
         }
-
-
         for (size_t i{}; i < REGION_NUM; i++) {
             regions[i].pointPriority -= (regions[i].oppInside + regions[i].oppInNeighbor);
             sortRegions.append(regions[i]);
@@ -1266,8 +1250,6 @@ void CDynamicAttack::chooseBestPositons() {
 
             //ROS_INFO_STREAM("amiry ids : " << sortRegions[i].id << " and point is : " << sortRegions[i].pointPriority << " and i is : " << i);
         }
-
-
     }
 }
 
@@ -1313,33 +1295,39 @@ void CDynamicAttack::assignId() {
     for (int v{}; v < robotIDs.count(); v++)
         matchingIDs.append(matcher.getMatch(v));
 
+    passPositions(robotIDs, matcher);
 
-    bestPos(robotIDs, matcher);
 
-    checkPositions();
-    findOneTouch();
-    isInPosition();
-    toPassOrNotToPass();
-    stayPassReciever(robotIDs, matcher);
-    passPriority();
-    showPasser();
+
     //finalPassReciever();
 
 
 }
 
 
+void CDynamicAttack::passPositions(const QList<int>& robotIDs, MWBM& matcher)
+{
+
+    bestPos(robotIDs, matcher);
+    isChipOrPass(passPoints);
+    findOneTouch(passPoints);
+    isInPosition(passPoints);
+    toPassOrNotToPass(passPoints);
+    stayPassReciever(robotIDs, matcher);
+    passPriority(passPoints);
+    showPasser(passPoints);
+
+
+    passDecision();
+}
+
+
+void CDynamicAttack::passDecision() {
+    
+}
+
+
 void CDynamicAttack::stayPassReciever(const QList<int> &robotIDs, MWBM &matcher) {
-
-    /*for(int i{}; i < passPoints.size(); i++)
-    {
-        if(passPoints[i].stay)
-        {
-            semiDynamicPosition.append(passPoints[i].point);
-            break;
-        }
-    }*/
-
 
     for (int i{}; i < passPoints.size(); i++) {
         passPoints[i].chance = passPoints[i].stay;
@@ -1350,13 +1338,11 @@ void CDynamicAttack::stayPassReciever(const QList<int> &robotIDs, MWBM &matcher)
         amirSemiDynamicPosition.append(passPoints[i].point);
     }
 
-    /*for (int i{}; i < passPoints.size(); i++)
-        amirSemiDynamicPosition.append(passPoints[i].point);*/
 
 }
 
 
-void CDynamicAttack::showPasser() {
+void CDynamicAttack::showPasser(QList<passPoint>&) {
     ROS_INFO_STREAM("amirf 4");
     for (int i{}; i < passPoints.size(); i++) {
         /*if(passPoints[i].amIReciever)
@@ -1379,7 +1365,7 @@ void CDynamicAttack::showPasser() {
 }
 
 
-void CDynamicAttack::passPriority() {
+void CDynamicAttack::passPriority(QList<passPoint>&) {
     ROS_INFO_STREAM("amirf 3");
     for (int i{}; i < passPoints.size(); i++) {
         if (passPoints[i].amIReciever && passPoints[i].oneTouch) {
@@ -1418,33 +1404,28 @@ passPoint::passPoint(vector2D p) {
 }
 
 
-void CDynamicAttack::isChipOrPass(passPoint &p) {
+void CDynamicAttack::isChipOrPass(QList<passPoint>&) {
     double dist_treshold{4.5};
-    if (playmake->pos().dist(p.point) < dist_treshold) {
-        if (isPathClear(playmake->pos(), p.point, Robot::robot_radius_new, 0.2))
-            p.chipOrPass = false;
-        else {
-            p.chipOrPass = true;
-        }
-    } else {
-        if (isPathClear(playmake->pos(), p.point, Robot::robot_radius_new, 0.2))
-            p.chipOrPass = false;
-    }
-
-}
-
-
-void CDynamicAttack::checkPositions() {
     for (int i{}; i < passPoints.size(); i++) {
-        //pass or chip
-        isChipOrPass(passPoints[i]);
-
+        passPoint p{passPoints[i]};
+        if (playmake->pos().dist(p.point) < dist_treshold) {
+            if (isPathClear(playmake->pos(), p.point, Robot::robot_radius_new, 0.2))
+                p.chipOrPass = false;
+            else {
+                p.chipOrPass = true;
+            }
+        } else {
+            if (isPathClear(playmake->pos(), p.point, Robot::robot_radius_new, 0.2))
+                p.chipOrPass = false;
+        }
     }
 
 }
 
 
-void CDynamicAttack::isInPosition() {
+
+
+void CDynamicAttack::isInPosition(QList<passPoint>& passPoints) {
     for (int i{}; i < passPoints.size(); i++) {
         for (int j{}; j < wm->our.activeAgentsCount(); j++) {
             //if(passPoints[i].inPostion)//edit
@@ -1458,13 +1439,13 @@ void CDynamicAttack::isInPosition() {
     }
 }
 
-void CDynamicAttack::toPassOrNotToPass() {
-    ROS_INFO_STREAM("amirf 2");
+void CDynamicAttack::toPassOrNotToPass(QList<passPoint>&) {
+    //ROS_INFO_STREAM("amirf 2");
     for (int i{}; i < passPoints.size(); i++) {
         if (passPoints[i].inPostion) {
-            ROS_INFO_STREAM("amirf they are in position");
+            //ROS_INFO_STREAM("amirf they are in position");
             if (playmake->pos().dist(wm->ball->pos) < 0.5) {
-                ROS_INFO_STREAM("amirf in if");
+                //ROS_INFO_STREAM("amirf in if");
                 if (isPassPathOpen(wm->ball->pos, passPoints[i].point,
                                    Robot::robot_radius_new + (wm->ball->pos.dist(passPoints[i].point) / 15), 0.1) &&
                     isPositionClear(passPoints[i].point, wm->field->oppGoal(),
@@ -1478,7 +1459,7 @@ void CDynamicAttack::toPassOrNotToPass() {
     }
 }
 
-void CDynamicAttack::findOneTouch() {
+void CDynamicAttack::findOneTouch(QList<passPoint>&) {
     for (int i{}; i < passPoints.size(); i++) {
 
         Segment2D posGoal(passPoints[i].point, wm->field->oppGoal());
@@ -1486,19 +1467,19 @@ void CDynamicAttack::findOneTouch() {
         //double angle{angleOfTwoSegment(posGoal, playMakePos)};
         double angle{std::fabs(Vector2D::angleBetween(wm->field->oppGoal() - passPoints[i].point,
                                                       wm->ball->pos - passPoints[i].point).degree())};
-        ROS_INFO_STREAM("amirp angle : " << angle);
-        ROS_INFO_STREAM("amirp point.x : " << passPoints[i].point.x);
-        ROS_INFO_STREAM("amirp point.y : " << passPoints[i].point.y);
+        //ROS_INFO_STREAM("amirp angle : " << angle);
+        //ROS_INFO_STREAM("amirp point.x : " << passPoints[i].point.x);
+        //ROS_INFO_STREAM("amirp point.y : " << passPoints[i].point.y);
         if (angle < conf.MaxOnetouchAngle &&
             (passPoints[i].region == 4 || passPoints[i].region == 5 || passPoints[i].region == 2 ||
              passPoints[i].region == 3 || passPoints[i].region == 1
              || passPoints[i].region == 0)) {
-            ROS_INFO_STREAM("amirw here 1");
+            //ROS_INFO_STREAM("amirw here 1");
             if (isPositionClear(passPoints[i].point, wm->field->oppGoal(),
                                 wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.05)) {
                 passPoints[i].oneTouch = true;
-                ROS_INFO_STREAM("amirw point for onetouch.x = " << passPoints[i].point.x);
-                ROS_INFO_STREAM("amirw point for onetouch.y = " << passPoints[i].point.y);
+                //ROS_INFO_STREAM("amirw point for onetouch.x = " << passPoints[i].point.x);
+                //ROS_INFO_STREAM("amirw point for onetouch.y = " << passPoints[i].point.y);
                 //drawer->draw(passPoints[i].point, QColor(255,255,255), 0.3);
             }
         }
@@ -1515,8 +1496,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         double chance{0};
         Vector2D tmp_point;
 
-        matchingIDs[v] = matcher.getMatch(
-                v); //commented this. if it was wrong make it right? it made it bad. so i umcommented this.
+        matchingIDs[v] = matcher.getMatch(v); //commented this. if it was wrong make it right? it made it bad. so i umcommented this.
 
         for (size_t i{}; i < regions[0].points.size(); i++) {
             auto tmp_chance = calcRegionProperties(v, i);
