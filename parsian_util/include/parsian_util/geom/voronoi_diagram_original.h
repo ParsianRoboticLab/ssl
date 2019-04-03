@@ -30,11 +30,11 @@
 #ifndef RCSC_GEOM_VORONOI_DIAGRAM_ORIGINAL_H
 #define RCSC_GEOM_VORONOI_DIAGRAM_ORIGINAL_H
 
-#include <geom/vector_2d.h>
-#include <geom/segment_2d.h>
-#include <geom/ray_2d.h>
-#include <geom/rect_2d.h>
-#include <geom/delaunay_triangulation.h>
+#include <parsian_util/geom/vector_2d.h>
+#include <parsian_util/geom/segment_2d.h>
+#include <parsian_util/geom/ray_2d.h>
+#include <parsian_util/geom/rect_2d.h>
+#include <parsian_util/geom/delaunay_triangulation.h>
 
 #include <vector>
 #include <set>
