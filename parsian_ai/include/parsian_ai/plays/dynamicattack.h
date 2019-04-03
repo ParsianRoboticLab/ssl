@@ -71,6 +71,7 @@ public:
     int region;
     bool finalPassReciever;
     int chance;
+    int ID;
     bool operator< (passPoint& a){ return (this->chance < a.chance);}
 
 };
@@ -281,9 +282,9 @@ private:
     void isInPosition(QList<passPoint>& );
     void toPassOrNotToPass(QList<passPoint>&);
     void passPriority(QList<passPoint>&);
-    void showPasser(QList<passPoint>&);
+    void showPasser(QList<passPoint>&, MWBM&);
     //void stayPassReciever(const QList<int>&, MWBM&);
-    void stayPassReciever(const QList<int>&, MWBM&);
+    void stayPassReciever(QList<passPoint>& );
     void finalPassReciever();
 
 
