@@ -1606,8 +1606,8 @@ void DefensePlan::stuck(QList <Vector2D>& Points) {
     QList <int> stuckIndexes;
     stuckPositions.clear();
     stuckIndexes.clear();
-    for (int i = 0; areAgentsStuckTogether(Points); i++) {
-        ROS_INFO_STREAM("Lhumm: " << i);
+    for (int i = 0; areAgentsStuckTogether(Points) && i < 6; i++) {
+        ROS_INFO_STREAM("Lhum: " << i);
         agentsStuckTogether(Points, stuckPositions);
         correctingTheAgentsAreStuckTogether(Points, stuckPositions);
     }
@@ -1660,7 +1660,8 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
         }
         assignSkill(ourAgents[i] , gpa[ourAgents[i]->id()]);
         //////////////// Avoid Penalty Area /////////////////////////Lhum thinks it has problem
-        if(wm->field->ourBigPenaltyArea(1,0.02,0).intersection(Segment2D(ourAgents.at(i)->pos() , matchPoints.at(matchResult.at(i))) , &sol[0] , &sol[1])){
+        if(wm->field->ourBigPenaltyArea(1,0.02,0).intersection(Segment2D(ourAgents.at(i)->pos() , matchPoints.at(matchResult.at(i))) , &sol[0] , &sol[1]) ||
+        wm->field->ourBigPenaltyArea(1,0.02,0).contains(ourAgents.at(i)->pos())){
             matchPoints[matchResult[i]] = avoidCircularPenaltyAreaByMasoud(ourAgents[i], matchPoints[matchResult[i]]);
         }
         ////////////////////////////////////////////////////////////
@@ -1679,11 +1680,13 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
         }
         //////////// Go To Point Avoid for defense agents //////////////////
         if(i < defensePoses.size()){
+            drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)) , 0.2) , "cyan");
             gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
             gpa[ourAgents[i]->id()]->setTargetdir(matchPoints.at(matchResult.at(i)) - wm->field->ourGoal());
         }
             ///////// Go To Point Avoid for mark agents ////////////////////
         else{
+            drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)) , 0.2) , "blue");
             gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
             gpa[ourAgents[i]->id()]->setTargetdir(markAngs.at(i - defensePoses.size()));
         }
