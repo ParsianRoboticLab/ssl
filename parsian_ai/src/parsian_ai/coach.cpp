@@ -707,7 +707,7 @@ void CCoach::execute()
     bool defenseFirst = wm->ball->vel.length() > 1
                         && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();
     playmakeId = -1;
-    blockerId = -1;
+  //  blockerId = -1;
     defenseAgents.clear();
 
     //blocker
@@ -924,6 +924,7 @@ void CCoach::handleBlocker(const QList<int> &_agentsID) {
     bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick();
     if (!isthierplayoff) {
         blockerId = -1;
+
     } else {
         double maxD = 100000;
         int blocker = -1;
@@ -936,8 +937,15 @@ void CCoach::handleBlocker(const QList<int> &_agentsID) {
                 blocker = player;
             }
         }
+        bool flag=false;
+        for(int i=0; i<wm->our.activeAgentsCount();i++){
+          if(i==blocker)
+              flag=true;
+        }
+        if(blockerId==-1 && flag)
         blockerId = blocker;
     }
+    ROS_INFO_STREAM("blocker:"<<blockerId);
     if(blockerId != -1 && wm->our.data->activeAgents.contains(blockerId))
         blockerRole->assign(agents[blockerId]);
 
