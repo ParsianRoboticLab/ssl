@@ -40,6 +40,7 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
         defendersForZJU.append(Vector2D(-4.7,-1.2));
         defendersForZJU.append(Vector2D(-4.7,1.2));
         condWhere = 5;
+
     }
 
     else {////kasra:for Threshold in real launching:) ////
