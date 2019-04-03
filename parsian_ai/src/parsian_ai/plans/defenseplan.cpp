@@ -452,17 +452,10 @@ Vector2D DefensePlan::oneDefenseFormationForCircularPositioning(double downLimit
     /////////////////// Az bi chizi bar sikhaki malideh im :) ///////////////////////////////
     biggestLineOfBallTriangle = getLinesOfBallTriangle().at(0);
     double distanceFromYalForFirstPosition = biggestLineOfBallTriangle.dist(defensePosition);
-    //drawer->draw(Circle2D(defensePosition,distanceFromYalForFirstPosition), 0 , 360 , "black");
-    //drawer->draw(Circle2D(defensePosition,robotRadius), 0 , 360 , "red");
-    //drawer->draw(Segment2D(sol[0],sol[1]),"blue");
-    //drawer->draw(biggestLineOfBallTriangle,"blue");
     if(distanceFromYalForFirstPosition > robotRadius){
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(defensePosition);
         defensePosition += Vector2D(anotherIntesection - defensePosition).norm()*(distanceFromYalForFirstPosition - robotRadius);
     }
-
-    ROS_INFO_STREAM("this is intersect:  ");
-    ROS_INFO_STREAM(anotherIntesection);
     drawer->draw(Circle2D(anotherIntesection,distanceFromYalForFirstPosition), 0 , 360 , "magenta");
 
     return defensePosition;
@@ -678,12 +671,6 @@ Vector2D DefensePlan::oneDefenseFormationForRecatngularPositioning(double downLi
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(defensePosition);
         defensePosition += Vector2D(anotherIntesection - defensePosition).norm()*(distanceFromYalForFirstPosition - robotRadius);
     }
-    drawer->draw(Circle2D(anotherIntesection,distanceFromYalForFirstPosition), 0 , 360 , "magenta");
-    //drawer->draw(Circle2D(wm->field->ourGoal(),downLimit) , 0 , 360 , "magenta");
-    //drawer->draw(Circle2D(wm->field->ourGoal(),upLimit), 0 , 360 , "yellow");
-    //drawer->draw(Segment2D(wm->ball->pos,wm->field->ourGoal()),"red");
-    //drawer->draw(Circle2D(defensePosition,distanceFromYalForFirstPosition), 0 , 360 , "black");
-    //drawer->draw(Circle2D(defensePosition,robotRadius), 0 , 360 , "blue");
     return defensePosition;
 }
 
