@@ -261,6 +261,8 @@ private:
     bool isRightTimeToPass();
     void chooseReceiverAndBestPosForPass();
     void chooseBestPositons();
+    void regionByBall(int);
+    void oppInregion();
     double getDynamicValue(const Vector2D& _dynamicPos) const;
     void checkPoints(QList<Vector2D>& _points);
 
@@ -270,6 +272,10 @@ private:
     ///////////////////
     bool isPathClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     bool isPathClearFromOpp(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+
+
+    bool isClear(Vector2D _pos1, Vector2D _pos2, double rad, double t, QString str, Vector2D point = Vector2D(0,0));
+
 
     inline bool chipOrNot(Vector2D target,
                           double _radius = 1, double _treshold = .5);
@@ -281,9 +287,9 @@ private:
     QString getString(const DynamicMode& _mode) const;
 
 
-    bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
-    bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
-    bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+    //bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
+    //bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+    //bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
     void bestPos(const QList<int>&, MWBM&);
     void checkPositions();

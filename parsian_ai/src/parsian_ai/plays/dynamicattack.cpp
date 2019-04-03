@@ -428,16 +428,9 @@ void CDynamicAttack::positioning(QList<passPoint>& passPoints){//(QList<Vector2D
                 switch (currentPlan.positionAgents[i].skill) {
                     case PositionSkill::Ready: // Ready For Pass
                         ROS_INFO_STREAM("kian: too switch set : skill: ready");
-                        if(recievePoint.ID != -1 && roleAgents[i]->getAgent()->id() == recievePoint.ID)
-                        {
+                        if(recievePoint.ID != -1 && roleAgents[i]->getAgent()->id() == recievePoint.ID) {
                             ROS_INFO_STREAM("amirty id : " << recievePoint.ID);
                             roleAgents[i]->setTarget(recievePoint.point);
-                            roleAgents[i]->setReceiveRadius(.5);
-                            roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
-                            break;
-                        }
-                        else if (recievePoint.ID != -1 && roleAgents[i]->getAgent()->id() != recievePoint.ID) {
-                            roleAgents[i]->setTarget(passPoints[i].point);
                             roleAgents[i]->setReceiveRadius(.5);
                             roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
                             break;
@@ -508,6 +501,76 @@ bool CDynamicAttack::keepOrNot() {
     return true;
 }
 
+
+
+bool CDynamicAttack::isClear(Vector2D _pos1, Vector2D _pos2,
+                             double _radius, double treshold, QString str, Vector2D point)
+{
+    Vector2D sol1, sol2, sol3;
+    Line2D _path(_pos1, _pos2);
+    Polygon2D _poly;
+    Circle2D(_pos2, _radius + treshold).
+            intersection(_path.perpendicular(_pos2), &sol1, &sol2);
+
+    _poly.addVertex(sol1);
+    sol3 = sol1;
+    _poly.addVertex(sol2);
+    Circle2D(_pos1, Robot::robot_radius_new + treshold).
+            intersection(_path.perpendicular(_pos1), &sol1, &sol2);
+
+    _poly.addVertex(sol2);
+    _poly.addVertex(sol1);
+    _poly.addVertex(sol3);
+
+    if(str == "positionInOurWay")
+    {
+        if (_poly.contains(point)) {
+            return false;
+        }
+    }
+    else if(str == "isPassPathOpen")
+    {
+        if (treshold < 0.15) {
+            ROS_INFO_STREAM("amirf draw1");
+            drawer->draw(_poly, QColor(180, 180, 180));
+        }
+
+
+        for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
+            if (_poly.contains(wm->opp.active(i)->pos)) {
+                return false;
+            }
+        }
+    }
+    else if (str == "positionClear")
+    {
+        if (treshold < 0.15) {
+            ROS_INFO_STREAM("amirf draw2");
+            drawer->draw(_poly, QColor(200, 200, 200));
+        }
+
+
+        for (int i{}; i < wm->opp.activeAgentsCount(); i++) {
+
+            if (wm->opp.active(i)->id != wm->opp.data->goalieID) {
+                if (_poly.contains(wm->opp.active(i)->pos)) {
+                    //ROS_INFO_STREAM("amirq im here!");
+                    return false;
+                }
+            }
+        }
+        for (int i{}; i < passPoints.size(); i++) {
+            if (_poly.contains(passPoints[i].point)) //it shouldnt be ouractive. it should be position.
+            {
+                //ROS_INFO_STREAM("amirq im here!");
+                return false;     //TODO: make it right
+            }
+        }
+    }
+    return true;
+}
+
+
 bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
                                  double _radius, double treshold) {
     Vector2D sol1, sol2, sol3;
@@ -532,8 +595,8 @@ bool CDynamicAttack::isPathClear(Vector2D _pos1, Vector2D _pos2,
         }
     }
 
-    for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
-        if (_poly.contains(wm->opp.active(i)->pos)) {
+    for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+        if (_poly.contains(wm->our.active(i)->pos)) {
             return false;
         }
     }
@@ -591,7 +654,7 @@ int CDynamicAttack::appropriatePassSpeed() {
 }
 
 
-bool CDynamicAttack::isPositionInOurWay(Vector2D _pos1, Vector2D _pos2,
+/*bool CDynamicAttack::isPositionInOurWay(Vector2D _pos1, Vector2D _pos2,
                                         double _radius, double treshold, Vector2D point) {
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
@@ -619,9 +682,9 @@ bool CDynamicAttack::isPositionInOurWay(Vector2D _pos1, Vector2D _pos2,
 
 
     return true;
-}
+}*/
 
-bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
+/*bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
                                     double _radius, double treshold) {
 
     //ROS_INFO_STREAM("amirk im here");
@@ -640,6 +703,8 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
     _poly.addVertex(sol2);
     _poly.addVertex(sol1);
     _poly.addVertex(sol3);
+
+
     if (treshold < 0.15) {
         ROS_INFO_STREAM("amirf draw1");
         drawer->draw(_poly, QColor(180, 180, 180));
@@ -652,10 +717,10 @@ bool CDynamicAttack::isPassPathOpen(Vector2D _pos1, Vector2D _pos2,
         }
     }
     return true;
-}
+}*/
 
 
-bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold) {
+/*bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _radius, double treshold) {
     Vector2D sol1, sol2, sol3;
     Line2D _path(_pos1, _pos2);
     Polygon2D _poly;
@@ -685,9 +750,6 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _rad
                 return false;
             }
         }
-        //if (_poly.contains(wm->opp.active(i)->pos) && wm->opp.active(i)->id != wm->opp.data->goalieID) {
-        //    return false;
-        //}
     }
     for (int i{}; i < passPoints.size(); i++) {
         if (_poly.contains(passPoints[i].point)) //it shouldnt be ouractive. it should be position.
@@ -697,7 +759,7 @@ bool CDynamicAttack::isPositionClear(Vector2D _pos1, Vector2D _pos2, double _rad
         }
     }
     return true;
-}
+}*/
 
 
 int CDynamicAttack::appropriateChipSpeed() {
@@ -1089,6 +1151,160 @@ void CDynamicAttack::createRegions() {
     }
 }
 
+
+
+void CDynamicAttack::regionByBall(int ballR)
+{
+    regionPriority.clear();
+    switch (ballR) {
+        case 0:
+            //regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
+        {
+            regions[4].pointPriority = 6;
+            regions[2].pointPriority = 5;
+            regions[1].pointPriority = 4;
+            regions[5].pointPriority = 6; // for onetouch chance. otherwise this is 3
+            regions[3].pointPriority = 2;
+            regions[6].pointPriority = 1;
+            regions[0].pointPriority = 1;
+            break;
+        }
+        case 1:
+            //regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
+        {
+            regions[4].pointPriority = 6;
+            regions[3].pointPriority = 5;
+            regions[0].pointPriority = 4;
+            regions[5].pointPriority = 6; // for onetouch chance. otherwise this is 3
+            regions[2].pointPriority = 2;
+            regions[6].pointPriority = 1;
+            regions[1].pointPriority = 1;
+            break;
+        }
+        case 2:
+            //regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
+        {
+            regions[4].pointPriority = 6;
+            regions[0].pointPriority = 4;
+            regions[5].pointPriority = 5;
+            regions[3].pointPriority = 3;
+            regions[1].pointPriority = 2;
+            regions[6].pointPriority = 1;
+            regions[2].pointPriority = 1;
+            break;
+        }
+        case 3:
+            //regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
+        {
+            regions[4].pointPriority = 6;
+            regions[1].pointPriority = 4;
+            regions[5].pointPriority = 5;
+            regions[2].pointPriority = 3;
+            regions[0].pointPriority = 2;
+            regions[6].pointPriority = 1;
+            regions[3].pointPriority = 1;
+            break;
+        }
+        case 4:
+            //regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
+        {
+            regions[0].pointPriority = 6;
+            regions[1].pointPriority = 5;
+            regions[2].pointPriority = 4;
+            regions[3].pointPriority = 3;
+            regions[5].pointPriority = 2;
+            regions[6].pointPriority = 1;
+            regions[4].pointPriority = 1;
+            break;
+        }
+        case 5:
+            //regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
+        {
+            regions[0].pointPriority = 6;
+            regions[1].pointPriority = 5;
+            regions[2].pointPriority = 4;
+            regions[3].pointPriority = 3;
+            regions[6].pointPriority = 2;
+            regions[4].pointPriority = 1;
+            regions[5].pointPriority = 1;
+            break;
+        }
+        case 6:
+            //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+        {
+            regions[0].pointPriority = 6;
+            regions[1].pointPriority = 5;
+            regions[2].pointPriority = 4;
+            regions[3].pointPriority = 3;
+            regions[4].pointPriority = 2;
+            regions[5].pointPriority = 6; //if it is in corner it is good.
+            regions[6].pointPriority = 1;
+            break;
+        }
+        default:
+            //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
+        {
+            regions[0].pointPriority = 6;
+            regions[1].pointPriority = 5;
+            regions[2].pointPriority = 4;
+            regions[3].pointPriority = 3;
+            regions[4].pointPriority = 2;
+            regions[5].pointPriority = 1;
+            regions[6].pointPriority = 0;
+            break;
+        }
+    }
+}
+
+void CDynamicAttack::oppInregion() {
+    for (size_t i{}; i < REGION_NUM; i++) {
+        regions[i].oppInside = 0;
+        regions[i].oppInNeighbor = 0;
+    }
+    for (size_t i{}; i < wm->opp.activeAgentsCount(); i++) {
+        Vector2D position{wm->opp.active(i)->pos};
+        if (regions[0].rectangle.contains(position)) {
+            regions[0].oppInside++;
+            regions[2].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        } else if (regions[1].rectangle.contains(position)) {
+            regions[1].oppInside++;
+            regions[3].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        } else if (regions[2].rectangle.contains(position)) {
+            regions[2].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            //regions[5].oppInNeighbor++;
+        } else if (regions[3].rectangle.contains(position)) {
+            regions[3].oppInside++;
+            regions[1].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+            //regions[5].oppInNeighbor++;
+        } else if (regions[4].rectangle.contains(position)) {
+            regions[4].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[1].oppInNeighbor++;
+            regions[5].oppInNeighbor++;
+        } else if (regions[5].rectangle.contains(position)) {
+            regions[5].oppInside++;
+            regions[0].oppInNeighbor++;
+            regions[1].oppInNeighbor++;
+            regions[2].oppInNeighbor++;
+            regions[3].oppInNeighbor++;
+            regions[4].oppInNeighbor++;
+        } else if (regions[6].rectangle.contains(position)) {
+            regions[6].oppInside++;
+            regions[2].oppInNeighbor++;
+            regions[3].oppInNeighbor++;
+            //regions[5].oppInNeighbor++;
+        }
+
+    }
+}
+
 void CDynamicAttack::chooseBestPositons() {
     clearRobotsRegionsWeights();
 
@@ -1107,153 +1323,10 @@ void CDynamicAttack::chooseBestPositons() {
         int ballR = -1;
         for (int i{0}; i < REGION_NUM; i++)
             if (regions[i].rectangle.contains(wm->ball->pos + wm->ball->vel))ballR = regions[i].id;
-        regionPriority.clear();
-        switch (ballR) {
-            case 0:
-                //regionPriority << 4 << 2 << 1 << 5 << 3 << 6;
-            {
-                regions[4].pointPriority = 6;
-                regions[2].pointPriority = 5;
-                regions[1].pointPriority = 4;
-                regions[5].pointPriority = 6; // for onetouch chance. otherwise this is 3
-                regions[3].pointPriority = 2;
-                regions[6].pointPriority = 1;
-                regions[0].pointPriority = 1;
-                break;
-            }
-            case 1:
-                //regionPriority << 4 << 3 << 0 << 5 << 2 << 6;
-            {
-                regions[4].pointPriority = 6;
-                regions[3].pointPriority = 5;
-                regions[0].pointPriority = 4;
-                regions[5].pointPriority = 6; // for onetouch chance. otherwise this is 3
-                regions[2].pointPriority = 2;
-                regions[6].pointPriority = 1;
-                regions[1].pointPriority = 1;
-                break;
-            }
-            case 2:
-                //regionPriority << 4 << 0 << 5 << 3 << 1 << 6;
-            {
-                regions[4].pointPriority = 6;
-                regions[0].pointPriority = 4;
-                regions[5].pointPriority = 5;
-                regions[3].pointPriority = 3;
-                regions[1].pointPriority = 2;
-                regions[6].pointPriority = 1;
-                regions[2].pointPriority = 1;
-                break;
-            }
-            case 3:
-                //regionPriority << 4 << 1 << 5 << 2 << 0 << 6;
-            {
-                regions[4].pointPriority = 6;
-                regions[1].pointPriority = 4;
-                regions[5].pointPriority = 5;
-                regions[2].pointPriority = 3;
-                regions[0].pointPriority = 2;
-                regions[6].pointPriority = 1;
-                regions[3].pointPriority = 1;
-                break;
-            }
-            case 4:
-                //regionPriority << 0 << 1 << 2 << 3 << 5 << 6;
-            {
-                regions[0].pointPriority = 6;
-                regions[1].pointPriority = 5;
-                regions[2].pointPriority = 4;
-                regions[3].pointPriority = 3;
-                regions[5].pointPriority = 2;
-                regions[6].pointPriority = 1;
-                regions[4].pointPriority = 1;
-                break;
-            }
-            case 5:
-                //regionPriority << 0 << 1 << 2 << 3 << 6 << 4;
-            {
-                regions[0].pointPriority = 6;
-                regions[1].pointPriority = 5;
-                regions[2].pointPriority = 4;
-                regions[3].pointPriority = 3;
-                regions[6].pointPriority = 2;
-                regions[4].pointPriority = 1;
-                regions[5].pointPriority = 1;
-                break;
-            }
-            case 6:
-                //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
-            {
-                regions[0].pointPriority = 6;
-                regions[1].pointPriority = 5;
-                regions[2].pointPriority = 4;
-                regions[3].pointPriority = 3;
-                regions[4].pointPriority = 2;
-                regions[5].pointPriority = 6; //if it is in corner it is good.
-                regions[6].pointPriority = 1;
-                break;
-            }
-            default:
-                //regionPriority << 0 << 1 << 2 << 3 << 4 << 5;
-            {
-                regions[0].pointPriority = 6;
-                regions[1].pointPriority = 5;
-                regions[2].pointPriority = 4;
-                regions[3].pointPriority = 3;
-                regions[4].pointPriority = 2;
-                regions[5].pointPriority = 1;
-                regions[6].pointPriority = 0;
-                break;
-            }
-        }
 
+        regionByBall(ballR);
+        oppInregion();
 
-        for (size_t i{}; i < REGION_NUM; i++) {
-            regions[i].oppInside = 0;
-            regions[i].oppInNeighbor = 0;
-        }
-        for (size_t i{}; i < wm->opp.activeAgentsCount(); i++) {
-            Vector2D position{wm->opp.active(i)->pos};
-            if (regions[0].rectangle.contains(position)) {
-                regions[0].oppInside++;
-                regions[2].oppInNeighbor++;
-                regions[4].oppInNeighbor++;
-                regions[5].oppInNeighbor++;
-            } else if (regions[1].rectangle.contains(position)) {
-                regions[1].oppInside++;
-                regions[3].oppInNeighbor++;
-                regions[4].oppInNeighbor++;
-                regions[5].oppInNeighbor++;
-            } else if (regions[2].rectangle.contains(position)) {
-                regions[2].oppInside++;
-                regions[0].oppInNeighbor++;
-                regions[4].oppInNeighbor++;
-                //regions[5].oppInNeighbor++;
-            } else if (regions[3].rectangle.contains(position)) {
-                regions[3].oppInside++;
-                regions[1].oppInNeighbor++;
-                regions[4].oppInNeighbor++;
-                //regions[5].oppInNeighbor++;
-            } else if (regions[4].rectangle.contains(position)) {
-                regions[4].oppInside++;
-                regions[0].oppInNeighbor++;
-                regions[1].oppInNeighbor++;
-                regions[5].oppInNeighbor++;
-            } else if (regions[5].rectangle.contains(position)) {
-                regions[5].oppInside++;
-                regions[0].oppInNeighbor++;
-                regions[1].oppInNeighbor++;
-                regions[2].oppInNeighbor++;
-                regions[3].oppInNeighbor++;
-                regions[4].oppInNeighbor++;
-            } else if (regions[6].rectangle.contains(position)) {
-                regions[6].oppInside++;
-                regions[2].oppInNeighbor++;
-                regions[3].oppInNeighbor++;
-                //regions[5].oppInNeighbor++;
-            }
-
-        }
         for (size_t i{}; i < REGION_NUM; i++) {
             if(regions[i].rectangle.contains(recievePoint.point))
                 regions[i].pointPriority = -1000;
@@ -1501,15 +1574,15 @@ void CDynamicAttack::toPassOrNotToPass(QList<passPoint>& passPoints) {
             //ROS_INFO_STREAM("amirf they are in position");
             if (playmake->pos().dist(wm->ball->pos) < 0.5) {
                 //ROS_INFO_STREAM("amirf in if");
-                if (isPassPathOpen(wm->ball->pos, passPoints[i].point,
-                                   Robot::robot_radius_new + (wm->ball->pos.dist(passPoints[i].point) / 15), 0.1) &&
-                    isPositionClear(passPoints[i].point, wm->field->oppGoal(),
-                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1)) {
+                if (isClear(wm->ball->pos, passPoints[i].point,
+                                   Robot::robot_radius_new + (wm->ball->pos.dist(passPoints[i].point) / 15), 0.1,"passPathOpen") &&
+                    isClear(passPoints[i].point, wm->field->oppGoal(),
+                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1,"positionClear")) {
                     passPoints[i].amIReciever = true;
 
                 }
-                else if(playmake->pos().dist(passPoints[i].point) < chip_dist_treshold && isPositionClear(passPoints[i].point, wm->field->oppGoal(),
-                                                                                                          wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1)
+                else if(playmake->pos().dist(passPoints[i].point) < chip_dist_treshold && isClear(passPoints[i].point, wm->field->oppGoal(),
+                                                                                                          wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.1,"positionClear")
                                                                                                           && passPoints[i].chipOrPass) //this is for chip then onetouch
                 {
                     passPoints[i].amIReciever = true;
@@ -1538,8 +1611,8 @@ void CDynamicAttack::findOneTouch(QList<passPoint>& passPoints) {
              passPoints[i].region == 3 || passPoints[i].region == 1
              || passPoints[i].region == 0)) {
             //ROS_INFO_STREAM("amirw here 1");
-            if (isPositionClear(passPoints[i].point, wm->field->oppGoal(),
-                                wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.05)) {
+            if (isClear(passPoints[i].point, wm->field->oppGoal(),
+                                wm->field->oppGoalL().y - wm->field->oppGoal().y, 0.05,"positionClear")) {
                 passPoints[i].oneTouch = true;
                 //ROS_INFO_STREAM("amirw point for onetouch.x = " << passPoints[i].point.x);
                 //ROS_INFO_STREAM("amirw point for onetouch.y = " << passPoints[i].point.y);
@@ -2160,24 +2233,24 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
 
     }
 
-    if (!isPositionInOurWay(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
-                                               wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2,
+    if (!isClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
+                                               wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2,"positionInOurWay",
                                                regions[regionPriority[matchingIDs[robot_id]]].points[region_index])) {
         tmp_chance = 0;
         //continue;
     }
-    if (!isPositionClear(regions[regionPriority[matchingIDs[robot_id]]].points[region_index], wm->field->oppGoal(),
+    if (!isClear(regions[regionPriority[matchingIDs[robot_id]]].points[region_index], wm->field->oppGoal(),
                          wm->field->oppGoalL().y - wm->field->oppGoal().y,
-                         0.2)) {
+                         0.2, "positionClear")) {
         tmp_chance = 0;
         //continue;
     }
     double passPathWeight{15};
-    if (!isPassPathOpen(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+    if (!isClear(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
                                             (Robot::robot_radius_new + playmake->pos().dist(
                                                     regions[regionPriority[matchingIDs[robot_id]]].points[region_index]) /
                                                                        passPathWeight),
-                                            treshold1)) {
+                                            treshold1,"passPathOpen")) {
         tmp_chance = 0;
     }
     return tmp_chance;
