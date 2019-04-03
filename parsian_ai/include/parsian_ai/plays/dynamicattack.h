@@ -77,6 +77,14 @@ public:
 };
 
 
+class RecievePoint{
+public:
+    RecievePoint();
+    int ID;
+    Vector2D point;
+};
+
+
 // END NEW PASS ZONE
 
 
@@ -220,7 +228,7 @@ private:
     bool shotInPass;
 
     void playMake();
-    void positioning(QList <Vector2D> _points);
+    void positioning(QList<passPoint>& );//QList <Vector2D> _points);
     void globalExecute(int agentSize);
     void dynamicPlanner(int agentSize);
 
@@ -247,6 +255,8 @@ private:
     QList<Vector2D> semiDynamicPosition;
     QList<Vector2D> amirSemiDynamicPosition;
     QList<Vector2D> markPositions;
+
+    RecievePoint recievePoint;
 
     bool isRightTimeToPass();
     void chooseReceiverAndBestPosForPass();

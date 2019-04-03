@@ -276,7 +276,7 @@ void CDynamicAttack::assignTasks() {
     }
     if (currentPlan.agentSize > 0) {
         ROS_INFO_STREAM("kian: too if positioning : currentPlan.agentSize:" << currentPlan.agentSize);
-        positioning(semiDynamicPosition);
+        positioning(passPoints);//semiDynamicPosition);
         //positioning(amirSemiDynamicPosition);
     }
 }
@@ -416,7 +416,7 @@ void CDynamicAttack::playMake() {
     }
 }
 
-void CDynamicAttack::positioning(QList<Vector2D> _points) {
+void CDynamicAttack::positioning(QList<passPoint>& passPoints){//(QList<Vector2D> _points) {
     // hamid pos
     ROS_INFO_STREAM("hamid inside positioning2");
     bool check = false;
@@ -424,18 +424,35 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
         if (matchingIDs[i] >= 0) {
             roleAgents[i]->setAgent(agents.at(i));
             roleAgents[i]->setAvoidPenaltyArea(true);
-            if (i < _points.size()) {
+            if (i < passPoints.size()) {
                 switch (currentPlan.positionAgents[i].skill) {
                     case PositionSkill::Ready: // Ready For Pass
                         ROS_INFO_STREAM("kian: too switch set : skill: ready");
-                        roleAgents[i]->setTarget(_points.at(i));
-                        roleAgents[i]->setReceiveRadius(.5);
-                        roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
-
+                        if(recievePoint.ID != -1 && roleAgents[i]->getAgent()->id() == recievePoint.ID)
+                        {
+                            ROS_INFO_STREAM("amirty id : " << recievePoint.ID);
+                            roleAgents[i]->setTarget(recievePoint.point);
+                            roleAgents[i]->setReceiveRadius(.5);
+                            roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
+                            break;
+                        }
+                        else if (recievePoint.ID != -1 && roleAgents[i]->getAgent()->id() != recievePoint.ID) {
+                            roleAgents[i]->setTarget(passPoints[i].point);
+                            roleAgents[i]->setReceiveRadius(.5);
+                            roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
+                            break;
+                        }
+                        else
+                        {
+                            roleAgents[i]->setTarget(passPoints[i].point);
+                            roleAgents[i]->setReceiveRadius(.5);
+                            roleAgents[i]->setSelectedPositionSkill(PositionSkill::Ready);// Receive Skill
+                            break;
+                        }
                         break;
                     case PositionSkill::OneTouch: // OneTouch Reflects
                         ROS_INFO_STREAM("kian: too switch set : skill: onetouch");
-                        roleAgents[i]->setWaitPos(_points.at(i));
+                        roleAgents[i]->setWaitPos(passPoints[i].point);
                         roleAgents[i]->setReceiveRadius(
                                 std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
                                         .dist(roleAgents[i]->getTarget())));
@@ -450,7 +467,7 @@ void CDynamicAttack::positioning(QList<Vector2D> _points) {
                         roleAgents[i]->setReceiveRadius(
                                 std::max(0.5, 2 - roleAgents[i]->getAgent()->pos()
                                         .dist(roleAgents[i]->getTarget())));
-                        roleAgents[i]->setTarget(_points.at(i));
+                        roleAgents[i]->setTarget(passPoints[i].point);
                         roleAgents[i]->setTargetDir(wm->ball->pos - roleAgents[i]->getAgent()->pos());
                         roleAgents[i]->setSelectedPositionSkill(PositionSkill::Move);
 
@@ -1238,7 +1255,10 @@ void CDynamicAttack::chooseBestPositons() {
 
         }
         for (size_t i{}; i < REGION_NUM; i++) {
-            regions[i].pointPriority -= (regions[i].oppInside + regions[i].oppInNeighbor);
+            if(regions[i].rectangle.contains(recievePoint.point))
+                regions[i].pointPriority = -1000;
+            else
+                regions[i].pointPriority -= (regions[i].oppInside + regions[i].oppInNeighbor);
             sortRegions.append(regions[i]);
         }
 
@@ -1277,6 +1297,8 @@ void CDynamicAttack::assignId() {
             matcher.setWeight(i, j, agentPos.dist(regions[regionPriority[i]].rectangle.center())); //TODO : not center
         }
     }
+
+
 //    matcher.findMaxMinMatching();
 
     matcher.findMatching();
@@ -1324,7 +1346,34 @@ void CDynamicAttack::passPositions(const QList<int>& robotIDs, MWBM& matcher)
 
 
 void CDynamicAttack::passDecision() {
+    //choose pass reciever
+    if(recievePoint.ID == -1) {
+        ROS_INFO_STREAM("amirty : point is about to change");
+        for (int i{}; i < passPoints.size(); i++) {
+            if (passPoints[i].stay == 1) {
+                recievePoint.ID = passPoints[i].ID;
+                recievePoint.point.x = passPoints[i].point.x;
+                recievePoint.point.y = passPoints[i].point.y;
+                break;
+            }
+        }
+    }
 
+    Segment2D ballseg{wm->ball->seg()};
+    Line2D pointGoal{recievePoint.point, wm->field->oppGoal()};
+    /*if (ballseg.intersection(pointGoal).dist(recievePoint.point) > 0.5){
+        recievePoint.ID = -1;
+        ROS_INFO_STREAM("amirty : pass calnceled!");
+    }*/
+}
+
+
+
+RecievePoint::RecievePoint()
+{
+    ID = -1;
+    point.x = 0;
+    point.y = 0;
 }
 
 
@@ -1361,7 +1410,8 @@ void CDynamicAttack::showPasser(QList<passPoint>& passPoints, MWBM& matcher) {
         }*/
         if (passPoints[i].stay) {
             drawer->draw(passPoints[i].point, QColor(255, 255, 0), 0.4);
-            ROS_INFO_STREAM("amirtr id : " << agents[matcher.getMatch(i)]->id());
+            //ROS_INFO_STREAM("amirtr id : " << agents[matcher.getMatch(i)]->id());
+            passPoints[i].ID = agents[matcher.getMatch(i)]->id();
         }
     }
 }
@@ -1510,6 +1560,9 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         Vector2D tmp_point;
 
         matchingIDs[v] = matcher.getMatch(v); //commented this. if it was wrong make it right? it made it bad. so i umcommented this.
+
+        //if(agents[matchingIDs[v]]->id() == recievePoint.ID)
+            //continue;
 
         for (size_t i{}; i < regions[0].points.size(); i++) {
             auto tmp_chance = calcRegionProperties(v, i);
