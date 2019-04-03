@@ -2846,6 +2846,7 @@ void DefensePlan::findPos(int _markAgentSize){
         if (playOff || gameState->isStop()) {
             if(conf.PlayOffManToMan){
             know->variables["stateForMark"] = QString("BlockShot");
+                manToManMarkBlockPassInPlayOff(oppAgentsToMarkPos, _markAgentSize , segmentperpass);
                 }
             else {
                 manToManMarkBlockShotInPlayOff(_markAgentSize);
