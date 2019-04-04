@@ -321,11 +321,13 @@ void CSkillKick::direct() {
         distThr = 0;
         finalPos = wm->ball->pos - (target - finalPos).norm() * 0.15;
         finalDir = Vector2D(cos(kickFinalDir.radian()), sin(kickFinalDir.radian()));
+
     }
 
     Vector2D temp = finalPos;
-    CSkillReceivePass::validatePoint(finalPos, agent->pos());
+    //CSkillReceivePass::validatePoint(finalPos, agent->pos());
     if (temp != finalPos) finalDir = wm->ball->pos - finalPos;
+
 
     Vector2D s1, s2;
     Circle2D finalPosArea;
@@ -344,7 +346,6 @@ void CSkillKick::direct() {
     }
     drawer->draw(Segment2D(agent->pos(), finalPos), QColor(Qt::red));
 
-    drawer->draw(finalPos);
 
     gpa->init(finalPos, finalDir);
     gpa->setNoavoid(false);
@@ -352,7 +353,6 @@ void CSkillKick::direct() {
     gpa->setBallobstacleradius(0);
     gpa->setSlowmode(slow);
     gpa->setDivemode(false);
-    gpa->setAvoidpenaltyarea(true);
     gpa->execute();
 
 }
