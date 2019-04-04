@@ -137,7 +137,7 @@ def generate_actions(folder):
 
 def main():
     # Setup stuff
-    if os.getcwd().endswith('/parsian_ssl/parsian_msgs/scripts/meta') is False:
+    if os.getcwd().endswith('/parsian_msgs/scripts/meta') is False:
         print("Please run script on /scripts/meta folder")
         exit(1)
 

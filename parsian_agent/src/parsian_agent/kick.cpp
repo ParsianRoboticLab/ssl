@@ -29,6 +29,7 @@ KMode CSkillKick::decideMode() {
     else if ((playMakeMode || avoidPenaltyArea) && wm->field->isInOurPenaltyArea(wm->ball->pos)) mode = KMode::AvoidOurPenalty;
     else if (isOppPenaltyMode()) mode = KMode::AvoidOppPenalty;
     else if (wm->ball->vel.length() < 0.5 && kickerArea.contains(wm->ball->pos) && std::fabs((kickFinalDir - agent->dir().th()).degree()) > 30) mode = KMode::TurnForKick;
+    else if (isMoveForward) mode = KMode::moveForwardKick;
     else {
         Segment2D targetNormalSeg(target + wm->ball->vel.norm().rotate(90) * 10, target - wm->ball->vel.norm().rotate(90) * 10);
         if (wm->ball->vel.length() > 0.5 - distThr) {
@@ -384,6 +385,9 @@ void CSkillKick::execute() {
         case KMode::TurnForKick:
             turnForKick();
             break;
+        case KMode::moveForwardKick:
+            moveFrowardKick();
+            break;
         case KMode::NOMODE:break;
     }
 }
@@ -433,4 +437,31 @@ bool CSkillKick::isOppPenaltyMode() {
         robotArea.assign(agent->pos(), std::max(agent->pos().dist(wm->ball->pos) - robotAreaOffset, 0.01));
     }
     return robotArea.intersection(wm->ball->seg()) != 2 || wm->ball->vel.length() < 1;
+}
+
+void CSkillKick::moveFrowardKick() {
+    Circle2D ballTarget(target,0.05);
+    Vector2D finalPos;
+    AngleDeg kickFinalDir = (target - wm->ball->pos).th();
+    if (std::fabs((kickFinalDir - agent->dir().th()).degree()) < 10) {
+        agent->setRoller(1);
+        gpa->setSlowmode(true);
+        gpa->setBallobstacleradius(0);
+        finalPos = wm->ball->pos;// - (target - wm->ball->pos).norm() * 0.13;
+        agent->setKick(kickSpeed);
+        if (ballTarget.contains(wm->ball->pos) && (Circle2D (wm->ball->pos,0.17)).contains(agent->pos())) {
+            agent->waitHere();
+            agent->setKick(0);
+            finalPos = target - (wm->ball->pos - agent->pos()) - (wm->ball->pos - agent->pos()).norm()*0.1;
+        }
+    } else {
+        agent->setRoller(1);
+        gpa->setSlowmode(false);
+        gpa->setBallobstacleradius(0.4);
+        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.22;
+        agent->setKick(kickSpeed);
+    }
+
+    gpa->init(finalPos, wm->ball->pos - agent->pos());
+    gpa->execute();
 }
