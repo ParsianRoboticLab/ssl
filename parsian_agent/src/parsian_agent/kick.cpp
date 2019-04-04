@@ -349,11 +349,10 @@ void CSkillKick::direct() {
 
     gpa->init(finalPos, finalDir);
     gpa->setNoavoid(false);
-    gpa->setAvoidpenaltyarea(false);
+    gpa->setAvoidpenaltyarea(true);
     gpa->setBallobstacleradius(0);
     gpa->setSlowmode(slow);
     gpa->setDivemode(false);
-    gpa->setAvoidpenaltyarea(false);
     gpa->execute();
 
 }
