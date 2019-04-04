@@ -1681,6 +1681,8 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
         //////////// Go To Point Avoid for defense agents //////////////////
         if(i < defensePoses.size()){
             drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)) , 0.2) , "cyan");
+            gpa[ourAgents[i]->id()]->setOnetouchflag(true);
+            gpa[ourAgents[i]->id()]->setOnetouchmode(true);
             gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
             gpa[ourAgents[i]->id()]->setTargetdir(matchPoints.at(matchResult.at(i)) - wm->field->ourGoal());
         }
