@@ -86,7 +86,7 @@ public:
     QVariantMap variables;
     NewFastestToBall newFastestToBall(double timeStep, QList<int> ourList, QList<int> oppList, const CWorldModel*& wm);
     FastestToBall findFastestToBall(QList<int> ourList, QList<int> oppList, const CWorldModel*& wm);
-
+    double timeNeeded(Agent *_agentT,const Vector2D& posT, double vMax);
 
     NewFastestToBall newFastestToBall(double timeStep = 0.1, QList<int> ourList = wm->our.data->activeAgents, QList<int> oppList = wm->opp.data->activeAgents);
     int Matching(QList <Agent*> robots, QList <Vector2D> pointsToMatch, QList <int> &matchPoints);
@@ -98,7 +98,6 @@ public:
     Vector2D getEmptyPosOnGoalForPenalty(double n, bool oppGoal, double th, Agent* ourAgent = NULL);
     bool isPointClear(Vector2D point, Vector2D from, double rad = 0.0795, bool considerRelaxedIDs = false, QList<int> ourRelaxedIDs = QList<int>(), QList<int> oppRelaxedIDs = QList<int>());
     bool isPointClear(Vector2D point, Vector2D from, double radBig, double radSmall, bool considerRelaxedIDs, QList<int>ourRelaxedIDs, QList<int>oppRelaxedIDs, QList<int>ourSmallIDs, QList<int>oppSmallIDs);
-    double chipGoalPropability(bool isOurChip, Vector2D _goaliePos);
     int getNearestOppToPoint(Vector2D point);
     int nearestOppToBall();
     double chipGoalPropability(bool isOurChip);
