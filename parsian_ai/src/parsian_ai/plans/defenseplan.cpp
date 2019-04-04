@@ -2009,8 +2009,9 @@ void DefensePlan::execute(){
         else{
             drawer->draw("Vision Problem", Vector2D(0, 0), "red" , 20);
         }
-    }
-}
+     }
+
+
 
 bool DefensePlan::agentEffectOnBallProbability(const Vector2D& agentPos) {
     if (wm->ball->vel.length() > 4 || wm->ball->pos.dist(wm->field->ourGoal()) < 3) {
