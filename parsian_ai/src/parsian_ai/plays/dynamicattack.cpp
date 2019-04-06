@@ -524,14 +524,16 @@ bool CDynamicAttack::isClear(Vector2D _pos1, Vector2D _pos2,
 
     if(str == "positionInOurWay")
     {
+        //ROS_INFO_STREAM("amirqq 1 ");
+        //drawer->draw(_poly,QColor(200,200,200));
         if (_poly.contains(point)) {
             return false;
         }
     }
     else if(str == "isPassPathOpen")
     {
-        if (treshold < 0.15) {
-            ROS_INFO_STREAM("amirf draw1");
+        if (treshold < 0.4) {
+            ROS_INFO_STREAM("amirqq");
             drawer->draw(_poly, QColor(180, 180, 180));
         }
 
@@ -544,9 +546,9 @@ bool CDynamicAttack::isClear(Vector2D _pos1, Vector2D _pos2,
     }
     else if (str == "positionClear")
     {
-        if (treshold < 0.15) {
-            ROS_INFO_STREAM("amirf draw2");
-            drawer->draw(_poly, QColor(200, 200, 200));
+        if (treshold < 0.25) {
+            //ROS_INFO_STREAM("amirqq");
+            //drawer->draw(_poly, QColor(200, 200, 200));
         }
 
 
@@ -1378,7 +1380,7 @@ void CDynamicAttack::assignId() {
 
     semiDynamicPosition.clear();
 
-    amirSemiDynamicPosition.clear();
+    //amirSemiDynamicPosition.clear();
     //for (int v = 0; v < robotIDs.count(); v++) {
     // todo : find best pos in region from searchRegions.points
     //semiDynamicPosition.append(regions[regionPriority[matcher.getMatch(v)]].rectangle.center());
@@ -1404,17 +1406,17 @@ void CDynamicAttack::passPositions(const QList<int>& robotIDs, MWBM& matcher)
 {
 
     bestPos(robotIDs, matcher);
-    isChipOrPass(passPoints);
-    findOneTouch(passPoints);
-    isInPosition(passPoints);
-    toPassOrNotToPass(passPoints);
-    passPriority(passPoints);
-    stayPassReciever(passPoints);
+    //isChipOrPass(passPoints);
+    //findOneTouch(passPoints);
+    //isInPosition(passPoints);
+    //toPassOrNotToPass(passPoints);
+    //passPriority(passPoints);
+    //stayPassReciever(passPoints);
 
     showPasser(passPoints, matcher);
 
 
-    passDecision();
+    //passDecision();
 }
 
 
@@ -1487,6 +1489,14 @@ void CDynamicAttack::showPasser(QList<passPoint>& passPoints, MWBM& matcher) {
             passPoints[i].ID = agents[matcher.getMatch(i)]->id();
         }
     }
+
+    for(int i{}; i < passPoints.size(); i++)
+    {
+        Circle2D circ{passPoints[i].point,Robot::robot_radius_new};
+        drawer->draw(circ,QColor(250,0,0));
+    }
+    Circle2D circ{recievePoint.point,Robot::robot_radius_new + 0.1};
+    drawer->draw(circ,QColor(0,0,250));
 }
 
 
@@ -1637,7 +1647,7 @@ void CDynamicAttack::bestPos(const QList<int> &robotIDs, MWBM &matcher) {
         //if(agents[matchingIDs[v]]->id() == recievePoint.ID)
             //continue;
 
-        for (size_t i{}; i < regions[0].points.size(); i++) {
+        for (int i{}; i < regions[0].points.size(); i++) {
             auto tmp_chance = calcRegionProperties(v, i);
             if (tmp_chance >= chance) {
                 chance = tmp_chance;
@@ -2236,12 +2246,14 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
     if (!isClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
                                                wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2,"positionInOurWay",
                                                regions[regionPriority[matchingIDs[robot_id]]].points[region_index])) {
-        tmp_chance = 0;
+        tmp_chance = -1;
+        //drawer->draw(regions[regionPriority[matchingIDs[robot_id]]].points[region_index],QColor(255,0,0),0.2);
         //continue;
     }
     if (!isClear(regions[regionPriority[matchingIDs[robot_id]]].points[region_index], wm->field->oppGoal(),
                          wm->field->oppGoalL().y - wm->field->oppGoal().y,
                          0.2, "positionClear")) {
+        //drawer->draw(regions[regionPriority[matchingIDs[robot_id]]].points[region_index],QColor(200,0,0),0.15);
         tmp_chance = 0;
         //continue;
     }
@@ -2250,9 +2262,11 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
                                             (Robot::robot_radius_new + playmake->pos().dist(
                                                     regions[regionPriority[matchingIDs[robot_id]]].points[region_index]) /
                                                                        passPathWeight),
-                                            treshold1,"passPathOpen")) {
-        tmp_chance = 0;
+                                            treshold1,"isPassPathOpen")) {
+        drawer->draw(regions[regionPriority[matchingIDs[robot_id]]].points[region_index],QColor(200,0,0),0.15);
+        tmp_chance = -1;
     }
+    //ROS_INFO_STREAM("amiroo >> region : " << robot_id << " pos : " << region_index << " chance : " << tmp_chance);
     return tmp_chance;
 }
 
