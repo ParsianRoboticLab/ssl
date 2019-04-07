@@ -118,12 +118,11 @@ struct SDynamicPlan {
     int agentSize;
     AttackAgent::SPositioningAgent positionAgents[_NUM_PLAYERS];
     AttackAgent::SPlayMakeAgent playmake;
-    Vector2D passPos;
-    int passID;
+    RecievePoint recievePoint;
+
     void reset() {
         agentSize = -1;
-        passID = -1;
-        passPos.invalidate();
+        recievePoint.point.invalidate();
     }
     void set(const int& _agentSize,
              const PlayMakeSkill& _pm,
@@ -133,8 +132,7 @@ struct SDynamicPlan {
         agentSize = _agentSize;
         for (auto& p : positionAgents) {p.region = _reg, p.skill = _ps;}
         playmake.region = _pmreg; playmake.skill = _pm;
-        passPos.invalidate();
-        passID = -1;
+        recievePoint.point.invalidate();
 
     }
 };
@@ -231,7 +229,7 @@ private:
 
     void makePlan(int agentSize);
     void assignId();
-    void passPositions(const QList<int>&, MWBM&);
+    void passPositions(const QList<int>&);
     void passDecision();
     void assignTasks();
     void updateAttackState();
@@ -253,7 +251,6 @@ private:
     QList<Vector2D> amirSemiDynamicPosition;
     QList<Vector2D> markPositions;
 
-    RecievePoint recievePoint;
 
     bool isRightTimeToPass();
     void chooseReceiverAndBestPosForPass();
@@ -285,14 +282,14 @@ private:
     //bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     //bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
-    void bestPos(const QList<int>&, MWBM&);
+    void bestPos(const QList<int>&);
     void checkPositions();
     void isChipOrPass(QList<passPoint>&);
     void findOneTouch(QList<passPoint>&);
     void isInPosition(QList<passPoint>& );
     void toPassOrNotToPass(QList<passPoint>&);
     void passPriority(QList<passPoint>&);
-    void showPasser(QList<passPoint>&, MWBM&);
+    void showPasser(QList<passPoint>&);
     //void stayPassReciever(const QList<int>&, MWBM&);
     void stayPassReciever(QList<passPoint>& );
     void finalPassReciever();
