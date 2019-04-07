@@ -29,16 +29,12 @@ public:
     double angle;
     double theirNearestRobot;
     double chance;
+    int previousBest;
 
     int oppInside;
-    int ourInside;
     int oppInNeighbor;
     int pointPriority;
-
-    bool goodForOneTouch;
-    //bool chipOrPass; // 1 for pass and 0 for chip
-    bool passIsForMe; //when the point is getting pass
-    //Vector2D passReciever;
+    bool wasMeBefore;
 
 
 
@@ -49,6 +45,8 @@ public:
         rectangle = r;
         for(auto& point : p)
             points.push_back(point);
+        previousBest = -1;
+        wasMeBefore = false;
     }
 
     bool operator< (const FieldRegion& a) {
