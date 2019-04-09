@@ -70,7 +70,6 @@ public:
         , M_b(b) {
     }
 
-
     /*!
       \brief construct directly using raw coordinate values
       \param ax 1st point x value of segment edge
@@ -85,6 +84,18 @@ public:
         : M_a(ax, ay)
         , M_b(bx, by) {
     }
+    /*!
+      \brief construct using origin, direction and length
+      \param origin origin point
+      \param length length of line segment
+      \param dir line direction from origin point
+     */
+    Segment2D( const Vector2D & a,
+               const double & length,
+               const AngleDeg & dir )
+            : M_a( a ),
+              M_b( a + Vector2D::from_polar( length, dir ) )
+    { }
 
     /*!
       \brief construct from 2 points
@@ -116,7 +127,22 @@ public:
         M_b.assign(bx, by);
         return *this;
     }
-
+    /*!
+      \brief construct using origin, direction and length
+      \param origin origin point
+      \param length length of line segment
+      \param dir line direction from origin point
+      \return const reference to this object
+    */
+    const
+    Segment2D & assign( const Vector2D & a,
+                        const double & length,
+                        const AngleDeg & dir )
+    {
+        M_a = a;
+        M_b = a + Vector2D::from_polar( length, dir );
+        return *this;
+    }
     /*!
       \brief swap segment edge point
       \return const reference to itself
@@ -265,8 +291,6 @@ public:
     */
     bool onSegment(const Vector2D & p) const;
 
-    bool onSegmentWeakly(const Vector2D & p) const;
-    Vector2D projection(const Vector2D & p) const;
 };
 
 }

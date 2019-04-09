@@ -30,8 +30,8 @@
 #ifndef RCSC_GEOM_VORONOI_DIAGRAM_H
 #define RCSC_GEOM_VORONOI_DIAGRAM_H
 
-#include <geom/voronoi_diagram_original.h>
-#include <geom/voronoi_diagram_triangle.h>
+#include <parsian_util/geom/voronoi_diagram_original.h>
+#include <parsian_util/geom/voronoi_diagram_triangle.h>
 
 namespace rcsc {
 
