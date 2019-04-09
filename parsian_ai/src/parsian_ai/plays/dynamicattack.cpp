@@ -2027,82 +2027,63 @@ bool CDynamicAttack::passFailed() {
 double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
     // finding nearest opp
     double max_dist{-1};
-
-    double tmp_angle{};
+    double max_distance{15};
+    double max_angle{11};
     double tmp_chance{};
 
     double nearest_opp_robot_dist{100000};
-    double angle_weight{15}/*conf.PositionOpenAngle}*/, dist_weight{
-            0.1/*conf.PositionOppNearest*/}; // TODO: show in controling in game
-
-    double dist_weight1{0.05};
-    double angle_weight1{45};
     double treshold1{0.3};
     double treshold2{0.5};
 
-    double PassMarkChance{-5};//conf.OppPassMarkChance};
-    //double chance1{-10};
-    for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) { // cal nearest_opp_robot
-        //auto tmp_d = regions[regionPriority[matchingIDs[v]]].points[i].dist(wm->opp.active(j)->pos);
+    for (size_t j{}; j < wm->opp.activeAgentsCount(); j++) {
         auto tmp = regions[regionPriority[matchingIDs[robot_id]]].points[region_index].dist(wm->opp.active(j)->pos);
         if (tmp < nearest_opp_robot_dist) {
             nearest_opp_robot_dist = tmp;
         }
     }
 
-    //if (nearest_opp_robot_dist > max_dist) {
-    //max_dist = nearest_opp_robot_dist;
-    //tmp_point = regions[regionPriority[matchingIDs[v]]].points[region_index];
-    //}
-
-
-    CRobot *oppGoalKeaper = findOppGoalKeaper();
     double angle_max{};
-    if (oppGoalKeaper != nullptr) {
-        Segment2D posRobot_oppGoalK{regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
-                                    oppGoalKeaper->pos};
-        Segment2D posRobot_oppGoalR{regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
-                                    wm->field->oppGoalR()};
-        Segment2D posRobot_oppGoalL{regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
-                                    wm->field->oppGoalL()};
-        const double &&angle_R{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalR)};
-        const double &&angle_L{angleOfTwoSegment(posRobot_oppGoalK, posRobot_oppGoalL)};
-        if (angle_R > angle_L)
-            angle_max = angle_R;
-        else
-            angle_max = angle_L;
-    }
+    double angle_R{Vector2D::angleOf(wm->field->oppGoalR(), regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+                                     wm->opp.active(wm->opp.data->goalieID)->pos).degree()};
+    double angle_L{Vector2D::angleOf(wm->field->oppGoalL(), regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+                                     wm->opp.active(wm->opp.data->goalieID)->pos).degree()};
+    if (angle_R > angle_L)
+        angle_max = angle_R;
+    else
+        angle_max = angle_L;
 
+    ROS_INFO_STREAM("amirr : angle " << angle_R << " l : " << angle_L);
+
+
+    //double angleMe{Vector2D::angleOf(wm->field->oppGoalL(), wm->field->center(),wm->field->oppGoalR()).degree()};
+    //ROS_INFO_STREAM("amirr : angle " << angleMe);
 
     auto tmp_a = angle_max;
-    double tresholdDist{3};
-    if (nearest_opp_robot_dist < tresholdDist)
-        tmp_chance = nearest_opp_robot_dist * dist_weight + tmp_a * angle_weight;
-    else {
-        tmp_chance = nearest_opp_robot_dist * dist_weight1 + tmp_a * angle_weight1;
 
-    }
+    tmp_chance = (nearest_opp_robot_dist + tmp_a) / (max_angle + max_distance);
 
-    if (!isClear(/*playmake->pos()*/wm->ball->pos, wm->field->oppGoal(),
-                                    wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2, "positionInOurWay",
-                                    regions[regionPriority[matchingIDs[robot_id]]].points[region_index])) {
+
+    if (!isClear(wm->ball->pos, wm->field->oppGoal(),
+                 wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2,"positionInOurWay",
+                 regions[regionPriority[matchingIDs[robot_id]]].points[region_index])) {
         tmp_chance = 0;
-        //continue;
     }
     if (!isClear(regions[regionPriority[matchingIDs[robot_id]]].points[region_index], wm->field->oppGoal(),
                  wm->field->oppGoalL().y - wm->field->oppGoal().y,
                  0.2, "positionClear")) {
         tmp_chance = 0;
-        //continue;
     }
     double passPathWeight{15};
-    if (!isClear(/*playmake->pos()*/ wm->ball->pos, regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
-                                     (Robot::robot_radius_new + playMakeAgent->pos().dist(
-                                             regions[regionPriority[matchingIDs[robot_id]]].points[region_index]) /
-                                                                passPathWeight),
-                                     treshold1, "passPathOpen")) {
+    if (!isClear(wm->ball->pos, regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+                 (Robot::robot_radius_new + playmake->pos().dist(
+                         regions[regionPriority[matchingIDs[robot_id]]].points[region_index]) /
+                                            passPathWeight),
+                 treshold1,"isPassPathOpen")) {
+        drawer->draw(regions[regionPriority[matchingIDs[robot_id]]].points[region_index],QColor(200,0,0),0.15);
         tmp_chance = 0;
     }
+    ROS_INFO_STREAM("amirr >> region : " << robot_id << " pos : " << region_index << " chance : " << tmp_chance);
+
     return tmp_chance;
 }
 
