@@ -1872,6 +1872,14 @@ void DefensePlan::matchingDefPos(int _defenseNum){
             if(conf.ThreeDefenseMode){
                 gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
                 gpa[ourAgents[i]->id()]->setTargetdir(Vector2D(1,0));
+                if (i == 0)
+                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.5),"magenta");
+                if (i == 1)
+                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.7),"white");
+                if (i == 2)
+                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.9),"black");
+
+
             }
 
             else{
