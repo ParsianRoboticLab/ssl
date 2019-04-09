@@ -51,9 +51,7 @@ protected:
     GotopointavoidAction *gpa[_MAX_NUM_PLAYERS];
     KickAction* kickSkill;
     Action* AHZSkills;
-    Vector2D pointForKick, oneToucherDir;
-    Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
-    void setPointToKick();
+    Vector2D goalKeeperTarget;
     GKState setGoalKeeperState();
     Vector2D setGoalKeeperTargetPoint(GKState);
     double differentialTime = 0;
@@ -64,9 +62,6 @@ protected:
     void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
     void manToManMarkBlockShotInPlayOff(int _markAgentSize);
 
-    bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
-    void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
-    void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions , QList<int> &stuckIndexs);
 
     bool isInIndirectArea(Vector2D);
     int condWhere;
@@ -105,31 +100,13 @@ protected:
     bool manToManMarkBlockPassFlag;
     QList <QString> markRoles;
     QList <QString> lastMarkRoles;
-    QString lastStateForGoalKeeper;
-    QList<Vector2D> AHZDefPoints;
     ///////////////////////////////////////////////////
     Vector2D strictFollowBall(Vector2D _ballPos);
     Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
-    void matchingDefPos(int _defenseNum);
-    bool defenseOneTouchOrNot();
-    enum exepMode {
-        defOneTouch = 1,
-        defClear = 2,
-        NoneExep = 3
-    };
-
-
     bool shootOutClearModeSelected = false;
     bool agentEffectOnBallProbabilityRes;
     double shootOutDiam = 2.5;
-
-    struct defenseExeptions {
-        bool active;
-        exepMode exeptionMode;
-        int exepAgentId;
-    };
-
 public:
     DefensePlan();
     void execute() override;
@@ -139,8 +116,6 @@ public:
     ////////////////////// AHZ ////////////////
     int findNeededDefense();
     //////////////////HMD/////////////////
-    QList<Vector2D> markPoses;
-    QList<Vector2D> markAngs;
     double segmentpershoot;
     double segmentperpass;
     Vector2D dir;
@@ -162,6 +137,18 @@ private:
     Vector2D ballIsBesidePoles();
     void executeGoalKeeper(const Vector2D& , const GKState&);
     int stateBallBesidepoles;
+    QList<Vector2D> markPoses;//
+    QList<Vector2D> markAngs;//
+    QList<Vector2D> defensePoses;//
+    void setMarkTarget();
+    void executeMarkAndDef(QList <Vector2D>& , QList <int>&);
+    void setTargetMarkAndDef();
+    void setDefTarget();
+    void matchingPoses(QList <Vector2D>& , QList <int>&);
+    void stuck(QList <Vector2D>& Points);
+    bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
+    void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions);
+    void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions);
     ///////////////////////HMD///////////////
     Vector2D ballPrediction(const bool);
     void findPos(int _markAgentSize);
@@ -189,23 +176,9 @@ private:
     Agent *goalKeeperAgent;
     QList <Agent *> defenseAgents;
     int lastMarker[10];
-    int oneToucher;
-    Vector2D defenseDirs[_MAX_NUM_PLAYERS];
-    bool doOneTouch;
     double thr;
-    void calcPointForOneTouch();
-    bool isInOneTouch;
-    int oneTouchCycleTest;
-    bool checkStillBeingInOneTouch();
-    int cycleCounter;
-    bool oneTouchPointFlag;
     int predictMostDangrousOppToBall();
     Vector2D NearestDistanceToBallSegment(Vector2D point);
-    defenseExeptions defExceptions;
-    void checkDefenseExeptions();
-    void runDefenseExeptions();
-    Vector2D runDefenseOneTouch();
-    bool defenseCheckBallDangerForOneTouch();
     int counterBallWasBesidePoles = 0;
 
 };//tavabei ke vabaste be vorodi and static she
