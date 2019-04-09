@@ -54,7 +54,7 @@ CRoleBlockInfo::CRoleBlockInfo(QString _roleName) : CRoleInfo(_roleName) {
 }
 
 void CRoleBlockInfo::findPos(bool blockGoal) {
-    double blockDist = 0.5;
+    double blockDist = 5;
 
     if (wm->ball->pos.x > 1) {
         blockDist = 2.95;
@@ -88,9 +88,48 @@ void CRoleBlockInfo::findPos(bool blockGoal) {
                     }
                 }
             }
-            if (wm->field->isInOurPenaltyArea(blockPosition) || wm->field->isInOurPenaltyArea(wm->ball->pos)) {
-                blockPosition.x += 1.2;
+          //  drawer->draw(blockPosition,QColor("green"));
+                    if(wm->field->isInOurPenaltyArea(blockPosition) || blockPosition.x<-6)
+                    {
+
+                       Line2D line=Line2D(blockPosition,wm->ball->pos);
+
+
+
+
+
+
+
+                        QList<Vector2D> solutions;
+
+                        solutions = wm->field->ourPAreaIntersect(line);
+
+
+                        Vector2D position;
+
+
+                        position=wm->field->oppGoal();
+
+                        for(int i=0;i<solutions.size();i++){
+
+                            if(wm->ball->pos.dist(solutions[i])<wm->ball->pos.dist(position)){
+
+
+                                position=solutions[i];
+
+                            }
+
+
+                        }
+
+
+
+                        blockPosition=(position-blockPosition).norm()*4+blockPosition;
+                        ROS_INFO_STREAM("blockerpos"<<blockPosition);
+                        drawer->draw(blockPosition,QColor("red"), 20);
+
             }
         }
     }
+
 }
