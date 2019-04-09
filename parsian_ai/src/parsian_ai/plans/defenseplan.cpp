@@ -1873,11 +1873,11 @@ void DefensePlan::matchingDefPos(int _defenseNum){
                 gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
                 gpa[ourAgents[i]->id()]->setTargetdir(Vector2D(1,0));
                 if (i == 0)
-                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.5),"magenta");
+                    drawer->draw(Circle2D( matchPoints.at(matchResult.at(i)),0.5),"magenta");
                 if (i == 1)
-                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.7),"white");
+                    drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)) ,0.3),"red");
                 if (i == 2)
-                    drawer->draw(Circle2D(ourAgents.at(i)& ,0.9),"black");
+                    drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)),0.3),"blue");
 
 
             }
