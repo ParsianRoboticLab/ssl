@@ -1673,11 +1673,14 @@ void DefensePlan::setDefTarget(){
             if(findNeededDefense() == 3){
                 defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
                                                 defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
+                ROS_INFO_STREAM("kasra:we are here 0");
             }
             else{
                 defensePoses = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
                                                 defenseFormationForRectangularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
+                ROS_INFO_STREAM("kasra:we are here 0.5");
                 for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
+                    ROS_INFO_STREAM("kasra:we are here 1");
                     defensePoses.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
                 }
             }
@@ -1685,11 +1688,13 @@ void DefensePlan::setDefTarget(){
         else if(realDefSize < 3){
             defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
                                             defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
+            ROS_INFO_STREAM("kasra:we are here 2");
         }
     }
     else{
         defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , conf.DownLimit , conf.UpLimit),
                                         defenseFormationForRectangularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , 1.4 , 2.5));
+        ROS_INFO_STREAM("kasra:we are here 3");
     }
 }
 
@@ -1782,15 +1787,16 @@ void DefensePlan::executeMarkAndDef(QList <Vector2D>& matchPoints , QList <int>&
             if(conf.ThreeDefenseMode && (defensePoses.size() - findNeededDefense() == 1)){
 
                 gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
-                gpa[ourAgents[i]->id()]->setTargetdir(Vector2D(1,0));
-                if (i == 0)
-                    drawer->draw(Circle2D( matchPoints.at(matchResult.at(i)),0.5),"magenta");
-                if (i == 1)
-                    drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)) ,0.3),"red");
-                if (i == 2)
-                    drawer->draw(Circle2D(matchPoints.at(matchResult.at(i)),0.3),"blue");
+                gpa[ourAgents[i]->id()]->setTargetdir(matchPoints.at(matchResult.at(i)) - wm->field->ourGoal());
+                gpa[ourAgents[2]->id()]->setTargetdir(Vector2D(1,0));
+            }
 
+            if(conf.ThreeDefenseMode && (defensePoses.size() - findNeededDefense() == 2)){
 
+                gpa[ourAgents[i]->id()]->setTargetpos(matchPoints.at(matchResult.at(i)));
+                gpa[ourAgents[i]->id()]->setTargetdir(matchPoints.at(matchResult.at(i)) - wm->field->ourGoal());
+                gpa[ourAgents[1]->id()]->setTargetdir(Vector2D(1,0));
+                gpa[ourAgents[2]->id()]->setTargetdir(Vector2D(1,0));
             }
 
             else{
