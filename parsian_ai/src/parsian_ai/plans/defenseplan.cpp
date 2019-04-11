@@ -1402,6 +1402,8 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
 }
 
 bool DefensePlan::dangerForGK(){
+
+
     Vector2D ballPos=wm->ball->pos;
     Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
     Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
@@ -1449,6 +1451,7 @@ bool DefensePlan::dangerForGK(){
 
     ////////////////////////////////////////////
                 drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
+
 
                 if (isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
                     DangerByOurAgentsInPenaltyArea= true;
@@ -1529,12 +1532,14 @@ GKState DefensePlan::setGoalKeeperState() {
         return GKState :: Stop;
 
     if(wm->field->isInOurPenaltyArea(wm->ball->pos)) {
+
         if (wm->ball->vel.length() < 0.1 &&
             (ourLeftPole.contains(wm->ball->pos) || ourRightPole.contains(wm->ball->pos) ||
              (wm->field->ourGoalL().y >= wm->ball->pos.y
               && wm->field->ourGoalR().y < wm->ball->pos.y
               && wm->field->ourGoal().x < wm->ball->pos.x
               && wm->field->ourGoal().x + 0.05 > wm->ball->pos.x))) {
+
             return GKState::ballIsBesidePoles;
         }
     }
@@ -1542,30 +1547,41 @@ GKState DefensePlan::setGoalKeeperState() {
         return GKState::playoff;
     }
     if(know->variables["transientFlag"].toBool()) {
+
         stateBallBesidepoles = -1;
-        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(know->timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4) + differentialTime)))
-            return GKState :: GKReciveBallInTS;
-        else
-            return GKState :: GKPredictInTs;
+        if (wm->field->ourPenaltyRect().contains(wm->ball->getPosInFuture(know->timeNeeded(goalKeeperAgent, know->getPointInDirection(wm->field->ourGoal(), ballPrediction(true), 1), 4) + differentialTime))) {
+
+            return GKState::GKReciveBallInTS;
+        }
+        else {
+            return GKState::GKPredictInTs;
+
+        }
     }
     if(!wm->field->isInField(wm->ball->pos))
+
         return GKState :: ballIsOutOfField;
+
 
     if(dangerForGK())//TODO: write dangerForGK function or add another if//Done by Mahdi(Vardi)
         return GKState :: dangerForClear;
 
     if (wm->ball->vel.length() > 1.3 && (goalLine.intersection(ballLine).valid())){
         oneTouchCnt = 0;
+
         return GKState :: oneTouch;
     }
 
     if(oneTouchCnt < 5){
+
         oneTouchCnt++;
         return GKState :: oneTouch;
     }
 
-    if(wm->field->isInOurPenaltyArea(wm->ball->pos))
-        return GKState :: clearMode;
+    if(wm->field->isInOurPenaltyArea(wm->ball->pos)) {
+
+        return GKState::clearMode;
+    }
 
     return GKState :: strictFollow;
 }
@@ -1675,7 +1691,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
         }
         else if(DangerByOurAgentsInPenaltyArea){
 
-                if(emptyAngle>=40) {
+                if(emptyAngle>=25) {
                     shouldKickOrChip = true;
                 }
 
@@ -1690,6 +1706,9 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
                 if(!shouldKickOrChip) {
                     drawer->draw(FirstTarget, QColor("Blue"));
                     target=FirstTarget;
+                }
+                else{
+                    target = AZBisecOpenSeg.intersection(middleLine);
                 }
 
         }
@@ -2077,6 +2096,7 @@ void DefensePlan::execute(){
             penaltyShootOutMode();// hamid penalty
             return;
         }
+
         GKState state = setGoalKeeperState();
         Vector2D GKTarget = setGoalKeeperTargetPoint(state);
         executeGoalKeeper(GKTarget , state);
@@ -2448,6 +2468,8 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
     //// function. In this function also like the other functions for goalkeeper,
     //// we have some mode for handling the goalkeeper behavior.
     QList<Vector2D> tempSol;
+
+
     tempSol.clear();
 
     //init skill
@@ -2498,7 +2520,7 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
         case GKState :: clearMode:
             if (wm->ball->vel.length() > 0.4 && wm->ball->vel.length() < 1.3) {
                 gpa[goalKeeperAgent->id()]->setTargetdir(wm->ball->pos - wm->field->ourGoal());
-                ROS_INFO_STREAM("Mahdi:goalKeeperClearMode");
+
             }
             else{
                 AHZSkills = kickSkill;
