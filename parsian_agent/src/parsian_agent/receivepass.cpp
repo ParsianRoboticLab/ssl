@@ -17,7 +17,7 @@ RPMode CSkillReceivePass::decideMode() {
     Circle2D receiveCircle(target, receiveRadius);
     Segment2D ballPath(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 10);
     drawer->draw(ballPath, QColor(Qt::yellow));
-    if ((receiveCircle.intersection(ballPath) && wm->ball->vel.length() > 0.2)) { // TODO : Add Threshold
+    if ((receiveCircle.intersection(ballPath) && wm->ball->vel.length() > 0.2)) { // TODO: Add Threshold
         return RPMode::RPINTERSECT;
     }
 
