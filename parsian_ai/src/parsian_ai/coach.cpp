@@ -921,7 +921,7 @@ QList<int> CCoach::remainingAgent() {
 }
 
 void CCoach::handleBlocker(const QList<int> &_agentsID) {
-    bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick();
+    bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick() || gameState->isStop() ;
     if (!isthierplayoff) {
         blockerId = -1;
 
