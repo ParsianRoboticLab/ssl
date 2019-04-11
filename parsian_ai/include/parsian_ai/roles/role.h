@@ -8,6 +8,7 @@
 #include <parsian_ai/util/agent.h>
 #include <parsian_ai/util/knowledge.h>
 #include <parsian_ai/gamestate.h>
+#include <parsian_ai/config.h>
 #include <parsian_util/action/autogenerate/gotopointaction.h>
 #include <parsian_util/action/autogenerate/gotopointavoidaction.h>
 #include <parsian_util/action/autogenerate/kickaction.h>

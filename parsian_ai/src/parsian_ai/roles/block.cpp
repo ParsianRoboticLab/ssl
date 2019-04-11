@@ -54,7 +54,7 @@ CRoleBlockInfo::CRoleBlockInfo(QString _roleName) : CRoleInfo(_roleName) {
 }
 
 void CRoleBlockInfo::findPos(bool blockGoal) {
-    double blockDist = 0.5;
+    double blockDist = conf.blockdist;
 
     if (wm->ball->pos.x > 1) {
         blockDist = 2.95;
