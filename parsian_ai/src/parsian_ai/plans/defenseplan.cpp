@@ -1489,14 +1489,14 @@ bool DefensePlan::dangerForGK(){
                 }
 
     if(DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyArea){
-        ROS_INFO_STREAM("Lhum: 1");
+
         return true;
 
 
     }
     else{
         ROS_INFO_STREAM("Mahdi:No Danger!");
-        ROS_INFO_STREAM("Lhum: 0");
+
         return false;
     }
 
@@ -1696,9 +1696,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
                 }
 
             ROS_INFO_STREAM("Mahdi:EmptyAngle="<<emptyAngle);
-            ROS_INFO_STREAM("Mahdi:Percent="<<percent);
-            ROS_INFO_STREAM("Mahdi:MostOpenAngle="<<mostOpenAngle);
-            ROS_INFO_STREAM("Mahdi:biggestAngle="<<biggestAngle);
+
             target = AZBisecOpenSeg.intersection(middleLine);
             drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
             drawer->draw(target,QColor("Orange"));
