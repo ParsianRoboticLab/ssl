@@ -2086,18 +2086,3 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
 
     return tmp_chance;
 }
-
-void CDynamicAttack::support() {
-
-    supportRole.setAgent(supportAgent);
-    supportRole.setAvoidPenaltyArea(true);
-    supportRole.setSelectedSupporterSkill(SupporterSkill::Move);
-    supportRole.setTarget(wm->ball->pos + wm->ball->vel / 2 + rcsc::Vector2D(-1, 0));
-//    switch (supporter.) {
-//    }
-}
-
-
-void CDynamicAttack::setSupporter(Agent *_supporter) {
-    supportAgent = _supporter;
-}
