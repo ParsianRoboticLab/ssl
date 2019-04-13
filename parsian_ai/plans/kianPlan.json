@@ -47,8 +47,8 @@
                                 {
                                     "flag": false,
                                     "name": "PassSkill",
-                                    "primary": 550,
-                                    "secondary": -1,
+                                    "primary": 700,
+                                    "secondary": 200,
                                     "target": {
                                         "agent": 1,
                                         "index": 2
@@ -120,8 +120,8 @@
                         },
                         {
                             "angel": 53.880659150520245,
-                            "pos-x": 2.2430939226519335,
-                            "pos-y": -1.125,
+                            "pos-x": 4.2541436464088402,
+                            "pos-y": 1.6537500000000001,
                             "skills": [
                                 {
                                     "flag": false,
@@ -133,7 +133,7 @@
                                     "flag": false,
                                     "name": "OneTouchSkill",
                                     "primary": 500,
-                                    "secondary": 150
+                                    "secondary": 500
                                 }
                             ],
                             "tolerance": 70
