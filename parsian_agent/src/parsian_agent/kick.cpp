@@ -459,8 +459,8 @@ void CSkillKick::moveFrowardKick() {
     }
     else {
         gpa->setSlowmode(false);
-        gpa->setBallobstacleradius(0.3);
-        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.35;
+        gpa->setBallobstacleradius(0.31);
+        finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.36;
         agent->setChip(0);
         agent->setKick(0);
         gpa->init(finalPos, wm->ball->pos - agent->pos());
