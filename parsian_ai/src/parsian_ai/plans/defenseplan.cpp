@@ -543,6 +543,7 @@ Vector2D DefensePlan::oneDefenseFormationForRecatngularPositioning(double downLi
         anotherIntesection = biggestLineOfBallTriangle.nearestPoint(defensePosition);
         defensePosition += Vector2D(defensePosition - anotherIntesection).norm()*(robotRadius - distanceFromYalForFirstPosition);
     }
+    
     drawer->draw(Circle2D(wm->field->ourGoal(),downLimit) , 0 , 360 , "magenta");
     drawer->draw(Circle2D(wm->field->ourGoal(),upLimit), 0 , 360 , "yellow");
     drawer->draw(Segment2D(wm->ball->pos,wm->field->ourGoal()),"red");
