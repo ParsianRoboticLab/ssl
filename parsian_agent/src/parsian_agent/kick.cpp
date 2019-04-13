@@ -366,7 +366,6 @@ void CSkillKick::execute() {
     validateKickerState();
 
     KMode kickMode = decideMode();
-    ROS_INFO_STREAM("atiyeh" << (int) kickMode);
     switch (kickMode) {
         case KMode::DIRECT:
             direct();
@@ -441,28 +440,26 @@ bool CSkillKick::isOppPenaltyMode() {
 }
 
 void CSkillKick::moveFrowardKick() {
-    Circle2D ballTarget(target,0.20);
     Vector2D finalPos;
     agent->chip = TRUE;
     AngleDeg kickFinalDir = (target - wm->ball->pos).th();
-    if (ballTarget.contains(wm->ball->pos)) {
+    ROS_INFO_STREAM("atiyeh" << kickFinalDir);
+    if (!wm->field->isInField(wm->ball->pos)) {
         agent->setChip(0);
         agent->setKick(0);
-        doNotKick();}
-    else if (std::fabs((kickFinalDir - agent->dir().th()).degree()) < 30) {
+        agent->waitHere();}
+    else if (std::fabs((kickFinalDir - agent->dir().th()).degree()) < 10) {
         gpa->setSlowmode(true);
         gpa->setBallobstacleradius(0);
-        finalPos = wm->ball->pos; + (target - wm->ball->pos).norm() * 0.05R;
+        finalPos = wm->ball->pos;// - target.norm() * 0.05;
         agent->setRoller(1);
         agent->setChip(kickSpeed);
         gpa->init(finalPos, wm->ball->pos - agent->pos());
         gpa->execute();
-        //finalPos = target - (wm->ball->pos - agent->pos()) - (wm->ball->pos - agent->pos()).norm()*0.1;
-        }
+    }
     else {
-        agent->setRoller(spin);
         gpa->setSlowmode(false);
-        gpa->setBallobstacleradius(0.45);
+        gpa->setBallobstacleradius(0.3);
         finalPos = wm->ball->pos - (target - wm->ball->pos).norm() * 0.35;
         agent->setChip(0);
         agent->setKick(0);
