@@ -444,6 +444,7 @@ void CSkillKick::moveFrowardKick() {
     agent->chip = TRUE;
     AngleDeg kickFinalDir = (target - wm->ball->pos).th();
     ROS_INFO_STREAM("atiyeh" << kickFinalDir);
+    ROS_INFO_STREAM("atiyeh" << agent->dir().th());
     if (!wm->field->isInField(wm->ball->pos)) {
         agent->setChip(0);
         agent->setKick(0);
