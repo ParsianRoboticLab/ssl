@@ -1778,6 +1778,19 @@ void DefensePlan::matchingDefPos(int _defenseNum){
         if(wm->field->ourBigPenaltyArea(1,0.02,0).intersection(Segment2D(ourAgents.at(i)->pos() , matchPoints.at(matchResult.at(i))) , &sol[0] , &sol[1])){
             matchPoints[matchResult[i]] = avoidCircularPenaltyAreaByMasoud(ourAgents[i], matchPoints[matchResult[i]]);
         }
+        for(int i=0;i<markPoses.size();i++){
+        if(wm->field->isInOurPenaltyArea(markPoses.at(i))){
+            wm->field->ourBigPenaltyArea(1,0, 0).intersection(Segment2D(wm->field->ourGoal(),tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first ), &sol3 , &sol4);
+
+            markTarget.x=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).x;
+            markTarget.y=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).y;
+            ROS_INFO_STREAM("Mahdi:isInPArea");
+
+
+        }
+        }
+
+        markPoses.append(markTarget);
         ////////////////////////////////////////////////////////////
         drawer->draw(Circle2D(matchPoints[matchResult[i]] , 0.05) , 0 , 360 , "black" , true);
         gpa[ourAgents[i]->id()]->setNoavoid(true);
