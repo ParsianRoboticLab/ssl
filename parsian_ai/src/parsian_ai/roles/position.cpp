@@ -27,28 +27,19 @@ CRolePosition::CRolePosition(Agent *_agent) : CRole(_agent) {
 
 void CRolePosition::execute() {
     update();
-
     switch (positionSkill) {
         case PositionSkill::Ready:
-            ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: ready");
             agent->action = receiveSkill;
-            break;
-            DBUG(QString("[dynamicRole] kickSpeed : %1").arg(kickSpeed), D_MAHI);
-            agent->action = shotSkill;
-            ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: shotSkill");
             break;
         case PositionSkill::Move:
             agent->action = moveSkill;
-            ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: move");
             break;
         case PositionSkill::OneTouch:
             agent->action = oneTouchSkill;
-            ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: oneTouchSkill");
             break;
         case PositionSkill::NoSkill:;
             break;
     }
-
     return;
 
 

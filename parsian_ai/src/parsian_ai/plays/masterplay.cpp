@@ -7,9 +7,9 @@
 //CRolePlayMake CMasterPlay::playMakeRole{nullptr};
 //CRoleBlock CMasterPlay::blockRole{nullptr};
 
-CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr),supportRole(nullptr) {
+CMasterPlay::CMasterPlay() : playMakeRole(nullptr), blockRole(nullptr), supportRole(nullptr) {
     for (int i = 0; i < 8; ++i) {
-        positionRoles.append(CRolePosition(nullptr));
+        positionRoles.append(new CRolePosition(nullptr));
     }
     markAgents.clear();
     executedCycles = 0;
@@ -36,10 +36,10 @@ bool CMasterPlay::canScore() {
     QList<int> ourRelaxed, theirRelaxed;
     theirRelaxed.clear();
     ourRelaxed.clear();
-    for (int i = 0 ; i < wm->our.activeAgentsCount() ; i++) {
+    for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
         ourRelaxed.append(wm->our.activeAgentID(i));
     }
-    return  getOpenness(wm->ball->pos, wm->field->oppGoalL(), wm->field->oppGoalR(), ourRelaxed, theirRelaxed) > .2;
+    return getOpenness(wm->ball->pos, wm->field->oppGoalL(), wm->field->oppGoalR(), ourRelaxed, theirRelaxed) > .2;
 }
 
 
@@ -52,7 +52,7 @@ void CMasterPlay::setFormation(QString _formationName) {
     formationName = std::move(_formationName);
 }
 
-void CMasterPlay::setStaticPoints(QList< holdingPoints > _staticPoints) {
+void CMasterPlay::setStaticPoints(QList<holdingPoints> _staticPoints) {
     staticInited = true;
     masterStaticPoints = std::move(_staticPoints);
 }
@@ -70,7 +70,7 @@ void CMasterPlay::resetPlayMaker() {
 // result in bad bugs!
 void CMasterPlay::appendRemainingsAgents(QList<Agent *> &_list) {
 
-    QList <Agent*> remainings;
+    QList<Agent *> remainings;
 
     for (auto i : agents) {
         remainings.append(i);
@@ -98,7 +98,7 @@ void CMasterPlay::appendRemainingsAgents(QList<Agent *> &_list) {
 
 void CMasterPlay::choosePlayMaker() {
     int playMakeID = -1;
-    QList <Agent *> playAgents;
+    QList<Agent *> playAgents;
     playAgents.clear();
     for (auto i : agents) {
         playAgents.append(i);
@@ -136,7 +136,7 @@ void CMasterPlay::choosePlayMaker() {
 void CMasterPlay::chooseBlocker() {
 
     int blockID = -1;
-    QList <Agent *> playAgents;
+    QList<Agent *> playAgents;
     playAgents.clear();
     for (auto i : agents) {
         playAgents.append(i);
@@ -180,10 +180,11 @@ bool CMasterPlay::canOneTouch(QList<Agent *> posAgents, Agent *playMake) {
     return false;
 }
 
-double CMasterPlay::getOpenness(Vector2D from, Vector2D p1, Vector2D p2, QList<int> ourRelaxedIDs, QList<int> oppRelaxedIDs) {
-    std::priority_queue < QPair< edgeMode , double > , std::vector< QPair< edgeMode , double > > , Comparar > blockedLines;
+double
+CMasterPlay::getOpenness(Vector2D from, Vector2D p1, Vector2D p2, QList<int> ourRelaxedIDs, QList<int> oppRelaxedIDs) {
+    std::priority_queue<QPair<edgeMode, double>, std::vector<QPair<edgeMode, double> >, Comparar> blockedLines;
     double least = (p1 - from).th().degree();
-    double most  = (p2 - from).th().degree();
+    double most = (p2 - from).th().degree();
     if (least > most) {
         std::swap(least, most);
     }
@@ -240,37 +241,36 @@ double CMasterPlay::getOpenness(Vector2D from, Vector2D p1, Vector2D p2, QList<i
     return 1.0 - coveredArea(blockedLines) / (most - least);
 }
 
-double CMasterPlay::coveredArea(std::priority_queue < QPair< edgeMode , double > , std::vector< QPair< edgeMode , double > > , Comparar >& obstacles) {
+double CMasterPlay::coveredArea(
+        std::priority_queue<QPair<edgeMode, double>, std::vector<QPair<edgeMode, double> >, Comparar> &obstacles) {
     if (obstacles.size() <= 1) {
         return 0.0;
     }
 
-    QPair< edgeMode , double > lastest = obstacles.top();
+    QPair<edgeMode, double> lastest = obstacles.top();
     obstacles.pop();
-    QPair< edgeMode , double > second_lastest = obstacles.top();
+    QPair<edgeMode, double> second_lastest = obstacles.top();
 
     if (lastest.first == edgeMode::TOP && second_lastest.first == edgeMode::TOP) {
         return (lastest.second - second_lastest.second) + coveredArea(obstacles);
-    }
-
-    else if (lastest.first == edgeMode::BOT && second_lastest.first == edgeMode::BOT) {
+    } else if (lastest.first == edgeMode::BOT && second_lastest.first == edgeMode::BOT) {
         return (lastest.second - second_lastest.second) + coveredArea(obstacles);
-    }
-
-    else if (lastest.first == edgeMode::TOP && second_lastest.first == edgeMode::BOT) {
+    } else if (lastest.first == edgeMode::TOP && second_lastest.first == edgeMode::BOT) {
         return (lastest.second - second_lastest.second) + coveredArea(obstacles);
-    }
-
-    else {
+    } else {
         return coveredArea(obstacles);
     }
 }
 
-void CMasterPlay::execute(const QList<Agent*>& _agents) {
+void CMasterPlay::execute(const QList<Agent *> &_agents) {
     setAgents(_agents);
     execute_x();
     execPlay();
-    DBUG(QString("MasterPlay size: %1").arg(agents.count()) , D_ERROR);
+    ROS_INFO_STREAM("Lhum");
+    for (int i = 0; i < agents.count(); ++i) {
+        ROS_INFO_STREAM(agents[i]->id() <<  " ");
+    }
+    DBUG(QString("MasterPlay size: %1").arg(agents.count()), D_ERROR);
 }
 
 void CMasterPlay::execPlay() {
@@ -282,14 +282,13 @@ void CMasterPlay::execPlay() {
     }
 
     if (playMakeAgent) {
-        if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()) {
+        if (!gameState->ourDirectKick() && !gameState->ourIndirectKick()) {
             playMakeRole.setAgent(playMakeAgent);
-//            playMakeRole.execute();
         }
     }
 
-    if (supportAgent){
-        if (! gameState->ourDirectKick() && ! gameState->ourIndirectKick()){
+    if (supportAgent) {
+        if (!gameState->ourDirectKick() && !gameState->ourIndirectKick()) {
             supportRole.setAgent(supportAgent);
 //            supportRole.execute();
         }
@@ -300,13 +299,17 @@ void CMasterPlay::execPlay() {
         markPlan.execute();
     }
 
+    for (int i = 0; i < positionAgents.size(); ++i) {
+        positionRoles[i]->setAgent(positionAgents[i]);
+    }
 
     if (gameState->isStop()) {
         if (!positionAgents.empty()) {
+
             ///////// added to prevent Segmentatino fault! //////////
-            DBUG(QString("Invalid Formation Name: %1").arg(formationName) , D_ERROR);
+            DBUG(QString("Invalid Formation Name: %1").arg(formationName), D_ERROR);
             formationName = "Stop6";
-            /////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////
             if (staticInited) {
                 positioningPlan.staticInit(masterStaticPoints);
             }

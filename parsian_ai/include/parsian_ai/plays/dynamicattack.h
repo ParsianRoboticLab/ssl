@@ -88,36 +88,9 @@ public:
 // END NEW PASS ZONE
 
 
-namespace AttackAgent{
-    struct SPositioningAgent {
-
-        void init(PositionSkill _skill,
-                  DynamicRegion _region) {
-            skill  = _skill;
-            region = _region;
-        }
-
-        PositionSkill skill;
-        DynamicRegion region;
-    };
-
-    struct SPlayMakeAgent {
-
-        void init(PlayMakeSkill _skill,
-                  DynamicRegion _region) {
-            skill  = _skill;
-            region = _region;
-        }
-
-        PlayMakeSkill skill;
-        DynamicRegion region;
-    };
-}
 
 struct SDynamicPlan {
     int agentSize;
-    AttackAgent::SPositioningAgent positionAgents[_NUM_PLAYERS];
-    AttackAgent::SPlayMakeAgent playmake;
     RecievePoint recievePoint;
 
     void reset() {
@@ -130,8 +103,6 @@ struct SDynamicPlan {
              const PositionSkill& _ps,
              const DynamicRegion& _reg) {
         agentSize = _agentSize;
-        for (auto& p : positionAgents) {p.region = _reg, p.skill = _ps;}
-        playmake.region = _pmreg; playmake.skill = _pm;
         recievePoint.point.invalidate();
 
     }

@@ -123,7 +123,6 @@ void CRolePlayMake::execute() {
         case PlayMakeSkill::Pass:
         case PlayMakeSkill::CatchBall:
         DBUG(QString("[dynamicRole] kickSpeed : %1").arg(kickSpeed), D_MAHI);
-            ROS_INFO_STREAM("kian: akharesh: ID:" << agent->id() << ", action: playmake hame");
             agent->action = shotSkill;
             break;
         case PlayMakeSkill::NoSkill:

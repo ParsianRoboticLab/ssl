@@ -556,7 +556,7 @@ void CCoach::decidePlayOn(QList<int> &ourPlayers, QList<int> &lastPlayers) {
 
         if (pushingPenalty.contains(wm->ball->pos)) {
             dynamicAttack->setDirectShot(true);
-        } else if (mostPossible > shotToGoalthr || true) {
+        } else if (mostPossible > shotToGoalthr) {
             dynamicAttack->setDirectShot(true);
             shotToGoalthr = conf.DirectTrsh * .6;
         } else {
@@ -734,7 +734,6 @@ void CCoach::execute() {
         }
     }
     if (gameState->isStop() && !damagedIDs.empty()) replaceFaultedRobots();//[substitution]
-    ROS_INFO_STREAM("mina");
 }
 
 DefensePlan &CCoach::getDefense() {

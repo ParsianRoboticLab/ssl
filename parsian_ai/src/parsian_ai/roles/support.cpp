@@ -23,7 +23,6 @@ void CRoleSupport::execute() {
             break;
         case SupporterSkill::Move:
             agent->action = moveSkill;
-            ROS_INFO_STREAM("supporter is ok");
             break;
     }
 

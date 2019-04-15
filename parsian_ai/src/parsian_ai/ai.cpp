@@ -18,7 +18,9 @@ void AI::execute() {
 
 parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
     if (wm->our.data->activeAgents.contains(robotID) != false) {
+
         if (soccer->agents[robotID]->action != nullptr) {
+
             if (soccer->agents[robotID]->action->getActionName() == KickAction::SActionName()) {
                 parsian_msgs::parsian_skill_kick *task;
                 task = reinterpret_cast<parsian_skill_kick *>(soccer->agents[robotID]->action->getMessage());
@@ -51,7 +53,7 @@ parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
 
             } else if (soccer->agents[robotID]->action->getActionName() == NoAction::SActionName()) {
                 parsian_msgs::parsian_skill_no *task;
-                task = reinterpret_cast<parsian_skill_no*>(soccer->agents[robotID]->action->getMessage());
+                task = reinterpret_cast<parsian_skill_no *>(soccer->agents[robotID]->action->getMessage());
                 robotsTask[robotID].noTask = *task;
                 robotsTask[robotID].select = robotsTask[robotID].NOTASK;
             }
@@ -63,19 +65,21 @@ parsian_msgs::parsian_robot_task AI::getTask(int robotID) {
 
         }
     }
-    if(conf.parsianWorkshop)
+
+    if (conf.parsianWorkshop)
         validateRobotTask(&robotsTask[robotID]);
+
     return robotsTask[robotID];
 }
 
-void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
-{
+void AI::validateRobotTask(parsian_msgs::parsian_robot_task *task) {
     int flag = -1;
-    if(teamConfig.side == teamConfig.LEFT)
+    if (teamConfig.side == teamConfig.LEFT)
         flag = 1;
     switch (task->select) {
         case task->GOTOPOINTAVOID:
-            if (task->gotoPointAvoidTask.base.targetPos.x * flag > 0) task->gotoPointAvoidTask.base.targetPos.x = -0.7 * flag;
+            if (task->gotoPointAvoidTask.base.targetPos.x * flag > 0)
+                task->gotoPointAvoidTask.base.targetPos.x = -0.7 * flag;
             break;
         case task->GOTOPOINT:
             if (task->gotoPointTask.targetPos.x * flag > 0) task->gotoPointTask.targetPos.x = -0.7 * flag;
@@ -91,15 +95,13 @@ void AI::validateRobotTask(parsian_msgs::parsian_robot_task* task)
     }
 }
 
-void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr & _rs) {
+void AI::updateRobotStatus(const parsian_msgs::parsian_robotConstPtr &_rs) {
 
 }
 
-void AI::updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &_rs)
-{
-    for(int i{}; i < _rs.substitutional_IDs.size(); i++)
-    {
-        if(_rs.substitutional_IDs[i])
+void AI::updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &_rs) {
+    for (int i{}; i < _rs.substitutional_IDs.size(); i++) {
+        if (_rs.substitutional_IDs[i])
             soccer->agents[i]->substitutePermission = true;
         else
             soccer->agents[i]->substitutePermission = false;
@@ -107,23 +109,23 @@ void AI::updateRobotSubstitutes(const parsian_msgs::parsian_robot_substitution &
 
 }
 
-void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr & _wm) {
+void AI::updateWM(const parsian_msgs::parsian_world_modelConstPtr &_wm) {
     wm->update(_wm);
-    for (int i = 0 ; i < _MAX_NUM_PLAYERS ; i++) {
+    for (int i = 0; i < _MAX_NUM_PLAYERS; i++) {
         soccer->agents[i]->self = *wm->our[i];
     }
 }
 
-void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr & _ref) {
+void AI::updateReferee(const parsian_msgs::ssl_refree_wrapperConstPtr &_ref) {
     gameState->setRefree(_ref);
     wm->updateRef(_ref);
 }
 
-void AI::forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr & _command){
+void AI::forceUpdateReferee(const parsian_msgs::ssl_force_refereeConstPtr &_command) {
     gameState->setForceRefree(_command);
     wm->setBallplacementPoin(_command->ballPlacementPos);
 }
 
-CSoccer* AI::getSoccer() {
+CSoccer *AI::getSoccer() {
     return soccer;
 }
