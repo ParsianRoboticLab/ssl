@@ -107,7 +107,10 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
 
 QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int neededDef){
     if(neededDef == 1){
-
+        if(wm->ball->pos.y > 1.25 ){
+            defendersForZJU.append(Vector2D(-4.7,-1/2));
+            condWhere = 0;
+        }
     }
 
     if(neededDef == 2){
