@@ -104,7 +104,39 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
     return defendersForZJU;
 }
 
-Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
+
+QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int neededDef){
+    if(neededDef == 1){
+
+    }
+
+    if(neededDef == 2){
+
+    }
+
+    if (neededDef == 3){
+
+    }
+
+    if (neededDef == 4){
+
+    }
+
+    if (neededDef == 5){
+
+    }
+
+    if (neededDef == 6){
+
+    }
+
+    if (neededDef == 7){
+
+    }
+}
+
+
+    Vector2D DefensePlan::getGKPositionInOneDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit){
     Vector2D goalkeeperPosition;
     Vector2D sol[2];
     Segment2D biggestLineOfBallTriangle;
