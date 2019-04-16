@@ -9,12 +9,6 @@ s = .016
 kalman_gain = 0
 
 
-class vector:
-    def __init__(self):
-        self.x = 0
-        self.y = 0
-
-
 class Latency:
     def __init__(self):
         self.queue = []
@@ -23,37 +17,9 @@ class Latency:
         self.kalman = KalmanFilter(dim_x=6, dim_z=2)
         self.init()
 
-        self.pos = vector()
-        self.vel = vector()
-        self.acc = vector()
-
-        self.last_pos = vector()
-        self.last_vel = vector()
-        self.last_acc = vector()
-
         rospy.Subscriber('/vision_detection', ssl_vision_detection,
                          self.visionCallback, queue_size=1, buff_size=2 ** 24)
         rospy.spin()
-
-    def copy(self, x, y):
-        self.pos.x = x
-        self.pos.y = y
-
-        self.last_vel.x = self.vel.x
-        self.last_vel.y = self.vel.y
-
-        self.last_acc.x = self.acc.x
-        self.last_acc.y = self.acc.y
-
-    def get_data(self, x, y):
-        self.copy(x, y)
-        self.vel.x = (self.pos.x - self.last_pos.x) * 60
-        self.vel.y = (self.pos.y - self.last_pos.y) * 60
-
-        self.acc.x = (self.vel.x - self.last_vel.x) * 60
-        self.acc.y = (self.vel.y - self.last_vel.y) * 60
-
-        return np.array([[self.pos.x, self.pos.y], [self.vel.x, self.vel.y], [self.acc.x, self.acc.y]]).T
 
     def init(self):
         self.kalman.F = np.array([[1, 0, s, 0, s ** 2 / 2, 0],
