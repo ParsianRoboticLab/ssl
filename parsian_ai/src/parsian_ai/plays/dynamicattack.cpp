@@ -273,9 +273,7 @@ void CDynamicAttack::assignTasks() {
  * @param agentSize number of positioning Agents
  */
 void CDynamicAttack::dynamicPlanner(int agentSize) {
-    for (int i{}; i < matchingIDs.size(); i++) {
-        matchingIDs[i] = -1;
-    }
+
     for (int i = 0; i < REGION_NUM; i++)
         drawer->draw(regions[i].rectangle);
 
@@ -1222,10 +1220,10 @@ void CDynamicAttack::assignId() {
         if (a->id() != playMakeAgent->id() && a->id() != supporterID) robotIDs.append(a->id());
     }
 
-    matcher.create(robotIDs.count(), regionPriority.count());
+    matcher.create(robotIDs.count(), robotIDs.count());
 
     for (int i{0}; i < robotIDs.count(); i++) {
-        for (int j{0}; j < regionPriority.count(); j++) {
+        for (int j{0}; j <i < robotIDs.count() /*regionPriority.count()*/; j++) {
             auto agentPos = agents.at(i)->pos();
             if (i == currentPlan.recievePoint.ID && j == last_matched_receiver)
                 matcher.setWeight(i, j, 0);
@@ -1256,7 +1254,7 @@ void CDynamicAttack::assignId() {
 
     passPositions(robotIDs);
 
-
+    
 
     //finalPassReciever();
 

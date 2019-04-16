@@ -734,7 +734,6 @@ void CCoach::execute() {
         }
     }
     if (gameState->isStop() && !damagedIDs.empty()) replaceFaultedRobots();//[substitution]
-    ROS_INFO_STREAM("mina");
 }
 
 DefensePlan &CCoach::getDefense() {
