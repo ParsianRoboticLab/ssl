@@ -1780,10 +1780,12 @@ void DefensePlan::matchingDefPos(int _defenseNum){
         }
         for(int i=0;i<markPoses.size();i++){
         if(wm->field->isInOurPenaltyArea(markPoses.at(i))){
-            wm->field->ourBigPenaltyArea(1,0, 0).intersection(Segment2D(wm->field->ourGoal(),tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first ), &sol3 , &sol4);
+	    ROS_INFO_STREAM("Mahdi:isInPArea_matching");
+            wm->field->ourBigPenaltyArea(1,0.1, 0).intersection(Line2D(wm->field->ourGoal(),markPoses.at(i)), &sol3 , &sol4);
 
-            markTarget.x=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).x;
-            markTarget.y=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).y;
+            markTarget.x=sol3.dist(wm->field->oppGoal)<sol4.dist(wm->field->oppGoal) ? sol3.x : sol4.x;
+
+           markTarget.y=sol3.dist(wm->field->oppGoal)<sol4.dist(wm->field->oppGoal) ? sol3.y : sol4.y;
             ROS_INFO_STREAM("Mahdi:isInPArea");
 
 
