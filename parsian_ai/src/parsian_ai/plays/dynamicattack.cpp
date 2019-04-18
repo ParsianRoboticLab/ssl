@@ -269,6 +269,7 @@ void CDynamicAttack::dynamicPlanner(int agentSize) {
     for (int i = 0; i < REGION_NUM; i++)
         drawer->draw(regions[i].rectangle);
 
+    drawer->draw(currentPlan.recievePoint.point, QColor(100, 0, 0), .1);
     updateAttackState();
     makePlan(agentSize);
 //    if (agentSize > 0 && (lastAgentCount != agentSize || isPlayMakeChanged())) {
@@ -1194,16 +1195,16 @@ void CDynamicAttack::assignId() {
         if (a->id() != playMakeAgent->id() && a->id() != supporterID) robotIDs.append(a->id());
     }
 
-    matcher.create(robotIDs.count(), robotIDs.count());
+    int pass_agent_count = std::min(robotIDs.count(),passPoints.count());
+    matcher.create(pass_agent_count, pass_agent_count);
 
-    for (int i{0}; i < robotIDs.count(); i++) {
-        for (int j{0}; j < robotIDs.count(); j++) {
+    for (int i{0}; i < pass_agent_count; i++) {
+        for (int j{0}; j < pass_agent_count; j++) {
             auto agentPos = agents.at(i)->pos();
             if (i == currentPlan.recievePoint.ID && j == last_matched_receiver)
                 matcher.setWeight(i, j, 0);
             else
-                matcher.setWeight(i, j,
-                                  agentPos.dist(regions[regionPriority[j]].rectangle.center())); //TODO : not center
+                matcher.setWeight(i, j, agentPos.dist(passPoints.at(j).point)); //TODO : not center
         }
     }
 
@@ -2020,9 +2021,11 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
     }
 
     double angle_max{};
-    double angle_R{Vector2D::angleOf(wm->field->oppGoalR(), regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+    double angle_R{Vector2D::angleOf(wm->field->oppGoalR(),
+                                     regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
                                      wm->opp.active(wm->opp.data->goalieID)->pos).degree()};
-    double angle_L{Vector2D::angleOf(wm->field->oppGoalL(), regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
+    double angle_L{Vector2D::angleOf(wm->field->oppGoalL(),
+                                     regions[regionPriority[matchingIDs[robot_id]]].points[region_index],
                                      wm->opp.active(wm->opp.data->goalieID)->pos).degree()};
     if (angle_R > angle_L)
         angle_max = angle_R;
@@ -2041,7 +2044,7 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
 
 
     if (!isClear(wm->ball->pos, wm->field->oppGoal(),
-                 wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2,"positionInOurWay",
+                 wm->field->oppGoalL().y - wm->field->oppGoal().y, treshold2, "positionInOurWay",
                  regions[regionPriority[matchingIDs[robot_id]]].points[region_index])) {
         tmp_chance = 0;
     }
@@ -2055,11 +2058,12 @@ double CDynamicAttack::calcRegionProperties(int robot_id, int region_index) {
                  (Robot::robot_radius_new + playMakeAgent->pos().dist(
                          regions[regionPriority[matchingIDs[robot_id]]].points[region_index]) /
                                             passPathWeight),
-                 treshold1,"isPassPathOpen")) {
+                 treshold1, "isPassPathOpen")) {
         //drawer->draw(regions[regionPriority[matchingIDs[robot_id]]].points[region_index],QColor(200,0,0),0.15);
         tmp_chance = 0;
     }
-    ROS_INFO_STREAM("amiruu chance >> region : " << robot_id << " pos : " << region_index << " chance : " << tmp_chance);
+    ROS_INFO_STREAM(
+            "amiruu chance >> region : " << robot_id << " pos : " << region_index << " chance : " << tmp_chance);
 
     return tmp_chance;
 }
