@@ -9,6 +9,7 @@ using namespace std;
 QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
     QList<Vector2D> defendersForZJU;
     defendersForZJU.clear();
+
     if(wm->ball->pos.y > 1.25 && numberOfOverDefenders == 1){
         defendersForZJU.append(Vector2D(-4.7,-1/2));
         condWhere = 0;
@@ -105,37 +106,111 @@ QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
 }
 
 
-QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int neededDef){
-    if(neededDef == 1){
-        if(wm->ball->pos.y > 1.25 ){
-            defendersForZJU.append(Vector2D(-4.7,-1/2));
-            condWhere = 0;
+QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int neededDef , double downLimit , double upLimit){
+
+    QList<Vector2D> defendsForAllDef;
+    defendsForAllDef.clear();
+    Circle2D defenseArea(wm->field->ourGoal() , suitableRadius);
+    Circle2D defenseAreaPrime(wm->field->ourGoal(),suitableRadius+0.08);
+
+
+    switch (neededDef){
+        case 1:
+        {
+
+            if(defenseArea.contains(wm->ball->pos)){
+                defendsForAllDef.append(oneDefenseFormationForRecatngularPositioning(downLimit ,upLimit));
+                cirRec= true;
+            }
+            else if(!defenseAreaPrime.contains(wm->ball->pos)){
+                defendsForAllDef.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
+                cirRec= false;
+            }
+                    else{
+                ////Threshold//////
+                if(cirRec){
+                    defendsForAllDef.append(oneDefenseFormationForRecatngularPositioning(downLimit , upLimit));
+                }
+                else{
+                    defendsForAllDef.append(oneDefenseFormationForCircularPositioning(downLimit ,upLimit));
+                }
+
+            }
+
+
+        }
+
+        case 2:
+        {
+
+
+            if(defenseArea.contains(wm->ball->pos)){
+                defendsForAllDef = twoDefenseFormationForRectangularPositioning( downLimit , upLimit);
+                cirRec= true;
+            }
+            else if(!defenseAreaPrime.contains(wm->ball->pos)){
+                defendsForAllDef = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
+                cirRec= false;
+            }
+            else{
+                ////Threshold//////
+                if(cirRec){
+                    defendsForAllDef = twoDefenseFormationForRectangularPositioning(downLimit , upLimit);
+                }
+                else{
+                    defendsForAllDef = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
+                }
+
+            }
+
+        }
+
+        case 3:
+        {
+
+            if(defenseArea.contains(wm->ball->pos)){
+                defendsForAllDef = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
+                cirRec= true;
+            }
+            else if(!defenseAreaPrime.contains(wm->ball->pos)){
+                defendsForAllDef = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
+                cirRec= false;
+            }
+            else{
+                ////Threshold//////
+                if(cirRec){
+                    defendsForAllDef = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
+                }
+                else{
+                    defendsForAllDef = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
+                }
+            }
+
+        }
+
+        case 4:
+        {
+
+        }
+
+        case 5:
+        {
+
+        }
+
+        case 6:
+        {
+
+        }
+
+        case 7:
+        {
+
         }
     }
 
-    if(neededDef == 2){
+    return defendsForAllDef;
 
-    }
-
-    if (neededDef == 3){
-
-    }
-
-    if (neededDef == 4){
-
-    }
-
-    if (neededDef == 5){
-
-    }
-
-    if (neededDef == 6){
-
-    }
-
-    if (neededDef == 7){
-
-    }
 }
 
 
