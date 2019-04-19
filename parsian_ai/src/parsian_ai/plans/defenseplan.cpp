@@ -1201,30 +1201,10 @@ void DefensePlan::manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsT
                     if (!wm->field->isInOurPenaltyArea(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)) {
                         ROS_INFO_STREAM("Mahdi:Finding the shotBlocker problem not  1=1 & empty if");
                         tempOpponentAgentsToBeMarkedCircle.at(i).intersection(Line2D(wm->field->ourGoal() , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first), &sol1 , &sol2);
-                        drawer->draw(Segment2D(wm->field->ourGoal() , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first), "Yellow");
-                        drawer->draw(sol1,"Red");
-                        drawer->draw(sol2,"Blue");
 
                         wm->field->ourBigPenaltyArea(1, Robot::robot_radius_new+0.4, 0).intersection(Segment2D(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first , wm->field->ourGoal()), &sol3 , &sol4);
 
-                        if(wm->field->isInOurPenaltyArea(know->getPointInDirection(Segment2D(sol1 , wm->field->ourGoal()).length() < Segment2D(sol2 , wm->field->ourGoal()).length() ? sol2 : sol1 , Segment2D(sol3 , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first).length() < Segment2D(sol4 , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first).length() ? sol3 : sol4 , conf.ShootRatioBlock / 100))){
-                            wm->field->ourBigPenaltyArea(1,0, 0).intersection(Segment2D(wm->field->ourGoal(),tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first ), &sol3 , &sol4);
 
-                            markTarget.x=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).x;
-                            markTarget.y=know->getPointInDirection(sol3.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first)<sol4.dist(tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) ? sol3 : sol4,tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first,conf.ShootRatioBlock/100).y;
-                            ROS_INFO_STREAM("Mahdi:isInPArea");
-
-
-                        }
-
-                        markPoses.append(markTarget);
-                        drawer->draw(markTarget,"Brown");
-                        drawer->draw(sol3,"orange");
-                        drawer->draw(sol4,"orange");
-                        drawer->draw(Segment2D(sol3 , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first),"Yellow");
-                        drawer->draw(Segment2D(sol1 , wm->field->ourGoal()),"Yellow");
-
-                        drawer->draw(know->getPointInDirection(Segment2D(sol1 , wm->field->ourGoal()).length() < Segment2D(sol2 , wm->field->ourGoal()).length() ? sol2 : sol1 , Segment2D(sol3 , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first).length() < Segment2D(sol4 , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first).length() ? sol3 : sol4,conf.ShootRatioBlock),"Blue");
                     } else {
                         ROS_INFO_STREAM("Mahdi:Finding the shotBlocker problem not  1=1 & empty else");
                         wm->field->ourBigPenaltyArea(1, 0.3, 0).intersection(Line2D(wm->field->ourGoal() , tempSortDangerAgentsToBeBlockPassPlayOff.at(i).first) , &sol1 , &sol2);
@@ -1698,6 +1678,8 @@ void DefensePlan::matchingDefPos(int _defenseNum){
     QList <int> matchResult;
     Vector2D tempPoint;
     Vector2D sol[2];
+    Vector2D sol1[2];
+    QList <Vector2D> tempMatchPointsForAvoidingPArea;
     ourAgents.clear();
     matchPoints.clear();
     ahzMatchDirections.clear();
@@ -1778,21 +1760,31 @@ void DefensePlan::matchingDefPos(int _defenseNum){
         if(wm->field->ourBigPenaltyArea(1,0.02,0).intersection(Segment2D(ourAgents.at(i)->pos() , matchPoints.at(matchResult.at(i))) , &sol[0] , &sol[1])){
             matchPoints[matchResult[i]] = avoidCircularPenaltyAreaByMasoud(ourAgents[i], matchPoints[matchResult[i]]);
         }
-        for(int i=0;i<markPoses.size();i++){
-        if(wm->field->isInOurPenaltyArea(markPoses.at(i))){
+
+        for(int i=0;i<matchPoints.size();i++){
+        if(wm->field->isInOurPenaltyArea(matchPoints.at(i))){
 	    ROS_INFO_STREAM("Mahdi:isInPArea_matching");
-            wm->field->ourBigPenaltyArea(1,0.1, 0).intersection(Line2D(wm->field->ourGoal(),markPoses.at(i)), &sol3 , &sol4);
+            wm->field->ourBigPenaltyArea(1,0, 0).intersection(Line2D(wm->field->ourGoal(),matchPoints.at(i)), &sol1[0] , &sol1[1]);
 
-            markTarget.x=sol3.dist(wm->field->oppGoal)<sol4.dist(wm->field->oppGoal) ? sol3.x : sol4.x;
 
-           markTarget.y=sol3.dist(wm->field->oppGoal)<sol4.dist(wm->field->oppGoal) ? sol3.y : sol4.y;
+                matchPoints[i] =
+                        sol1[0].x>sol1[1].x ? sol1[0] : sol1[1];
+
+
             ROS_INFO_STREAM("Mahdi:isInPArea");
+          /* for(int i=0;i<wm->opp.activeAgentsCount();i++){
 
+               if(wm->opp.active(i)->id==7){
+                   matchPoints[i]=wm->opp.active(i)->pos;
+               }
+
+           }*/
 
         }
         }
 
-        markPoses.append(markTarget);
+
+
         ////////////////////////////////////////////////////////////
         drawer->draw(Circle2D(matchPoints[matchResult[i]] , 0.05) , 0 , 360 , "black" , true);
         gpa[ourAgents[i]->id()]->setNoavoid(true);
