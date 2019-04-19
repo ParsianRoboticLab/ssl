@@ -144,7 +144,7 @@ QList<Vector2D> CField::ourPAreaIntersect(Line2D line) const {
     }
     return results;
 }
-
+/*
 //TODO: fix this
 QList<Vector2D> CField::ourBigPAreaIntersect(Line2D line, double scale, float bias) const {
 //    if (scale < 0)
@@ -220,6 +220,7 @@ QList<Vector2D> CField::ourBigPAreaIntersect(Line2D line, double scale, float bi
 //
     return results;
 }
+*/
 
 Rect2D CField::ourBigPenaltyArea(double scale , double tolerance , bool doChangesWithScale) {
     Rect2D penaltyArea;
