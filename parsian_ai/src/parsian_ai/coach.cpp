@@ -11,6 +11,7 @@ CCoach::CCoach(Agent**_agents)
     averageVel = 0;
     agents = _agents;
     first = true;
+    blockerId=-1;
 
     ///////////////////////////////////
     goalieTimer.start();
@@ -707,14 +708,17 @@ void CCoach::execute()
     bool defenseFirst = wm->ball->vel.length() > 1
                         && wm->field->ourGoalLine().intersection(wm->ball->seg()).isValid();
     playmakeId = -1;
-  //  blockerId = -1;
+
     defenseAgents.clear();
 
     //blocker
+
     blockerRole->assign(nullptr);
     handleBlocker(remainingAgent());
-    if(blockerRole->agent != nullptr)
+    if(blockerRole->agent != nullptr){
+
         blockerRole->execute();
+    }
 
     if (defenseFirst) {
         decideDefense();
@@ -921,13 +925,15 @@ QList<int> CCoach::remainingAgent() {
 }
 
 void CCoach::handleBlocker(const QList<int> &_agentsID) {
-    bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick() || gameState->isStop() ;
+
+    bool isthierplayoff = gameState->theirDirectKick() || gameState->theirFreeKick() || gameState->theirIndirectKick() || gameState->theirPlayOffKick() || gameState->isStop();
     if (!isthierplayoff) {
         blockerId = -1;
 
     } else {
         double maxD = 100000;
         int blocker = -1;
+        //blockerId=-1;
         for (const auto& player : _agentsID) {
             double value;
             value = agents[player]->pos().dist(wm->ball->pos);
@@ -939,10 +945,10 @@ void CCoach::handleBlocker(const QList<int> &_agentsID) {
         }
         bool flag=false;
         for(int i=0; i<wm->our.activeAgentsCount();i++){
-          if(i==blocker)
+          if(wm->our.activeAgentID(i)==blocker)
               flag=true;
         }
-        if(blockerId==-1 && flag)
+       if(blockerId==-1 || !flag)
         blockerId = blocker;
     }
     ROS_INFO_STREAM("blocker:"<<blockerId);
