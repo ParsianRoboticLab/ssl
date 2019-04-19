@@ -200,7 +200,7 @@ private:
 
     void makePlan(int agentSize);
     void assignId();
-    void passPositions(const QList<int>&);
+    void passPositions();
     void passDecision();
     void assignTasks();
     void updateAttackState();
@@ -253,7 +253,7 @@ private:
     //bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     //bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
-    void bestPos(const QList<int>&);
+    void bestPos();
     void checkPositions();
     void isChipOrPass(QList<passPoint>&);
     void findOneTouch(QList<passPoint>&);
