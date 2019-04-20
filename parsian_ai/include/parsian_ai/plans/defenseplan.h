@@ -73,8 +73,6 @@ protected:
     Segment2D getBestSegmentWithTallesForRectangularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     Segment2D getBestSegmentWithTallesForCircularPositioning(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     QList<Segment2D> getLinesOfBallTriangle();
-    QList<Vector2D> defenseFormationForRectangularPositioning(int neededDefenseAgents , int allOfDefenseAgents , double downLimit, double upLimit);
-    QList<Vector2D> defenseFormationForCircularPositioning(int neededDefenseAgents, int allOfDefenseAgents , double downLimit , double upLimit);
     QList<Vector2D> twoDefenseFormationForRectangularPositioning(double downLimit , double upLimit);
     QList<Vector2D> twoDefenseFormationForCircularPositioning(double downLimit , double upLimit);
     QList<Vector2D> threeDefenseFormationForRecatangularPositioning(double downLimit , double upLimit);
@@ -147,6 +145,8 @@ private:
     bool areAgentsStuckTogether(const QList<Vector2D> &agentsPosition);
     void agentsStuckTogether(const QList<Vector2D> &agentsPosition , QList<Vector2D> &stuckPositions);
     void correctingTheAgentsAreStuckTogether(QList<Vector2D> &agentsPosition, QList<Vector2D> &stuckPositions);
+    QList<Vector2D> defenseFormationForCircularPositioning(int numOfDef , double downLimit , double upLimit);
+    QList<Vector2D> defenseFormationForRectangularPositioning(int numOfDef , double downLimit, double upLimit);
     ///////////////////////HMD///////////////
     Vector2D ballPrediction(const bool);
     void findPos(int _markAgentSize);

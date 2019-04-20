@@ -162,48 +162,16 @@ QList<Vector2D> DefensePlan::defenseFormation(QList<Vector2D> circularPositions,
     return circularPositions;
 }
 
-QList<Vector2D> DefensePlan::defenseFormationForCircularPositioning(int neededDefenseAgents, int allOfDefenseAgents , double downLimit , double upLimit) {
+QList<Vector2D> DefensePlan::defenseFormationForCircularPositioning(int numOfDef , double downLimit , double upLimit) {
     QList<Vector2D> defensePosiotion;
     defensePosiotion.clear();
-    if (neededDefenseAgents == allOfDefenseAgents) {
-        if (neededDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
-        } else if (neededDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
-        else if (neededDefenseAgents == 3){
-            defensePosiotion = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
+    if (numOfDef == 1) {
+        defensePosiotion.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
+    } else if (numOfDef == 2) {
+        defensePosiotion = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
     }
-    else if (neededDefenseAgents < allOfDefenseAgents) {
-        if (neededDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
-        } else if (neededDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
-        else if (neededDefenseAgents == 3){
-            defensePosiotion = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
-        if(wm->ball->pos.y > 0){
-            for(int i = 0 ; i < (allOfDefenseAgents - neededDefenseAgents) ; i++) {
-                defensePosiotion.append(Vector2D(-4.7 , -(i+1)/2));
-            }
-        }
-        else{
-            for(int i = 0 ; i < (allOfDefenseAgents - neededDefenseAgents) ; i++){
-                defensePosiotion.append(Vector2D(-4.7 , (i+1)/2));
-            }
-        }
-    }
-    else {
-        if (allOfDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForCircularPositioning(downLimit , upLimit));
-        } else if (allOfDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
-        else if(allOfDefenseAgents == 3){
-            defensePosiotion = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
-        }
+    else if (numOfDef == 3){
+        defensePosiotion = threeDefenseFormationForCircularPositioning(downLimit , upLimit);
     }
     return defensePosiotion;
 }
@@ -409,7 +377,7 @@ QList<int> DefensePlan::detectOpponentPassOwners(double downEdgeLength , double 
     return IDOfOpponentsInPolygon;
 }
 
-int DefensePlan::defenseNumber(){//Lhum 0
+int DefensePlan::defenseNumber(){
     if (conf.StrictFormation){
         if (conf.Defense > 3){
             return min(defenseAgents.size() , 3);
@@ -528,33 +496,15 @@ QList<Vector2D> DefensePlan::threeDefenseFormationForRecatangularPositioning(dou
     return defensePosition;
 }
 
-QList<Vector2D> DefensePlan::defenseFormationForRectangularPositioning(int neededDefenseAgents, int allOfDefenseAgents , double downLimit , double upLimit) {
+QList<Vector2D> DefensePlan::defenseFormationForRectangularPositioning(int neededDefenseAgents , double downLimit , double upLimit) {
     QList<Vector2D> defensePosiotion;
     defensePosiotion.clear();
-    if (neededDefenseAgents == allOfDefenseAgents) {
-        if (neededDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForRecatngularPositioning(downLimit , upLimit));
-        } else if (neededDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForRectangularPositioning(downLimit , upLimit);
-        } else if (neededDefenseAgents == 3) {
-            defensePosiotion = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
-        }
-    } else if (neededDefenseAgents < allOfDefenseAgents) {
-        if (neededDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForRecatngularPositioning(downLimit , upLimit));
-        } else if (neededDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForRectangularPositioning(downLimit , upLimit);
-        } else if (neededDefenseAgents == 3) {
-            defensePosiotion = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
-        }
-    } else {
-        if (allOfDefenseAgents == 1) {
-            defensePosiotion.append(oneDefenseFormationForRecatngularPositioning(downLimit , upLimit));
-        } else if (allOfDefenseAgents == 2) {
-            defensePosiotion = twoDefenseFormationForRectangularPositioning(downLimit , upLimit);
-        } else if (allOfDefenseAgents == 3) {
-            defensePosiotion = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
-        }
+    if (neededDefenseAgents == 1) {
+        defensePosiotion.append(oneDefenseFormationForRecatngularPositioning(downLimit , upLimit));
+    } else if (neededDefenseAgents == 2) {
+        defensePosiotion = twoDefenseFormationForRectangularPositioning(downLimit , upLimit);
+    } else if (neededDefenseAgents == 3) {
+        defensePosiotion = threeDefenseFormationForRecatangularPositioning(downLimit , upLimit);
     }
     return defensePosiotion;
 }
@@ -1561,30 +1511,22 @@ void DefensePlan::setMarkTarget(){
 
 void DefensePlan::setDefTarget(){
     defensePoses.clear();
-    int realDefSize = 0;
     if(conf.ThreeDefenseMode){
-        if(defenseAgents.size() >= 3){
-            if(findNeededDefense() == 3){
-                defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
-                                                defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
-            }
-            else{
-                defensePoses = defenseFormation(defenseFormationForCircularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
-                                                defenseFormationForRectangularPositioning(findNeededDefense() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
-                for(size_t i = 0 ; i < getPositionJustForZJU(realDefSize - findNeededDefense()).size() ; i++){
-                    defensePoses.append(getPositionJustForZJU(realDefSize - findNeededDefense()).at(i));
-                }
-            }
+        if(findNeededDefense() == 3){
+            defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , conf.DownLimit , conf.UpLimit),
+                                            defenseFormationForRectangularPositioning(defenseNumber() , 1.4 , 2.5));
         }
-        else if(realDefSize < 3){
-            defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , conf.DownLimit , conf.UpLimit),
-                                            defenseFormationForRectangularPositioning(defenseNumber() , min(3 , defenseAgents.size()) , 1.4 , 2.5));
+        else{
+            defensePoses = defenseFormation(defenseFormationForCircularPositioning(min(defenseAgents.size() , findNeededDefense()) , conf.DownLimit , conf.UpLimit),
+                                            defenseFormationForRectangularPositioning(min(defenseAgents.size() , findNeededDefense()) , 1.4 , 2.5));
+            for(size_t i = 0 ; i < getPositionJustForZJU(defenseAgents.size() - min(defenseAgents.size() , findNeededDefense())).size() ; i++){
+                defensePoses.append(getPositionJustForZJU(defenseAgents.size() - min(defenseAgents.size() , findNeededDefense())).at(i));
+            }
         }
     }
     else{
-        defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , conf.DownLimit , conf.UpLimit),
-                                        defenseFormationForRectangularPositioning(defenseNumber() , defenseAgents.size() - decideNumOfMarks() , 1.4 , 2.5));
-        ROS_INFO_STREAM("Lhum: Agents " << defenseAgents.size() << " " <<  defensePoses.size()  << " " << decideNumOfMarks());
+        defensePoses = defenseFormation(defenseFormationForCircularPositioning(defenseNumber(), conf.DownLimit , conf.UpLimit),
+                                        defenseFormationForRectangularPositioning(defenseNumber() , 1.4 , 2.5));
     }
 }
 
@@ -2261,7 +2203,7 @@ Vector2D DefensePlan::avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vecto
     return retPoint;
 }
 
-int DefensePlan::decideNumOfMarks(){//lhum1
+int DefensePlan::decideNumOfMarks(){
     //// This function returns the "defenseCount" in all states, except when ball
     //// is near the corners , returns the 1.
 
