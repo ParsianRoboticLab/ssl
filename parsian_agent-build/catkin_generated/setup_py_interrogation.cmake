@@ -1,0 +1,6 @@
+set(parsian_agent_SETUP_PY_VERSION "0.0.0")
+set(parsian_agent_SETUP_PY_SCRIPTS "")
+set(parsian_agent_SETUP_PY_PACKAGES "parsian_agent")
+set(parsian_agent_SETUP_PY_PACKAGE_DIRS "script/parsian_agent")
+set(parsian_agent_SETUP_PY_MODULES "")
+set(parsian_agent_SETUP_PY_MODULE_DIRS "")

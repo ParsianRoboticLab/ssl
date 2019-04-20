@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: parsian_agent
+Description: Description of parsian_agent
+Version: 0.0.0
+Cflags: -I/usr/local/include
+Libs: -L/usr/local/lib 
+Requires: dynamic_reconfigure nodelet parsian_msgs parsian_util roscpp rospy
