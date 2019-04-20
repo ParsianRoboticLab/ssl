@@ -124,7 +124,7 @@ QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int ne
     defendsForAllDef.clear();
     Circle2D defenseArea(wm->field->ourGoal() , suitableRadius);
     Circle2D defenseAreaPrime(wm->field->ourGoal(),suitableRadius+0.08);
-    Vector2D sol[2];
+    Vector2D sol[6];
     Vector2D positionOfBall = wm->ball->pos;
     Vector2D ourGoalLeft = wm->field->ourGoalL();
     Vector2D ourGoalRight = wm->field->ourGoalR();
@@ -141,26 +141,144 @@ QList<Vector2D> DefensePlan::defenseFormationAllDefence(Vector2D ballPos, int ne
     Segment2D frontSegmentOfGoalField = Segment2D(ourGoalFieldRight ,ourGoalFieldLeft );
     Vector2D ballPosition = ballPrediction(false);
 
+
+    sol[0] = leftSegmentOfGoalField.intersection(leftSegmentOfBallAndGoal);
+    sol[1] = leftSegmentOfGoalField.intersection(rightSegmentOfBallAndGoal);
+    sol[2] = frontSegmentOfGoalField.intersection(leftSegmentOfBallAndGoal);
+    sol[3] = frontSegmentOfGoalField.intersection(rightSegmentOfBallAndGoal);
+    sol[4] = rightSegmentOfGoalField.intersection(leftSegmentOfBallAndGoal);
+    sol[5] = rightSegmentOfGoalField.intersection(rightSegmentOfBallAndGoal);
+
     switch (extraDefnumber){
         case 1:
         {
+
+            if(sol[0].isValid() && sol[1].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,-0.6));
+
+            }
+
+            else if (sol[1].isValid() && sol[2].isValid())
+            {
+
+            }
+
+            else if (sol[2].isValid() && sol[3].isValid())
+            {
+
+            }
+
+            else if (sol[3].isValid() && sol[4].isValid())
+            {
+
+            }
+
+            else if(sol[4].isValid() && sol[5].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,0.6));
+
+            }
 
         }
 
         case 2:
         {
+            if (sol[0].isValid() && sol[1].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,-1/2));
+                defendsForAllDef.append(Vector2D(-4.7,-1.2));
+            }
 
+            else if (sol[1].isValid() && sol[2].isValid())
+            {
+
+            }
+
+            else if (sol[2].isValid() && sol[3].isValid())
+            {
+
+            }
+
+            else if (sol[3].isValid() && sol[4].isValid())
+            {
+
+            }
+
+            else if(sol[4].isValid() && sol[5].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,-1/2));
+                defendsForAllDef.append(Vector2D(-4.7,1.2));
+            }
 
         }
 
         case 3:
         {
+            if (sol[0].isValid() && sol[1].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,0.6));
+                defendsForAllDef.append(Vector2D(-4.7,-0.3));
+                defendsForAllDef.append(Vector2D(-4.7,-1.2));
+            }
 
+            else if (sol[1].isValid() && sol[2].isValid())
+            {
+
+            }
+
+            else if (sol[2].isValid() && sol[3].isValid())
+            {
+
+            }
+
+            else if (sol[3].isValid() && sol[4].isValid())
+            {
+
+            }
+
+            else if (sol[4].isValid() && sol[5].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,-0.6));
+                defendsForAllDef.append(Vector2D(-4.7,0.3));
+                defendsForAllDef.append(Vector2D(-4.7,1.2));
+            }
 
         }
 
         case 4:
         {
+
+            if (sol[0].isValid() && sol[1].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,0.8));
+                defendsForAllDef.append(Vector2D(-4.7,-0.2));
+                defendsForAllDef.append(Vector2D(-4.7,-1));
+                defendsForAllDef.append(Vector2D(-5.3,-1.2));
+            }
+
+            else if (sol[1].isValid() && sol[2].isValid())
+            {
+
+            }
+
+            else if (sol[2].isValid() && sol[3].isValid())
+            {
+
+            }
+
+            else if (sol[3].isValid() && sol[4].isValid())
+            {
+
+            }
+
+            else if (sol[4].isValid() && sol[5].isValid())
+            {
+                defendsForAllDef.append(Vector2D(-4.7,-0.8));
+                defendsForAllDef.append(Vector2D(-4.7,0.2));
+                defendsForAllDef.append(Vector2D(-4.7,1));
+                defendsForAllDef.append(Vector2D(-5.3,1.2));
+            }
 
 
         }
