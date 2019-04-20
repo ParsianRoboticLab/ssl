@@ -127,9 +127,6 @@ void CCoach::decidePreferredDefenseAgentsCount() {
             preferredDefenseCounts = conf.Defense;
         }
     } else if (gameState->isStart()) {
-//        //todo remove this
-//        preferredDefenseCounts = 1;
-//        return;
         if (know->variables["transientFlag"].toBool())
         {
             //// Add Playmake after time
