@@ -86,7 +86,7 @@ protected:
     Vector2D getGKPositionInMoreThanTwoDefense(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit);
     Line2D getBestLineWithTallesForGK(int defenseCount , Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     QList<Vector2D> defenseFormation(QList<Vector2D> circularPositions, QList<Vector2D> rectangularPositions);
-    double findBestRadiusForGK(Line2D bestLineWithTalles ,Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint , double downLimit , double upLimit);
+    double findBestRadiusForGK(Line2D bestLineWithTalles ,Vector2D first , Vector2D origin , Vector2D second , double downLimit , double upLimit);
     /// \brief angleDegreeThrNotStop
     Vector2D lastTargetForStrictFollow;
     double AHZDegThreshOld = 0;

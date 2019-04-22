@@ -3,7 +3,6 @@
 
 using namespace std;
 
-#define LONG_CHIP_POWER 1023
 #define RADIUS_FOR_CRITICAL_DEFENSE_AREA (1.697056275 + Robot::robot_radius_new)
 
 QList<Vector2D> DefensePlan::getPositionJustForZJU(int numberOfOverDefenders){
@@ -101,16 +100,10 @@ double DefensePlan::findBestRadiusForGK(Line2D bestLineWithTalles ,Vector2D firs
     Segment2D biggerFrontageOfTriangle;
     if (Segment2D(firstPoint , originPoint).length() > Segment2D(secondPoint , originPoint).length()){
         biggerFrontageOfTriangle = Segment2D(firstPoint , originPoint);
-        smallerFrontageOfTriangle = Segment2D(secondPoint , originPoint);
     } else {
         biggerFrontageOfTriangle = Segment2D(secondPoint , originPoint);
-        smallerFrontageOfTriangle = Segment2D(firstPoint , originPoint);
     }
     bestRadiusForDefenseArea = biggerFrontageOfTriangle.intersection(bestLineWithTalles).dist(wm->field->ourGoal());
-    /*if(bestRadiusForDefenseArea <= downLimit){
-        drawer->draw(Circle2D(wm->field->ourGoal() , bestRadiusForDefenseArea) , "green");
-        bestRadiusForDefenseArea = downLimit;
-    }*///Lhum tests code without above condition
     if(bestRadiusForDefenseArea >= upLimit){
         drawer->draw(Circle2D(wm->field->ourGoal() , 0.2) , "yellow");
         bestRadiusForDefenseArea = upLimit;
@@ -1691,7 +1684,7 @@ void DefensePlan::execute(){
     }
     if(!defenseAgents.empty()){
         if(wm->our.activeAgentsCount() <= _NUM_PLAYERS){
-            if(defenseAgents.size() > 0){
+            if(!defenseAgents.empty()){
                 setTargetMarkAndDef();
                 QList <Vector2D> matchPoints;
                 QList <int> matchResult;
@@ -1894,111 +1887,6 @@ void DefensePlan::penaltyMode() {
     //gpa[goalKeeperAgent->id()]->init(target , targetDir);
 }
 
-Vector2D* DefensePlan::getIntersectWithDefenseArea(const Line2D& line, const Vector2D& blockPoint) {
-    //// This function return the intersection a line with defense area (3 part).
-
-    Vector2D* intersectionWithBottomCircle[2];
-    Vector2D* intersectionWithTopCircle[2];
-    for (int i = 0; i < 2; i++) {
-        intersectionWithBottomCircle[i] = new Vector2D();
-        intersectionWithTopCircle[i] = new Vector2D();
-    }
-    Vector2D intersectionWithDefenseLine = defenseAreaLine.intersection(line);
-    int intersectionWithBottomCircleCount = defenseAreaBottomCircle.intersection(line, intersectionWithBottomCircle[0], intersectionWithBottomCircle[1]);
-    int intersectionWithTopCircleCount = defenseAreaTopCircle.intersection(line, intersectionWithTopCircle[0], intersectionWithTopCircle[1]);
-    std::vector<Vector2D*> points;
-    for (int i = 0; i < intersectionWithBottomCircleCount; i++) {
-        float angle = getDegree(defenseAreaBottomCircle.center() + Vector2D(1, 0), defenseAreaBottomCircle.center(), *intersectionWithBottomCircle[i]);
-        if (angle <= 0 && angle >= -90) {
-            points.push_back(intersectionWithBottomCircle[i]);
-        } else {
-            delete intersectionWithBottomCircle[i];
-        }
-    }
-    for (int i = 0; i < intersectionWithTopCircleCount; i++) {
-        float angle = getDegree(defenseAreaTopCircle.center() + Vector2D(1, 0), defenseAreaTopCircle.center(), *intersectionWithTopCircle[i]);
-        if (angle >= 0 and angle <= 90) {
-            points.push_back(intersectionWithTopCircle[i]);
-        } else {
-            delete intersectionWithTopCircle[i];
-        }
-    }
-    double minDist = 99999;
-    Vector2D* retPoint = nullptr;
-    if (intersectionWithDefenseLine.valid()) {
-        retPoint = new Vector2D(intersectionWithDefenseLine);
-        minDist = retPoint->dist(blockPoint);
-    }
-    for (vector<Vector2D*>::const_iterator it = points.begin(); it != points.end(); it++) {
-        double dist = (*it)->dist(blockPoint);
-        if (dist < minDist) {
-            retPoint = (*it);
-            minDist = dist;
-        }
-    }
-    for (auto &point : points) {
-        if (point != retPoint) {
-            delete point;
-        }
-    }
-    return retPoint;
-}
-
-Vector2D* DefensePlan::getIntersectWithDefenseArea(const Segment2D& segment, const Vector2D& blockPoint) {
-    //// This function gets us the intersection point between defense area && input
-    //// segment. If defense area with input segment have two intersecton points,
-    //// this function returns the point that is more near to the blockPoint.
-
-    Vector2D* intersectionWithBottomCircle[2];
-    Vector2D* intersectionWithTopCircle[2];
-    for (int i = 0; i < 2; i++) {
-        intersectionWithBottomCircle[i] = new Vector2D();
-        intersectionWithTopCircle[i] = new Vector2D();
-    }
-    Vector2D intersectionWithDefenseLine = defenseAreaLine.intersection(segment);
-    int intersectionWithBottomCircleCount = defenseAreaBottomCircle.intersection(segment, intersectionWithBottomCircle[0], intersectionWithBottomCircle[1]);
-    int intersectionWithTopCircleCount = defenseAreaTopCircle.intersection(segment, intersectionWithTopCircle[0], intersectionWithTopCircle[1]);
-
-    std::vector<Vector2D*> points;
-    for (int i = 0; i < intersectionWithBottomCircleCount; i++) {
-        float angle = getDegree(defenseAreaBottomCircle.center() + Vector2D(1, 0), defenseAreaBottomCircle.center(), *intersectionWithBottomCircle[i]);
-        if (angle <= 0 and angle >= -90) {
-            points.push_back(intersectionWithBottomCircle[i]);
-        } else {
-            delete intersectionWithBottomCircle[i];
-        }
-    }
-    for (int i = 0; i < intersectionWithTopCircleCount; i++) {
-        float angle = getDegree(defenseAreaTopCircle.center() + Vector2D(1, 0), defenseAreaTopCircle.center(), *intersectionWithTopCircle[i]);
-        if (angle >= 0 and angle <= 90) {
-            points.push_back(intersectionWithTopCircle[i]);
-        } else {
-            delete intersectionWithTopCircle[i];
-        }
-    }
-
-    double minDist = 99999;
-    Vector2D* retPoint = nullptr;
-    if (intersectionWithDefenseLine.valid()) {
-        retPoint = new Vector2D(intersectionWithDefenseLine);
-        minDist = retPoint->dist(blockPoint);
-    }
-    for (vector<Vector2D*>::const_iterator it = points.begin(); it != points.end(); it++) {
-        double dist = (*it)->dist(blockPoint);
-        if (dist < minDist) {
-            retPoint = (*it);
-            minDist = dist;
-        }
-    }
-
-    for (auto &point : points)
-        if (point != retPoint) {
-            delete point;
-        }
-
-    return retPoint;
-}
-
 void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & state) {
     //// This Function execute the goalkeeper skills according to the
     //// target point that have been produced in the "setGoalKeeperTargetPoint"
@@ -2097,62 +1985,6 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             break;
     }
     drawer->draw(Circle2D(GKTarget , 0.05) , 0 , 360 , "black" , true);
-}
-
-Vector2D* DefensePlan::getIntersectWithDefenseArea(const Circle2D& circle, bool upperPoint) {
-    //// This function get us intersection between a circle and defense area
-    //// (3 part). the boolian ,"upperPOint", is used for choosing only one of the
-    //// intersection points according to the Y of the point.For example if input
-    //// circle has two intersection with defense area && "upperPoint" is 1 , this
-    //// function returns the point that has a more Y in proportion of the Y cecnter
-    //// of the input circle.
-
-    Vector2D* intersectionWithBottomCircle[2];
-    Vector2D* intersectionWithTopCircle[2];
-    Vector2D* intersectionWithLine[2];
-    for (int i = 0; i < 2; i++) {
-        intersectionWithBottomCircle[i] = new Vector2D();
-        intersectionWithTopCircle[i] = new Vector2D();
-        intersectionWithLine[i] = new Vector2D();
-    }
-    int intersectionWithLineCount = circle.intersection(defenseAreaLine, intersectionWithLine[0], intersectionWithLine[1]);
-    int intersectionWithBottomCircleCount = defenseAreaBottomCircle.intersection(circle, intersectionWithBottomCircle[0], intersectionWithBottomCircle[1]);
-    int intersectionWithTopCircleCount = defenseAreaTopCircle.intersection(circle, intersectionWithTopCircle[0], intersectionWithTopCircle[1]);
-
-    std::vector<Vector2D*> points;
-    for (int i = 0; i < intersectionWithLineCount; i++) {
-        points.push_back(intersectionWithLine[i]);
-    }
-    for (int i = 0; i < intersectionWithBottomCircleCount; i++) {
-        float angle = getDegree(defenseAreaBottomCircle.center() + Vector2D(1, 0), defenseAreaBottomCircle.center(), *intersectionWithBottomCircle[i]);
-        if (angle <= 0 and angle >= -90) {
-            points.push_back(intersectionWithBottomCircle[i]);
-        } else {
-            delete intersectionWithBottomCircle[i];
-        }
-    }
-    for (int i = 0; i < intersectionWithTopCircleCount; i++) {
-        float angle = getDegree(defenseAreaTopCircle.center() + Vector2D(1, 0), defenseAreaTopCircle.center(), *intersectionWithTopCircle[i]);
-        if (angle >= 0 and angle <= 90) {
-            points.push_back(intersectionWithTopCircle[i]);
-        } else {
-            delete intersectionWithTopCircle[i];
-        }
-    }
-
-    Vector2D* retPoint = nullptr;
-    for (vector<Vector2D*>::const_iterator it = points.begin(); it != points.end(); it++) {
-        if ((upperPoint && (*it)->y > circle.center().y) || (!upperPoint && (*it)->y < circle.center().y)) {
-            retPoint = (*it);
-            break;
-        }
-    }
-    for (auto &point : points)
-        if (point != retPoint) {
-            delete point;
-        }
-
-    return retPoint;
 }
 
 Vector2D DefensePlan::avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point) {//TODO: it has problem
@@ -2383,7 +2215,7 @@ Vector2D DefensePlan::posvel(CRobot* opp, double VelReliabiity) {
     if (VelReliabiity == 0) {
         return opp->pos;
     }
-    if (!opp->vel.length() > 0.5  || opp->vel.x > 0 || wm->field->isInOurPenaltyArea(opp->pos)) {
+    if (opp->vel.length() <= 0.5  || opp->vel.x > 0 || wm->field->isInOurPenaltyArea(opp->pos)) {
         VelReliabiity = 0;
     }
     Segment2D tempseg;
@@ -2397,7 +2229,7 @@ Vector2D DefensePlan::posvel(CRobot* opp, double VelReliabiity) {
     if (wm->field->isInField(desiredSolution) && desiredSolution.isValid() && tempseg.length() != 0) {
         return desiredSolution;
     } else if (temppos.x < (-wm->field->_FIELD_WIDTH / 2)){
-        return Vector2D((-wm->field->_FIELD_WIDTH / 2), (opp->pos + VelReliabiity * opp->vel).y) ;
+        return Vector2D(-wm->field->_FIELD_WIDTH / 2, (opp->pos + VelReliabiity * opp->vel).y) ;
     } else {
         return opp->pos + VelReliabiity * opp->vel;
     }
@@ -2409,7 +2241,6 @@ void DefensePlan::findPos(int _markAgentSize){
     //// not switching between PlayOff && PlayOn.
 
     bool playOff = (gameState->theirDirectKick()|| (gameState->theirIndirectKick()));
-    bool MantoManAllTransientFlag = conf.ManToManAllTransiant;
     xLimitForblockingPass = 0;
     markPoses.clear();
     markAngs.clear();
@@ -2501,11 +2332,7 @@ bool DefensePlan::isInTheIndirectAreaShoot(Vector2D opp) {
     //// is in the ball circle or not.
 
     Circle2D indirectAvoidCircle(wm->ball->pos, ballCircleR + 0.2);
-    if(indirectAvoidCircle.contains(ShootBlockRatio(segmentpershoot, opp).first()) && !know->variables["transientFlag"].toBool()) {
-        return true;
-    } else {
-        return false;
-    }
+    return indirectAvoidCircle.contains(ShootBlockRatio(segmentpershoot, opp).first()) && !know->variables["transientFlag"].toBool();
 }
 
 QList<Vector2D> DefensePlan::indirectAvoidShoot(Vector2D opp) {
@@ -2532,10 +2359,7 @@ bool DefensePlan::isInTheIndirectAreaPass(Vector2D opp) {
     DBUG(QString("IndirectAreaPass"), D_HAMED);
     double indirectAvoidRadius = 0.5 + 0.2;
     Circle2D indirectAvoidCircle(wm->ball->pos, indirectAvoidRadius);
-    if (indirectAvoidCircle.contains(PassBlockRatio(segmentperpass, opp).first()) && !know->variables["transientFlag"].toBool()) {
-        return true;
-    }
-    return false;
+    return indirectAvoidCircle.contains(PassBlockRatio(segmentperpass, opp).first()) && !know->variables["transientFlag"].toBool();
 }
 
 QList<Vector2D> DefensePlan::indirectAvoidPass(Vector2D opp) {
@@ -2543,12 +2367,12 @@ QList<Vector2D> DefensePlan::indirectAvoidPass(Vector2D opp) {
     //// , this function produces a suitable point instead of it.The point is
     //// intersection of ball circle && pass path.
 
-    Segment2D tempseg;
-    tempseg.assign(wm->ball->pos, opp + 10 * (opp - wm->ball->pos));
+    Segment2D tempSeg;
+    tempSeg.assign(wm->ball->pos, opp + 10 * (opp - wm->ball->pos));
     double indirectAvoidRadius = 0.5 + .2;
     Circle2D indirectAvoidCircle(wm->ball->pos, indirectAvoidRadius);
     Vector2D sol1, sol2, sol;
-    indirectAvoidCircle.intersection(tempseg, &sol1, &sol2);
+    indirectAvoidCircle.intersection(tempSeg, &sol1, &sol2);
     if (sol1.valid()) {
         sol = sol1;
     } else if (sol2.valid()) {
@@ -2686,8 +2510,6 @@ Vector2D DefensePlan::strictFollowBall(Vector2D _ballPos) {//!!!!!!!!!!!:))))
     Vector2D goalKeeperTargetOffSet = Vector2D(0.11 , -0.06);
     QList<Circle2D> defs;
     double AZBisecOpenAngle = 0, AZBigestOpenAngle = 0, AZDangerPercent = 0, GKcoveredAngle = 0;
-    double nearestDist2Ball;
-    int g;
     //////////////////////////////////////////////////////////////////////////
     tempSol.clear();
     Segment2D goalLine(wm->field->ourGoal() + Vector2D(0, -0.8) , wm->field->ourGoal() + Vector2D(0, 0.8));
@@ -2851,53 +2673,35 @@ QList<QPair<Vector2D, double> > DefensePlan::sortdangerpassplayon(QList<Vector2D
     double KA = 1; //Angle Coefficient
     double KDB = 1;  //Distance To Ball
     double KDG = 1;  //Distnce To Goal
-    double RangeofAngle = Vector2D::angleOf(wm->field->ourGoalR(),
-                                            Vector2D(-1.0 * (wm->field->_FIELD_WIDTH / 2 - wm->field->_PENALTY_DEPTH), 0),
-                                            wm->field->ourGoalL()).degree();
+    double RangeOfAngle = Vector2D::angleOf(wm->field->ourGoalR(), Vector2D(-1.0 * (wm->field->_FIELD_WIDTH / 2 - wm->field->_PENALTY_DEPTH), 0), wm->field->ourGoalL()).degree();
     //drawer->draw(Vector2D(-1.0 * (_FIELD_WIDTH - _GOAL_WIDTH), 0), QColor(Qt::red));
     // double RangeofAngle2 = Vector2D::angleOf(wm->field->ou,Vector2D(0, -1.0 * (_FIELD_WIDTH - _GOAL_WIDTH)), wm->field->ourGoalL()).degree();
-
-    double RangeofDistancetoBall = fabs(Segment2D(Vector2D(wm->field->_FIELD_WIDTH / 2, wm->field->_FIELD_HEIGHT / 2),
-                                                  Vector2D(-1.0 * wm->field->_FIELD_WIDTH / 2,
-                                                           -1.0 * wm->field->_FIELD_HEIGHT / 2)).length());
-
-    double RangeofDistancetoGoal = fabs(Segment2D(Vector2D(wm->field->_FIELD_WIDTH / 2, wm->field->_FIELD_HEIGHT / 2),
-                                                  wm->field->ourGoal()).length());
-
-    double RangeofTempDis = 2;
+    double RangeofDistancetoBall = fabs(Segment2D(Vector2D(wm->field->_FIELD_WIDTH / 2, wm->field->_FIELD_HEIGHT / 2), Vector2D(-1.0 * wm->field->_FIELD_WIDTH / 2, -1.0 * wm->field->_FIELD_HEIGHT / 2)).length());
+    double RangeofDistancetoGoal = fabs(Segment2D(Vector2D(wm->field->_FIELD_WIDTH / 2, wm->field->_FIELD_HEIGHT / 2), wm->field->ourGoal()).length());
     double angle, distancetoball, distancetogoal, danger;
-
-
     QPair<Vector2D, double> temp;
     QList<QPair<Vector2D, double> > output;
     for (int i = 0; i < oppposdanger.count(); i++) {
         temp.first = oppposdanger[i];
-
-
         angle = Vector2D::angleOf(wm->field->ourGoalR(), oppposdanger[i], wm->field->ourGoalL()).degree();
         distancetoball = (oppposdanger[i] - wm->ball->pos).length();
         distancetogoal = (oppposdanger[i] - wm->field->ourGoal()).length();
-        danger = (KA * fabs(angle) / RangeofAngle) + (KDB * 1 - (distancetoball / RangeofDistancetoBall)) +
+        danger = (KA * fabs(angle) / RangeOfAngle) + (KDB * 1 - (distancetoball / RangeofDistancetoBall)) +
                 (KDG * 1 - (distancetogoal / RangeofDistancetoGoal));
-
-
         temp.second = danger;
         output.append(temp);
-        //drawer->draw(QString("HMD danger=%1").arg(danger), oppposdanger[i] + Vector2D(0,0.3), QColor(Qt::red));
-
-
         // finding nearest to intersect
-        Segment2D tempsegment;
-        tempsegment.assign(oppposdanger[i], wm->field->ourGoal());
+        Segment2D tempSegment;
+        tempSegment.assign(oppposdanger[i], wm->field->ourGoal());
 
         double mintempdis = 0.0;
-        if (wm->our.activeAgentsCount() != 0) {
-            mintempdis = tempsegment.dist(wm->our.active(0)->pos);
+        if(wm->our.activeAgentsCount() != 0) {
+            mintempdis = tempSegment.dist(wm->our.active(0)->pos);
         }
 
         for (int j = 0; j < wm->our.activeAgentsCount(); j++) {
-            if (tempsegment.dist(wm->our.active(j)->pos) < mintempdis) {
-                mintempdis = tempsegment.dist(wm->our.active(j)->pos);
+            if(mintempdis > tempSegment.dist(wm->our.active(j)->pos)){
+                mintempdis = tempSegment.dist(wm->our.active(j)->pos);
             }
         }
     }
@@ -2907,25 +2711,4 @@ QList<QPair<Vector2D, double> > DefensePlan::sortdangerpassplayon(QList<Vector2D
         return v1.second > v2.second;
     });
     return output;
-}
-
-Vector2D DefensePlan::getMarkPlayoffPredictWaitPos(){
-    if(!know->variables["transientFlag"].toBool())
-        beforeTransientPassDir = wm->opp[know->nearestOppToBall()]->dir;
-    else{
-        Vector2D sol1,sol2;
-        if(ballIsBounced){
-            int solNum = wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).
-                    intersection(Line2D(ballBouncePos,playOffStartBallPos),&sol1,&sol2);
-            if(solNum == 2)
-                return playOffStartBallPos.dist(sol1) > playOffStartBallPos.dist(sol2) ? sol1 : sol2;
-        }
-        else{
-            int solNum = wm->field->ourBigPenaltyArea(1,Robot::robot_radius_new,0).
-                    intersection(Line2D(playOffStartBallPos,playOffStartBallPos + ((playOffPassDir+beforeTransientPassDir)/2)),&sol1,&sol2);
-            if(solNum == 2)
-                return playOffStartBallPos.dist(sol1) > playOffStartBallPos.dist(sol2) ? sol1 : sol2;
-        }
-        return Vector2D(5000,5000);
-    }
 }
