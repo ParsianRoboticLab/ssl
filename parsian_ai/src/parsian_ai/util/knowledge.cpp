@@ -535,7 +535,6 @@ int Knowledge::Matching(const QList <Agent*> robots, const QList <Vector2D> poin
     } else {
         return -1;
     }
-
 }
 
 int Knowledge::MatchingMinTheMax(const QList <Agent*> robots, const QList <Vector2D> pointsToMatch, QList <int> &matchPoints) {

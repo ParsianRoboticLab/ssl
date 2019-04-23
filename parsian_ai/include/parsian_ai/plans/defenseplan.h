@@ -45,8 +45,6 @@ enum class GKState{
 
 class DefensePlan : public Plan {
 protected:
-    int defenseCount;
-
     GotopointAction* gps[_MAX_NUM_PLAYERS];
     GotopointavoidAction *gpa[_MAX_NUM_PLAYERS];
     KickAction* kickSkill;
@@ -61,8 +59,6 @@ protected:
     Segment2D getBisectorSegment(Vector2D firstPoint , Vector2D originPoint , Vector2D secondPoint);
     void manToManMarkBlockPassInPlayOff(QList<Vector2D> opponentAgentsToBeMarkePossition , int ourMarkAgentsSize , double proportionOfDistance);
     void manToManMarkBlockShotInPlayOff(int _markAgentSize);
-
-
     bool isInIndirectArea(Vector2D);
     int defenseNumber();
     QList<Vector2D> getPositionJustForZJU(int numberOfOverDefenders);
@@ -98,7 +94,6 @@ protected:
     QList <QString> lastMarkRoles;
     ///////////////////////////////////////////////////
     Vector2D strictFollowBall(Vector2D _ballPos);
-    Vector2D avoidCircularPenaltyAreaByMasoud(Agent* agent, const Vector2D& point);
     int decideNumOfMarks();
     bool shootOutClearModeSelected = false;
     bool agentEffectOnBallProbabilityRes;
@@ -163,13 +158,6 @@ private:
     Vector2D posvel(CRobot*, double);
     QList<QPair<Vector2D, double> > sortdangerpassplayon(QList<Vector2D> oppposdanger);
     QList<QPair<Vector2D, double> > sortdangerpassplayoff(QList<Vector2D> oppposdanger);
-    Vector2D getMarkPlayoffPredictWaitPos();
-    ////////////////////////////////////////
-    rcsc::Circle2D defenseAreaBottomCircle, defenseAreaTopCircle;
-    rcsc::Segment2D defenseAreaLine;
-    rcsc::Vector2D* getIntersectWithDefenseArea(const Line2D& segment, const Vector2D& blockPoint);
-    rcsc::Vector2D* getIntersectWithDefenseArea(const Segment2D& segment, const Vector2D& blockPoint);
-    rcsc::Vector2D* getIntersectWithDefenseArea(const Circle2D& circle, bool upperPoint);
     void assignSkill(Agent *_agent , Action *_skill);
     Agent *goalKeeperAgent;
     QList <Agent *> defenseAgents;
@@ -179,8 +167,6 @@ private:
     Vector2D NearestDistanceToBallSegment(Vector2D point);
     int counterBallWasBesidePoles = 0;
 
-};//tavabei ke vabaste be vorodi and static she
-// const &
-// moteghayer ha kam she
+};
 
 #endif // DEFENSE_H
