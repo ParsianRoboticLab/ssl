@@ -1545,18 +1545,10 @@ void DefensePlan::matchingPoses(QList <Vector2D>& matchPoints , QList <int>& mat
     matchResult.clear();
     matchPoints.append(defensePoses);
     matchPoints.append(markPoses);
-    for (int i = 0; i < defensePoses.size(); i++)
-        drawer->draw(Circle2D(matchPoints[i], 0.01), 0, 360, "red", true);
-
-    for (int i = defensePoses.size(); i < defensePoses.size() + markPoses.size(); i++)
-        drawer->draw(Circle2D(matchPoints[i], 0.01), 0, 360, "blue", true);
 
     stuck(matchPoints);
     if (defenseAgents.size() > matchPoints.size() || defenseAgents.size() < matchPoints.size()) {
         drawer->draw(Circle2D(Vector2D(0, 0), 0.1), "red");
-    }
-    for (int i = 0; i < matchPoints.size(); i++) {
-        drawer->draw(Circle2D(matchPoints[i], 0.02), 0, 360, "cyan", true);
     }
     ////////////////////////////
     know->MatchingMinTheMax(defenseAgents, matchPoints, matchResult);
