@@ -141,24 +141,21 @@ Polygon2D::getBoundingBox() const
         {
             x_max = p.x;
         }
-
         if ( p.x < x_min )
         {
             x_min = p.x;
         }
-
         if ( p.y > y_max )
         {
             y_max = p.y;
         }
-
         if ( p.y < y_min )
         {
             y_min = p.y;
         }
     }
 
-    return( Rect2D( x_min, y_min, (x_max - x_min), (y_max - y_min) ) );
+    return( Rect2D( x_min, y_max, (x_max - x_min), (y_max - y_min) ) );
 }
 
 /*-------------------------------------------------------------------*/
