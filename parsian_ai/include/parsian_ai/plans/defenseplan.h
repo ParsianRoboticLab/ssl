@@ -55,6 +55,7 @@ protected:
     Vector2D goalKeeperTarget , defensePoints[12], defenseTargets[12];
     void setPointToKick();
     GKState setGoalKeeperState();
+    Vector2D setGoalKeeperTargetPointInDangerMode();
     Vector2D setGoalKeeperTargetPoint(GKState);
     double differentialTime = 0;
     int oneTouchCnt;
