@@ -145,6 +145,17 @@ public:
     /// ALI GAVAHI
     bool ballIsBounced;
     Vector2D ballBouncePos, playOffStartBallPos, playOffPassDir,beforeTransientPassDir;
+    bool shouldKickOrChip,DangerByOurAgentsInPenaltyArea,
+            DangerByOppAgentsInPenaltyArea,
+            DangerByOurAgentsOutOfPenaltyArea,
+            DangerByOppAgentsOutOfPenaltyArea,
+            DangerByBothAgentsOutOfPenaltyArea,
+            DangerByBothAgentsInPenaltyArea,
+            isOurAgentsInDangerCircle,
+            isOppAgentsInDangerCircle,
+            isOurAgentsAndOppAgentsInDanger,
+            isJustOppAgentsInDanger ,
+            isJustOurAgentsInDanger;
     ///////////////////////////////////
 private:
     ///////////////////////Lhum checked them//////////////
