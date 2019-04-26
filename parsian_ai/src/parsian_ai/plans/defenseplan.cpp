@@ -2504,8 +2504,41 @@ void DefensePlan::executeGoalKeeper(const Vector2D &GKTarget , const GKState & s
             gpa[goalKeeperAgent->id()]->setKickspeed(0);
             break;
         case GKState :: dangerForClear:
-            gpa[goalKeeperAgent->id()]->setTargetpos(strictFollowBall(ballPrediction(true)));
+            ROS_INFO_STREAM("Mahdi:DangerModes");
+            know->variables["goalKeeperClearMode"] = false;
+            know->variables["goalKeeperOneTouchMode"] = false;
+            AHZSkills = gpa[goalKeeperAgent->id()];
+            gpa[goalKeeperAgent->id()]->setSlowmode(false);
+            gpa[goalKeeperAgent->id()]->setOnetouchmode(false);
+            gpa[goalKeeperAgent->id()]->setDivemode(false);
             gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+            if(!shouldKickOrChip) {
+                assignSkill(goalKeeperAgent, gpa[goalKeeperAgent->id()]);
+                gpa[goalKeeperAgent->id()]->setSlowmode(false);
+                gpa[goalKeeperAgent->id()]->setTargetpos(GKTarget);
+                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+                gpa[goalKeeperAgent->id()]->setAvoidpenaltyarea(false);
+                gpa[goalKeeperAgent->id()]->setNoavoid(true);
+            }
+            else{
+                AHZSkills = kickSkill;
+                assignSkill(goalKeeperAgent, AHZSkills);
+                gpa[goalKeeperAgent->id()]->setTargetdir(goalKeeperAgent->pos() - wm->field->ourGoal());
+                kickSkill->setTarget(GKTarget);
+                kickSkill->setTolerance(4);
+                kickSkill->setDontkick(false);
+                kickSkill->setSpin(0);
+                kickSkill->setAvoidpenaltyarea(false);
+                kickSkill->setGoaliemode(true);
+                kickSkill->setChip(true);
+                kickSkill->setChipdist(4.5);
+                kickSkill->setIskickchargetime(true);
+                kickSkill->setKickchargetime(1023);
+
+
+
+            }
+
             break;
         case GKState :: strictFollow:
             gpa[goalKeeperAgent->id()]->setTargetdir(ballPrediction(true) - wm->field->ourGoal());
