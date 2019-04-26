@@ -1783,16 +1783,7 @@ Vector2D DefensePlan::setGoalKeeperTargetPoint(GKState state) {
         case GKState :: oneTouch:
             return Segment2D(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 100).nearestPoint(goalKeeperAgent->pos());
         case GKState :: dangerForClear:
-            if (!wm->field->isInOurPenaltyArea(know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15))) {
-                solutions = wm->field->ourPAreaIntersect(Line2D(wm->ball->pos , wm->field->ourGoal()));
-                if (solutions.size() == 1) {
-                    return solutions.at(0);
-                }
-                else if (solutions.size() == 2) {
-                    return solutions.at(0).dist(wm->ball->pos) < solutions.at(1).dist(wm->ball->pos) ? solutions.at(0) : solutions.at(1);
-                }
-            }
-            return know->getPointInDirection(wm->ball->pos , wm->field->ourGoal() , 0.15);
+            return setGoalKeeperTargetPointInDangerMode();
         case GKState :: strictFollow:
             return strictFollowBall(ballPrediction(true));
         default:
