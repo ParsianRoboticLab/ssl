@@ -1567,6 +1567,143 @@ GKState DefensePlan::setGoalKeeperState() {
     return GKState :: strictFollow;
 }
 
+Vector2D DefensePlan::setGoalKeeperTargetPointInDangerMode() {
+
+
+    Vector2D ballPos=wm->ball->pos;
+    Vector2D firstPointInEmptyAngle = Vector2D(0,wm->field->oppCornerL().y);
+    Vector2D secondPointInEmptyAngle = Vector2D(0,wm->field->oppCornerR().y);
+    Vector2D target,FirstTarget;
+    double emptyAngle,emptyAngleForeOurGoal;
+    double percent,percentForOurGoal;
+    double mostOpenAngle,mostOpenAngleForOurGoal;
+    double biggestAngle,biggestAngleForOurGoal;
+    QList<Circle2D> obstacles;
+    Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
+    Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D emptyAngleLine(wm->field->ourGoal(),ballPos);
+    Segment2D middleLine(Vector2D(0,wm->field->oppCornerL().y),Vector2D(0,wm->field->oppCornerR().y));
+    Segment2D LineForLimitingTarget;
+    shouldKickOrChip=false;
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                if (Circle2D(ballPos, 0.4).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine)) ) {
+                    obstacles.append(Circle2D(wm->our.active(i)->pos, Robot::robot_radius_new + 0.01));
+                }
+            }
+        }
+
+    }
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+
+                if (Circle2D(ballPos, 0.4).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine))) {
+                    obstacles.append(Circle2D(wm->opp.active(i)->pos, Robot::robot_radius_new + 0.01));
+                }
+            }
+        }
+
+    }
+
+    emptyAngle=know->getEmptyAngle(ballPos,firstPointInEmptyAngle,secondPointInEmptyAngle,obstacles,percent,mostOpenAngle,biggestAngle);//TODO:Mahdi think that first point and second point in empty angle finder have problems and should be solved and also some segmentation faults in real test should be solved too
+    drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+    drawer->draw(target,QColor("Orange"));
+    ////////// Bisector of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
+    Segment2D AZBisecOpenSeg(ballPos ,ballPos + (Vector2D(cos(_PI * mostOpenAngle / 180) , sin(_PI * mostOpenAngle / 180)).norm() * 12) );
+    ////////// Top and bottom line of triangle that is made up of with this points : [ballPossition , topGoal , bottom Goal]  //////////////////////////
+    Segment2D AZTopOfOpenSeg(ballPos , ballPos + Vector2D(cos(_PI * (mostOpenAngle + (biggestAngle / 2)) / 180), sin(_PI * (mostOpenAngle + (biggestAngle / 2)) / 180)).norm() * 12);
+    Segment2D AZBottomOfOpenSeg(ballPos , ballPos + Vector2D(cos(_PI * (mostOpenAngle - (biggestAngle / 2)) / 180), sin(_PI * (mostOpenAngle - (biggestAngle / 2)) / 180)).norm() * 12);
+    drawer->draw(AZBisecOpenSeg,QColor("Yellow"));
+    drawer->draw(AZTopOfOpenSeg,QColor("Yellow"));
+    drawer->draw(AZBottomOfOpenSeg,QColor("Yellow"));
+
+    if(inFrontOfPenaltyAreaLine.dist(ballPos)<=goalLineLeft.dist(ballPos) && inFrontOfPenaltyAreaLine.dist(ballPos)<=goalLineRight.dist(ballPos)){
+        LineForLimitingTarget=inFrontOfPenaltyAreaLine;
+    }
+    else if(goalLineLeft.dist(ballPos)<=inFrontOfPenaltyAreaLine.dist(ballPos) && goalLineLeft.dist(ballPos)<=goalLineRight.dist(ballPos)){
+        LineForLimitingTarget=goalLineLeft;
+    }
+    else if(goalLineRight.dist(ballPos)<=goalLineLeft.dist(ballPos) && goalLineRight.dist(ballPos)<=goalLineLeft.dist(ballPos)){
+        LineForLimitingTarget=goalLineRight;
+    }
+
+
+    if(DangerByOppAgentsInPenaltyArea){
+
+        target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+
+    }
+    else if(DangerByOppAgentsOutOfPenaltyArea){
+
+        target=emptyAngleLine.intersection(LineForLimitingTarget);
+        target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+
+
+    }
+
+    else if(DangerByBothAgentsInPenaltyArea){
+
+        target = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+
+
+
+    }
+    else if(DangerByBothAgentsOutOfPenaltyArea){
+
+        target=emptyAngleLine.intersection(LineForLimitingTarget);
+        target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+
+
+    }
+    else if(DangerByOurAgentsInPenaltyArea){
+
+        if(emptyAngle>=25) {
+            shouldKickOrChip = true;
+        }
+
+        ROS_INFO_STREAM("Mahdi:EmptyAngle="<<emptyAngle);
+
+        target = AZBisecOpenSeg.intersection(middleLine);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+        FirstTarget = know->getPointInDirection(wm->field->ourGoal(),ballPos,0.8);
+        if(!shouldKickOrChip) {
+            drawer->draw(FirstTarget, QColor("Blue"));
+            target=FirstTarget;
+        }
+        else{
+            target = AZBisecOpenSeg.intersection(middleLine);
+        }
+
+    }
+    else if(DangerByOurAgentsOutOfPenaltyArea){
+
+        target=emptyAngleLine.intersection(LineForLimitingTarget);
+        target = know->getPointInDirection(wm->field->ourGoal(),target,0.8);
+        drawer->draw(Segment2D(wm->field->ourGoal(),ballPos),QColor("Black"));
+        drawer->draw(target,QColor("Orange"));
+
+
+    }
+
+    return target;
+
+}
+
 Vector2D DefensePlan::movePointToPenaltyArea(const Vector2D& point){
     QList<Vector2D> tempSol;
     Vector2D sol[2];
