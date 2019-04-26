@@ -1401,7 +1401,102 @@ void DefensePlan::manToManMarkBlockShotInPlayOff(int _markAgentSize) {
 }
 
 bool DefensePlan::dangerForGK(){
-    return 0;
+    Vector2D ballPos=wm->ball->pos;
+    Segment2D goalLineLeft(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight());
+    Segment2D goalLineRight(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight());
+    Segment2D inFrontOfPenaltyAreaLine(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight());
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().topLeft(),wm->field->ourPenaltyRect().topRight()),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().bottomLeft(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
+    drawer->draw(Segment2D(wm->field->ourPenaltyRect().topRight(),wm->field->ourPenaltyRect().bottomRight()),QColor("Red"));
+    DangerByOurAgentsInPenaltyArea=false;
+    DangerByOppAgentsInPenaltyArea=false;
+    DangerByOurAgentsOutOfPenaltyArea=false;
+    DangerByOppAgentsOutOfPenaltyArea=false;
+    DangerByBothAgentsOutOfPenaltyArea=false;
+    DangerByBothAgentsInPenaltyArea=false;
+    isOurAgentsInDangerCircle=false;
+    isOppAgentsInDangerCircle=false;
+    isOurAgentsAndOppAgentsInDanger=false;
+    isJustOppAgentsInDanger=false;
+    isJustOurAgentsInDanger=false;
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->our.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+                if (Circle2D(ballPos, 0.4).contains(wm->our.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine)) ) {
+
+                    isOurAgentsInDangerCircle= true;
+
+                }
+
+            }
+        }
+    }
+
+    if(wm->our.activeAgentsCount() > 0 || wm->opp.activeAgentsCount() > 0) {
+        for (int i = 0; i < wm->opp.activeAgentsCount(); i++) {
+            if (wm->our.active(i)->id != goalKeeperAgent->id()) {
+                if (Circle2D(ballPos, 0.4).contains(wm->opp.active(i)->pos) && (Circle2D(ballPos, 0.4).intersection(goalLineLeft) || Circle2D(ballPos, 0.4).intersection(goalLineRight) || Circle2D(ballPos, 0.4).intersection(inFrontOfPenaltyAreaLine))) {
+
+                    isOppAgentsInDangerCircle= true ;
+
+
+                }
+            }
+        }
+    }
+
+    ////////////////////////////////////////////
+    drawer->draw(Circle2D(ballPos,0.4),0,360,QColor("Red"));
+
+
+    if (isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByOurAgentsInPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByOurAgentsInPenaltyArea");
+
+    }
+
+    if (isOppAgentsInDangerCircle && !isOurAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByOppAgentsInPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByOppAgentsInPenaltyArea");
+
+    }
+
+
+    if (isOurAgentsInDangerCircle && !isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByOurAgentsOutOfPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByOurAgentsOutOfPenaltyArea");
+
+    }
+
+    if (isOppAgentsInDangerCircle && !isOurAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByOppAgentsOutOfPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByOppAgentsOutOfPenaltyArea");
+    }
+
+    if (isOurAgentsInDangerCircle && isOppAgentsInDangerCircle && !wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByBothAgentsOutOfPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByBothAgentsOutOfPenaltyArea");
+    }
+
+    if (isOurAgentsInDangerCircle && isOppAgentsInDangerCircle && wm->field->ourPenaltyRect().contains(ballPos)) {
+        DangerByBothAgentsInPenaltyArea= true;
+        ROS_INFO_STREAM("Mahdi:DangerByBothAgentsInPenaltyArea");
+
+    }
+
+    if(DangerByOurAgentsInPenaltyArea || DangerByOppAgentsInPenaltyArea || DangerByOurAgentsOutOfPenaltyArea || DangerByOppAgentsOutOfPenaltyArea || DangerByBothAgentsOutOfPenaltyArea || DangerByBothAgentsInPenaltyArea){
+
+        return true;
+
+
+    }
+    else{
+        ROS_INFO_STREAM("Mahdi:No Danger!");
+
+        return false;
+    }
+
 }
 
 GKState DefensePlan::setGoalKeeperState() {
