@@ -118,6 +118,15 @@ void CCoach::decidePreferredDefenseAgentsCount() {
         }
     }
 
+    if (conf.StrictFormation) {
+        if (conf.Defense > 3) {
+            preferredDefenseCounts = 3;
+        } else {
+            preferredDefenseCounts = conf.Defense;
+        }
+        return;
+    }
+
     if (gameState->isStop()) {
         if (wm->ball->pos.x < 1) {
             preferredDefenseCounts = agentsCount - 1;
@@ -176,13 +185,7 @@ void CCoach::decidePreferredDefenseAgentsCount() {
     if (gameState->penaltyShootout() || gameState->penaltyKick()) {
         preferredDefenseCounts = 0;
     }
-    if (conf.StrictFormation) {
-        if (conf.Defense > 3) {
-            preferredDefenseCounts = 3;
-        } else {
-            preferredDefenseCounts = conf.Defense;
-        }
-    }
+
 }
 
 
