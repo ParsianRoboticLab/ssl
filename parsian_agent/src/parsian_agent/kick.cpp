@@ -76,6 +76,7 @@ void CSkillKick::doNotKick() {
 }
 
 void CSkillKick::avoidOurPenalty() {
+    ROS_INFO_STREAM("Mahdi:Kick!!!");
     gpa->setSlowmode(slow);
     Vector2D finalPos , dummyPos1, dummyPos;
     Vector2D tempVector = wm->ball->pos - wm->field->ourGoal();
@@ -83,7 +84,7 @@ void CSkillKick::avoidOurPenalty() {
     Segment2D ballSeg(wm->ball->pos, wm->ball->pos + wm->ball->vel.norm() * 10);
     Segment2D ballPosSeg(wm->field->ourGoal(), wm->field->ourGoal() + tempVector.norm() * 2);
     Vector2D finalDirVec = (target - wm->ball->pos);
-
+    drawer->draw(penaltyCircle,"Blue");
     penaltyCircle.intersection(ballPosSeg, &dummyPos1, &dummyPos);
 
     if (wm->field->isInField(dummyPos1)) {
@@ -367,24 +368,32 @@ void CSkillKick::execute() {
     KMode kickMode = decideMode();
     switch (kickMode) {
         case KMode::DIRECT:
+            ROS_INFO_STREAM("Mahdi:direct");
             direct();
             break;
         case KMode::AvoidOurPenalty:
+            ROS_INFO_STREAM("Mahdi:avoidOurPenalty()");
             avoidOurPenalty();
             break;
         case KMode::AvoidOppPenalty:
+            ROS_INFO_STREAM("Mahdi:avoidOppPenalty()");
             avoidOppPenalty();
             break;
         case KMode::DONTKICK:
+            ROS_INFO_STREAM("Mahdi:DONTKICK");
             doNotKick();
             break;
         case KMode::JTurn:
+            ROS_INFO_STREAM("Mahdi:JTurn");
             jTurn();
             break;
         case KMode::TurnForKick:
+            ROS_INFO_STREAM("Mahdi:TurnForKick");
             turnForKick();
             break;
-        case KMode::NOMODE:break;
+        case KMode::NOMODE:
+            ROS_INFO_STREAM("Mahdi:NOMODE");
+            break;
     }
 }
 
