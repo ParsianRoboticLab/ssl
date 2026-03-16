@@ -102,8 +102,11 @@ void CSkillGotoPointAvoid::execute() {
             oppRelaxList.append(static_cast<int>(id));
         }
         agent->initPlanner(targetPos , ourRelaxList , oppRelaxList , avoidPenaltyArea , avoidCenterCircle , ballObstacleRadius);
-        for (long i = agent->pathPlannerResult.size() - 1 ; i >= 0 ; i--) {
-            result.append(agent->pathPlannerResult[i]);
+        auto plannerSize = agent->pathPlannerResult.size();
+        if (plannerSize > 0) {
+            for (long i = static_cast<long>(plannerSize) - 1; i >= 0; --i) {
+                result.append(agent->pathPlannerResult[static_cast<std::size_t>(i)]);
+            }
         }
     }
 
