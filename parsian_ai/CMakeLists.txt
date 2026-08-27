@@ -108,6 +108,7 @@ add_library(${PROJECT_NAME}
 		src/${PROJECT_NAME}/plays/ourpenaltyshootout.cpp
 		src/${PROJECT_NAME}/plays/stopplay.cpp
 		src/${PROJECT_NAME}/plays/halftimelineup.cpp
+		src/${PROJECT_NAME}/plays/substitution.cpp
 		src/${PROJECT_NAME}/plans/defenseplan.cpp
 		src/${PROJECT_NAME}/plans/markplan.cpp
 		src/${PROJECT_NAME}/plans/plan.cpp
@@ -221,7 +222,9 @@ install(PROGRAMS
 		)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_nodelet ${PROJECT_NAME}_node
+install(TARGETS ${PROJECT_NAME}
+		${PROJECT_NAME}_nodelet
+		${PROJECT_NAME}_node
 		ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 		RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -16,6 +16,10 @@ void {{action_name}}::setMessage(const void* _msg) {
     {{#parsian_properties}}
         {{local}} = msg.{{local}};
     {{/parsian_properties}}
+    {{#list_properties}}
+        {{local}}.clear();
+        for (auto _v : msg.{{local}}) { {{local}}.push_back(_v); }
+    {{/list_properties}}
 
     {{#has_base}}
         {{base_action}}::setMessage(&msg.base);
@@ -33,6 +37,10 @@ void* {{action_name}}::getMessage() {
 {{#parsian_properties}}
     _msg->{{local}} = {{local}}.toParsianMessage();
 {{/parsian_properties}}
+{{#list_properties}}
+    _msg->{{local}}.clear();
+    for (auto _v : {{local}}) { _msg->{{local}}.push_back(_v); }
+{{/list_properties}}
     return _msg;
 
 }

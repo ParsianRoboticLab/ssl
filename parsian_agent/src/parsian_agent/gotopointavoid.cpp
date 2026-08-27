@@ -32,12 +32,16 @@ void CSkillGotoPointAvoid::execute() {
     bangBang->setDecMax(conf->DecMax);
     bangBang->setOneTouch(oneTouchMode);
     bangBang->setDiveMode(diveMode);
+    double effectiveVelMax = conf->VelMax;
+    if (maxVelocity > 0.0f) {
+        effectiveVelMax = min(effectiveVelMax, static_cast<double>(maxVelocity));
+    }
     if (slowMode) {
         bangBang->setVelMax(1.4);
         bangBang->setSlow(true);
     } else {
         bangBang->setSlow(false);
-        bangBang->setVelMax(conf->VelMax);
+        bangBang->setVelMax(effectiveVelMax);
     }
 
     if (!Vector2D(targetPos).valid()) {
@@ -89,9 +93,20 @@ void CSkillGotoPointAvoid::execute() {
     if (!noAvoid) {
 
         /*********** PLANNER ***************/
+        ourRelaxList.clear();
+        for (auto id : ourrelax) {
+            ourRelaxList.append(static_cast<int>(id));
+        }
+        oppRelaxList.clear();
+        for (auto id : theirrelax) {
+            oppRelaxList.append(static_cast<int>(id));
+        }
         agent->initPlanner(targetPos , ourRelaxList , oppRelaxList , avoidPenaltyArea , avoidCenterCircle , ballObstacleRadius);
-        for (long i = agent->pathPlannerResult.size() - 1 ; i >= 0 ; i--) {
-            result.append(agent->pathPlannerResult[i]);
+        auto plannerSize = agent->pathPlannerResult.size();
+        if (plannerSize > 0) {
+            for (long i = static_cast<long>(plannerSize) - 1; i >= 0; --i) {
+                result.append(agent->pathPlannerResult[static_cast<std::size_t>(i)]);
+            }
         }
     }
 

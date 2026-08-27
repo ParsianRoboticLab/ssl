@@ -27,6 +27,7 @@ namespace rqt_parsian_gui {
         log_draw_sub = n.subscribe("/log/draws", 1000, &GraphicalClient::logdrawCb, this);
         color_sub = n.subscribe("/team_config", 1000, &GraphicalClient::colorCb, this);
         timer = n.createTimer(ros::Duration(0.02), &GraphicalClient::timerCb, this);
+        mouse_evetPub = n.advertise<parsian_msgs::mouse_event>("/mousePos", 1000);
         parsian_msgs::parsian_team_configPtr team_config{new parsian_msgs::parsian_team_config};
 
         // access standalone command line arguments
@@ -80,6 +81,7 @@ namespace rqt_parsian_gui {
         grsimRobots = n.serviceClient<parsian_msgs::grsim_robot_replacement>("/GrsimRobotReplacesrv");
         view->setBallReplceService(grsimBall);
         view->setRobotsReplceService(grsimRobots);
+        view->setmousePublisher(mouse_evetPub);
     }
 
     void GraphicalClient::shutdownPlugin() {

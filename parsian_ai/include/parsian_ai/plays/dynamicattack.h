@@ -1,6 +1,7 @@
 #ifndef DYNAMICATTACK_H
 #define DYNAMICATTACK_H
 
+#include "algorithm"
 #include <parsian_ai/plays/masterplay.h>
 #include <ctime>
 
@@ -18,11 +19,28 @@ enum class DynamicAttackState {
             PositioningControl  = 2
 };
 
-struct FieldRegion
+class FieldRegion
 {
+public:
     Rect2D rectangle;
     QList<Vector2D> points;
     int id;
+
+    double angle;
+    double theirNearestRobot;
+    double chance;
+
+    int oppInside;
+    int ourInside;
+    int oppInNeighbor;
+    int pointPriority;
+
+    bool goodForOneTouch;
+    //bool chipOrPass; // 1 for pass and 0 for chip
+    bool passIsForMe; //when the point is getting pass
+    //Vector2D passReciever;
+
+
 
     FieldRegion(){};
 
@@ -32,6 +50,38 @@ struct FieldRegion
         for(auto& point : p)
             points.push_back(point);
     }
+
+    bool operator< (const FieldRegion& a) {
+        return this->pointPriority < a.pointPriority;
+    }
+};
+
+
+class passPoint
+{
+public:
+    passPoint(vector2D);
+    passPoint();
+    vector2D point;
+    bool amIReciever;
+    bool stay;
+    bool inPostion;
+    bool oneTouch;
+    bool chipOrPass;    //0 for pass. 1 for chip.
+    int region;
+    bool finalPassReciever;
+    int chance;
+    int ID;
+    bool operator< (passPoint& a){ return (this->chance < a.chance);}
+
+};
+
+
+class RecievePoint{
+public:
+    RecievePoint();
+    int ID;
+    Vector2D point;
 };
 
 
@@ -143,6 +193,10 @@ public:
 
     SDynamicPlan currentPlan;
 
+
+    CRobot *findOppGoalKeaper();
+
+
 private:
     // NEW PASS ZONE
     static const int REGION_NUM;
@@ -174,12 +228,14 @@ private:
     bool shotInPass;
 
     void playMake();
-    void positioning(QList <Vector2D> _points);
+    void positioning(QList<passPoint>& );//QList <Vector2D> _points);
     void globalExecute(int agentSize);
     void dynamicPlanner(int agentSize);
 
     void makePlan(int agentSize);
     void assignId();
+    void passPositions(const QList<int>&, MWBM&);
+    void passDecision();
     void assignTasks();
     void updateAttackState();
     bool passDone();
@@ -194,12 +250,19 @@ private:
     double angleOfTwoSegment(const Segment2D &xp, const Segment2D &yp);
     double findmax(const QList<double> &list);
 
+    QList<passPoint> passPoints;
+    QList<passPoint> finalPassPoints;
     QList<Vector2D> semiDynamicPosition;
+    QList<Vector2D> amirSemiDynamicPosition;
     QList<Vector2D> markPositions;
+
+    RecievePoint recievePoint;
 
     bool isRightTimeToPass();
     void chooseReceiverAndBestPosForPass();
     void chooseBestPositons();
+    void regionByBall(int);
+    void oppInregion();
     double getDynamicValue(const Vector2D& _dynamicPos) const;
     void checkPoints(QList<Vector2D>& _points);
 
@@ -210,6 +273,10 @@ private:
     bool isPathClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
     bool isPathClearFromOpp(Vector2D _pos1, Vector2D _pos2, double rad, double t);
 
+
+    bool isClear(Vector2D _pos1, Vector2D _pos2, double rad, double t, QString str, Vector2D point = Vector2D(0,0));
+
+
     inline bool chipOrNot(Vector2D target,
                           double _radius = 1, double _treshold = .5);
     int appropriatePassSpeed();
@@ -218,6 +285,24 @@ private:
     bool isPlayMakeChanged();
 
     QString getString(const DynamicMode& _mode) const;
+
+
+    //bool isPositionInOurWay(Vector2D _pos1, Vector2D _pos2, double rad, double t, Vector2D);
+    //bool isPassPathOpen(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+    //bool isPositionClear(Vector2D _pos1, Vector2D _pos2, double rad, double t);
+
+    void bestPos(const QList<int>&, MWBM&);
+    void checkPositions();
+    void isChipOrPass(QList<passPoint>&);
+    void findOneTouch(QList<passPoint>&);
+    void isInPosition(QList<passPoint>& );
+    void toPassOrNotToPass(QList<passPoint>&);
+    void passPriority(QList<passPoint>&);
+    void showPasser(QList<passPoint>&, MWBM&);
+    //void stayPassReciever(const QList<int>&, MWBM&);
+    void stayPassReciever(QList<passPoint>& );
+    void finalPassReciever();
+
 
     CRoleDynamic *roleAgents[8];
     CRoleDynamic *roleAgentPM;
@@ -264,6 +349,8 @@ private:
     bool inTimePlan();
 protected:
     void reset() override;
+
+    double calcRegionProperties(int robot_id,int region_index);
 };
 
 #endif // DYNAMICATTACK_H

@@ -5,74 +5,104 @@
 #include <parsian_msgs/parsian_robot.h>
 #include <parsian_msgs/parsian_world_model.h>
 #include <parsian_util/geom/vector_2d.h>
-#include <parsian_msgs/parsian_robot_fault.h>
+#include <parsian_msgs/parsian_robots_fault.h>
 #include <parsian_util/tools/blackboard.h>
 #include <QList>
+#include <QTime>
 
 using namespace rcsc;
 # define buffer_size  200
 # define threshold 0.25
+#define _MAX_NUM_PLAYERS 12
+#define status_timeout 10000
 
-//TODOS
-//1)select what state the damaged robot is
-//2)what kick(or what ever)fault = true means (dameged or not)
-//3)whats the best number f0or threshold and buffersize
+//                          about this node
+//this node detects robots faults based on wm and robot_status data,
+//and publishes the result on /autofualt topic
+//the result contains a list of robot_fualt message for all robots
+//if the robots dont send their status for more than 'status_timeout' ms
+//the node decides to not to detect faults for any robots
+
 
 namespace auto_decider {
+
+    struct RobotInfo{
+        parsian_msgs::parsian_robot_status status;
+        bool ballIsNear;
+        QList<bool> fault;
+    };
+
     class Decider : public nodelet::Nodelet {
     public:
-        parsian_msgs::parsian_robot_faultPtr res;
+        parsian_msgs::parsian_robots_faultPtr robotsFault;
         ros::Publisher pub;
         ros::Subscriber robo_sub,wm_sub;
-        bool shootSensors[12];
-        bool isNear[12];
-        QList<bool> faults[12];
+        QList<RobotInfo> robotInfos;
+        QTime timer;
     private:
         virtual void onInit() {
 
             ros::NodeHandle &private_nh = getPrivateNodeHandle();
             ros::NodeHandle &nh = getNodeHandle();
-            pub = private_nh.advertise<parsian_msgs::parsian_robot_fault>("/autofault", 5);
+            pub = private_nh.advertise<parsian_msgs::parsian_robots_fault>("/autofault", 5);
             robo_sub = nh.subscribe("/robots_status", 100, &Decider::statusCb, this);
             wm_sub = nh.subscribe("/world_model", 100, &Decider::wmCb, this);
+            for(int i{}; i < _MAX_NUM_PLAYERS; i++)
+            {
+                RobotInfo tmp;
+                robotInfos.push_back(tmp);
+            }
         }
 
         void statusCb(const parsian_msgs::parsian_robots_status msg) {
-            for (int i = 0; i < 12; i++)
-                shootSensors[i] = msg.status[i].shootSensor;
+            timer.start();
+            for(int i{}; i < robotInfos.size(); i++)
+            {
+                robotInfos[i].status = parsian_msgs::parsian_robot_status();
+                robotInfos[i].status.id = i;
+            }
+            for (auto stat: msg.status)
+                robotInfos[stat.id].status = stat;
         }
 
         void wmCb(const parsian_msgs::parsian_world_model msg) {
-            for (int i = 0; i < 12; i++)
-                isNear[i] = Vector2D(msg.our[i].pos).dist(msg.ball.pos) < threshold;
+            for (auto robotinfo: robotInfos)
+                robotinfo.ballIsNear = Vector2D(msg.our[robotinfo.status.id].pos).dist(msg.ball.pos) < threshold;
             faultdetect();
         }
 
         void faultdetect() {
+            robotsFault.reset(new parsian_msgs::parsian_robots_fault);
+            for (int i = 0; i < robotInfos.size(); i++){
+                parsian_msgs::parsian_robot_faultPtr tmp;
+                tmp.reset(new parsian_msgs::parsian_robot_fault);
+                robotsFault->robots.push_back(*tmp);
+            }
 
+            for (auto robotinfo: robotInfos) {
+                parsian_msgs::parsian_robot_faultPtr tmp;
+                tmp.reset(new parsian_msgs::parsian_robot_fault);
+                tmp->robot_id = robotinfo.status.id;
+                robotinfo.fault.append(!robotinfo.ballIsNear && robotinfo.status.shootSensor);
 
-            for (int i = 0; i < 12; i++) {
-                res.reset(new parsian_msgs::parsian_robot_fault);
-                res->robot_id=i;
-                faults[i].append(!isNear[i] && shootSensors[i]);
-
-                if (faults[i].size() > buffer_size)
-                    faults[i].removeFirst();
+                if (robotinfo.fault.size() > buffer_size)
+                    robotinfo.fault.removeFirst();
 
                 int sum = 0;
-                for (auto fault : faults[i])
+                for (auto fault : robotinfo.fault)
                     sum+= fault;
 
 
-                if(sum > faults[i].size() * .7)
-                    res->select = 2;
+                if(sum > robotinfo.fault.size() * .7 && timer.elapsed() < status_timeout)
+                    tmp->select = 2;
                 else
-                    res->select = 0;
+                    tmp->select = 0;
 
-                PDEBUG(QString("faults %1 = ").arg(i).toStdString(),sum,D_ALI);
-                PDEBUG(QString("select %2 = ").arg(i).toStdString(),res->select,D_ALI);
-                pub.publish(res);
+                //PDEBUG(QString("faults %1 = ").arg(i).toStdString(),sum,D_ALI);
+                //PDEBUG(QString("select %2 = ").arg(i).toStdString(),tmp->select,D_ALI);
+                robotsFault->robots[tmp->robot_id] = *tmp;
             }
+            pub.publish(robotsFault);
         }
 
     };

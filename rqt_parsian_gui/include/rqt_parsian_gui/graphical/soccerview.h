@@ -39,6 +39,7 @@
 #include <parsian_msgs/parsian_draws.h>
 #include <parsian_msgs/parsian_draw_buffer.h>
 #include <parsian_msgs/parsian_team_config.h>
+#include <parsian_msgs/mouse_event.h>
 #include <rqt_parsian_gui/monitorConfig.h>
 
 #ifndef SOCCERVIEW_H
@@ -138,6 +139,7 @@ namespace rqt_parsian_gui {
 
         ros::ServiceClient* ballClinet;
         ros::ServiceClient* robotsClinet;
+        ros::Publisher* mouse_evetPub;
 
     private:
         void drawFieldLines(FieldDimensions &dimensions);
@@ -206,6 +208,8 @@ namespace rqt_parsian_gui {
 
         void setBallReplceService(ros::ServiceClient& _client);
         void setRobotsReplceService(ros::ServiceClient& _client);
+        void setmousePublisher(ros::Publisher &_publisher);
+
 
     public slots:
 

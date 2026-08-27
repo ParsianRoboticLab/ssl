@@ -12,17 +12,10 @@ public:
     explicit Agent(const parsian_msgs::parsian_agent& _agent);
     explicit Agent(int id);
     Vector2D oneTouchCheck(Vector2D positioningPos, Vector2D* oneTouchDirection);
-    enum class FaultState{
-        HEALTHY = 0,
-        DISREPAIRED = 1,
-        DAMEGED = 2,
-        DESTROYED = 3,
-    };
     QString roleName;
     bool changeIsNeeded = false;
     bool shootSensor = false;
-    bool fault = false;
-    FaultState faultstate = FaultState::HEALTHY;
+    bool substitutePermission = false;
 
 protected:
 private:

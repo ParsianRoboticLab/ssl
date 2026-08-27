@@ -28,6 +28,10 @@ void GotopointavoidAction::setMessage(const void* _msg) {
         drawPath = msg.drawPath;
         diveMode = msg.diveMode;
         addVel = msg.addVel;
+        ourrelax.clear();
+        for (auto _v : msg.ourrelax) { ourrelax.push_back(_v); }
+        theirrelax.clear();
+        for (auto _v : msg.theirrelax) { theirrelax.push_back(_v); }
 
         GotopointAction::setMessage(&msg.base);
 }
@@ -46,6 +50,10 @@ void* GotopointavoidAction::getMessage() {
     _msg->drawPath = drawPath;
     _msg->diveMode = diveMode;
     _msg->addVel = addVel.toParsianMessage();
+    _msg->ourrelax.clear();
+    for (auto _v : ourrelax) { _msg->ourrelax.push_back(_v); }
+    _msg->theirrelax.clear();
+    for (auto _v : theirrelax) { _msg->theirrelax.push_back(_v); }
     return _msg;
 
 }

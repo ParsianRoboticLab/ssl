@@ -8,7 +8,7 @@
 #include <QMetaType>
 #include <parsian_msgs/parsian_path.h>
 #include <parsian_util/core/field.h>
-#include "parsian_util/tools/drawer.h"                      //TODO must be new in node
+#include "parsian_util/tools/drawer.h"                      // TODO must be new in node
 #include "parsian_util/tools/blackboard.h"
 #include "parsian_util/core/agent.h"
 #include "parsian_util/geom/geom.h"
@@ -21,7 +21,7 @@
 #define _PLANNER_EXTEND_POINT_LIMIT 150
 #define _PLANNER_EXTEND_MAX_ATTEMPT 200
 
-#define _MAX_NUM_PLAYERS 12         //TODO must be get from somewhere else
+#define _MAX_NUM_PLAYERS 12         // TODO must be get from somewhere else
 
 
 

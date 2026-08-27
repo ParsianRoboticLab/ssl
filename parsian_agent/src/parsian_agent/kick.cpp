@@ -129,7 +129,7 @@ void CSkillKick::jTurn() {
     AngleDeg kickFinalDir = (target - wm->ball->pos).th();
     double movementDir = ((wm->ball->pos - agent->pos()).th() - kickFinalDir).degree();
     double shift = 0;
-    double distCoef = 0.15;
+    double distCoef = 0.10;
 
     Vector2D idealPass = (wm->ball->pos - agent->pos()).norm() * distCoef;
 
@@ -178,7 +178,7 @@ void CSkillKick::jTurn() {
         dirReduce -= 1;
     }
 
-    speedPid->kp = 6 + 4 * agent->pos().dist(wm->ball->pos) + dirReduce*2 ;
+    speedPid->kp = 5 + 4 * agent->pos().dist(wm->ball->pos) + dirReduce*2 ;
 
     if (penaltyKick) {
         speedPid->kp = 4;
@@ -321,11 +321,13 @@ void CSkillKick::direct() {
         distThr = 0;
         finalPos = wm->ball->pos - (target - finalPos).norm() * 0.15;
         finalDir = Vector2D(cos(kickFinalDir.radian()), sin(kickFinalDir.radian()));
+
     }
 
     Vector2D temp = finalPos;
-    CSkillReceivePass::validatePoint(finalPos, agent->pos());
+    //CSkillReceivePass::validatePoint(finalPos, agent->pos());
     if (temp != finalPos) finalDir = wm->ball->pos - finalPos;
+
 
     Vector2D s1, s2;
     Circle2D finalPosArea;
@@ -344,7 +346,6 @@ void CSkillKick::direct() {
     }
     drawer->draw(Segment2D(agent->pos(), finalPos), QColor(Qt::red));
 
-    drawer->draw(finalPos);
 
     gpa->init(finalPos, finalDir);
     gpa->setNoavoid(false);
@@ -352,7 +353,6 @@ void CSkillKick::direct() {
     gpa->setBallobstacleradius(0);
     gpa->setSlowmode(slow);
     gpa->setDivemode(false);
-    gpa->setAvoidpenaltyarea(true);
     gpa->execute();
 
 }
